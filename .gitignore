@@ -1,0 +1,7 @@
+*~
+*.byte
+*.cmi
+*.cmo
+jscoqtop.js
+coqtop.js
+README.html
