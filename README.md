@@ -46,23 +46,17 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 * Install the following opam packages: `derive reactiveData tyxml`
 * Install js\_of\_ocaml <http://ocsigen.org/js_of_ocaml/> from git.
 * Download and build Coq master from <https://github.com/coq/coq>, configure and make as follows:
-
         $ ./configure -local -natdynlink no -coqide no -byteonly
         $ make -j
-
 * Edit `COQDIR` in `Makefile` to point to the directory where you have just built Coq.
 * Type:
-
         $ make
-
   and profit!
 
 We also support building a coqtop.js executable that can be run using
 `node`, linked with atom, etc...
 
 * Apply `coqtop.patch` to Coq source code, then:
-
         $ make coqtop.js
         $ nodejs coqtop.js
-
-  and profit!
+  and profit again!
