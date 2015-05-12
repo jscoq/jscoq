@@ -23,13 +23,14 @@ jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
 	ocamlfind ocamlc -linkall -linkpkg -thread -verbose -I +camlp5 -package js_of_ocaml.tyxml -rectypes unix.cma threads.cma dynlink.cma str.cma gramlib.cma $(COQDEPS) jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
 
 # JSFILES=mutex.js unix.js coq_vm.js aux.js
-JSFILES=mutex.js unix.js coq_vm.js
+JSDIR=js
+JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js
 
 jscoqtop.js: jscoqtop.byte $(JSFILES)
 	js_of_ocaml +nat.js +weak.js +toplevel.js $(JSFILES) jscoqtop.byte
 
 COQTOP=$(COQDIR)/bin/coqtop.byte
-NODEFILES=fsInput.js
+NODEFILES=$(JSDIR)/fsInput.js
 
 coqtop.byte: $(COQTOP)
 	cp $(COQTOP) ./
