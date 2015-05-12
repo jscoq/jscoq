@@ -1,15 +1,16 @@
-Javascript Interface for Coq
-----------------------------
+Run Coq in your browser using JavaScript
+----------------------------------------
 
-A proof-of-concept implementation of a Coq REPL fully running in the
-browser.
+A proof-of-concept implementation of a Coq REPL running in the
+browser. Note that the whole Coq stack runs in the browser, we do this
+using the amazing `js_of_ocaml` Ocaml bytecode to javascript compiler.
 
-This is basically a modification of the
+The shell is basically a modification of the
 [js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) toplevel, linked to
 Coq.
 
-Surprisingly, it runs with an unpatched coq trunk. However a few
-things are still broken, see below.
+Surprisingly, it runs when linked against an unpatched coq
+trunk. However a few things are still broken, see below.
 
 See it by yourself <https://x80.org/rhino-coq/>.
 
