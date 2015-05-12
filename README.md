@@ -1,35 +1,40 @@
-Run Coq in your browser using JavaScript
-----------------------------------------
+Run Coq in your browser!
+------------------------
 
-A proof-of-concept implementation of a Coq REPL running in the
-browser. Note that the whole Coq stack runs in the browser, we do this
-using the amazing `js_of_ocaml` Ocaml bytecode to javascript compiler.
+This is a proof-of-concept implementation of a Coq REPL running in the
+browser.
 
-The shell is basically a modification of the
+Note that the whole of Coq runs in the browser, using the great
+`js_of_ocaml` Ocaml bytecode to javascript compiler.
+
+The shell is a modification of the
 [js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) toplevel, linked to
 Coq.
 
-Surprisingly, it runs when linked against an unpatched coq
-trunk. However a few things are still broken, see below.
+Surprisingly, it mostly works when linked against an unpatched Coq
+trunk. Unfortunately, loading modules is still broken, see below.
 
-See it by yourself <https://x80.org/rhino-coq/>.
+Try it by yourself <https://x80.org/rhino-coq/> !
+
+_Remember that you'll get a barebones Coq shell, without notations or
+libraries loaded, you can paste almost any file however._
 
 **Note about the code**
 
-Don't expect too much of the code, it is a mess written by a person
-with zero knowledge of Javascript, Coq internals, and Ocaml.
+The code is a mess written by a person with zero knowledge of
+Javascript, and Coq internals, and only a slight idea of Ocaml.
+The goal of this project was to do a proof of concept and get things
+running.
 
-The goal was to do a proof of concept and get things running. However,
-I hope it evolves into a fully-working Coq setup.
+However, I hope it can evolve into a fully-working Coq setup and IDE.
 
 ## What is broken ##
 
-Plugin and module loading are broken. They will likely be fixed during
-the Coq Coding Sprint.
+Plugin and module loading don't work. They will likely be fixed in the
+Coq Coding Sprint. `vm_compute` and `native_compute` aren't supported
+either. The threading library is a stub.
 
-`vm_compute` and `native_compute` don't work either.
-
-The rest seems to be working.
+No other issues for now.
 
 ## Contact ##
 
@@ -37,15 +42,15 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install ##
 
-* Setup Ocaml 4.02 and Opam.
-* Install the following opam packages: `reactiveData tyxml`
+* Install Ocaml 4.02 and Opam.
+* Install the following opam packages: `derive reactiveData tyxml`
 * Install js\_of\_ocaml <http://ocsigen.org/js_of_ocaml/> from git.
-* Download and build Coq trunk from <https://github.com/coq/coq>, configure as:
+* Download and build Coq master from <https://github.com/coq/coq>, configure and make as follows:
 
         $ ./configure -local -natdynlink no -coqide no -byteonly
         $ make -j
 
-* Edit `COQDIR` in the `Makefile` to point to the directory where the Coq build is.
+* Edit `COQDIR` in `Makefile` to point to the directory where you have just built Coq.
 * Type:
 
         $ make
@@ -53,9 +58,11 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
   and profit!
 
 We also support building a coqtop.js executable that can be run using
-the `nodejs` command line implementation, or linked with atom.
+`node`, linked with atom, etc...
 
-* Apply the `coqtop.patch` to Coq source code.
-* `$ make coqtop.js`
-* `$ nodejs coqtop.js`
-  Profit!
+* Apply `coqtop.patch` to Coq source code, then:
+
+        $ make coqtop.js
+        $ nodejs coqtop.js
+
+  and profit!
