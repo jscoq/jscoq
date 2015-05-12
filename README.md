@@ -19,7 +19,7 @@ Try it by yourself <https://x80.org/rhino-coq/> !
 _Remember that you'll get a barebones Coq shell, without notations or
 libraries loaded, you can paste almost any file however._
 
-**Note about the code**
+**A note about the code**
 
 The code is a mess written by a person with zero knowledge of
 Javascript, and Coq internals, and only a slight idea of Ocaml.
@@ -46,7 +46,8 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 * Install the following opam packages: `derive reactiveData tyxml`
 * Install js\_of\_ocaml <http://ocsigen.org/js_of_ocaml/> from git.
 * Download and build Coq master from <https://github.com/coq/coq>, configure and make as follows:
-        $ ./configure -local -natdynlink no -coqide no -byteonly
+
+        $ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
         $ make -j
 * Edit `COQDIR` in `Makefile` to point to the directory where you have just built Coq.
 * Type:
