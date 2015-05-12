@@ -33,7 +33,7 @@ The rest seems to be working.
 
 ## Contact ##
 
-Emilio J. Gallego Arias <e+jscoq@x80.org>
+Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install ##
 
