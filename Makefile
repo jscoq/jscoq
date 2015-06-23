@@ -47,13 +47,18 @@ coqtop.byte: $(COQTOP)
 	cp $(COQTOP) ./
 
 coqtop.js: coqtop.byte jscoqtop.js $(JSFILES) $(NODEFILES)
-	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +toplevel.js $(JSFILES) $(NODEFILES) coqtop.byte
+	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) $(NODEFILES) coqtop.byte
 
 # print_cmo: print_cmo.ml
 # 	ocamlc.opt -I /home/egallego/external/js_of_ocaml/compiler print_cmo.ml -o print_cmo
 
 upload: all
 	cp -a index.html jscoqtop.js readme.txt /home/egallego/x80/rhino-coq/
+
+
+COQ_PLUGINS=$(COQDIR)/plugins/syntax/nat_syntax_plugin.cma
+plugins: $(COQ_PLUGINS)
+	cp $(COQ_PLUGINS) filesys/
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
