@@ -191,12 +191,6 @@ function unix_socket() {
   return 0;
 }
 
-//Provides: unix_stat
-function unix_stat() {
-  ll("unix_stat");
-  return 0;
-}
-
 //Provides: unix_string_of_inet_addr
 function unix_string_of_inet_addr() {
   ll("unix_string_of_inet_addr");
