@@ -120,7 +120,7 @@ COQ_INIT_DEST=filesys/coq-init
 coq_init: $(COQ_INIT)
 	$(shell for i in $(COQ_INIT); do base64 $$i > $(COQ_INIT_DEST)/`basename $$i`; done)
 
-lib: lib-dirs plugins coq_init
+libs: lib-dirs plugins coq_init
 
 # Note: this has to match the hiearchy we set in jscoq.ml
   # let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in

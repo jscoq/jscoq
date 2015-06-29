@@ -15,3 +15,5 @@ make jscoq32
 opam switch $OCAMLDIST64
 eval `opam config env`
 make jscoq64
+
+make libs

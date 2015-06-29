@@ -35,13 +35,12 @@ Due to javascript limitations (no support for 64 bits integeres) and
 high memory demands of the js_of_ocaml optimizer we need to use a
 32bit and 64bit Ocaml runtime.
 
-* First, you'll have to install Ocaml 4.02.1 + libraries in both 32
-  and 64 bit versions. This is done with the toolchain-setup.sh
-  script. You need to indicate where the js_of_ocaml git version is by
-  editing the JS_OF_OCAML_DIR variable, also tweaking NJOBS may be
-  necessary.
+* The provided script `toolchain-setup.sh` will take care of most
+  things provided you have a recent opam.
 
-  In Ubuntu, the gcc-multilib package is required.
+  You should modify it to point to a git version of js_of_ocaml by
+  editing the JS_OF_OCAML_DIR variable, also tweaking NJOBS may be
+  necessary. In Ubuntu, the gcc-multilib package is required.
 
 * Download and build Coq master from <https://github.com/coq/coq>, configure and make as follows:
 
@@ -58,9 +57,6 @@ $ make # -j as desired
 
   should do the trick. build.sh tries to manage the pain of the 32/64
   bit switch, you can also use regular make if you know what you are doing.
-
-  The next step is to build the libraries, you can use
-        $ make lib
 
   In order to use a browser with the file protocol you may want to start it as:
         $ chromium-browser --allow-file-access-from-files
