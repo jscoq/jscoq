@@ -2,7 +2,7 @@ Run Coq in your browser!
 ------------------------
 
 A proof-of-concept implementation of a Coq Toplevel running in the
-browser.
+browser. Note that we only support recent Chromium versions for the moment.
 
 Note that the whole of Coq runs in the inside the browser, we use the
 `js_of_ocaml` Ocaml bytecode to javascript compiler to make this happen.
