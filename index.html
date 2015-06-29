@@ -180,7 +180,7 @@
   <body>
     <div id="toplevel-container">
       <a href="" >
-          Welcome to JsCoq 0.07! [Warning: no prelude or notations loaded]
+          Welcome to JsCoq 0.1b, mediterranean edition!
       </a>
       <pre id="output"></pre>
       <div>
@@ -191,24 +191,35 @@
       </div>
     </div>
     <div id="toplevel-side">
-      <h3>Js Coq</h3>
-      <h4>An alpha version of Coq running in the browser.</h4>
+      <h3>Js Coq (α)</h3>
+      <h4>Coq running in the browser, α-version</h4>
 
       <p>
-          Thanks to the js_of_ocaml devs and the great Coq 8.5
-          release, this prototype has seen the light of the
-          day. Larguely based on the new STM engine and the
-          js_of_ocaml toplevel.
+          Thanks to js_of_ocaml and Coq 8.5, this prototype has seen
+          the light of the day.
+      </p>
+
+      <p>
+          You can go ahead and load the standard Prelude by pressing
+          enter, or (exclusive or at the moment) load ssreflect using:
+      </p>
+      <pre><code>
+Declare ML Module "ssreflect".
+Require Import Ssreflect.ssreflect.
+      </code></pre>
+
+      <p>You'll need to be a bit patient, as we are compiling
+      ssreflect on the fly, that will be solved soon, sorry.
       </p>
 
       <p><b>Note:</b>
-          Plugin and module loading are missing. vm_compute or native
-          don't work either. Don't expect too much of this version,
-          the the code is a mess and a bare minimum to get things
-          running. We also support coqtop under the nodejs command line.
+          This is an ultra experimental release, performance is terrible,
+          vm_compute or native don't work. We also skip the
+          loading of some expensive plugins in Prelude, but that will
+          be solved in the future.
       </p>
-      <p> Contact: Emilio at e+jscoq@this_host.
-      </p>
+      <p>Contact: Emilio at e+jscoq@this_host. </p>
+
       <h4>Commands</h4>
       <table class="table table-striped table-condensed">
         <tbody class>
@@ -224,15 +235,6 @@
             <td>Up / Down</td>
             <td>Browse history</td>
           </tr>
-          <tr>
-            <td>Ctrl + l</td>
-            <td>Clear display</td>
-          </tr>
-          <tr>
-            <td>Ctrl + k</td>
-            <td>Reset toplevel (Not working)</td>
-          </tr>
-
         </tbody>
       </table>
       <h4>For more information and how to get it running:</h4>

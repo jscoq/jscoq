@@ -29,12 +29,67 @@ let do_by_id s f = try f (Dom_html.getElementById s) with Not_found -> ()
 
 (* load file using a synchronous XMLHttpRequest *)
 let load_resource_aux url =
+  (* p @@ Printf.eprintf "load_resource_aux %s\n%!" (Js.to_string url); *)
   try
     let xml = XmlHttpRequest.create () in
     xml##_open(Js.string "GET", url, Js._false);
     xml##send(Js.null);
-    if xml##status = 200 then Some (xml##responseText) else None
-  with _ -> None
+    (* Forbidden in sync requests:
+       xml##responseType <- (Js.string "arraybuffer");
+    *)
+    (* Printf.eprintf "synchronous request sent, got status: %d\n%!" xml##status; *)
+    (* File case *)
+    if xml##status = 200 || xml##status = 0 then
+      (* Convert to an arraybuffer *)
+      begin
+        let module JU = Js.Unsafe               in
+        let r   = xml##responseText             in
+        let rl  = r##length                     in
+        (* Printf.eprintf "Length of the response: %d\n%!" rl; *)
+        let bin_arr = Js.Unsafe.global##atob r  in
+        let bl      = bin_arr##length           in
+        (* Printf.eprintf "Length of the decoded string: %d\n%!" bl; *)
+        let s = String.create bl in
+        for i = 0 to bl - 1 do
+          begin
+            try
+              (* [meth_call o m a] calls the Javascript method [m] of object [o] *)
+              s.[i] <- Char.chr @@ JU.meth_call bin_arr "charCodeAt" [| JU.inject i|]
+              (* s.[i] <- Char.chr @@ Js.Unsafe.bin_arr##charCodeAt i *)
+            with
+              _ -> Printf.eprintf "Wrong char %d at %d \n%!" (bin_arr##charCodeAt i) i;
+          end
+        done;
+(*
+        Printf.eprintf "Length of the CAML string: %d\n%!" (String.length s);
+        Printf.eprintf "MD5: %s\n%!" (Digest.to_hex @@ Digest.string @@ s);
+        Printf.eprintf "First: %!";
+        for i = 0 to 11 do
+          Printf.eprintf "%d%!" (int_of_char (String.get s i));
+        done;
+        Printf.eprintf "\n%!";
+ *)
+        Some (bin_arr)
+        (* let b   = jsnew Typed_array.arrayBuffer(2*rl) in *)
+        (* let b16 = jsnew Typed_array.int16Array_fromBuffer(b) in *)
+        (* for i = 0 to rl - 1 do *)
+        (*   Typed_array.set b16 i (int_of_float r##charCodeAt(i)) *)
+        (* done; *)
+        (* let s   = string_of_buffer b        in *)
+        (* Printf.eprintf "MD5: %s\n%!" (Digest.to_hex @@ Digest.string @@ s); *)
+        (* Some (xml##responseText) *)
+      end
+        (* let s = Js.to_bytestring xml##responseText in *)
+        (* (Printf.eprintf "MD5: %s\n%!" (Digest.to_hex @@ Digest.string @@ s)); *)
+        (* Some (xml##responseText) *)
+    else
+      None
+      (* (Printf.eprintf "None?\n%!"; *)
+      (*  None) *)
+  with exc ->
+    None
+    (* (Format.eprintf "exc during load resource: %s\n%!" (Printexc.to_string exc); *)
+    (*  None) *)
 
 let load_resource scheme (_,suffix) =
   let url = (Js.string scheme)##concat(suffix) in
@@ -134,6 +189,56 @@ module History = struct
     then begin incr idx; textbox##value <- Js.string (!data.(!idx)) end
 end
 
+(* Hack to support dynamic linking *)
+open Compiler
+let split_primitives p =
+  let len = String.length p in
+  let rec split beg cur =
+    if cur >= len then []
+    else if p.[cur] = '\000' then
+      String.sub p beg (cur - beg) :: split (cur + 1) (cur + 1)
+    else
+      split beg (cur + 1) in
+  Array.of_list(split 0 0)
+
+let setup_dynlink () =
+  Hashtbl.add Toploop.directive_table "enable" (Toploop.Directive_string Option.Optim.enable);
+  Hashtbl.add Toploop.directive_table "disable" (Toploop.Directive_string Option.Optim.disable);
+  Hashtbl.add Toploop.directive_table "debug_on" (Toploop.Directive_string Option.Debug.enable);
+  Hashtbl.add Toploop.directive_table "debug_off" (Toploop.Directive_string Option.Debug.disable);
+  Hashtbl.add Toploop.directive_table "tailcall" (Toploop.Directive_string (Option.Param.set "tc"));
+  Topdirs.dir_directory "/cmis";
+  let initial_primitive_count =
+    Array.length (split_primitives (Symtable.data_primitive_names ())) in
+
+  let compile s =
+    let prims =
+      split_primitives (Symtable.data_primitive_names ()) in
+    let unbound_primitive p =
+      try ignore (Js.Unsafe.eval_string p); false with _ -> true in
+    let stubs = ref [] in
+    Array.iteri
+      (fun i p ->
+         if i >= initial_primitive_count && unbound_primitive p then
+           stubs :=
+             Format.sprintf
+               "function %s(){caml_failwith(\"%s not implemented\")}" p p
+             :: !stubs)
+      prims;
+    let output_program = Driver.from_string prims s in
+    let b = Buffer.create 100 in
+    output_program (Pretty_print.to_buffer b);
+    Format.(pp_print_flush std_formatter ());
+    Format.(pp_print_flush err_formatter ());
+    flush stdout; flush stderr;
+    let res = Buffer.contents b in
+    let res = String.concat "" !stubs ^ res in
+    Js.Unsafe.global##toplevelEval(res)
+  in
+  Js.Unsafe.global##toplevelCompile <- compile (*XXX HACK!*);
+  Js.Unsafe.global##toplevelEval <- (fun x -> Js.Unsafe.eval_string x);
+  ()
+
 let run _ =
   let container = by_id "toplevel-container" in
   let output    = by_id "output" in
@@ -199,8 +304,8 @@ let run _ =
         match e##keyCode with
         | 13 when not (meta e) -> Lwt.async execute; Js._false
         | 13 -> Lwt.async (resize ~container ~textbox); Js._true
-        | 76 when meta e -> output##innerHTML <- Js.string ""; Js._true
-        | 75 when meta e -> setup_toplevel (); Js._false
+        (* | 76 when meta e -> output##innerHTML <- Js.string ""; Js._true *)
+        (* | 75 when meta e -> setup_toplevel (); Js._false *)
         | 38 -> history_up e
         | 40 -> history_down e
         | _ -> Js._true
@@ -224,11 +329,14 @@ let run _ =
   Sys_js.set_channel_flusher stderr     (append output);
 
   setup_pseudo_fs ();
+  setup_dynlink ();
   setup_toplevel ();
   setup_js_preview ();
   History.setup ();
 
-  textbox##value <- Js.string "";
+  (* Setup files *)
+
+  textbox##value <- Js.string "Require Import Coq.Init.Prelude.";
   (* Jscoq.execute true ~pp_code:sharp_ppf caml_ppf "Notation \"A -> B\" := (forall _ : A, B) (at level 70)."; *)
   ()
 

@@ -18,6 +18,7 @@ open Pp
 open Errors
 open Util
 open Names
+open Names
 open Feedback
 open Pcoq
 
@@ -31,7 +32,6 @@ let pr_open_cur_subgoals () =
 (* TODO:
 
 - Get subgoals:
-- 
 
 *)
 
@@ -67,8 +67,36 @@ let execute printval ?pp_code pp_answer s =
 
 (* For now we init Lib and STM *)
 let init () =
+  (* Enable backtraces for now. *)
+  (* Printexc.record_backtrace true; *)
+  (* try *)
+  (* Dynlink.init (); *)
+  (* with *)
+  (* | exn -> *)
+  (*    begin *)
+  (*      Printexc.print_backtrace stderr; *)
+  (*      raise exn *)
+  (*    end; *)
   (* XXX: Add support for loading base plugins and libraries *)
   Lib.init();
+
+  (* Implicit Coq.Init.Blah implicit allow Require import Blah*)
+  let coq_default_path = DirPath.make [] in
+  Loadpath.add_load_path "." coq_default_path ~implicit:false;
+
+  let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in
+  Loadpath.add_load_path "." coq_init_path ~implicit:false;
+
+  let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
+  Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
+
+  let bool_path = DirPath.make [Id.of_string "Bool"; Id.of_string "Coq"] in
+  Loadpath.add_load_path "./bool" bool_path ~implicit:false;
+
+  (* < > *)
+  (* Local library *)
+  Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
+
   let jsname = DirPath.make [Id.of_string "JsTop"] in
   Declaremods.start_library jsname;
   Stm.init();
