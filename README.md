@@ -59,8 +59,13 @@ $ make # -j as desired
   should do the trick. build.sh tries to manage the pain of the 32/64
   bit switch, you can also use regular make if you know what you are doing.
 
-  A makefile target for preprocessing the libraries so they can be
-  loaded by JsCoq is still a TODO, sorry.
+  The next step is to build the libraries, you can use
+        $ make lib
+
+  In order to use a browser with the file protocol you may want to start it as:
+        $ chromium-browser --allow-file-access-from-files
+
+  Profit!
 
 We also used to support building a coqtop.js executable that can be run using
 `node`, linked with atom, etc...

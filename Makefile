@@ -1,7 +1,7 @@
 .PHONY: clean upload
 
 # COQDIR=../coq-git/
-COQDIR=/home/egallego/external/coq-git/
+COQDIR=~/external/coq-git/
 
 all: jscoqtop.js
 
@@ -40,6 +40,7 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js
 # jscoqtop.js: jscoqtop.byte $(JSFILES) $(JSLIBFILES)
 
 # JSOO_OPTS=--pretty --noinline --disable shortvar
+# JSOO_OPTS=-opt 3
 JSOO_OPTS=
 
 # --toplevel includes the linking information.
@@ -60,13 +61,85 @@ coqtop.js: coqtop.byte jscoqtop.js $(JSFILES) $(NODEFILES)
 # print_cmo: print_cmo.ml
 # 	ocamlc.opt -I /home/egallego/external/js_of_ocaml/compiler print_cmo.ml -o print_cmo
 
-upload: all
-	cp -a index.html jscoqtop.js filesys/ css/ /home/egallego/x80/rhino-coq/
+########################################################################
+# Plugin building + base64 encoding
 
+filesys:
+	mkdir -p filesys
 
-COQ_PLUGINS=$(COQDIR)/plugins/syntax/nat_syntax_plugin.cma
+filesys/coq-init:
+	mkdir -p filesys/coq-init
+
+filesys/ssr:
+	mkdir -p filesys/ssr
+
+filesys/bool:
+	mkdir -p filesys/bool
+
+lib-dirs: filesys filesys/coq-init filesys/ssr filesys/bool
+
+COQPDIR=$(COQDIR)/plugins
+COQ_PLUGINS=$(COQPDIR)/syntax/nat_syntax_plugin.cma $(COQPDIR)/decl_mode/decl_mode_plugin.cma $(COQPDIR)/cc/cc_plugin.cma $(COQPDIR)/firstorder/ground_plugin.cma
+
+# Not enabled for now.
+# micromega/micromega_plugin.cma
+# rtauto/rtauto_plugin.cma
+# setoid_ring/newring_plugin.cma
+# syntax/string_syntax_plugin.cma
+# syntax/r_syntax_plugin.cma
+# syntax/z_syntax_plugin.cma
+# syntax/ascii_syntax_plugin.cma
+# syntax/nat_syntax_plugin.cma
+# quote/quote_plugin.cma
+# omega/omega_plugin.cma
+# btauto/btauto_plugin.cma
+# fourier/fourier_plugin.cma
+# nsatz/nsatz_plugin.cma
+# derive/derive_plugin.cma
+# romega/romega_plugin.cma
+
+COQ_PLUGINS_DEST=filesys
+
 plugins: $(COQ_PLUGINS)
-	cp $(COQ_PLUGINS) filesys/
+	$(shell for i in $(COQ_PLUGINS); do base64 $$i > $(COQ_PLUGINS_DEST)/`basename $$i`; done)
+
+COQTDIR=$(COQDIR)/theories
+COQ_INIT=$(COQTDIR)/Init/Notations.vo		\
+	 $(COQTDIR)/Init/Tactics.vo		\
+	 $(COQTDIR)/Init/Logic.vo		\
+	 $(COQTDIR)/Init/Logic_Type.vo		\
+	 $(COQTDIR)/Init/Datatypes.vo		\
+	 $(COQTDIR)/Init/Nat.vo  		\
+	 $(COQTDIR)/Init/Peano.vo  		\
+	 $(COQTDIR)/Init/Specif.vo  		\
+	 $(COQTDIR)/Init/Wf.vo  		\
+	 $(COQTDIR)/Init/Prelude.vo
+
+COQ_INIT_DEST=filesys/coq-init
+
+coq_init: $(COQ_INIT)
+	$(shell for i in $(COQ_INIT); do base64 $$i > $(COQ_INIT_DEST)/`basename $$i`; done)
+
+lib: lib-dirs plugins coq_init
+
+# Note: this has to match the hiearchy we set in jscoq.ml
+  # let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in
+  # Loadpath.add_load_path "./coq-init" coq_init_path ~implicit:false;
+
+  # let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
+  # Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
+
+  # let bool_path = DirPath.make [Id.of_string "Bool"; Id.of_string "Coq"] in
+  # Loadpath.add_load_path "./bool" bool_path ~implicit:false;
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
+
+# Local stuff
+upload: all
+	cp -a index.html jscoqtop.js filesys/ css/ ~/x80/rhino-coq/
+
+
+pau:
+	rsync -avpz ~/research/jscoq pau:~/
+	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
