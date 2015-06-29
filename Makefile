@@ -39,7 +39,7 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js
 # JSLIBFILES=nsp.js
 # jscoqtop.js: jscoqtop.byte $(JSFILES) $(JSLIBFILES)
 
-# JSOO_OPTS=--pretty --noinline --disable shortvar
+# JSOO_OPTS=--pretty --noinline --disable shortvar --debug-info
 # JSOO_OPTS=-opt 3
 JSOO_OPTS=
 

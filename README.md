@@ -2,27 +2,30 @@ Run Coq in your browser!
 ------------------------
 
 Here you can find a proof-of-concept implementation of a Coq Toplevel
-suited to run in the browser. Not only the toplevel runs inside the
-browser, but Coq does too, by the magic of the `js_of_ocaml` bytecode
-to javascript compiler.
+suited to run in the browser. Both the toplevel and Coq run inside the
+browser, by the magic of the `js_of_ocaml` bytecode to JS compiler.
 
-For now we support a basic shell (modified from
-[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/), and Google
-Chromium/Chrome. It also runs in my old Galaxy Nexus.
+Mozilla Firefox is recommended for now, Chrome has some big
+performance problems. However there may be more glitches in FF as is
+less tested. It also runs in my old Galaxy Nexus, but shares the
+performance problems with Chrome.
+
+The basic Coq toplevel is a minimal modification of the
+[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one. 
 
 Try it: <https://x80.org/rhino-coq/> !
 
 **A note about the code**
 
-The code is a mess, consequence of my low Javascript/Coq internals
-knowledge and of the experimental nature of the project. We will
-improve it, but please don't submit code-cleanup issues for now.
+The code is a mess, given my low Javascript/Coq internals knowledge
+and the experimental nature of the project. We will improve it; please
+don't submit code-cleanup issues for now.
 
 ## What is broken ##
 
 Loading ML modules is quite slow due to dynamic
-compilation. Performance is quite bad (specially in unification,
-matching and ltac).
+compilation. Performance is not good in Chrome (specially in
+unification, matching and ltac).
 
 `vm_compute` and `native_compute` are not supported either. There may
 be threading problems.

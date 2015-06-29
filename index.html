@@ -196,7 +196,9 @@
 
       <p>
           Thanks to js_of_ocaml and Coq 8.5, this prototype has seen
-          the light of the day.
+          the light of the day. Firefox is recommended at the moment
+          for good performance, however as we started our development
+          in Chrome, there may be some glitches in FF.
       </p>
 
       <p>
@@ -208,15 +210,15 @@ Declare ML Module "ssreflect".
 Require Import Ssreflect.ssreflect.
       </code></pre>
 
-      <p>You'll need to be a bit patient, as we are compiling
-      ssreflect on the fly, that will be solved soon, sorry.
+      <p>You'll need to be a bit patient sorry, we are compiling
+          ssreflect's binary on the fly. (We will solve this soon).
       </p>
 
       <p><b>Note:</b>
-          This is an ultra experimental release, performance is terrible,
-          vm_compute or native don't work. We also skip the
-          loading of some expensive plugins in Prelude, but that will
-          be solved in the future.
+          This is an ultra experimental release, performance may not
+          be good (and terrible in Chrome), vm_compute and native
+          don't work. We also skip loading some expensive plugins in
+          Prelude for now.
       </p>
       <p>Contact: Emilio at e+jscoq@this_host. </p>
 
