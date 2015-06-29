@@ -50,6 +50,8 @@ $ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
 $ make # -j as desired
 ````
 
+  A tip is to edit $(COQDIR)/theories/Init/Prelude.v and comment out extraction_plugin & recdef_plugin.
+
 * Edit `COQDIR` in `Makefile` to point to the directory where Coq is.
 
 * Typing

@@ -67,19 +67,26 @@ coqtop.js: coqtop.byte jscoqtop.js $(JSFILES) $(NODEFILES)
 filesys:
 	mkdir -p filesys
 
-filesys/coq-init:
-	mkdir -p filesys/coq-init
+filesys/coq_init:
+	mkdir -p filesys/coq_init
+
+filesys/coq_bool:
+	mkdir -p filesys/coq_bool
 
 filesys/ssr:
 	mkdir -p filesys/ssr
 
-filesys/bool:
-	mkdir -p filesys/bool
-
-lib-dirs: filesys filesys/coq-init filesys/ssr filesys/bool
+lib-dirs: filesys filesys/coq_init filesys/coq_bool filesys/ssr
 
 COQPDIR=$(COQDIR)/plugins
-COQ_PLUGINS=$(COQPDIR)/syntax/nat_syntax_plugin.cma $(COQPDIR)/decl_mode/decl_mode_plugin.cma $(COQPDIR)/cc/cc_plugin.cma $(COQPDIR)/firstorder/ground_plugin.cma
+COQ_PLUGINS=$(COQPDIR)/syntax/nat_syntax_plugin.cma	\
+	$(COQPDIR)/decl_mode/decl_mode_plugin.cma	\
+	$(COQPDIR)/cc/cc_plugin.cma			\
+	$(COQPDIR)/firstorder/ground_plugin.cma
+
+# Disabled for performance reasons
+# $(COQPDIR)/funind/recdef_plugin.cma		\
+# $(COQPDIR)/extraction/extraction_plugin.cma
 
 # Not enabled for now.
 # micromega/micromega_plugin.cma
@@ -89,7 +96,6 @@ COQ_PLUGINS=$(COQPDIR)/syntax/nat_syntax_plugin.cma $(COQPDIR)/decl_mode/decl_mo
 # syntax/r_syntax_plugin.cma
 # syntax/z_syntax_plugin.cma
 # syntax/ascii_syntax_plugin.cma
-# syntax/nat_syntax_plugin.cma
 # quote/quote_plugin.cma
 # omega/omega_plugin.cma
 # btauto/btauto_plugin.cma
@@ -103,7 +109,11 @@ COQ_PLUGINS_DEST=filesys
 plugins: $(COQ_PLUGINS)
 	$(shell for i in $(COQ_PLUGINS); do base64 $$i > $(COQ_PLUGINS_DEST)/`basename $$i`; done)
 
+# Note: this has to match the hiearchy we set in jscoq.ml
+# We'll rewrite this part anyways.
+
 COQTDIR=$(COQDIR)/theories
+
 COQ_INIT=$(COQTDIR)/Init/Notations.vo		\
 	 $(COQTDIR)/Init/Tactics.vo		\
 	 $(COQTDIR)/Init/Logic.vo		\
@@ -115,25 +125,39 @@ COQ_INIT=$(COQTDIR)/Init/Notations.vo		\
 	 $(COQTDIR)/Init/Wf.vo  		\
 	 $(COQTDIR)/Init/Prelude.vo
 
-COQ_INIT_DEST=filesys/coq-init
+COQ_INIT_DEST=filesys/coq_init
 
 coq_init: $(COQ_INIT)
 	$(shell for i in $(COQ_INIT); do base64 $$i > $(COQ_INIT_DEST)/`basename $$i`; done)
 
-libs: lib-dirs plugins coq_init
+COQ_BOOL=$(COQTDIR)/Bool/Bool.vo
 
-# Note: this has to match the hiearchy we set in jscoq.ml
-  # let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in
-  # Loadpath.add_load_path "./coq-init" coq_init_path ~implicit:false;
+COQ_BOOL_DEST=filesys/coq_bool
+coq_bool: $(COQ_BOOL)
+	$(shell for i in $(COQ_BOOL); do base64 $$i > $(COQ_BOOL_DEST)/`basename $$i`; done)
 
-  # let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
-  # Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
 
-  # let bool_path = DirPath.make [Id.of_string "Bool"; Id.of_string "Coq"] in
-  # Loadpath.add_load_path "./bool" bool_path ~implicit:false;
+libs: lib-dirs plugins coq_init coq_bool
+
+# Not built by default for now: ssreflect
+SSRDIR=~/external/coq/ssr-git/
+
+SSR=$(SSRDIR)/src/ssreflect.cma			\
+	$(SSRDIR)/theories/ssrmatching.vo	\
+	$(SSRDIR)/theories/ssreflect.vo  \
+	$(SSRDIR)/theories/ssrfun.vo     \
+	$(SSRDIR)/theories/ssrbool.vo    \
+	$(SSRDIR)/theories/eqtype.vo     \
+	$(SSRDIR)/theories/ssrnat.vo
+
+SSR_DEST=filesys/ssr
+
+ssr: $(SSR)
+	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
+	rm -rf filesys
 
 # Local stuff
 upload: all

@@ -85,15 +85,16 @@ let init () =
   Loadpath.add_load_path "." coq_default_path ~implicit:false;
 
   let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in
-  Loadpath.add_load_path "./coq-init" coq_init_path ~implicit:false;
+  Loadpath.add_load_path "./coq_init" coq_init_path ~implicit:false;
 
   let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
   Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
 
   let bool_path = DirPath.make [Id.of_string "Bool"; Id.of_string "Coq"] in
-  Loadpath.add_load_path "./bool" bool_path ~implicit:false;
+  Loadpath.add_load_path "./coq_bool" bool_path ~implicit:false;
 
   (* < > *)
+
   (* Local library *)
   Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
 
