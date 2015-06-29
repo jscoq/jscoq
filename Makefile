@@ -24,7 +24,10 @@ COQDEPS=$(COQDIR)/lib/clib.cma $(COQDIR)/lib/lib.cma $(COQDIR)/kernel/byterun/dl
 
 # -linkall is delicate here due the way js_of_ocaml works.
 jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5 -package unix -package camlp5 -package js_of_ocaml.tyxml dynlink.cma str.cma gramlib.cma $(COQDEPS) jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
+	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5 \
+	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel \
+	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml \
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
 
 # JSFILES=mutex.js unix.js coq_vm.js aux.js
 JSDIR=js
@@ -34,11 +37,12 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js
 # JSLIBFILES=nsp.js
 # jscoqtop.js: jscoqtop.byte $(JSFILES) $(JSLIBFILES)
 
-JSOO_OPTS=--pretty --noinline --disable shortvar
+# JSOO_OPTS=--pretty --noinline --disable shortvar
+JSOO_OPTS=
 
 # --toplevel includes the linking information.
 jscoqtop.js: jscoqtop.byte $(JSFILES)
-	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +toplevel.js $(JSFILES) jscoqtop.byte
+	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoqtop.byte
 
 COQTOP=$(COQDIR)/bin/coqtop.byte
 NODEFILES=$(JSDIR)/fsInput.js
@@ -53,7 +57,7 @@ coqtop.js: coqtop.byte jscoqtop.js $(JSFILES) $(NODEFILES)
 # 	ocamlc.opt -I /home/egallego/external/js_of_ocaml/compiler print_cmo.ml -o print_cmo
 
 upload: all
-	cp -a index.html jscoqtop.js readme.txt /home/egallego/x80/rhino-coq/
+	cp -a index.html jscoqtop.js filesys/ css/ /home/egallego/x80/rhino-coq/
 
 
 COQ_PLUGINS=$(COQDIR)/plugins/syntax/nat_syntax_plugin.cma
