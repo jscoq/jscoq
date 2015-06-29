@@ -29,6 +29,8 @@ jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
 	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml \
 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
 
+jscoq32: jscoqtop.byte
+
 # JSFILES=mutex.js unix.js coq_vm.js aux.js
 JSDIR=js
 # JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/ml_aux.js
@@ -43,6 +45,8 @@ JSOO_OPTS=
 # --toplevel includes the linking information.
 jscoqtop.js: jscoqtop.byte $(JSFILES)
 	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoqtop.byte
+
+jscoq64: jscoqtop.js
 
 COQTOP=$(COQDIR)/bin/coqtop.byte
 NODEFILES=$(JSDIR)/fsInput.js

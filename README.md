@@ -34,30 +34,38 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 Unfortunately, due to javascript limitations you need both a 32bit and
 64bit Ocaml runtime.
 
-* First, install Ocaml 4.02.0 both in 32 and 64 bit
+* First, you have to install Ocaml 4.02.0 both in 32 and 64 bit
   versions. [opam-compiler-conf](https://github.com/gasche/opam-compiler-conf)
-  could be useful for that.
+  is very useful for that, see [this
+  issue](https://github.com/gasche/opam-compiler-conf/issues/7) on how
+  to use it to build a 32bit ocaml].
+
+  Once built, edit `build.sh` to indicate the names of your opam switches, example:
+
+        OCAMLDIST64=4.02.0+local-git-emilio-local
+        OCAMLDIST32=4.02.0+local-git-32-emilio-local
 
 * Install the following opam packages in both runtimes:
 
         opam install ocamlfind camlp4 camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData
 
-* Install js\_of\_ocaml <http://ocsigen.org/js_of_ocaml/> from git in both runtimes.
+* Install js\_of\_ocaml <http://ocsigen.org/js_of_ocaml/> from git in
+  both runtimes. You'll need to issue a make uninstall first.
 
 * Download and build Coq master from <https://github.com/coq/coq>, configure and make using 32bit ocaml:
 
         $ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
-        $ make
+        $ ./build.sh
+
 * Edit `COQDIR` in `Makefile` to point to the directory where you have just built Coq.
+
 * Type:
+        $ ./build.sh
 
-        $ make
+  build.sh tries to manage the pain of the 32/64 bit switch, you can also use make if you know what you are doing.
 
-  in the 32bit runtime. js_of_ocaml will fail due to needing 8Gb of
-  memory to optimize the coq bytecode. Switch to the 64 bit runtime
-  and make again, it will succeed.
-
-  Preprocessing the libraries is still to be added to the makefile.
+  Preprocessing the libraries so they can be loaded is still to be
+  added to the makefile, sorry.
 
 We also used to support building a coqtop.js executable that can be run using
 `node`, linked with atom, etc...
