@@ -1,29 +1,31 @@
 Run Coq in your browser!
 ------------------------
 
-A proof-of-concept implementation of a Coq Toplevel running in the
-browser. Note that we only support recent Chromium versions for the moment.
+Here you can find a proof-of-concept implementation of a Coq Toplevel
+suited to run in the browser. Not only the toplevel runs inside the
+browser, but Coq does too, by the magic of the `js_of_ocaml` bytecode
+to javascript compiler.
 
-Note that the whole of Coq runs in the inside the browser, we use the
-`js_of_ocaml` Ocaml bytecode to javascript compiler to make this happen.
+For now we support a basic shell (modified from
+[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/), and Google
+Chromium/Chrome. It also runs in my old Galaxy Nexus.
 
-For now we support a very basic shell, basically a small modification
-of the [js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) toplevel,
-linked to Coq.
-
-Try it by yourself <https://x80.org/rhino-coq/> !
+Try it: <https://x80.org/rhino-coq/> !
 
 **A note about the code**
 
-The code is a mess, written by a person with no knowledge of
-Javascript, Coq internals, and only a slight idea of Ocaml, but it
-will improve. Please don't submit code-cleanup issues for now.
+The code is a mess, consequence of my low Javascript/Coq internals
+knowledge and of the experimental nature of the project. We will
+improve it, but please don't submit code-cleanup issues for now.
 
 ## What is broken ##
 
-`vm_compute` and `native_compute` don't work. Performance
-is quite bad (specially in unification, matching and ltac). The
-threading library is a stub.
+Loading ML modules is quite slow due to dynamic
+compilation. Performance is quite bad (specially in unification,
+matching and ltac).
+
+`vm_compute` and `native_compute` are not supported either. There may
+be threading problems.
 
 ## Contact ##
 
@@ -31,45 +33,48 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install ##
 
-Due to javascript limitations (no support for 64 bits integeres) and
-high memory demands of the js_of_ocaml optimizer we need to use a
-32bit and 64bit Ocaml runtime.
-
-* The provided script `toolchain-setup.sh` will take care of most
-  things provided you have a recent opam.
-
-  You should modify it to point to a git version of js_of_ocaml by
-  editing the JS_OF_OCAML_DIR variable, also tweaking NJOBS may be
-  necessary. In Ubuntu, the gcc-multilib package is required.
-
-* Download and build Coq master from <https://github.com/coq/coq>, configure and make as follows:
-
+* First you need to build a dual 32/64 bits toolchain. If you have a
+  recent opam system and a multiarch gcc (`gcc-multilib` package in
+  Debian/Ubuntu), running:
 ````
+$ git clone https://github.com/ocsigen/js_of_ocaml.git ~/external/js_of_ocaml
+$ toolchain-setup.sh
+````
+  should take care of it.
+
+  If your copy of js_of_ocaml is in another location, editing the
+  script and set JS_OF_OCAML_DIR appropriately. Tweaking the NJOBS
+  variable may be necessary too.
+* Second, you need to download and build Coq master:
+````
+$ git clone https://github.com/coq/coq.git ~/external/coq-git
+$ pushd ~/external/coq-git
 $ opam switch 4.02.1+32bit
 $ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
 $ make # -j as desired
+$ popd
 ````
+  Editing $(COQDIR)/theories/Init/Prelude.v and commenting out the
+  extraction and recdef is recommended for now.
 
-  A tip is to edit $(COQDIR)/theories/Init/Prelude.v and comment out extraction_plugin & recdef_plugin.
+  If you want to use a different location for Coq, edit `COQDIR` in JsCoq `Makefile`.
+* Finally
+````
+$ ./build.sh
+````
+  should build jscoq. The script tries to manage the pain of the 32/64
+  bit switch, you can also use make if you know what you are doing.
+* In order to use a browser locally you may need to start it as:
+````
+$ chromium-browser --allow-file-access-from-files index.html
+````
+* Profit!
+* We used to support building a coqtop.js executable, to be run with
+  `node`, linked with atom, etc...
 
-* Edit `COQDIR` in `Makefile` to point to the directory where Coq is.
-
-* Typing
-        $ ./build.sh
-
-  should do the trick. build.sh tries to manage the pain of the 32/64
-  bit switch, you can also use regular make if you know what you are doing.
-
-  In order to use a browser with the file protocol you may want to start it as:
-        $ chromium-browser --allow-file-access-from-files
-
-  Profit!
-
-We also used to support building a coqtop.js executable that can be run using
-`node`, linked with atom, etc...
-
-* Apply `coqtop.patch` to Coq source code, then:
-
-        $ make coqtop.js
-        $ nodejs coqtop.js
-  and profit again!
+  `coqtop.patch` contains the old patch in case you are interested:
+````
+$ make coqtop.js
+$ nodejs coqtop.js
+````
+  used to work.
