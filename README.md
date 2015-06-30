@@ -5,13 +5,15 @@ Here you can find a proof-of-concept implementation of a Coq Toplevel
 suited to run in the browser. Both the toplevel and Coq run inside the
 browser, by the magic of the `js_of_ocaml` bytecode to JS compiler.
 
-Mozilla Firefox is recommended for now, Chrome has some big
-performance problems. However there may be more glitches in FF as is
-less tested. It also runs in my old Galaxy Nexus, but shares the
-performance problems with Chrome.
+Mozilla Firefox or Chrome dev (45) are recommended for now. Both
+browsers will get a Stack Overflow when loading large plugins, in
+Chrome this can alleviated by increasing the stack size:
+`google-chrome --js-flags="--stack-size=65536"`. There may be more
+glitches in FF as is less tested. It also runs in my old Galaxy Nexus,
+but it has performance problems due to the Chrome version on it (43).
 
 The basic Coq toplevel is a minimal modification of the
-[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one. 
+[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one.
 
 Try it: <https://x80.org/rhino-coq/> !
 
@@ -24,8 +26,7 @@ don't submit code-cleanup issues for now.
 ## What is broken ##
 
 Loading ML modules is quite slow due to dynamic
-compilation. Performance is not good in Chrome (specially in
-unification, matching and ltac).
+compilation. Performance is bad in Chrome 43,44.
 
 `vm_compute` and `native_compute` are not supported either. There may
 be threading problems.

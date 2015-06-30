@@ -142,8 +142,9 @@ libs: lib-dirs plugins coq_init coq_bool
 # Not built by default for now: ssreflect
 SSRDIR=~/external/coq/ssr-git/
 
-SSR=$(SSRDIR)/src/ssreflect.cma			\
-	$(SSRDIR)/theories/ssrmatching.vo	\
+SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
+
+SSR=$(SSRDIR)/theories/ssrmatching.vo	\
 	$(SSRDIR)/theories/ssreflect.vo  \
 	$(SSRDIR)/theories/ssrfun.vo     \
 	$(SSRDIR)/theories/ssrbool.vo    \
@@ -152,7 +153,8 @@ SSR=$(SSRDIR)/src/ssreflect.cma			\
 
 SSR_DEST=filesys/ssr
 
-ssr: $(SSR)
+ssr: $(SSR_PLUG) $(SSR)
+	$(shell base64 $(SSR_PLUG) > $(COQ_PLUGINS_DEST)/ssreflect.cma)
 	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
 
 clean:
