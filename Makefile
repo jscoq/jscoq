@@ -67,7 +67,7 @@ filesys:
 Makefile.libs: coqjslib
 	./coqjslib > Makefile.libs
 
-libs: plugins Makefile.libs
+libs: Makefile.libs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
 # ssreflect not built by default for now
