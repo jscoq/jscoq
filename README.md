@@ -59,17 +59,18 @@ $ ./toolchain-setup.sh
 * Second, you need to build Coq trunk/master:
 ````
 $ git clone https://github.com/coq/coq.git ~/external/coq-git
-$ pushd ~/external/coq-git
+$ cd ~/external/coq-git
 $ opam switch 4.02.1+32bit
+$ eval `opam config env`
 $ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
-$ make # -j N as desired
-$ popd
+$ make               # use -j N as desired
 ````
-  Editing $(COQDIR)/theories/Init/Prelude.v and commenting out the
-  extraction and recdef plugins is recommended for now.
-
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
-* Finally
+* You may want to select what libraries get included. `jslib.ml` allows
+  you to do that. For now we recommend editing
+  $(COQDIR)/theories/Init/Prelude.v and comment out the extraction
+  and recdef plugins, as they take long time to compile.
+* Finally:
 ````
 $ ./build.sh
 ````
