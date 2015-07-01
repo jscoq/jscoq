@@ -195,9 +195,9 @@
       <h4>Coq in the browser, α-version</h4>
 
       <p>
-          Thanks to js_of_ocaml and Coq 8.5, this prototype has seen
-          the light of the day. Full functionallity is only achievable
-          for now in Chrome dev (45) using a larger stack size:
+          Thanks to js_of_ocaml and Coq 8.5, we can now run Coq in the
+          browser. For now, full functionallity is only achievable in
+          Chrome dev (45) with some extra stack:
       </p>
 
       <pre id="output"><code>
@@ -205,33 +205,35 @@ google-chrome-unstable --js-flags="--stack-size=65536"
       </code></pre>
 
       <p>
-          Firefox seems to work fine too, but it stack size is too low
-          to ssreflect at the moment.
+          Firefox seems to work fine too, but its stack is too small
+          to compile ssreflect's bytecode at the moment.
       </p>
 
       <p>
-          Prelude is no loaded by default. You can load it with:
+          Prelude is not loaded by default. You can load it with:
       </p>
       <pre><code>
 Require Import Coq.Init.Prelude.
       </code></pre>
       <p>
-          or just press enter. If you want to load ssreflect you can type:
+          or just press enter. If you want to load ssreflect you can type then normal thing:
       </p>
       <pre><code>
 Require Import Ssreflect.ssreflect.
       </code></pre>
 
-      <p>You'll need to be a bit patient for now on pluging loading,
-          as the browser needs to compile the .cma files to
-          javascript. We will hopefully solve this soon.
+      <p>
+          You'll need to be a bit patient for now on pluging loading:
+          the browser needs to compile the .cma bytecode files to
+          javascript. We will hopefully solve this soon. Yes, eqtype is around too.
       </p>
 
       <p><b>Notes and Known Bugs:</b>
           This is an ultra experimental release, performance may be
-          terrible, weirds bugs will happen, will eat you kitties,
-          etc... vm_compute and native don't work, we have also
-          disabled the loading of the extraction and recdef pluging for now.
+          terrible, weirds bugs will happen, it will eat you laptop
+          keys, etc... vm_compute and native don't work, we have also
+          removed the the extraction and recdef plugin from the
+          Prelude for now.
       </p>
       <p>Contact: Emilio at e+jscoq@this_host. </p>
 

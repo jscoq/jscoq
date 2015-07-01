@@ -2,13 +2,13 @@ Run Coq in your browser!
 ------------------------
 
 This project allows you to build a Coq toplevel that will fully run in
-the browser, using the magical `js_of_ocaml` compiler.
+the browser, using the `js_of_ocaml` compiler.
 
-Chrome dev (45) is almost mandatory for now. Mozilla Firefox seems to work fine too, but has problem due to small stack size.
+Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems to
+work fine too, but has some problems due to a small stack default size.
 
-In order to load large plugins Chrome must be told to increase the
-stack size: `google-chrome
---js-flags="--stack-size=65536"`. Unfortunately, there's no way to do
+In order to load large plugins, Chrome must be told to increase the
+stack size: `google-chrome --js-flags="--stack-size=65536"`. Unfortunately, there's no way to do
 this in Firefox.
 
 It also runs in my old Galaxy Nexus, but it has performance problems
@@ -22,17 +22,18 @@ to evolve to an IDE more tailored to Coq.
 
 ## Reporting Bugs ##
 
-Please feel free to use the issue tracker. Please include your
+Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-For now the code is a mess as we have focused so far on getting the
-thing running. IMHO, pull requests still don't make sense until we
-clean it up. We are working on it now, it will happen soon.
+For now the code is a mess, we have focused on getting the thing
+running, but we are working on rewriting it now. Thus, IMHO, pull
+requests don't make sense yet, but any other contribution or comment
+is really welcome!
 
 ## What is broken ##
 
 Loading ML modules is quite slow due to dynamic
-compilation. Performance is bad in Chrome 43,44.
+compilation. Performance is bad in Chrome 43, 44.
 
 `vm_compute` and `native_compute` are not supported. There may be
 threading and performance problems.
