@@ -80,7 +80,7 @@ filesys/ssr:
 	mkdir -p filesys/ssr
 
 ssr: filesys/ssr $(SSR_PLUG) $(SSR)
-	$(shell base64 $(SSR_PLUG) > $(COQ_PLUGINS_DEST)/ssreflect.cma)
+	$(shell base64 $(SSR_PLUG) > filesys/ssreflect.cma)
 	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
 
 clean:
