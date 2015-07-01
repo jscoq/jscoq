@@ -4,4 +4,7 @@
 *.cmo
 jscoqtop.js
 coqtop.js
+coqjslib
+Makefile.libs
 README.html
+filesys/
