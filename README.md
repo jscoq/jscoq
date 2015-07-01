@@ -16,15 +16,18 @@ due to the Chrome version on it (43).
 
 Try it: <https://x80.org/rhino-coq/> !
 
-**A note about the code**
-
-The code is a mess, given my low Javascript/Coq internals knowledge
-and the experimental nature of the project. We will improve it; please
-don't submit code-cleanup issues for now.
-
 The basic Coq toplevel is a minimal modification of the
-[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but it will sure
-evolve to an IDE tailored to Coq.
+[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but the plan is
+to evolve to an IDE more tailored to Coq.
+
+## Reporting Bugs ##
+
+Please feel free to use the issue tracker. Please include your
+browser/OS/user-agent and command line options.
+
+For now the code is a mess as we have focused so far on getting the
+thing running. IMHO, pull requests still don't make sense until we
+clean it up. We are working on it now, it will happen soon.
 
 ## What is broken ##
 
