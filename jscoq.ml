@@ -65,7 +65,10 @@ let execute printval ?pp_code pp_answer s =
    Coq running in the browser we may want to rewrite a big chunck of
    it. *)
 
-(* For now we init Lib and STM *)
+let theory_list = Jslib.theory_list
+let plugin_list = Jslib.plugin_list
+
+(* For now we init libs and STM *)
 let init () =
   (* Enable backtraces for now. *)
   (* Printexc.record_backtrace true; *)
@@ -84,15 +87,19 @@ let init () =
   let coq_default_path = DirPath.make [] in
   Loadpath.add_load_path "." coq_default_path ~implicit:false;
 
-  let coq_init_path = DirPath.make [Id.of_string "Init"; Id.of_string "Coq"] in
-  Loadpath.add_load_path "./coq_init" coq_init_path ~implicit:false;
-
   let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
   Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
 
-  let bool_path = DirPath.make [Id.of_string "Bool"; Id.of_string "Coq"] in
-  Loadpath.add_load_path "./coq_bool" bool_path ~implicit:false;
+  List.iter (fun path ->
+    let name = String.concat "_" path                                            in
+    let path = DirPath.make @@ List.rev @@ List.map Id.of_string ("Coq" :: path) in
+    Loadpath.add_load_path ("./" ^ name) path ~implicit:false;
+  ) (theory_list @ plugin_list);
 
+  List.iter (fun path ->
+    let name = String.concat "_" path                                            in
+    Mltop.add_ml_dir name;
+  ) plugin_list;
   (* < > *)
 
   (* Local library *)

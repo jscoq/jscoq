@@ -6,12 +6,21 @@ COQDIR=~/external/coq-git/
 all: jscoqtop.js
 
 # Include coq files
-INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/
+INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel
 
 CAMLDEBUG=-g
 BYTEFLAGS=-rectypes $(CAMLDEBUG)
 
-jscoq.cmi: jscoq.mli
+jslib.cmo: jslib.ml
+	ocamlc -c $(BYTEFLAGS) jslib.ml
+
+coqjslib.cmo: jslib.cmo coqjslib.ml
+	ocamlc -c $(BYTEFLAGS) coqjslib.ml
+
+coqjslib: coqjslib.cmo
+	ocamlc $(BYTEFLAGS) jslib.cmo coqjslib.cmo -o coqjslib
+
+jscoq.cmi: jslib.cmo jscoq.mli
 	ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) jscoq.mli
 
 jscoq.cmo: jscoq.cmi jscoq.ml
@@ -27,7 +36,7 @@ jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5 \
 	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel \
 	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
 
 jscoq32: jscoqtop.byte
 
@@ -49,6 +58,47 @@ jscoqtop.js: jscoqtop.byte $(JSFILES)
 
 jscoq64: jscoqtop.js
 
+########################################################################
+# Plugin building + base64 encoding
+
+filesys:
+	mkdir -p filesys
+
+Makefile.libs: coqjslib
+	./coqjslib > Makefile.libs
+
+libs: plugins Makefile.libs
+	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
+
+# ssreflect not built by default for now
+SSRDIR=~/external/coq/ssr-git/
+SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
+SSR=$(SSRDIR)/theories/*.vo
+SSR_DEST=filesys/ssr
+
+filesys/ssr:
+	mkdir -p filesys/ssr
+
+ssr: filesys/ssr $(SSR_PLUG) $(SSR)
+	$(shell base64 $(SSR_PLUG) > $(COQ_PLUGINS_DEST)/ssreflect.cma)
+	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
+
+clean:
+	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
+	rm -rf Makefile.libs coqjslib filesys
+
+########################################################################
+# Local stuff
+upload: all
+	cp -a index.html jscoqtop.js filesys/ css/ ~/x80/rhino-coq/
+
+pau:
+	rsync -avpz ~/research/jscoq pau:~/
+	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
+
+########################################################################
+# Old coptop stuff
+
 COQTOP=$(COQDIR)/bin/coqtop.byte
 NODEFILES=$(JSDIR)/fsInput.js
 
@@ -60,112 +110,3 @@ coqtop.js: coqtop.byte jscoqtop.js $(JSFILES) $(NODEFILES)
 
 # print_cmo: print_cmo.ml
 # 	ocamlc.opt -I /home/egallego/external/js_of_ocaml/compiler print_cmo.ml -o print_cmo
-
-########################################################################
-# Plugin building + base64 encoding
-
-filesys:
-	mkdir -p filesys
-
-filesys/coq_init:
-	mkdir -p filesys/coq_init
-
-filesys/coq_bool:
-	mkdir -p filesys/coq_bool
-
-filesys/ssr:
-	mkdir -p filesys/ssr
-
-lib-dirs: filesys filesys/coq_init filesys/coq_bool filesys/ssr
-
-COQPDIR=$(COQDIR)/plugins
-COQ_PLUGINS=$(COQPDIR)/syntax/nat_syntax_plugin.cma	\
-	$(COQPDIR)/decl_mode/decl_mode_plugin.cma	\
-	$(COQPDIR)/cc/cc_plugin.cma			\
-	$(COQPDIR)/firstorder/ground_plugin.cma
-
-# Disabled for performance reasons
-# $(COQPDIR)/funind/recdef_plugin.cma		\
-# $(COQPDIR)/extraction/extraction_plugin.cma
-
-# Not enabled for now.
-# micromega/micromega_plugin.cma
-# rtauto/rtauto_plugin.cma
-# setoid_ring/newring_plugin.cma
-# syntax/string_syntax_plugin.cma
-# syntax/r_syntax_plugin.cma
-# syntax/z_syntax_plugin.cma
-# syntax/ascii_syntax_plugin.cma
-# quote/quote_plugin.cma
-# omega/omega_plugin.cma
-# btauto/btauto_plugin.cma
-# fourier/fourier_plugin.cma
-# nsatz/nsatz_plugin.cma
-# derive/derive_plugin.cma
-# romega/romega_plugin.cma
-
-COQ_PLUGINS_DEST=filesys
-
-plugins: $(COQ_PLUGINS)
-	$(shell for i in $(COQ_PLUGINS); do base64 $$i > $(COQ_PLUGINS_DEST)/`basename $$i`; done)
-
-# Note: this has to match the hiearchy we set in jscoq.ml
-# We'll rewrite this part anyways.
-
-COQTDIR=$(COQDIR)/theories
-
-COQ_INIT=$(COQTDIR)/Init/Notations.vo		\
-	 $(COQTDIR)/Init/Tactics.vo		\
-	 $(COQTDIR)/Init/Logic.vo		\
-	 $(COQTDIR)/Init/Logic_Type.vo		\
-	 $(COQTDIR)/Init/Datatypes.vo		\
-	 $(COQTDIR)/Init/Nat.vo  		\
-	 $(COQTDIR)/Init/Peano.vo  		\
-	 $(COQTDIR)/Init/Specif.vo  		\
-	 $(COQTDIR)/Init/Wf.vo  		\
-	 $(COQTDIR)/Init/Prelude.vo
-
-COQ_INIT_DEST=filesys/coq_init
-
-coq_init: $(COQ_INIT)
-	$(shell for i in $(COQ_INIT); do base64 $$i > $(COQ_INIT_DEST)/`basename $$i`; done)
-
-COQ_BOOL=$(COQTDIR)/Bool/Bool.vo
-
-COQ_BOOL_DEST=filesys/coq_bool
-coq_bool: $(COQ_BOOL)
-	$(shell for i in $(COQ_BOOL); do base64 $$i > $(COQ_BOOL_DEST)/`basename $$i`; done)
-
-
-libs: lib-dirs plugins coq_init coq_bool
-
-# Not built by default for now: ssreflect
-SSRDIR=~/external/coq/ssr-git/
-
-SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
-
-SSR=$(SSRDIR)/theories/ssrmatching.vo	\
-	$(SSRDIR)/theories/ssreflect.vo  \
-	$(SSRDIR)/theories/ssrfun.vo     \
-	$(SSRDIR)/theories/ssrbool.vo    \
-	$(SSRDIR)/theories/eqtype.vo     \
-	$(SSRDIR)/theories/ssrnat.vo
-
-SSR_DEST=filesys/ssr
-
-ssr: $(SSR_PLUG) $(SSR)
-	$(shell base64 $(SSR_PLUG) > $(COQ_PLUGINS_DEST)/ssreflect.cma)
-	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
-
-clean:
-	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
-	rm -rf filesys
-
-# Local stuff
-upload: all
-	cp -a index.html jscoqtop.js filesys/ css/ ~/x80/rhino-coq/
-
-
-pau:
-	rsync -avpz ~/research/jscoq pau:~/
-	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
