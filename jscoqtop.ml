@@ -29,7 +29,7 @@ let do_by_id s f = try f (Dom_html.getElementById s) with Not_found -> ()
 
 (* load file using a synchronous XMLHttpRequest *)
 let load_resource_aux url =
-  (* p @@ Printf.eprintf "load_resource_aux %s\n%!" (Js.to_string url); *)
+  (* Printf.eprintf "load_resource_aux %s\n%!" (Js.to_string url); *)
   try
     let xml = XmlHttpRequest.create () in
     xml##_open(Js.string "GET", url, Js._false);
@@ -225,6 +225,8 @@ let setup_dynlink () =
                "function %s(){caml_failwith(\"%s not implemented\")}" p p
              :: !stubs)
       prims;
+    (* Option.Optim.disable "inline"; *)
+    (* Option.Optim.disable "compact"; *)
     let output_program = Driver.from_string prims s in
     let b = Buffer.create 100 in
     output_program (Pretty_print.to_buffer b);
@@ -252,22 +254,29 @@ let run _ =
 
   let execute () =
     (* (append output "Calling execute\n"); *)
-    let content = Js.to_string (textbox##value##trim()) in
+    let execute_com content =
     (* let content' = *)
     (*   let len = String.length content in *)
     (*   if try content <> "" && content.[len-1] <> ';' && content.[len-2] <> ';' with _ -> true *)
     (*   then content ^ ";;" *)
     (*   else content in *)
-    current_position := output##childNodes##length;
-    append output ("# " ^ content ^ "\n");
+      current_position := output##childNodes##length;
+      append output ("# " ^ content ^ "\n");
+      History.push content;
+      Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content;
+      resize ~container ~textbox () >>= fun () ->
+      container##scrollTop <- container##scrollHeight;
+      textbox##focus();
+      Lwt.return_unit in
+    (* Split by dots with hack *)
+    let input = (Js.to_string (textbox##value##trim())) ^ " "           in
+    let commands = Regexp.split (Regexp.regexp "\.\s+") input           in
+    let commands = List.filter (fun s -> String.length s <> 0) commands in
+    (* Other Hack: re-add dots *)
+    let commands = List.map (fun s -> s ^ ".") commands                 in
     textbox##value <- Js.string "";
-    History.push content;
-    Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content;
-    resize ~container ~textbox () >>= fun () ->
-    container##scrollTop <- container##scrollHeight;
-    textbox##focus();
-    Lwt.return_unit in
-
+    Lwt_list.iter_s execute_com commands
+  in
   let history_down e =
     let txt = Js.to_string textbox##value in
     let pos = (Obj.magic textbox)##selectionStart in
