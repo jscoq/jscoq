@@ -1,6 +1,5 @@
-.PHONY: clean upload
+.PHONY: clean upload libs all
 
-# COQDIR=../coq-git/
 COQDIR=~/external/coq-git/
 
 all: jscoqtop.js
@@ -8,7 +7,8 @@ all: jscoqtop.js
 # Include coq files
 INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel
 
-CAMLDEBUG=-g
+# CAMLDEBUG=-g
+CAMLDEBUG=
 BYTEFLAGS=-rectypes $(CAMLDEBUG)
 
 jslib.cmo: jslib.ml
@@ -27,15 +27,32 @@ jscoq.cmo: jscoq.cmi jscoq.ml
 	ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) jscoq.ml
 
 jscoqtop.cmo: jscoq.cmi jscoqtop.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) -syntax camlp4o -package bytes -package js_of_ocaml.syntax,lwt,js_of_ocaml.tyxml,js_of_ocaml.toplevel -package base64 -I camlp4 -package ocp-indent.lib -package higlo.ocaml jscoqtop.ml
+	ocamlfind ocamlc -c $(BYTEFLAGS) -syntax camlp4o -package bytes,base64		\
+	   -package js_of_ocaml.syntax,lwt,js_of_ocaml.tyxml,js_of_ocaml.toplevel	\
+	   -I camlp4 -package ocp-indent.lib -package higlo.ocaml jscoqtop.ml
 
-COQDEPS=$(COQDIR)/lib/clib.cma $(COQDIR)/lib/lib.cma $(COQDIR)/kernel/byterun/dllcoqrun.so $(COQDIR)/kernel/kernel.cma $(COQDIR)/library/library.cma $(COQDIR)/engine/engine.cma $(COQDIR)/pretyping/pretyping.cma $(COQDIR)/interp/interp.cma $(COQDIR)/proofs/proofs.cma $(COQDIR)/parsing/parsing.cma $(COQDIR)/printing/printing.cma $(COQDIR)/tactics/tactics.cma $(COQDIR)/stm/stm.cma $(COQDIR)/toplevel/toplevel.cma $(COQDIR)/parsing/highparsing.cma $(COQDIR)/tactics/hightactics.cma
+COQDEPS=$(COQDIR)/lib/clib.cma			\
+	$(COQDIR)/lib/lib.cma			\
+	$(COQDIR)/kernel/byterun/dllcoqrun.so	\
+	$(COQDIR)/kernel/kernel.cma		\
+	$(COQDIR)/library/library.cma		\
+	$(COQDIR)/engine/engine.cma		\
+	$(COQDIR)/pretyping/pretyping.cma	\
+	$(COQDIR)/interp/interp.cma		\
+	$(COQDIR)/proofs/proofs.cma		\
+	$(COQDIR)/parsing/parsing.cma		\
+	$(COQDIR)/printing/printing.cma		\
+	$(COQDIR)/tactics/tactics.cma		\
+	$(COQDIR)/stm/stm.cma			\
+	$(COQDIR)/toplevel/toplevel.cma		\
+	$(COQDIR)/parsing/highparsing.cma	\
+	$(COQDIR)/tactics/hightactics.cma
 
 # -linkall is delicate here due the way js_of_ocaml works.
 jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5 \
-	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel \
-	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml \
+	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5			\
+	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel			\
+	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml	\
 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
 
 jscoq32: jscoqtop.byte
@@ -84,8 +101,8 @@ ssr: filesys/ssr $(SSR_PLUG) $(SSR)
 	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
 
 clean:
-	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js
-	rm -rf Makefile.libs coqjslib filesys
+	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib
+	rm -rf filesys
 
 ########################################################################
 # Local stuff
@@ -97,7 +114,7 @@ pau:
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
 ########################################################################
-# Old coptop stuff
+# Obsolete coptop stuff
 
 COQTOP=$(COQDIR)/bin/coqtop.byte
 NODEFILES=$(JSDIR)/fsInput.js
