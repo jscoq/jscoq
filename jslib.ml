@@ -13,6 +13,7 @@ let theory_list =
   ; ["ZArith"]
   ; ["Lists"]
   ; ["Vectors"]
+  ; ["Unicode"]
 
   ; ["Numbers"]
   ; ["Numbers"; "NatInt"]
