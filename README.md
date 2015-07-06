@@ -16,6 +16,10 @@ due to the Chrome version on it (43).
 
 Try it: <https://x80.org/rhino-coq/> !
 
+[Warning: I use that URL to distrubute all kind of weird
+experiments. Rememeber, this is still alpha software, we will provide
+a more stable link soon.]
+
 The basic Coq toplevel is a minimal modification of the
 [js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but the plan is
 to evolve to an IDE more tailored to Coq.
