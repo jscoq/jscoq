@@ -219,7 +219,7 @@ google-chrome-unstable --js-flags="--stack-size=65536"
 Require Import Coq.Init.Prelude.
       </code></pre>
       <p>
-          You'll need to be a bit patient for now on pluging loading:
+          You'll need to be patient on pluging loading:
           the browser needs to compile the .cma bytecode files to
           javascript. We will hopefully solve this soon.
       </p>
@@ -250,6 +250,7 @@ exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
       </code></pre>
+      <p>If you feel a bit more adventorous you can try with stripped_odd_order_theorem ;)</p>
 
       <p><b>Notes and Known Bugs:</b>
           This is an ultra experimental release, performance may be
