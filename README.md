@@ -1,14 +1,23 @@
 Run Coq in your browser!
 ------------------------
 
-This project allows you to build a Coq toplevel that will fully run in
-the browser, using the `js_of_ocaml` compiler.
+*WARNING: This project is not production ready for now, just a proof
+ of concept. If you are not a Coq expert you may want to wait a bit
+ before trying this*
 
-Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems to
-work fine too, but has some problems due to a small stack default size.
+This repository allows you to build a [Coq](https://coq.inria.fr)
+toplevel for the browser, using the `js_of_ocaml` compiler.
 
-In order to load large plugins, Chrome must be told to increase the
-stack size: `google-chrome --js-flags="--stack-size=65536"`. Unfortunately, there's no way to do
+The goal of this project is to open up new UI/interaction possibilites,
+and improve the acessibility of the platform itself.
+
+Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems
+to work fine too, but has some problems with large plugins to a small
+stack size.
+
+In order to load large plugins, Chrome must be started with an
+increased stack size: `google-chrome
+--js-flags="--stack-size=65536"`. Unfortunately, there's no way to do
 this in Firefox.
 
 It also runs in my old Galaxy Nexus, but it has performance problems
@@ -16,9 +25,8 @@ due to the Chrome version on it (43).
 
 Try it: <https://x80.org/rhino-coq/> !
 
-[Warning: I use that URL to distrubute all kind of weird
-experiments. Rememeber, this is still alpha software, we will provide
-a more stable link soon.]
+[Warning: The URL is not stable. Rememeber, this is still alpha
+software, we will provide a more stable link soon.]
 
 The basic Coq toplevel is a minimal modification of the
 [js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but the plan is
@@ -33,6 +41,9 @@ For now the code is a mess, we have focused on getting the thing
 running, but we are working on rewriting it now. Thus, IMHO, pull
 requests don't make sense yet, but any other contribution or comment
 is really welcome!
+
+Also, the current user interface is not we intent to ship, but we are
+busy with non UI issues for now.
 
 ## What is broken ##
 
