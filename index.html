@@ -182,7 +182,7 @@
   <body>
     <div id="toplevel-container">
       <a href="" >
-          Welcome to JsCoq 0.1z, mediterranean edition!
+          Welcome to JsCoq 0.2a, castle edition!
       </a>
       <pre id="output"></pre>
       <div>
@@ -197,9 +197,9 @@
       <h4>Coq in the browser, α-version</h4>
 
       <p>
-          Thanks to js_of_ocaml and Coq 8.5, we can now run Coq in the
-          browser. For now, full functionallity is only achievable in
-          Chrome dev (45) with some extra stack:
+          Thanks to js_of_ocaml and Coq 8.5, we can run Coq in the
+          browser. Full functionallity is only achievable in Chrome
+          dev (45) with some extra stack:
       </p>
 
       <pre id="output"><code>
@@ -207,12 +207,12 @@ google-chrome-unstable --js-flags="--stack-size=65536"
       </code></pre>
 
       <p>
-          Firefox seems to work fine too, but its stack is too small
+          Firefox seems to work fine too, but its default stack is too small
           to load large plugins.
       </p>
 
       <p>
-          Prelude is not loaded by default. You can load it with: (or pressing enter)
+          Prelude is not loaded by default. You can load it with: (or by pressing enter)
       </p>
 
       <pre><code>
@@ -221,7 +221,7 @@ Require Import Coq.Init.Prelude.
       <p>
           You'll need to be patient on pluging loading:
           the browser needs to compile the .cma bytecode files to
-          javascript. We will hopefully solve this soon.
+          javascript. We will fix this soon.
       </p>
 
       <p>
