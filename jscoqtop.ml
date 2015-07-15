@@ -242,6 +242,7 @@ let setup_dynlink () =
   ()
 
 let run _ =
+  Js.Unsafe.global##salut <- Js._false;
   let container = by_id "toplevel-container" in
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in

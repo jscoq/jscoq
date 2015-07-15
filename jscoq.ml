@@ -41,7 +41,7 @@ let cs = ref (Stm.get_current_state ())
 let execute printval ?pp_code pp_answer s =
   (* Printf.eprintf "Sending %s to Coq!\n%!" s; *)
   try
-    let cs',_ = Stm.add ~ontop:!cs true 0 s in
+    let cs',_ = Stm.add ~ontop:!cs true 0 s in (* Le zéro : à remplacer par un uid négatif *)
     Stm.finish ();
     cs := cs';
     msg_notice (pr_open_cur_subgoals ());
