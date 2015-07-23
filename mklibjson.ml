@@ -27,8 +27,8 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
   }
 
 let build_pkgs () =
-  let coq_pkgs_list = List.map (fun s -> "Coq" :: s) Jsdftlib.coq_theory_list in
-  List.map build_pkg @@ Jsdftlib.plugin_list @ coq_pkgs_list @ Jsdftlib.addons_list
+  let coq_std_pkgs = List.map (fun s -> "Coq" :: s) @@ Jsdftlib.plugin_list @ Jsdftlib.coq_theory_list in
+  List.map build_pkg @@ coq_std_pkgs @ Jsdftlib.addons_list
 
 let _ =
   let pkgs = List.map Jslib.pkg_to_json (build_pkgs ()) in
