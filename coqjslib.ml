@@ -1,4 +1,5 @@
 (* Helpers for Library building.
+
    By Emilio J. Gallego Arias, Mines ParisTech, Paris.
 *)
 
@@ -32,7 +33,7 @@ let output_librule fmt bpath path =
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;
   (* Copy rule *)
-  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do base64 $$i > %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do base64 $$i > %s/`basename $$i`; done)\n\n"
+  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cat $$i > %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cat $$i > %s/`basename $$i`; done)\n\n"
     name fsdir name name name fsdir name fsdir
 (*
   COQ_SETOIDS=$(COQTDIR)/Setoids/*.vo
@@ -51,4 +52,6 @@ let gen_makefile () =
   List.iter (output_librule std_formatter "plugins")  Jslib.plugin_list;
   output_global_rules std_formatter
 
-let _ = gen_makefile ()
+let _ =
+  gen_makefile ()
+

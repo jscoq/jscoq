@@ -38,7 +38,8 @@ let pr_open_cur_subgoals () =
 let cs = ref (Stm.get_current_state ())
 
 (* We call STM.add and wait. *)
-let execute printval ?pp_code pp_answer s =
+(* let execute printval ?pp_code pp_answer s = *)
+let execute s =
   (* Printf.eprintf "Sending %s to Coq!\n%!" s; *)
   try
     let cs',_ = Stm.add ~ontop:!cs true 0 s in
@@ -70,17 +71,6 @@ let plugin_list = Jslib.plugin_list
 
 (* For now we init libs and STM *)
 let init () =
-  (* Enable backtraces for now. *)
-  (* Printexc.record_backtrace true; *)
-  (* try *)
-  (* Dynlink.init (); *)
-  (* with *)
-  (* | exn -> *)
-  (*    begin *)
-  (*      Printexc.print_backtrace stderr; *)
-  (*      raise exn *)
-  (*    end; *)
-  (* XXX: Add support for loading base plugins and libraries *)
   Lib.init();
 
   (* Implicit Coq.Init.Blah implicit allow Require import Blah*)
@@ -109,6 +99,15 @@ let init () =
   Declaremods.start_library jsname;
   Stm.init();
   cs := Stm.get_current_state ()
+
+
+(*
+let version ret =
+  Printf.printf "The Coq Proof Assistant, version %s (%s)\n"
+    Coq_config.version Coq_config.date;
+  Printf.printf "compiled on %s with OCaml %s\n" Coq_config.compile_date Coq_config.caml_version;
+  exit ret
+*)
 
 (* What coqtop.ml does:
 
@@ -169,3 +168,14 @@ let init () =
       fatal_error (msg ++ Coqloop.print_toplevel_error any) (Errors.is_anomaly (fst any))
   end;
 *)
+  (* Enable backtraces for now. *)
+  (* Printexc.record_backtrace true; *)
+  (* try *)
+  (* Dynlink.init (); *)
+  (* with *)
+  (* | exn -> *)
+  (*    begin *)
+  (*      Printexc.print_backtrace stderr; *)
+  (*      raise exn *)
+  (*    end; *)
+  (* XXX: Add support for loading base plugins and libraries *)

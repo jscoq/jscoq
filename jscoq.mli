@@ -17,8 +17,9 @@ open Format
 (** [execute print fmt content] Execute [content].
     [print] says whether the values and types of the results should be printed.
     [pp_code] formatter can be use to output ocaml source during lexing. *)
-val execute : bool -> ?pp_code:formatter ->
-	      formatter -> string -> unit
+(* val execute : bool -> ?pp_code:formatter -> *)
+(* 	      formatter -> string -> unit *)
+val execute : string -> unit
 
 (** [init] Initialize the Coq Engine *)
 val init : unit -> unit
