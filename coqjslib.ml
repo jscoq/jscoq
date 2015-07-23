@@ -1,17 +1,13 @@
-(* Helpers for Library building.
+(*
+   Build the std filesystem for jscoq
 
    By Emilio J. Gallego Arias, Mines ParisTech, Paris.
 *)
 
 open Format
 
-(* Paths we include for now, without the Coq prefix!
-
-   XXX: move to JS.
- *)
-
-let to_name = String.concat "_"
-let to_dir  = String.concat "/"
+let to_name f = String.concat "_" ("Coq" :: f)
+let to_dir    = String.concat "/"
 
 let pp_str ppf s = fprintf ppf "%s" s
 
@@ -24,7 +20,7 @@ let output_librule fmt bpath path =
   let name    = to_name path                     in
   let dir     = to_dir  path                     in
   let coqdir  = to_dir ["$(COQDIR)"; bpath; dir] in
-  let fsdir   = to_dir ["filesys"; name]         in
+  let fsdir   = to_dir ["filesys"; name]  in
   let vo_pat  = to_dir [coqdir; "*.vo"]          in
   let cma_pat = to_dir [coqdir; "*.cma"]         in
   (* Rule for the dir *)
@@ -49,7 +45,7 @@ let output_global_rules fmt =
 
 let gen_makefile () =
   List.iter (output_librule std_formatter "plugins")  Jsdftlib.plugin_list;
-  List.iter (output_librule std_formatter "theories") Jsdftlib.theory_list;
+  List.iter (output_librule std_formatter "theories") Jsdftlib.coq_theory_list;
   output_global_rules std_formatter
 
 let _ =
