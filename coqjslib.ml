@@ -45,11 +45,11 @@ let output_librule fmt bpath path =
 let output_global_rules fmt =
   (* XXX: make dirs *)
   fprintf fmt "libs-auto: %a\n" (pp_list pp_str) @@
-    List.map to_name (Jslib.theory_list @ Jslib.plugin_list)
+    List.map to_name (Jsdftlib.coq_theory_list @ Jsdftlib.plugin_list)
 
 let gen_makefile () =
-  List.iter (output_librule std_formatter "theories") Jslib.theory_list;
-  List.iter (output_librule std_formatter "plugins")  Jslib.plugin_list;
+  List.iter (output_librule std_formatter "plugins")  Jsdftlib.plugin_list;
+  List.iter (output_librule std_formatter "theories") Jsdftlib.theory_list;
   output_global_rules std_formatter
 
 let _ =

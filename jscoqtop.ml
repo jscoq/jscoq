@@ -238,26 +238,8 @@ let run _ =
   setup_coq       ();
   History.setup   ();
 
-  (* Move to a json file!!! *)
-  let files =
-    ["syntax/nat_syntax_plugin.cma",   (Jslibmng.CMA "nat_syntax_plugin", 0);
-     "cc/cc_plugin.cma",               (Jslibmng.CMA "cc_plugin", 0);
-     "decl_mode/decl_mode_plugin.cma", (Jslibmng.CMA "cc_plugin", 0);
-     "firstorder/ground_plugin.cma",   (Jslibmng.CMA "cc_plugin", 0);
-     "Init/Logic.vo",                  (Jslibmng.VO  "Logic", 0);
-     "Init/Logic_Type.vo",             (Jslibmng.VO  "Logic", 0);
-     "Init/Notations.vo",              (Jslibmng.VO  "Logic", 0);
-     "Init/Datatypes.vo",              (Jslibmng.VO  "Logic", 0);
-     "Init/Nat.vo",                    (Jslibmng.VO  "Logic", 0);
-     "Init/Tactics.vo",                (Jslibmng.VO  "Logic", 0);
-     "Init/Specif.vo",                 (Jslibmng.VO  "Logic", 0);
-     "Init/Wf.vo",                     (Jslibmng.VO  "Logic", 0);
-     "Init/Peano.vo",                  (Jslibmng.VO  "Logic", 0);
-     "Init/Prelude.vo",                (Jslibmng.VO  "Prelude", 0)
-    (* "ssreflect.cma",                (Jslibmng.CMA "ssreflect", 0) *)
-    ] in
-
-  Lwt.async (fun () -> Lwt_list.iter_s (fun (f, d) -> Jslibmng.preload_file f d) files);
+  (* Start downloads of libs *)
+  Jslibmng.init   ();
 
   let digest_aux s = Js.string @@ Digest.to_hex @@ Digest.string s in
   Js.Unsafe.global##digest <- digest_aux;

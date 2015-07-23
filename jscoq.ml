@@ -65,34 +65,27 @@ let execute s =
 (* We have no support for library paths for now, unfortunately, due to
    Coq running in the browser we may want to rewrite a big chunck of
    it. *)
+let add_load_path pkg ml path =
+  let coq_path = DirPath.make @@ List.rev @@ List.map Id.of_string pkg in
+  let pkg_path = Jslib.to_name pkg in
+  Loadpath.add_load_path ("./" ^ pkg_path) coq_path ~implicit:false;
+  if ml then
+    Mltop.add_ml_dir pkg_path
 
-let theory_list = Jslib.theory_list
-let plugin_list = Jslib.plugin_list
+(* let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in *)
+(* Loadpath.add_load_path "./ssr" ssr_path ~implicit:false; *)
+
 
 (* For now we init libs and STM *)
 let init () =
   Lib.init();
 
-  (* Implicit Coq.Init.Blah implicit allow Require import Blah*)
+  (* if ~implicit Coq.Init.Blah works for Require import Blah*)
+
+  (* XXX: What is going on there???? *)
+  (* Local libraries *)
   let coq_default_path = DirPath.make [] in
-  Loadpath.add_load_path "." coq_default_path ~implicit:false;
-
-  let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
-  Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
-
-  List.iter (fun path ->
-    let name = String.concat "_" path                                            in
-    let path = DirPath.make @@ List.rev @@ List.map Id.of_string ("Coq" :: path) in
-    Loadpath.add_load_path ("./" ^ name) path ~implicit:false;
-  ) (theory_list @ plugin_list);
-
-  List.iter (fun path ->
-    let name = String.concat "_" path                                            in
-    Mltop.add_ml_dir name;
-  ) plugin_list;
-  (* < > *)
-
-  (* Local library *)
+  Loadpath.add_load_path "." coq_default_path ~implicit:true;
   Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
 
   let jsname = DirPath.make [Id.of_string "JsTop"] in

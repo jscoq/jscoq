@@ -12,7 +12,7 @@ CAMLDEBUG=
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml
-JSOOFLAGS+=-package js_of_ocaml.compiler,js_of_ocaml.toplevel
+JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -25,10 +25,15 @@ jscoq.cmi: jslib.cmo
 jscoq.cmo: jscoq.cmi
 
 # Binary for lib geneation
-coqjslib.cmo: jslib.cmo
+coqjslib.cmo: jslib.cmo jsdftlib.cmo
 
-coqjslib: jslib.cmo coqjslib.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) jslib.cmo coqjslib.cmo -o coqjslib
+coqjslib: coqjslib.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) jslib.cmo jsdftlib.cmo coqjslib.cmo -o coqjslib
+
+mklibjson.cmo: jslib.cmo jsdftlib.cmo
+
+mklibjson: mklibjson.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) -linkpkg -package yojson jslib.cmo jsdftlib.cmo mklibjson.cmo -o mklibjson
 
 jslog.cmo: jslog.cmi
 
@@ -95,21 +100,24 @@ filesys:
 Makefile.libs: coqjslib
 	./coqjslib > Makefile.libs
 
-libs: Makefile.libs
-	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
-
-# ssreflect not built by default for now
+# Addons
 SSRDIR=~/external/coq/ssr-git/
 SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
 SSR=$(SSRDIR)/theories/*.vo
-SSR_DEST=filesys/ssr
+SSR_DEST=filesys/Ssreflect
 
 filesys/ssr:
-	mkdir -p filesys/ssr
+	mkdir -p filesys/Ssreflect
 
 ssr: filesys/ssr $(SSR_PLUG) $(SSR)
-	$(shell cat $(SSR_PLUG) > filesys/ssreflect.cma)
+	$(shell cat $(SSR_PLUG) > $(SSR_DEST)/ssreflect.cma)
 	$(shell for i in $(SSR); do cat $$i > $(SSR_DEST)/`basename $$i`; done)
+
+lib-addons: ssr
+
+libs: Makefile.libs mklibjson lib-addons
+	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
+	./mklibjson > coq_pkg.json
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib
@@ -118,7 +126,7 @@ clean:
 ########################################################################
 # Local stuff
 upload: all
-	rsync --delete -avzp index.html jscoqtop.js filesys css ejs ~/x80/rhino-coq/
+	rsync --delete -avzp index.html jscoq.html jscoqtop.js coq_pkg.json filesys css ejs ~/x80/rhino-coq/
 # $(shell ./x80-sync.sh)
 
 pau:

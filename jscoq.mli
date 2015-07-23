@@ -21,6 +21,8 @@ open Format
 (* 	      formatter -> string -> unit *)
 val execute : string -> unit
 
+val add_load_path : string list -> bool -> string -> unit
+
 (** [init] Initialize the Coq Engine *)
 val init : unit -> unit
 
