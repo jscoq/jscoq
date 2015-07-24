@@ -109,8 +109,8 @@ filesys/ssr:
 	mkdir -p filesys/Ssreflect
 
 ssr: filesys/ssr $(SSR_PLUG) $(SSR)
-	$(shell cat $(SSR_PLUG) > $(SSR_DEST)/ssreflect.cma)
-	$(shell for i in $(SSR); do cat $$i > $(SSR_DEST)/`basename $$i`; done)
+	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
+	$(shell for i in $(SSR); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
 
 lib-addons: ssr
 

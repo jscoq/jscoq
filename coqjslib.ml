@@ -29,7 +29,7 @@ let output_librule fmt bpath path =
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;
   (* Copy rule *)
-  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cat $$i > %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cat $$i > %s/`basename $$i`; done)\n\n"
+  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
     name fsdir name name name fsdir name fsdir
 (*
   COQ_SETOIDS=$(COQTDIR)/Setoids/*.vo
