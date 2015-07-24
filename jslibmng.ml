@@ -14,22 +14,24 @@ open Lwt
 
 (* We likely want these to be Hashtbls of just js arrays. *)
 type cache_entry = {
-  (* url        : Js.js_string; *)
-  content    : Js.js_string Js.t;
+  vo_content : Js.js_string Js.t;
   md5        : Digest.t;
-  }
+}
 
 type byte_cache_entry = {
-  md5     : Digest.t; (* Or other signature *)
-  (* should this be a OCAML string? *)
-  js_code : Js.js_string;
+  js_content : Js.js_string Js.t;
+  (* md5        : Digest.t; (\* Or other signature *\) *)
+  (* Should this be a OCAML string given the signature of eval_string? *)
 }
 
 (* Main file_cache *)
 let file_cache : (Js.js_string Js.t, cache_entry) Hashtbl.t =
   Hashtbl.create 100
 
-let preload_file base_url (file, hash) : unit Lwt.t =
+let byte_cache : (Js.js_string Js.t, byte_cache_entry) Hashtbl.t =
+  Hashtbl.create 50
+
+let preload_vo_file base_url (file, hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
   let full_url    = base_url ^ "/" ^ file in
@@ -50,28 +52,52 @@ let preload_file base_url (file, hash) : unit Lwt.t =
          Bytes.set s i @@ Char.chr @@ Typed_array.unsafe_get u8arr i
        done;
        let cache_entry = {
-         content = Js.bytestring (Bytes.to_string s);
-         md5     = Digest.bytes s;
+         vo_content = Js.bytestring (Bytes.to_string s);
+         md5        = Digest.bytes s;
        } in
        Hashtbl.add file_cache (Js.string full_url) cache_entry;
        Jslog.printf Jslog.jscoq_log
          "Cached %s [%d/%d/%d/%s]\n%!"
           full_url bl (u8arr##length)
-          (cache_entry.content##length)
+          (cache_entry.vo_content##length)
           (Digest.to_hex cache_entry.md5)
       );
+  Lwt.return_unit
+
+(* Unfortunately this is a tad different than preload_vo_file *)
+let preload_cma_file base_url (file, hash) : unit Lwt.t =
+  Jslog.printf Jslog.jscoq_log "pre-loading cma file %s-%s\n%!" base_url file;
+  let cma_url   = "filesys/cmas/" ^ file ^ ".js" in
+  Jslog.printf Jslog.jscoq_log "cma url %s\n%!" cma_url;
+  (* Avoid costly string conversions *)
+  let open XmlHttpRequest in
+  perform_raw ~response_type:Text cma_url >>= fun frame ->
+  (if frame.code = 200 || frame.code = 0 then
+    let byte_entry = {
+      js_content = frame.content;
+    } in
+    Jslog.printf Jslog.jscoq_log "added cma %s with length %d\n%!" cma_url (frame.content)##length;
+
+    (* XXXX: This  called without qualitification so
+       filename conflicts are possible *)
+    Hashtbl.add byte_cache (Js.string file) byte_entry)
+  ;
   Lwt.return_unit
 
 let preload_pkg pkg : unit Lwt.t =
   let pkg_dir = to_name pkg.pkg_id in
   Jslog.printf Jslog.jscoq_log "pre-loading package %s\n%!" pkg_dir;
-  Lwt_list.iter_s (preload_file pkg_dir) pkg.pkg_files >>= fun () ->
-  Jscoq.add_load_path pkg.pkg_id pkg.with_ml pkg_dir;
+  Lwt_list.iter_s (preload_vo_file pkg_dir)  pkg.vo_files  >>= fun () ->
+  (if Jscoq.dyn_comp then
+    Lwt_list.iter_s (preload_vo_file pkg_dir)  pkg.cma_files
+  else
+    Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files) >>= fun () ->
+  Jscoq.add_load_path pkg.pkg_id pkg_dir;
   Lwt.return_unit
 
 let init () = Lwt.async (fun () ->
   XmlHttpRequest.get "coq_pkg.json" >>= fun res ->
-  let jpkg = Yojson.Basic.from_string res.content in
+  let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
   | `List coq_pkgs ->
      Jslog.printf Jslog.jscoq_log "number of packages to preload %d\n%!" (List.length coq_pkgs);
@@ -95,20 +121,39 @@ let init () = Lwt.async (fun () ->
 
 let is_bad_url _ = false
 
-let coq_resource_req url =
+let coq_vo_req url =
   (* Wait until we have enough UI support *)
   (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
   if not @@ is_bad_url url then
     try let c_entry = Hashtbl.find file_cache url in
         Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url);
         Js.Unsafe.global##lastCoqReq <- url;
-        Some c_entry.content
-    with Not_found ->
+        Some c_entry.vo_content
+    with
+      (* coq_vo_reg is also invoked throught the Sys.file_exists call
+         in mltop:file_of_name function, a good example on how to be
+         too smart for your own good $:-) *)
+      Not_found ->
+        (* Check for a hit in the cma cache, return the empty string *)
+        if Filename.check_suffix (Js.to_string url) ".cma" && Hashtbl.mem byte_cache url then
+          Some (Js.string "")
+        else None
       (* Js.Unsafe.global##lastCoqReq <- Js.string "Not Found"; *)
-      None
   else
     begin
       Js.Unsafe.global##lastCoqReq <- Js.string "Bad URL";
       None
     end
 
+let coq_cma_req cma =
+  Jslog.printf Jslog.jscoq_log "cma file %s requested\n%!" cma;
+  let str = (Js.string ("filesys/cmas/" ^ cma ^ ".js")) in
+  Js.Unsafe.global##load_script_(str)
+(*
+  try let js_code = Hashtbl.find byte_cache (Js.string cma) in
+      let js_code = Js.to_string js_code.js_content         in
+      Jslog.printf Jslog.jscoq_log "executing js code %s\n%!" js_code;
+      Js.Unsafe.eval_string js_code
+      (* Js.Unsafe.global##eval js_code.js_content *)
+  with Not_found -> ()
+*)

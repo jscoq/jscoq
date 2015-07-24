@@ -24,18 +24,25 @@
       }
       function load_script(url){
         var fileref=document.createElement('script');
+        fileref.async = false;
         fileref.setAttribute("type","text/javascript");
         fileref.setAttribute("src", prefix+(version==""?"":(version+"/"))+url);
         document.getElementsByTagName("head")[0].appendChild(fileref);
       }
+     function loadscript(url) { load_script(url); }
+
      load_script("ejs/pace.min.js")
+         /* load_script("filesys/cmas/runtime.js");
+            load_script("filesys/cmas/predefined_exceptions.js");
+            load_script("filesys/cmas/stdlib.js");
+            load_script("filesys/cmas/bigint.cmo.js"); */
      load_script("jscoqtop.js");
     </script>
   </head>
   <body>
     <div id="toplevel-container">
       <a href="" >
-          Welcome to JsCoq 0.2c, castles edition!
+          Welcome to JsCoq 0.2s, castles edition!
       </a>
       <pre id="output"></pre>
       <div>

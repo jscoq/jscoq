@@ -21,8 +21,16 @@ open Format
 (* 	      formatter -> string -> unit *)
 val execute : string -> unit
 
-val add_load_path : string list -> bool -> string -> unit
+(* [add_load_path qid path] associate a coq package namespace [qid] to a [path] *)
+val add_load_path : string list -> string -> unit
 
-(** [init] Initialize the Coq Engine *)
-val init : unit -> unit
+(** [init load_ml] Initialize the Coq engine, [load_ml] is a function
+    that will load .cma plugins and will be frontend-dependent.
+ *)
+val init : (string -> unit) -> unit
 
+(** [version] returns miscellaneous version information  *)
+val version : string * string * string * string
+
+(* Enable dynamic compilation *)
+val dyn_comp : bool

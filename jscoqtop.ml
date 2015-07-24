@@ -27,15 +27,7 @@ let by_id_coerce s f  = Js.Opt.get (f (Dom_html.getElementById s)) (fun () -> ra
 let do_by_id s f = try f (Dom_html.getElementById s) with Not_found -> ()
 
 let setup_pseudo_fs () =
-  Sys_js.register_autoload' "/"       (fun (_,s) -> Jslibmng.coq_resource_req s)
-
-let setup_coq () =
-  Jscoq.init ();
-  let _header1 = Printf.sprintf "JsCoqTop alpha\n" in
-  let _header2 = Printf.sprintf
-      "     Compiled with Js_of_ocaml version %s" Sys_js.js_of_ocaml_version in
-  (* XXX: Get coq version *)
-  ()
+  Sys_js.register_autoload' "/" (fun (_,s) -> Jslibmng.coq_vo_req s)
 
 let resize ~container ~textbox ()  =
   Lwt.pause () >>= fun () ->
@@ -51,6 +43,16 @@ let append output s =
   Dom.appendChild output (Tyxml_js.To_dom.of_element (text s))
 
 let current_position = ref 0
+
+let setup_coq hdr =
+  Jscoq.init Jslibmng.coq_cma_req;
+  let coqv, coqd, ccd, ccv = Jscoq.version                    in
+  let header1 = Printf.sprintf
+      " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
+      coqv coqd ccd ccv                                       in
+  let header2 = Printf.sprintf
+      " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
+  append hdr @@ header1 ^ header2
 
 module History = struct
   let data = ref [|""|]
@@ -92,6 +94,7 @@ end
 
 (* Hack to support dynamic linking *)
 open Compiler
+
 let split_primitives p =
   let len = String.length p in
   let rec split beg cur =
@@ -113,6 +116,9 @@ let setup_dynlink () =
     let unbound_primitive p =
       try ignore (Js.Unsafe.eval_string p); false with _ -> true in
     let stubs = ref [] in
+    (* Array.iteri (fun i p -> *)
+    (*   Jslog.printf Jslog.jscoq_log "primitive %d %s initial\n%!" i p *)
+    (* ) prims; *)
     Array.iteri
       (fun i p ->
          if i >= initial_primitive_count && unbound_primitive p then
@@ -125,7 +131,7 @@ let setup_dynlink () =
     (* Option.Optim.disable "inline"; *)
     (* Option.Optim.disable "compact"; *)
     let output_program = Driver.from_string prims s in
-    let b = Buffer.create 100000                    in
+    let b = Buffer.create 500000                    in
     output_program (Pretty_print.to_buffer b);
     Format.(pp_print_flush std_formatter ());
     Format.(pp_print_flush err_formatter ());
@@ -235,10 +241,11 @@ let run _ =
   setup_printers  ();
   setup_pseudo_fs ();
   setup_dynlink   ();
-  setup_coq       ();
   History.setup   ();
+  setup_coq       output;
 
   (* Start downloads of libs *)
+  (* XXX: add modules to load by default as the parameters *)
   Jslibmng.init   ();
 
   let digest_aux s = Js.string @@ Digest.to_hex @@ Digest.string s in

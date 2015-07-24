@@ -1,8 +1,8 @@
 (* Output a JSON file for library loading
-
-   (C) Mines ParisTech
-   Written by: Emilio J. Gallego Arias, 
-*)
+ *
+ * (C) Mines ParisTech
+ * Written by: Emilio J. Gallego Arias
+ *)
 
 open Format
 open Yojson.Basic
@@ -11,19 +11,22 @@ open Yojson.Basic
 let to_name = String.concat "_"
 let prefix = "filesys"
 
-let wanted_files s =
-  Filename.check_suffix s ".cma" ||
+let is_vo s =
   Filename.check_suffix s ".vo"
+
+let is_cma s =
+  Filename.check_suffix s ".cma"
 
 let build_pkg (pid : string list) : Jslib.coq_pkg =
   let dir       = prefix ^ "/" ^ to_name pid       in
   let files     = Array.to_list @@ Sys.readdir dir in
-  let pkg_files = List.filter wanted_files files   in
-  let dummy_d   = Digest.string "" in
+  let vo_files  = List.filter is_vo files          in
+  let cma_files = List.filter is_cma files         in
+  let dummy_d   = Digest.string ""                 in
   {
     Jslib.pkg_id    = pid;
-    with_ml         = true;
-    pkg_files = List.map (fun s -> (s, dummy_d)) pkg_files;
+    vo_files  = List.map (fun s -> (s, dummy_d)) vo_files;
+    cma_files = List.map (fun s -> (s, dummy_d)) cma_files;
   }
 
 let build_pkgs () =

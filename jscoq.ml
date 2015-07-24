@@ -60,47 +60,55 @@ let execute s =
      pp_with ~pp_tag:Ppstyle.pp_tag !Pp_control.std_ft msg;
      pp_flush ()
 
-  (* | *)
-
 (* We have no support for library paths for now, unfortunately, due to
    Coq running in the browser we may want to rewrite a big chunck of
    it. *)
-let add_load_path pkg ml path =
+let add_load_path pkg pkg_path =
   let coq_path = DirPath.make @@ List.rev @@ List.map Id.of_string pkg in
-  let pkg_path = Jslib.to_name pkg in
   Loadpath.add_load_path ("./" ^ pkg_path) coq_path ~implicit:false;
-  if ml then
-    Mltop.add_ml_dir pkg_path
+  Mltop.add_ml_dir pkg_path
 
-(* let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in *)
-(* Loadpath.add_load_path "./ssr" ssr_path ~implicit:false; *)
+(* JsCoq init process:
+ *
+ *)
+let dyn_comp = true
 
+let init ml_load =
 
-(* For now we init libs and STM *)
-let init () =
+  (* We hook library loading to avoid dynamic bytecode-to-js
+     compilation *)
+  let jstop : Mltop.toplevel = {
+    load_obj = ml_load;
+    (* We ignore all the other operations below *)
+    use_file = (fun s  -> Printf.eprintf "[jstop] use_file \"%s\" called\n%!" s);
+    add_dir  = (fun s  -> Printf.eprintf "[jstop] add_dir \"%s\" called\n%!" s);
+    ml_loop  = (fun () -> Printf.eprintf "[jstop] ml_loop not supported\n%!");
+  } in
+
+  if not dyn_comp then
+    Mltop.set_top jstop;
+
+  (* Basic Coq init *)
   Lib.init();
 
-  (* if ~implicit Coq.Init.Blah works for Require import Blah*)
-
-  (* XXX: What is going on there???? *)
-  (* Local libraries *)
+  (* Local libraries: I'm not sure what I'm doing here *)
+  (* XXX: What is going on there????, what to do with implicit *)
   let coq_default_path = DirPath.make [] in
   Loadpath.add_load_path "." coq_default_path ~implicit:true;
   Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
 
+  (* We need to declare a toplevel module name. Not sure what will
+     happen in document mode *)
   let jsname = DirPath.make [Id.of_string "JsTop"] in
   Declaremods.start_library jsname;
+
+  (* Initialize the STM. *)
   Stm.init();
   cs := Stm.get_current_state ()
 
 
-(*
-let version ret =
-  Printf.printf "The Coq Proof Assistant, version %s (%s)\n"
-    Coq_config.version Coq_config.date;
-  Printf.printf "compiled on %s with OCaml %s\n" Coq_config.compile_date Coq_config.caml_version;
-  exit ret
-*)
+let version =
+  Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version
 
 (* What coqtop.ml does:
 

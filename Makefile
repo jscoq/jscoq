@@ -5,7 +5,7 @@ COQDIR=~/external/coq-git/
 all: jscoqtop.js
 
 # Include coq files
-INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel
+INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel -I $(COQDIR)/config
 
 # CAMLDEBUG=-g
 CAMLDEBUG=
@@ -21,7 +21,6 @@ JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
 %.cmo: %.ml
 	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(JSOOFLAGS) $<
 
-jscoq.cmi: jslib.cmo
 jscoq.cmo: jscoq.cmi
 
 # Binary for lib geneation
@@ -37,7 +36,7 @@ mklibjson: mklibjson.cmo
 
 jslog.cmo: jslog.cmi
 
-jslibmng.cmo: jslibmng.cmi jslog.cmo
+jslibmng.cmo: jslibmng.cmi jslib.cmo jslog.cmo
 
 # Main file
 jscoqtop.cmo: jscoq.cmo jslibmng.cmo jslog.cmo
@@ -118,6 +117,18 @@ lib-addons: ssr
 libs: Makefile.libs mklibjson lib-addons
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 	./mklibjson > coq_pkg.json
+
+# CMAS=filesys/Coq_syntax/nat_syntax_plugin.cma	\
+#      filesys/Coq_cc/cc_plugin.cma		\
+#      filesys/Coq_firstorder/ground_plugin.cma	\
+#      filesys/Coq_decl_mode/decl_mode_plugin.cma
+
+# %.cma.js: %.cma
+# 	js_of_ocaml --toplevel --nocmis +nat.js +weak.js +dynlink.js	\
+# 	+toplevel.js js/mutex.js js/unix.js js/coq_vm.js		\
+# 	js/byte_cache.js jscoqtop.js $< -o filesys/cmas/$<.js
+
+# cmas: 
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib
