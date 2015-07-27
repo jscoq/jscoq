@@ -74,6 +74,9 @@ var Editor;
              matchBrackets: true
             }
         );
+        
+        var self = this;
+        this._editor.on('change', function(evt){self.onCMChange(evt);});
     };
     
     Editor.prototype.eatNextStatement = function() {
@@ -102,13 +105,26 @@ var Editor;
                                );
         stm.id = this.idgen.next();
         this.statements.push(stm);
+        stm.position = this.statements.length - 1;
         this.coqEval(stm);
+    };
+    
+    Editor.prototype.onCMChange = function(evt) {
+        var doc = this._editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+        if (marks.length === 1) {
+            for (var i = this.statements.length -1 ; i >= marks[0].stm.position ; i-- ) {
+                this.statements[i].mark.clear();
+                this.statements.pop();
+            }
+        }
     };
     
     Editor.prototype.coqEval = function(stm) {
         var doc = this._editor.getDoc();
         // TODO: call coq here
         var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+        mark.stm = stm;
         stm.mark = mark;
     };
     
