@@ -108,7 +108,8 @@ var Editor;
     Editor.prototype.coqEval = function(stm) {
         var doc = this._editor.getDoc();
         // TODO: call coq here
-        doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+        var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+        stm.mark = mark;
     };
     
     var IDGen = function() {
@@ -125,5 +126,6 @@ var Editor;
         this.start = start;
         this.end = end;
         this.id = 0;
+        this.mark = undefined;
     };
 }());
