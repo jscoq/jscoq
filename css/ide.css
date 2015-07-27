@@ -23,6 +23,22 @@ body {
 
 #vsep, #hsep {
   position:absolute;
-  background: #999;
+  background: #f7f7f7;
   z-index: 3;
+}
+
+#toolsbar {
+  background: #f7f7f7;
+  padding-top: 5px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+#toolsbar img {
+  margin: 0 2px;
+  cursor: pointer;
+}
+
+.coq-eval-ok {
+  background: #CF6;
 }
