@@ -78,32 +78,37 @@ var Editor;
     
     Editor.prototype.eatNextStatement = function() {
         var doc = this._editor.getDoc();
-        var start = 0;
+        var start = {line : 0, ch : 0};
         if (this.statements.length) {
             var lastStm = this.statements[this.statements.length - 1];
-            start = lastStm.end + 1;
+            start = lastStm.end;
         }
         
-        var stm_lines = [], line, handle;
-        for (var i=start ; i<doc.lineCount() ; i++) {
+        var start_ch = start.ch;
+        var text, handle, end_ch;
+        for (var i=start.line ; i<doc.lineCount() ; i++) {
             handle = doc.getLineHandle(i);
-            stm_lines.push(handle);
-            line = handle.text.trim();
-            if (line.charAt(line.length - 1) === '.')
+            text = handle.text.slice(start_ch);
+            if(text.indexOf('.') !== -1) {
+                end_ch = start_ch + text.indexOf('.') + 1;
                 break;
+            }
+            start_ch = 0;
         }
-        var stm = new Statement(start, handle.lineNo());
+
+        var stm = new Statement(start,
+                                {line : handle.lineNo(),
+                                 ch   : end_ch}
+                               );
+        stm.id = this.idgen.next();
         this.statements.push(stm);
         this.coqEval(stm);
     };
     
     Editor.prototype.coqEval = function(stm) {
         var doc = this._editor.getDoc();
-        doc.markText(
-            {line : stm.start, ch : 0},
-            {line : stm.end + 1, ch : 0},
-            {className : 'coq-eval-ok'}
-        );
+        // TODO: call coq here
+        doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
     };
     
     var IDGen = function() {
@@ -116,7 +121,9 @@ var Editor;
     };
     
     var Statement = function(start, end){
+        // start, end: {line: l, ch: c}
         this.start = start;
         this.end = end;
+        this.id = 0;
     };
 }());
