@@ -3,6 +3,7 @@ var Editor;
 
 (function(){
     var SEP_SIZE = 6;
+    var DOT_R = /\.$|\.\s/;
     
     IDELayout = function() {
         this.left_panel = document.getElementById('left-panel');
@@ -95,21 +96,21 @@ var Editor;
         }
         
         var start_ch = start.ch;
-        var text, handle, end_ch=0, dotpos=-1;
+        var text, handle, end_ch=0, dotmatch=null;
         for (var i=start.line ; i<doc.lineCount() ; i++) {
             handle = doc.getLineHandle(i);
             text = handle.text.slice(start_ch);
-            dotpos = text.indexOf('.');
-            if(dotpos !== -1 &&
+            dotmatch = DOT_R.exec(text);
+            if(dotmatch !== null &&
                 cm.getTokenAt({line: i,
-                               ch: dotpos + 1}).type !== 'comment') {
-                end_ch = start_ch + text.indexOf('.') + 1;
+                               ch: dotmatch.index + 1}).type !== 'comment') {
+                end_ch = start_ch + dotmatch.index + 1;
                 break;
             }
             start_ch = 0;
         }
         
-        if (dotpos === -1)
+        if (dotmatch === null)
             return false;
 
         var stm = new Statement(start,
