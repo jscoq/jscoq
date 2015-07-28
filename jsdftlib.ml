@@ -38,5 +38,5 @@ let coq_theory_list =
   ]
 
 let addons_list =
-  [ ["Ssreflect"] ]
+  []
 
