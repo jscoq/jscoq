@@ -50,8 +50,10 @@ var Editor;
         var target = evt.target;
         switch (target.name) {
             case 'ceiling' :
+                while(this.editor.popStatement());
                 break;
             case 'floor' :
+                while(this.editor.eatNextStatement());
                 break;
             case 'up' :
                 this.editor.popStatement();
@@ -86,10 +88,14 @@ var Editor;
         if (this.statements.length) {
             var lastStm = this.statements[this.statements.length - 1];
             start = lastStm.end;
+            if (start.line === doc.lastLine() &&
+                start.ch === doc.getLine(doc.lastLine()).length) {
+                return false;
+            }
         }
         
         var start_ch = start.ch;
-        var text, handle, end_ch, dotpos;
+        var text, handle, end_ch=0, dotpos;
         for (var i=start.line ; i<doc.lineCount() ; i++) {
             handle = doc.getLineHandle(i);
             text = handle.text.slice(start_ch);
@@ -111,11 +117,15 @@ var Editor;
         this.statements.push(stm);
         stm.position = this.statements.length - 1;
         this.coqEval(stm);
+        return true;
     };
     
     Editor.prototype.popStatement = function() {
+        if (!this.statements.length)
+            return false;
         var stm = this.statements.pop();
         stm.mark.clear();
+        return true;
     };
     
     Editor.prototype.onCMChange = function(evt) {
