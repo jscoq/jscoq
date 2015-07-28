@@ -115,7 +115,8 @@ var Editor;
 
         var stm = new Statement(start,
                                 {line : handle.lineNo(),
-                                 ch   : end_ch}
+                                 ch   : end_ch},
+                                 text
                                );
         stm.id = this.idgen.next();
         this.statements.push(stm);
@@ -160,10 +161,11 @@ var Editor;
         return this.id;
     };
     
-    var Statement = function(start, end){
+    var Statement = function(start, end, text){
         // start, end: {line: l, ch: c}
         this.start = start;
         this.end = end;
+        this.text = text;
         this.id = 0;
         this.mark = undefined;
     };
