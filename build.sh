@@ -12,6 +12,10 @@ opam switch $OCAMLDIST32
 eval `opam config env`
 make jscoq32
 
+if [ $? -ne 0 ]; then
+   exit $?
+fi
+
 opam switch $OCAMLDIST64
 eval `opam config env`
 make jscoq64

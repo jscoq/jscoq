@@ -5,31 +5,41 @@ COQDIR=~/external/coq-git/
 all: jscoqtop.js
 
 # Include coq files
-INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel
+INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel -I $(COQDIR)/config
 
 # CAMLDEBUG=-g
 CAMLDEBUG=
-BYTEFLAGS=-rectypes $(CAMLDEBUG)
+BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
-jslib.cmo: jslib.ml
-	ocamlc -c $(BYTEFLAGS) jslib.ml
+JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml
+JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
 
-coqjslib.cmo: jslib.cmo coqjslib.ml
-	ocamlc -c $(BYTEFLAGS) coqjslib.ml
+# Our OCAML rules, we could refine the includes
+%.cmi: %.mli
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(JSOOFLAGS) $<
+
+%.cmo: %.ml
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(JSOOFLAGS) $<
+
+jscoq.cmo: jscoq.cmi
+
+# Binary for lib geneation
+coqjslib.cmo: jslib.cmo jsdftlib.cmo
 
 coqjslib: coqjslib.cmo
-	ocamlc $(BYTEFLAGS) jslib.cmo coqjslib.cmo -o coqjslib
+	ocamlfind ocamlc $(BYTEFLAGS) jslib.cmo jsdftlib.cmo coqjslib.cmo -o coqjslib
 
-jscoq.cmi: jslib.cmo jscoq.mli
-	ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) jscoq.mli
+mklibjson.cmo: jslib.cmo jsdftlib.cmo
 
-jscoq.cmo: jscoq.cmi jscoq.ml
-	ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) jscoq.ml
+mklibjson: mklibjson.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) -linkpkg -package yojson jslib.cmo jsdftlib.cmo mklibjson.cmo -o mklibjson
 
-jscoqtop.cmo: jscoq.cmi jscoqtop.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) -syntax camlp4o -package bytes,base64		\
-	   -package js_of_ocaml.syntax,lwt,js_of_ocaml.tyxml,js_of_ocaml.toplevel	\
-	   -I camlp4 -package ocp-indent.lib -package higlo.ocaml jscoqtop.ml
+jslog.cmo: jslog.cmi
+
+jslibmng.cmo: jslibmng.cmi jslib.cmo jslog.cmo
+
+# Main file
+jscoqtop.cmo: jscoq.cmo jslibmng.cmo jslog.cmo
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
@@ -49,18 +59,23 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/tactics/hightactics.cma
 
 # -linkall is delicate here due the way js_of_ocaml works.
-jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5			\
-	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel			\
-	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml	\
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jscoqtop.cmo -o jscoqtop.byte
+jscoqtop.byte: $(COQDEPS) jscoqtop.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
+	   $(JSOOFLAGS) -package camlp5                                  \
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jslog.cmo jslibmng.cmo jscoqtop.cmo -o jscoqtop.byte
+
+# jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
+# 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5			\
+# 	  -package unix -package compiler-libs.bytecomp -package compiler-libs.toplevel			\
+# 	  -package js_of_ocaml.compiler -package camlp5 -package base64 -package js_of_ocaml.tyxml	\
+# 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jslibmng.cmo jscoqtop.cmo -o jscoqtop.byte
 
 jscoq32: jscoqtop.byte
 
 # JSFILES=mutex.js unix.js coq_vm.js aux.js
 JSDIR=js
 # JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/ml_aux.js
-JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js
+JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/byte_cache.js
 
 # JSLIBFILES=nsp.js
 # jscoqtop.js: jscoqtop.byte $(JSFILES) $(JSLIBFILES)
@@ -84,21 +99,36 @@ filesys:
 Makefile.libs: coqjslib
 	./coqjslib > Makefile.libs
 
-libs: Makefile.libs
-	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
-
-# ssreflect not built by default for now
+# Addons
 SSRDIR=~/external/coq/ssr-git/
 SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
 SSR=$(SSRDIR)/theories/*.vo
-SSR_DEST=filesys/ssr
+SSR_DEST=filesys/Ssreflect
 
 filesys/ssr:
-	mkdir -p filesys/ssr
+	mkdir -p filesys/Ssreflect
 
 ssr: filesys/ssr $(SSR_PLUG) $(SSR)
-	$(shell base64 $(SSR_PLUG) > filesys/ssreflect.cma)
-	$(shell for i in $(SSR); do base64 $$i > $(SSR_DEST)/`basename $$i`; done)
+	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
+	$(shell for i in $(SSR); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
+
+lib-addons: ssr
+
+libs: Makefile.libs mklibjson lib-addons
+	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
+	./mklibjson > coq_pkg.json
+
+# CMAS=filesys/Coq_syntax/nat_syntax_plugin.cma	\
+#      filesys/Coq_cc/cc_plugin.cma		\
+#      filesys/Coq_firstorder/ground_plugin.cma	\
+#      filesys/Coq_decl_mode/decl_mode_plugin.cma
+
+# %.cma.js: %.cma
+# 	js_of_ocaml --toplevel --nocmis +nat.js +weak.js +dynlink.js	\
+# 	+toplevel.js js/mutex.js js/unix.js js/coq_vm.js		\
+# 	js/byte_cache.js jscoqtop.js $< -o filesys/cmas/$<.js
+
+# cmas: 
 
 clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib
@@ -107,7 +137,8 @@ clean:
 ########################################################################
 # Local stuff
 upload: all
-	cp -a index.html jscoqtop.js filesys/ css/ ~/x80/rhino-coq/
+	rsync --delete -avzp index.html jscoq.html jscoqtop.js coq_pkg.json filesys css ejs ~/x80/rhino-coq/
+# $(shell ./x80-sync.sh)
 
 pau:
 	rsync -avpz ~/research/jscoq pau:~/

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+          "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>JsCoq toplevel</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="ejs/pace.css" />
+    <link rel="stylesheet" href="css/jscoq.css" />
+  </head>
+  <body>
+    <div id="toplevel-info">
+      <h3>Js Coq (α)</h3>
+      <h4>Coq in the browser, α-version</h4>
+
+      <p>
+          Thanks to js_of_ocaml and Coq 8.5, we can run Coq in the
+          browser. Full functionallity is only achievable in Chrome
+          dev (45) with some extra stack:
+      </p>
+
+      <pre id="output"><code>
+google-chrome-unstable --js-flags="--stack-size=65536"
+      </code></pre>
+
+      <p>
+          Firefox seems to work fine too, but its default stack is too small
+          to load large plugins.
+      </p>
+
+      <p>
+          Prelude is not loaded by default. You can load it with: (or by pressing enter)
+      </p>
+
+      <pre><code>
+Require Import Coq.Init.Prelude.
+      </code></pre>
+      <p>
+          You'll need to be patient on pluging loading:
+          the browser needs to compile the .cma bytecode files to
+          javascript. We will fix this soon.
+      </p>
+
+      <p>
+          We also include SSreflect/Mathcomp. A nice proof by Georges Gonthier that you can try is:
+      </p>
+      <pre><code>
+(* This downloads 28 MiB of libs, so it may be slow *)
+Require Import Coq.Init.Prelude.
+From Ssreflect Require Import ssreflect ssrfun ssrbool eqtype ssrnat div prime.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
+
+Lemma dvdn_fact m n : 0 < m <= n -> m %| n`!.
+Proof.
+case: m => //= m; elim: n => //= n IHn; rewrite ltnS leq_eqVlt.
+by case/predU1P=> [-> | /IHn]; [apply: dvdn_mulr | apply: dvdn_mull].
+Qed.
+
+Lemma prime_above m : {p | m < p & prime p}.
+Proof.
+have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
+exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
+by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
+Qed.
+      </code></pre>
+      <p>If you feel a bit more adventorous you can try with stripped_odd_order_theorem ;)</p>
+
+      <p><b>Notes and Known Bugs:</b>
+          This is an ultra experimental release, performance may be
+          terrible, weirds bugs will happen, it will eat you laptop
+          keys, etc... vm_compute and native don't work, we have also
+          removed the the extraction and recdef plugin from the
+          Prelude for now.
+      </p>
+      <p>Contact: Emilio at e+jscoq@this_host. </p>
+
+      <h4>Commands</h4>
+      <table class="table table-striped table-condensed">
+        <tbody class>
+          <tr>
+            <td>Enter/Return</td>
+            <td>Submit code to Coq</td>
+          </tr>
+          <tr>
+            <td>Ctrl + Enter</td>
+            <td>Newline</td>
+          </tr>
+          <tr>
+            <td>Up / Down</td>
+            <td>Browse history</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>For more information and how to get it running, see the <a href="https://github.com/ejgallego/jscoq/">readme.</a>
+      </p>
+      <h4 class="clear">¡Adiós!</h4>
+      </div>
+  </body>
+</html>

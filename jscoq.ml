@@ -38,7 +38,8 @@ let pr_open_cur_subgoals () =
 let cs = ref (Stm.get_current_state ())
 
 (* We call STM.add and wait. *)
-let execute printval ?pp_code pp_answer s =
+(* let execute printval ?pp_code pp_answer s = *)
+let execute s =
   (* Printf.eprintf "Sending %s to Coq!\n%!" s; *)
   try
     let cs',_ = Stm.add ~ontop:!cs true 0 s in (* Le zéro : à remplacer par un uid négatif *)
@@ -59,56 +60,55 @@ let execute printval ?pp_code pp_answer s =
      pp_with ~pp_tag:Ppstyle.pp_tag !Pp_control.std_ft msg;
      pp_flush ()
 
-  (* | *)
-
 (* We have no support for library paths for now, unfortunately, due to
    Coq running in the browser we may want to rewrite a big chunck of
    it. *)
+let add_load_path pkg pkg_path =
+  let coq_path = DirPath.make @@ List.rev @@ List.map Id.of_string pkg in
+  Loadpath.add_load_path ("./" ^ pkg_path) coq_path ~implicit:false;
+  Mltop.add_ml_dir pkg_path
 
-let theory_list = Jslib.theory_list
-let plugin_list = Jslib.plugin_list
+(* JsCoq init process:
+ *
+ *)
+let dyn_comp = true
 
-(* For now we init libs and STM *)
-let init () =
-  (* Enable backtraces for now. *)
-  (* Printexc.record_backtrace true; *)
-  (* try *)
-  (* Dynlink.init (); *)
-  (* with *)
-  (* | exn -> *)
-  (*    begin *)
-  (*      Printexc.print_backtrace stderr; *)
-  (*      raise exn *)
-  (*    end; *)
-  (* XXX: Add support for loading base plugins and libraries *)
+let init ml_load =
+
+  (* We hook library loading to avoid dynamic bytecode-to-js
+     compilation *)
+  let jstop : Mltop.toplevel = {
+    load_obj = ml_load;
+    (* We ignore all the other operations below *)
+    use_file = (fun s  -> Printf.eprintf "[jstop] use_file \"%s\" called\n%!" s);
+    add_dir  = (fun s  -> Printf.eprintf "[jstop] add_dir \"%s\" called\n%!" s);
+    ml_loop  = (fun () -> Printf.eprintf "[jstop] ml_loop not supported\n%!");
+  } in
+
+  if not dyn_comp then
+    Mltop.set_top jstop;
+
+  (* Basic Coq init *)
   Lib.init();
 
-  (* Implicit Coq.Init.Blah implicit allow Require import Blah*)
+  (* Local libraries: I'm not sure what I'm doing here *)
+  (* XXX: What is going on there????, what to do with implicit *)
   let coq_default_path = DirPath.make [] in
-  Loadpath.add_load_path "." coq_default_path ~implicit:false;
-
-  let ssr_path = DirPath.make [Id.of_string "Ssreflect"] in
-  Loadpath.add_load_path "./ssr" ssr_path ~implicit:false;
-
-  List.iter (fun path ->
-    let name = String.concat "_" path                                            in
-    let path = DirPath.make @@ List.rev @@ List.map Id.of_string ("Coq" :: path) in
-    Loadpath.add_load_path ("./" ^ name) path ~implicit:false;
-  ) (theory_list @ plugin_list);
-
-  List.iter (fun path ->
-    let name = String.concat "_" path                                            in
-    Mltop.add_ml_dir name;
-  ) plugin_list;
-  (* < > *)
-
-  (* Local library *)
+  Loadpath.add_load_path "." coq_default_path ~implicit:true;
   Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
 
+  (* We need to declare a toplevel module name. Not sure what will
+     happen in document mode *)
   let jsname = DirPath.make [Id.of_string "JsTop"] in
   Declaremods.start_library jsname;
+
+  (* Initialize the STM. *)
   Stm.init();
   cs := Stm.get_current_state ()
+
+
+let version =
+  Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version
 
 (* What coqtop.ml does:
 
@@ -169,3 +169,14 @@ let init () =
       fatal_error (msg ++ Coqloop.print_toplevel_error any) (Errors.is_anomaly (fst any))
   end;
 *)
+  (* Enable backtraces for now. *)
+  (* Printexc.record_backtrace true; *)
+  (* try *)
+  (* Dynlink.init (); *)
+  (* with *)
+  (* | exn -> *)
+  (*    begin *)
+  (*      Printexc.print_backtrace stderr; *)
+  (*      raise exn *)
+  (*    end; *)
+  (* XXX: Add support for loading base plugins and libraries *)

@@ -1,34 +1,45 @@
 Run Coq in your browser!
 ------------------------
 
-This project allows you to build a Coq toplevel that will fully run in
-the browser, using the `js_of_ocaml` compiler.
+*WARNING: This project is not production ready yet, but a proof
+ of concept. If you are not a Coq expert you may want to wait a bit
+ before trying it*
 
-Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems to
-work fine too, but has some problems due to a small stack default size.
+Build a [Coq](https://coq.inria.fr) toplevel for the browser, using
+the `js_of_ocaml` compiler. The whole Coq runs in the browser, no
+servers or external dependencies are needed.q
 
-In order to load large plugins, Chrome must be told to increase the
-stack size: `google-chrome --js-flags="--stack-size=65536"`. Unfortunately, there's no way to do
-this in Firefox.
+The goal of this project is to open new UI/interaction possibilites,
+and to improve the acessibility of the platform itself.
 
-It also runs in my old Galaxy Nexus, but it has performance problems
-due to the Chrome version on it (43).
+The current toplevel is a minimal modification of the
+[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but it will
+evolve to something more tailored to Coq.
+
+Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems
+to work fine too, but has some problems with large plugins due to a small
+stack size.
+
+Chrome should be started with an increased stack size: `google-chrome
+--js-flags="--stack-size=65536"`. Unfortunately, it seems there's no
+way to do so in Firefox.
 
 Try it: <https://x80.org/rhino-coq/> !
 
-The basic Coq toplevel is a minimal modification of the
-[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but the plan is
-to evolve to an IDE more tailored to Coq.
+[Warning: This URL is not stable. Rememeber, this is still alpha
+software, we will provide a more stable link soon.]
+
+It also runs in my old Galaxy Nexus, but it has some
+performance problems due to the Chrome version (43).
 
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-For now the code is a mess, we have focused on getting the thing
-running, but we are working on rewriting it now. Thus, IMHO, pull
-requests don't make sense yet, but any other contribution or comment
-is really welcome!
+The code is a mess for now, we are working on internals. IMHO, pull
+requests don't make a lot of sense yet as we will rewrite the whole
+thing soon, but any other contribution or comment is really welcome!
 
 ## What is broken ##
 
@@ -81,6 +92,9 @@ $ ./build.sh
 $ google-chrome-unstable --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
 ````
 * Profit!
+* Extra/Experimental: ssreflect. If you know how to build ssreflect
+  for Coq trunk, you can use the `ssr` makefile target to install the
+  libraries.
 * We used to support building a coqtop.js executable, to be run with
   `node`, linked with atom, etc...
 

@@ -6,6 +6,8 @@
 jscoqtop.js
 coqtop.js
 coqjslib
+mklibjson
+coq_pkg.json
 Makefile.libs
 README.html
 filesys/

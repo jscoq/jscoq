@@ -6,8 +6,8 @@
     <title>JsCoq toplevel</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/editor-base.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="css/jscoq.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="ejs/pace.css" />
+    <link rel="stylesheet" href="css/jscoq.css" />
     <script type="text/javascript">
 
       window.onhashchange = function() { window.location.reload() }
@@ -24,26 +24,25 @@
       }
       function load_script(url){
         var fileref=document.createElement('script');
+        fileref.async = false;
         fileref.setAttribute("type","text/javascript");
         fileref.setAttribute("src", prefix+(version==""?"":(version+"/"))+url);
         document.getElementsByTagName("head")[0].appendChild(fileref);
       }
-     /* load_script("stdlib.cmis.js");
-        load_script("js_of_ocaml.cmis.js");
-        load_script("js_of_ocaml.toplevel.cmis.js");
-        load_script("js_of_ocaml.deriving.cmis.js");
-        load_script("js_of_ocaml.tyxml.cmis.js");
-        load_script("js_of_ocaml.graphics.cmis.js");
-        load_script("lwt.cmis.js");
-        load_script("react.cmis.js");
-        load_script("reactiveData.cmis.js"); */
-      load_script("jscoqtop.js");
+     function loadscript(url) { load_script(url); }
+
+     load_script("ejs/pace.min.js")
+         /* load_script("filesys/cmas/runtime.js");
+            load_script("filesys/cmas/predefined_exceptions.js");
+            load_script("filesys/cmas/stdlib.js");
+            load_script("filesys/cmas/bigint.cmo.js"); */
+     load_script("jscoqtop.js");
     </script>
   </head>
   <body>
     <div id="toplevel-container">
       <a href="" >
-          Welcome to JsCoq 0.1z, mediterranean edition!
+          Welcome to JsCoq 0.2s, castles edition!
       </a>
       <pre id="output"></pre>
       <div>
@@ -54,97 +53,16 @@
       </div>
     </div>
     <div id="toplevel-side">
-      <h3>Js Coq (α)</h3>
-      <h4>Coq in the browser, α-version</h4>
-
-      <p>
-          Thanks to js_of_ocaml and Coq 8.5, we can now run Coq in the
-          browser. For now, full functionallity is only achievable in
-          Chrome dev (45) with some extra stack:
-      </p>
-
-      <pre id="output"><code>
-google-chrome-unstable --js-flags="--stack-size=65536"
-      </code></pre>
-
-      <p>
-          Firefox seems to work fine too, but its stack is too small
-          to load large plugins.
-      </p>
-
-      <p>
-          Prelude is not loaded by default. You can load it with: (or pressing enter)
-      </p>
-
-      <pre><code>
-Require Import Coq.Init.Prelude.
-      </code></pre>
-      <p>
-          You'll need to be a bit patient for now on pluging loading:
-          the browser needs to compile the .cma bytecode files to
-          javascript. We will hopefully solve this soon.
-      </p>
-
-      <p>
-          We also include SSreflect/Mathcomp. A nice proof by Georges Gonthier that you can try is:
-      </p>
-      <pre><code>
-Require Import Coq.Init.Prelude.
-From Ssreflect Require Import ssreflect ssrfun ssrbool eqtype ssrnat div prime.
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-
-
-Lemma dvdn_fact m n : 0 < m <= n -> m %| n`!.
-Proof.
-case: m => //= m; elim: n => //= n IHn; rewrite ltnS leq_eqVlt.
-by case/predU1P=> [-> | /IHn]; [apply: dvdn_mulr | apply: dvdn_mull].
-Qed.
-
-Lemma prime_above m : {p | m < p & prime p}.
-Proof.
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
-exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
-by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
-Qed.
-      </code></pre>
-
-      <p><b>Notes and Known Bugs:</b>
-          This is an ultra experimental release, performance may be
-          terrible, weirds bugs will happen, it will eat you laptop
-          keys, etc... vm_compute and native don't work, we have also
-          removed the the extraction and recdef plugin from the
-          Prelude for now.
-      </p>
-      <p>Contact: Emilio at e+jscoq@this_host. </p>
-
-      <h4>Commands</h4>
-      <table class="table table-striped table-condensed">
-        <tbody class>
-          <tr>
-            <td>Enter/Return</td>
-            <td>Submit code to Coq</td>
-          </tr>
-          <tr>
-            <td>Ctrl + Enter</td>
-            <td>Newline</td>
-          </tr>
-          <tr>
-            <td>Up / Down</td>
-            <td>Browse history</td>
-          </tr>
-        </tbody>
-      </table>
-      <h4>For more information and how to get it running:</h4>
-      <div id="toplevel-examples" class="list-group">
-          See the <a href="https://github.com/ejgallego/jscoq/">readme.</a>
+      <div id="info-side">
+        <p>WARNING: This is alpha software and not ready to use yet, beware of buggy chrome versions (<a href="jscoq.html">README</a>) </p>
       </div>
-      <canvas width=0 height=0 id="test-canvas"></canvas>
-      <h4 class="clear">¡Adiós!</h4>
-      <pre id="last-js">
-      </pre>
+      <div class="msg-area" id="goal-info-area">
+      </div>
+      <!-- Move to tabs -->
+      <div class="msg-area" id="query-info-area">
+      </div>
+      <div class="msg-area" id="jscoq-log-area">
+      </div>
     </div>
   </body>
 </html>
