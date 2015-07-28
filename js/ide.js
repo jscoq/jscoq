@@ -80,7 +80,8 @@ var Editor;
     };
     
     Editor.prototype.eatNextStatement = function() {
-        var doc = this._editor.getDoc();
+        var cm = this._editor;
+        var doc = cm.getDoc();
         var start = {line : 0, ch : 0};
         if (this.statements.length) {
             var lastStm = this.statements[this.statements.length - 1];
@@ -88,11 +89,14 @@ var Editor;
         }
         
         var start_ch = start.ch;
-        var text, handle, end_ch;
+        var text, handle, end_ch, dotpos;
         for (var i=start.line ; i<doc.lineCount() ; i++) {
             handle = doc.getLineHandle(i);
             text = handle.text.slice(start_ch);
-            if(text.indexOf('.') !== -1) {
+            dotpos = text.indexOf('.');
+            if(dotpos !== -1 &&
+                cm.getTokenAt({line: i,
+                               ch: dotpos + 1}).type !== 'comment') {
                 end_ch = start_ch + text.indexOf('.') + 1;
                 break;
             }
