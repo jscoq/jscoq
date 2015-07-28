@@ -40,5 +40,13 @@ body {
 }
 
 .coq-eval-ok {
-  background: #CF6;
+  background: #cf6;
+}
+
+.coq-eval-pending {
+  background: #fc6;
+}
+
+.coq-eval-failed {
+  background: #f00;
 }
