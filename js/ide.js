@@ -95,7 +95,7 @@ var Editor;
         }
         
         var start_ch = start.ch;
-        var text, handle, end_ch=0, dotpos;
+        var text, handle, end_ch=0, dotpos=-1;
         for (var i=start.line ; i<doc.lineCount() ; i++) {
             handle = doc.getLineHandle(i);
             text = handle.text.slice(start_ch);
@@ -108,6 +108,9 @@ var Editor;
             }
             start_ch = 0;
         }
+        
+        if (dotpos === -1)
+            return false;
 
         var stm = new Statement(start,
                                 {line : handle.lineNo(),
