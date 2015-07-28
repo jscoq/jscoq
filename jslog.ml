@@ -46,5 +46,5 @@ let printf lb =
 
 (* jscoq internal log *)
 let jscoq_log : t =
-  init_by_id "jscoq-log-area" false
+  init_by_id "message-panel" false
 

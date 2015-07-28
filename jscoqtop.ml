@@ -45,7 +45,8 @@ let append output s =
 let current_position = ref 0
 
 let setup_coq hdr =
-  Jscoq.init Jslibmng.coq_cma_req;
+  Jscoq.init Jslibmng.coq_cma_req
+(* ;
   let coqv, coqd, ccd, ccv = Jscoq.version                    in
   let header1 = Printf.sprintf
       " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
@@ -53,6 +54,7 @@ let setup_coq hdr =
   let header2 = Printf.sprintf
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
   append hdr @@ header1 ^ header2
+*)
 
 module History = struct
   let data = ref [|""|]
@@ -145,7 +147,7 @@ let setup_dynlink () =
   ()
 
 let run _ =
-  Js.Unsafe.global##salut <- Js._false;
+(*
   let container = by_id "toplevel-container" in
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
@@ -156,20 +158,27 @@ let run _ =
       append output ("# " ^ content ^ "\n");
       History.push content;
       (* Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content; *)
-      Jscoq.execute content;
+      let _ = Jscoq.execute content in
       resize ~container ~textbox () >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
       Lwt.return_unit in
     (* Split by dots with hack *)
     let input = (Js.to_string (textbox##value##trim())) ^ " "           in
-    let commands = Regexp.split (Regexp.regexp "\\.\\s+") input           in
+    let commands = Regexp.split (Regexp.regexp "\\.\\s+") input         in
     let commands = List.filter (fun s -> String.length s <> 0) commands in
     (* Other Hack: re-add dots *)
     let commands = List.map (fun s -> s ^ ".") commands                 in
     textbox##value <- Js.string "";
     Lwt_list.iter_s execute_com commands
   in
+*)
+  let add_to_doc (coq_cmd : Js.js_string Js.t) (id : int): bool =
+    let cmd = Js.to_string coq_cmd                                 in
+    (* Jslog.printf Jslog.jscoq_log "calling add_to_doc with %s\n%!" cmd; *)
+    Jscoq.execute cmd
+  in
+(*
   let history_down e =
     let txt = Js.to_string textbox##value in
     let pos = (Obj.magic textbox)##selectionStart in
@@ -194,15 +203,15 @@ let run _ =
       History.previous textbox;
       Js._false
   in
-
-  let meta e =
-    let b = Js.to_bool in
-    b e##ctrlKey || b e##shiftKey || b e##altKey || b e##metaKey in
+*)
+  (* let meta e = *)
+  (*   let b = Js.to_bool in *)
+  (*   b e##ctrlKey || b e##shiftKey || b e##altKey || b e##metaKey in *)
 
   let setup_printers () =
     let open Jslog  in
-    let proof_msg   = init_by_id "goal-info-area"  true in
-    let query_msg   = init_by_id "query-info-area" true in
+    let proof_msg   = init_by_id "goal-panel"    true in
+    let query_msg   = init_by_id "message-panel" true in
     (* How to create a channel *)
     (* let _sharp_chan = open_out "/dev/null0" in *)
     (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
@@ -210,13 +219,14 @@ let run _ =
     Sys_js.set_channel_flusher stderr (add_text query_msg Info)
   in
 
+(*
   begin (* setup handlers *)
     textbox##onkeyup <-   Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
     textbox##onchange <-  Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
     textbox##onkeydown <- Dom_html.handler (fun e ->
         match e##keyCode with
         | 13 when not (meta e) -> Lwt.async execute; Js._false
-        | 13 -> Lwt.async (resize ~container ~textbox); Js._true
+        (* | 13 -> Lwt.async (resize ~container ~textbox); Js._true *)
         (* | 76 when meta e -> output##innerHTML <- Js.string ""; Js._true *)
         (* | 75 when meta e -> setup_toplevel (); Js._false *)
         | 38 -> history_up e
@@ -224,26 +234,33 @@ let run _ =
         | _ -> Js._true
       );
   end;
+*)
 
   (* Add exception handler *)
+(*
   Lwt.async_exception_hook:=(fun exc ->
     Format.eprintf "exc during Lwt.async: %s@." (Printexc.to_string exc);
     match exc with
     | Js.Error e -> Firebug.console##log(e##stack)
     | _ -> ());
+*)
 
   (* Focus on the input box *)
+(*
   Lwt.async (fun () ->
     resize ~container ~textbox () >>= fun () ->
     textbox##focus ();
     Lwt.return_unit);
-
+*)
 
   setup_printers  ();
   setup_pseudo_fs ();
   setup_dynlink   ();
-  History.setup   ();
-  setup_coq       output;
+  (* History.setup   (); *)
+  setup_coq       true;
+
+  (* Export function to js *)
+  Js.Unsafe.global##coq_add_to_doc_ <- add_to_doc;
 
   (* Start downloads of libs *)
   (* XXX: add modules to load by default as the parameters *)
@@ -256,9 +273,11 @@ let run _ =
   (* Js.Unsafe.global##fake_cc <- k; *)
 
   (* Setup an initial value. *)
+(*
   Lwt.async (fun () ->
     textbox##value <- Js.string "Require Import Coq.Init.Prelude.";
     Lwt.return_unit);
+*)
   ()
 
 let _ = Dom_html.window##onload <- Dom_html.handler (fun _ -> run (); Js._false)

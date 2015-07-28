@@ -12,6 +12,9 @@
 open Jslib
 open Lwt
 
+let json_file = "../coq_pkg.json"
+let fs_prefix = "../filesys/"
+
 (* We likely want these to be Hashtbls of just js arrays. *)
 type cache_entry = {
   vo_content : Js.js_string Js.t;
@@ -34,8 +37,8 @@ let byte_cache : (Js.js_string Js.t, byte_cache_entry) Hashtbl.t =
 let preload_vo_file base_url (file, hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
-  let full_url    = base_url ^ "/" ^ file in
-  let request_url = "filesys/" ^ full_url in
+  let full_url    = base_url  ^ "/" ^ file in
+  let request_url = fs_prefix ^ full_url   in
   perform_raw ~response_type:ArrayBuffer request_url >>= fun frame ->
   (* frame.code contains the request status *)
   (* Is this redudant with the Opt check? I guess so *)
@@ -67,7 +70,7 @@ let preload_vo_file base_url (file, hash) : unit Lwt.t =
 (* Unfortunately this is a tad different than preload_vo_file *)
 let preload_cma_file base_url (file, hash) : unit Lwt.t =
   Jslog.printf Jslog.jscoq_log "pre-loading cma file %s-%s\n%!" base_url file;
-  let cma_url   = "filesys/cmas/" ^ file ^ ".js" in
+  let cma_url   = fs_prefix ^ "cmas/" ^ file ^ ".js" in
   Jslog.printf Jslog.jscoq_log "cma url %s\n%!" cma_url;
   (* Avoid costly string conversions *)
   let open XmlHttpRequest in
@@ -96,7 +99,7 @@ let preload_pkg pkg : unit Lwt.t =
   Lwt.return_unit
 
 let init () = Lwt.async (fun () ->
-  XmlHttpRequest.get "coq_pkg.json" >>= fun res ->
+  XmlHttpRequest.get json_file >>= fun res ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
   | `List coq_pkgs ->
@@ -147,7 +150,7 @@ let coq_vo_req url =
 
 let coq_cma_req cma =
   Jslog.printf Jslog.jscoq_log "cma file %s requested\n%!" cma;
-  let str = (Js.string ("filesys/cmas/" ^ cma ^ ".js")) in
+  let str = (Js.string (fs_prefix ^ "cmas/" ^ cma ^ ".js")) in
   Js.Unsafe.global##load_script_(str)
 (*
   try let js_code = Hashtbl.find byte_cache (Js.string cma) in

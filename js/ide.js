@@ -147,9 +147,13 @@ var Editor;
     Editor.prototype.coqEval = function(stm) {
         var doc = this._editor.getDoc();
         // TODO: call coq here
-        var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
-        mark.stm = stm;
-        stm.mark = mark;
+        if (coq_add_to_doc(stm.text)) {
+          var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+          mark.stm = stm;
+          stm.mark = mark;
+        } else {
+          // ??
+        }
     };
     
     var IDGen = function() {

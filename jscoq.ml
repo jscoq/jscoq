@@ -42,13 +42,14 @@ let cs = ref (Stm.get_current_state ())
 let execute s =
   (* Printf.eprintf "Sending %s to Coq!\n%!" s; *)
   try
-    let cs',_ = Stm.add ~ontop:!cs true 0 s in (* Le zéro : à remplacer par un uid négatif *)
+    let cs',_ = Stm.add ~ontop:!cs true 0 s in
     Stm.finish ();
     cs := cs';
     msg_notice (pr_open_cur_subgoals ());
     flush stdout;
     flush stderr;
-    flush_all ()
+    flush_all ();
+    true
   with
   | any ->
      (* We need to revert the add *)
@@ -58,7 +59,8 @@ let execute s =
      Format.set_formatter_out_channel stdout;
      let msg = print_toplevel_error any ++ fnl () in
      pp_with ~pp_tag:Ppstyle.pp_tag !Pp_control.std_ft msg;
-     pp_flush ()
+     pp_flush ();
+     false
 
 (* We have no support for library paths for now, unfortunately, due to
    Coq running in the browser we may want to rewrite a big chunck of

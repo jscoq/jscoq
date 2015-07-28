@@ -19,7 +19,7 @@ open Format
     [pp_code] formatter can be use to output ocaml source during lexing. *)
 (* val execute : bool -> ?pp_code:formatter -> *)
 (* 	      formatter -> string -> unit *)
-val execute : string -> unit
+val execute : string -> bool
 
 (* [add_load_path qid path] associate a coq package namespace [qid] to a [path] *)
 val add_load_path : string list -> string -> unit
