@@ -54,12 +54,12 @@ var Editor;
             case 'floor' :
                 break;
             case 'up' :
+                this.editor.popStatement();
                 break;
             case 'down' :
                 this.editor.eatNextStatement();
                 break;
         }
-        console.log(target);
     };
     
     Editor = function(name, element) {
@@ -107,6 +107,11 @@ var Editor;
         this.statements.push(stm);
         stm.position = this.statements.length - 1;
         this.coqEval(stm);
+    };
+    
+    Editor.prototype.popStatement = function() {
+        var stm = this.statements.pop();
+        stm.mark.clear();
     };
     
     Editor.prototype.onCMChange = function(evt) {
