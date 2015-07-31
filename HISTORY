@@ -1,0 +1,10 @@
++ JsCoq 0.2 "Castle edition"
+----------------------------
+
+  - Asynchronous library caching.
+  - CMA precompilation
+
++ JsCoq 0.1 "Mediterranean edition"
+-----------------------------------
+
+  - Initial release, support for plugins and modules.
