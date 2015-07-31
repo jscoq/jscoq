@@ -158,16 +158,16 @@ let run _ =
       append output ("# " ^ content ^ "\n");
       History.push content;
       (* Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content; *)
-      if Jscoq.execute !eid content then decr eid else ()
+      if Jscoq.execute !eid content then decr eid else ();
       (* Jslog.printf Jslog.jscoq_log "execute says: %b\n%!" ret; *)
-      resize ~container ~textbox ()) >>= fun () ->
+      resize ~container ~textbox ()                                     >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
       Lwt.return_unit
     in
     (* Split by dots with hack *)
     let input = (Js.to_string (textbox##value##trim())) ^ " "           in
-    let commands = Regexp.split (Regexp.regexp "\\.\\s+") input           in
+    let commands = Regexp.split (Regexp.regexp "\\.\\s+") input         in
     let commands = List.filter (fun s -> String.length s <> 0) commands in
     (* Other Hack: re-add dots *)
     let commands = List.map (fun s -> s ^ ".") commands                 in
