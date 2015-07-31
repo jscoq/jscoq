@@ -59,11 +59,11 @@ let execute eid s =
     flush stdout;
     flush stderr;
     flush_all ();
-    Printf.eprintf "execute end\n%!";
+    (* Printf.eprintf "execute end\n%!"; *)
     true
   with
   | any ->
-     Printf.eprintf "exn in execute sid %s\n%!" (Stateid.to_string !cs);
+     (* Printf.eprintf "exn in execute sid %s\n%!" (Stateid.to_string !cs); *)
      (* We need to revert the add *)
      let _ = Stm.edit_at !cs in
      (* cs := (Stm.get_current_state ()); *)
