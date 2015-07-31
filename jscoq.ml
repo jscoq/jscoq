@@ -37,20 +37,33 @@ let pr_open_cur_subgoals () =
 
 let cs = ref (Stm.get_current_state ())
 
+let e_dinfo eid cmd s (s' : Stateid.t) (t : [ `NewTip | `Unfocus of Stateid.t ]) : unit =
+  let open Printf in
+  eprintf "edinfo %d for %s with sid: [%s/%s]\n%!" eid cmd (Stateid.to_string s) (Stateid.to_string s');
+  match t with
+  | `NewTip      -> eprintf "  Got NewTip\n%!"
+  | `Unfocus sid -> eprintf "  Got Unfocus %s\n%!" (Stateid.to_string sid)
+  ;
+  ()
+
 (* We call STM.add and wait. *)
 (* let execute printval ?pp_code pp_answer s = *)
-let execute s =
+let execute eid s =
   (* Printf.eprintf "Sending %s to Coq!\n%!" s; *)
   try
-    let cs',_ = Stm.add ~ontop:!cs true 0 s in
+    let cs', r = Stm.add ~ontop:!cs true eid s in
+    (* e_dinfo eid s !cs cs' r; *)
     Stm.finish ();
     cs := cs';
     msg_notice (pr_open_cur_subgoals ());
     flush stdout;
     flush stderr;
-    flush_all ()
+    flush_all ();
+    Printf.eprintf "execute end\n%!";
+    true
   with
   | any ->
+     Printf.eprintf "exn in execute sid %s\n%!" (Stateid.to_string !cs);
      (* We need to revert the add *)
      let _ = Stm.edit_at !cs in
      (* cs := (Stm.get_current_state ()); *)
@@ -58,7 +71,8 @@ let execute s =
      Format.set_formatter_out_channel stdout;
      let msg = print_toplevel_error any ++ fnl () in
      pp_with ~pp_tag:Ppstyle.pp_tag !Pp_control.std_ft msg;
-     pp_flush ()
+     pp_flush ();
+     false
 
 (* We have no support for library paths for now, unfortunately, due to
    Coq running in the browser we may want to rewrite a big chunck of
@@ -105,7 +119,6 @@ let init ml_load =
   (* Initialize the STM. *)
   Stm.init();
   cs := Stm.get_current_state ()
-
 
 let version =
   Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version

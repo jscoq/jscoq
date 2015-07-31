@@ -84,9 +84,11 @@ module History = struct
     with Not_found -> ()
 
   let current text = !data.(!idx) <- text
+
   let previous textbox =
     if !idx > 0
     then begin decr idx; textbox##value <- Js.string (!data.(!idx)) end
+
   let next textbox =
     if !idx < Array.length !data - 1
     then begin incr idx; textbox##value <- Js.string (!data.(!idx)) end
@@ -149,17 +151,20 @@ let run _ =
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
 
+  let eid = ref (-1) in
   let execute () =
     let execute_com content =
       current_position := output##childNodes##length;
       append output ("# " ^ content ^ "\n");
       History.push content;
       (* Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content; *)
-      Jscoq.execute content;
-      resize ~container ~textbox () >>= fun () ->
+      if Jscoq.execute !eid content then decr eid else ()
+      (* Jslog.printf Jslog.jscoq_log "execute says: %b\n%!" ret; *)
+      resize ~container ~textbox ()) >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
-      Lwt.return_unit in
+      Lwt.return_unit
+    in
     (* Split by dots with hack *)
     let input = (Js.to_string (textbox##value##trim())) ^ " "           in
     let commands = Regexp.split (Regexp.regexp "\\.\\s+") input           in
@@ -228,6 +233,8 @@ let run _ =
   Lwt.async_exception_hook:=(fun exc ->
     Format.eprintf "exc during Lwt.async: %s@." (Printexc.to_string exc);
     match exc with
+    | Errors.UserError(s, ppmsg) -> Jslog.printf Jslog.jscoq_log
+       "UserError %s | %s\n%!" s (Pp.string_of_ppcmds ppmsg)
     | Js.Error e -> Firebug.console##log(e##stack)
     | _ -> ());
 
