@@ -1,39 +1,47 @@
-(************************************************************************)
-(*  v      *   The Coq Proof Assistant  /  The Coq Development Team     *)
-(* <O___,, *   INRIA - CNRS - LIX - LRI - PPS - Copyright 1999-2015     *)
-(*   \VV/  **************************************************************)
-(*    //   *      This file is distributed under the terms of the       *)
-(*         *       GNU Lesser General Public License Version 2.1        *)
-(************************************************************************)
-
-(* Helpers for the Coq JavaScript Toplevel. Based in the coq source
-   code and js_of_ocaml toplevel.
-
-   By Emilio J. Gallego Arias, Mines ParisTech, Paris.
-*)
-
-open Format
-
-(** [execute print fmt content] Execute [content].
-    [print] says whether the values and types of the results should be printed.
-    [pp_code] formatter can be use to output ocaml source during lexing. *)
-(* val execute : bool -> ?pp_code:formatter -> *)
-(* 	      formatter -> string -> unit *)
-val execute : int -> string -> bool
-
-(* (\** [add_to_coq_doc id s  *\) *)
-(* val add_to_coq_doc : string -> *)
-
-(* [add_load_path qid path] associate a coq package namespace [qid] to a [path] *)
-val add_load_path : string list -> string -> unit
-
-(** [init load_ml] Initialize the Coq engine, [load_ml] is a function
-    that will load .cma plugins and will be frontend-dependent.
+(* Coq JavaScript API. Based in the coq source code and js_of_ocaml.
+ *
+ * By Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * LICENSE: GPLv3+
+ *
+ * We provide a message-based asynchronous API for communication with
+ * Coq. Our object listens to the following messages:
+ *
+ * And emits:
+ *
+ * - CoqLogEvent(level, msg): Log [msg] of priority [level].
+ *
  *)
-val init : (string -> unit) -> unit
 
-(** [version] returns miscellaneous version information  *)
-val version : string * string * string * string
+open Js
+open Dom
 
-(* Enable dynamic compilation *)
-val dyn_comp : bool
+class type addCodeEvent = object
+  inherit [jsCoq] event
+
+  method code : js_string t readonly_prop
+  method eid  : int         readonly_prop
+end
+
+and assignStateEvent = object
+  inherit [jsCoq] event
+
+  method eid  : int   readonly_prop
+  method sid  : int   readonly_prop
+end
+
+and coqErrorEvent = object
+  inherit [jsCoq] event
+
+  method eid  : int         readonly_prop
+  method msg  : js_string t readonly_prop
+
+end
+
+and jsCoq = object
+
+  method addCode     : ('self t, addCodeEvent)     event_listener writeonly_prop
+  method assignState : ('self t, assignStateEvent) event_listener writeonly_prop
+  method coqError    : ('self t, coqErrorEvent)    event_listener writeonly_prop
+
+end
+

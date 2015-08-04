@@ -21,25 +21,19 @@ JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
 %.cmo: %.ml
 	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(JSOOFLAGS) $<
 
-jscoq.cmo: jscoq.cmi
+########################################################################
+# Main jscoq files
+icoq.cmo: icoq.cmi
 
-# Binary for lib geneation
-coqjslib.cmo: jslib.cmo jsdftlib.cmo
-
-coqjslib: coqjslib.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) jslib.cmo jsdftlib.cmo coqjslib.cmo -o coqjslib
-
-mklibjson.cmo: jslib.cmo jsdftlib.cmo
-
-mklibjson: mklibjson.cmo
-	ocamlfind ocamlc $(BYTEFLAGS) -linkpkg -package yojson jslib.cmo jsdftlib.cmo mklibjson.cmo -o mklibjson
+# No mli file
+# jslib.cmo: jslib.cmi
 
 jslog.cmo: jslog.cmi
 
-jslibmng.cmo: jslibmng.cmi jslib.cmo jslog.cmo
+jslibmng.cmo: icoq.cmo jslib.cmo jslog.cmo jslibmng.cmi
 
 # Main file
-jscoqtop.cmo: jscoq.cmo jslibmng.cmo jslog.cmo
+jscoqtop.cmo: icoq.cmo jslibmng.cmo jslog.cmo
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
@@ -62,7 +56,7 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 jscoqtop.byte: $(COQDEPS) jscoqtop.cmo
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5                                  \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jslog.cmo jslibmng.cmo jscoqtop.cmo -o jscoqtop.byte
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jscoqtop.cmo -o jscoqtop.byte
 
 # jscoqtop.byte: $(COQDEPS) jscoq.cmo jscoqtop.cmo
 # 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose -I +camlp5			\
@@ -71,6 +65,9 @@ jscoqtop.byte: $(COQDEPS) jscoqtop.cmo
 # 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo jscoq.cmo jslibmng.cmo jscoqtop.cmo -o jscoqtop.byte
 
 jscoq32: jscoqtop.byte
+
+########################################################################
+# Compilation to JS
 
 # JSFILES=mutex.js unix.js coq_vm.js aux.js
 JSDIR=js
@@ -89,6 +86,18 @@ jscoqtop.js: jscoqtop.byte $(JSFILES)
 	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoqtop.byte
 
 jscoq64: jscoqtop.js
+
+########################################################################
+# Tools
+coqjslib.cmo: jslib.cmo jsdftlib.cmo
+
+coqjslib: coqjslib.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) jslib.cmo jsdftlib.cmo coqjslib.cmo -o coqjslib
+
+mklibjson.cmo: jslib.cmo jsdftlib.cmo
+
+mklibjson: mklibjson.cmo
+	ocamlfind ocamlc $(BYTEFLAGS) -linkpkg -package yojson jslib.cmo jsdftlib.cmo mklibjson.cmo -o mklibjson
 
 ########################################################################
 # Plugin building + base64 encoding

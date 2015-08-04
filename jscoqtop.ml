@@ -20,6 +20,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *)
 
+module O = Option
 open Lwt
 
 let by_id s = Dom_html.getElementById s
@@ -44,15 +45,58 @@ let append output s =
 
 let current_position = ref 0
 
+(* type feedback = { *)
+(*   id : edit_or_state_id;        (\* The document part concerned *\) *)
+(*   contents : feedback_content;  (\* The payload *\) *)
+(*   route : route_id;             (\* Extra routing info *\) *)
+(* } *)
+
+let jscoq_feedback fb =
+  let open Feedback in
+  let fb_string fb =
+    match fb with
+  (* STM mandatory data (must be displayed) *)
+    | Processed      -> "Processed"
+    | Incomplete     -> "Incomplete"
+    | Complete       -> "Complete"
+    | ErrorMsg(l, s) -> "ErrorMsg: " ^ s
+
+  (* STM optional data *)
+    | ProcessingIn s       -> "ProcessingIn " ^ s
+    | InProgress d         -> "InProgress " ^ (string_of_int d)
+    | WorkerStatus(w1, w2) -> "WorkerStatus " ^ w1 ^ ", " ^ w2
+
+  (* Generally useful metadata *)
+    | Goals(_loc, g) -> "goals :" ^ g
+    | AddedAxiom -> "AddedAxiom"
+    | GlobRef (_loc, s1, s2, s3, s4) -> "GlobRef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3 ^ ", " ^ s4
+    | GlobDef (_loc, s1, s2, s3) -> "GlobDef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3
+    | FileDependency (os, s) -> "FileDep: " ^ (Option.default "" os) ^ ", " ^ s
+    | FileLoaded (s1, s2)    -> "FileLoaded " ^ s1 ^ " " ^ s2
+
+  (* Extra metadata *)
+    | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
+  (* Old generic messages *)
+    | Message m -> "Msg: " ^ m.message_content       in
+
+  let eosid_string esid =
+    match esid with
+    | Edit  eid -> "eid: " ^ string_of_int eid
+    | State sid -> "sid: " ^ (Stateid.to_string sid) in
+
+  Jslog.printf Jslog.jscoq_log "feedback for [%s]: %s\n%!"
+    (eosid_string fb.id) (fb_string fb.contents)
+
 let setup_coq hdr =
-  Jscoq.init Jslibmng.coq_cma_req;
-  let coqv, coqd, ccd, ccv = Jscoq.version                    in
+  let coqv, coqd, ccd, ccv = Icoq.version                     in
   let header1 = Printf.sprintf
       " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
       coqv coqd ccd ccv                                       in
   let header2 = Printf.sprintf
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
-  append hdr @@ header1 ^ header2
+  append hdr @@ header1 ^ header2;
+  Icoq.init { ml_load    = Jslibmng.coq_cma_req;
+              fb_handler = jscoq_feedback; }
 
 module History = struct
   let data = ref [|""|]
@@ -151,15 +195,21 @@ let run _ =
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
 
-  let eid = ref (-1) in
+  let sid = ref None in
+  let eid = ref 0    in
+
   let execute () =
     let execute_com content =
       current_position := output##childNodes##length;
       append output ("# " ^ content ^ "\n");
       History.push content;
-      (* Jscoq.execute true ~pp_code:sharp_ppf caml_ppf content; *)
-      if Jscoq.execute !eid content then decr eid else ();
-      (* Jslog.printf Jslog.jscoq_log "execute says: %b\n%!" ret; *)
+      sid := O.map (fun osid ->
+        decr eid;
+        let nsid = Icoq.add_to_doc osid !eid content in
+        try
+          Icoq.commit (); nsid
+        with _ ->
+          Icoq.edit_doc osid; osid) !sid;
       resize ~container ~textbox ()                                     >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
@@ -249,7 +299,7 @@ let run _ =
   setup_pseudo_fs ();
   setup_dynlink   ();
   History.setup   ();
-  setup_coq       output;
+  sid := Some (setup_coq output);
 
   (* Start downloads of libs *)
   (* XXX: add modules to load by default as the parameters *)

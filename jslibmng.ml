@@ -88,11 +88,11 @@ let preload_pkg pkg : unit Lwt.t =
   let pkg_dir = to_name pkg.pkg_id in
   Jslog.printf Jslog.jscoq_log "pre-loading package %s\n%!" pkg_dir;
   Lwt_list.iter_s (preload_vo_file pkg_dir)  pkg.vo_files  >>= fun () ->
-  (if Jscoq.dyn_comp then
+  (if Icoq.dyn_comp then
     Lwt_list.iter_s (preload_vo_file pkg_dir)  pkg.cma_files
   else
     Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files) >>= fun () ->
-  Jscoq.add_load_path pkg.pkg_id pkg_dir;
+  Icoq.add_load_path pkg.pkg_id pkg_dir;
   Lwt.return_unit
 
 let init () = Lwt.async (fun () ->
