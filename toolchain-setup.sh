@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# OCAML_VER=4.02.3
-OCAML_VER=4.02.1
-NJOBS=32
+. ./build-common.sh
+
 JS_OF_OCAML_DIR=~/external/js_of_ocaml
 
 JSCOQ_DEPS="ocamlfind camlp4 camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData yojson"

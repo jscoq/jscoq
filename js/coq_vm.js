@@ -3,8 +3,8 @@ function init_coq_vm() {
   return;
 }
 
-// EG: Where the hell are the below called from? I guess the best
-// option is to disable the VM code again...
+// EG: Coq VM's code is evil and performs static initialization... the
+// best option would be to disable the VM code entirely as before.
 
 //Provides: accumulate_code
 function accumulate_code() {
@@ -99,7 +99,8 @@ function coq_tcode_of_code() {
 
 // Provides: get_coq_atom_tbl
 function get_coq_atom_tbl() {
-  return [];
+  // First element of the array is the length!
+  return [0];
 }
 
 // Provides: get_coq_global_data

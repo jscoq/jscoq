@@ -1,23 +1,18 @@
 #!/bin/bash
 
-# Names of the opam distributions
-# OCAMLDIST64=4.02.0
-# OCAMLDIST32=4.02.0+32bit
-
-OCAMLDIST64=4.02.1
-OCAMLDIST32=4.02.1+32bit
+. ./build-common.sh
 
 # build 32 bits parts
-opam switch $OCAMLDIST32
+opam switch $OCAML_VER+32bit
 eval `opam config env`
-make jscoq32
+make -j $NJOBS jscoq32
 
 if [ $? -ne 0 ]; then
    exit $?
 fi
 
-opam switch $OCAMLDIST64
+opam switch $OCAML_VER
 eval `opam config env`
-make jscoq64
+make -j $NJOBS jscoq64
 
 make libs
