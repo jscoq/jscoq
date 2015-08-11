@@ -2,6 +2,7 @@
 *.byte
 *.cmi
 *.cmo
+.AppleDouble
 jscoqtop.js
 coqtop.js
 coqjslib

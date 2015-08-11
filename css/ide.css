@@ -1,0 +1,52 @@
+body {
+  margin:0;
+  padding:0;
+}
+
+#left-panel {
+  position:absolute;
+  left:0;
+  background: #CF6;
+/*  border: 1px solid red;*/
+}
+
+#right-panel {
+  position:absolute;
+  right: 0;
+  background: #6FC;
+}
+
+#goal-panel, #message-panel {
+  background: #fff;
+  padding-left: 3px;
+}
+
+#vsep, #hsep {
+  position:absolute;
+  background: #f7f7f7;
+  z-index: 3;
+}
+
+#toolsbar {
+  background: #f7f7f7;
+  padding-top: 5px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+#toolsbar img {
+  margin: 0 2px;
+  cursor: pointer;
+}
+
+.coq-eval-ok {
+  background: #cf6;
+}
+
+.coq-eval-pending {
+  background: #fc6;
+}
+
+.coq-eval-failed {
+  background: #f00;
+}

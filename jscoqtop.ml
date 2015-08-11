@@ -224,6 +224,18 @@ let run _ =
     textbox##value <- Js.string "";
     Lwt_list.iter_s execute_com commands
   in
+
+  let add_to_doc (coq_cmd : Js.js_string Js.t) (id : int) : unit =
+    let cmd = Js.to_string coq_cmd                                      in
+    sid := O.map (fun osid ->
+        decr eid;
+        let nsid = Icoq.add_to_doc osid !eid cmd in
+        try
+          Icoq.commit (); nsid
+        with _ ->
+          Icoq.edit_doc osid; osid) !sid
+  in
+
   let history_down e =
     let txt = Js.to_string textbox##value in
     let pos = (Obj.magic textbox)##selectionStart in

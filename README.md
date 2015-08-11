@@ -73,7 +73,7 @@ $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
 $ opam switch 4.02.1+32bit
 $ eval `opam config env`
-$ ./configure -local -natdynlink no -coqide no -byteonly -no-native-compiler
+$ ./configure -local -natdynlink no -coqide no -no-native-compiler
 $ make               # use -j N as desired
 ````
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
