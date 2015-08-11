@@ -140,7 +140,7 @@ libs: Makefile.libs mklibjson lib-addons
 # cmas: 
 
 clean:
-	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib
+	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js coqtop.byte coqtop.js Makefile.libs coqjslib mklibjson
 	rm -rf filesys
 
 ########################################################################
