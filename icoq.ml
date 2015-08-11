@@ -113,19 +113,25 @@ let e_dinfo eid cmd s (s' : Stateid.t) (t : [ `NewTip | `Unfocus of Stateid.t ])
   | `Unfocus sid -> eprintf "  Got Unfocus %s\n%!" (Stateid.to_string sid)
   ;
   ()
-*)
 
-(*
-
-  msg_notice (pr_open_cur_subgoals ());
-  flush stdout;
-  flush stderr;
-  flush_all ();
+let execute eid s =
+  try
+    let cs', r = Stm.add ~ontop:!cs true eid s in
+    (* e_dinfo eid s !cs cs' r; *)
+    Stm.finish ();
+    cs := cs';
+    msg_notice (pr_open_cur_subgoals ());
+    flush stdout;
+    flush stderr;
+    flush_all ();
+    (* Printf.eprintf "execute end\n%!"; *)
+    true
   with
   | any ->
      (* Printf.eprintf "exn in execute sid %s\n%!" (Stateid.to_string !cs); *)
-     (* We revert to the last known good state *)
+     (* We need to revert the add *)
      let _ = Stm.edit_at !cs in
+     (* cs := (Stm.get_current_state ()); *)
      let any = Errors.push any in
      Format.set_formatter_out_channel stdout;
      let msg = print_toplevel_error any ++ fnl () in
