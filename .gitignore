@@ -3,11 +3,11 @@
 *.cmi
 *.cmo
 .AppleDouble
-jscoqtop.js
-coqtop.js
-coqjslib
-mklibjson
+coq-js/jscoq.js
+coq-tools/mklibfs
+coq-tools/mklibjson
 coq_pkg.json
+jsoo-util/jsoo_dl.js
 Makefile.libs
-README.html
-filesys/
+coq-fs/
+local/
