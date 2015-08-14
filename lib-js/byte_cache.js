@@ -16,9 +16,11 @@
 //Requires: caml_failwith
 function caml_reify_bytecode (code, _sz) {
 
-  if(joo_global_object.digest) {
+  if(joo_global_object.digest && joo_global_object.lastCoqReq) {
     var md5 = joo_global_object.digest(code);
     console.log("Reify bytecode of {" + joo_global_object.lastCoqReq + "} [" + md5 + "/" + _sz + "]");
+  } else {
+    console.log("Reify bytecode called, no debug info");
   }
 
   if(joo_global_object.toplevelCompile)
