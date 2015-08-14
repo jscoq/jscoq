@@ -14,5 +14,4 @@ fi
 opam switch $OCAML_VER
 eval `opam config env`
 make -j $NJOBS jscoq64
-
 make libs

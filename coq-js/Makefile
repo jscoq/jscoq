@@ -2,7 +2,7 @@
 
 COQDIR=~/external/coq-git/
 
-all: jscoq.js
+all:
 
 # Include coq files
 INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel -I $(COQDIR)/config
@@ -12,7 +12,9 @@ CAMLDEBUG=
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml
-JSOOFLAGS+=-package yojson
+JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
+# For when we remove dyncomp
+# JSOOFLAGS+=-package yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -59,10 +61,10 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 # 	   $(JSOOFLAGS) -package camlp5                                  \
 # 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
 
-jscoq.byte: $(COQDEPS) jscoq.cmo
+jscoq.byte: $(COQDEPS) jscoq.cmo jsoo_dl.cmo
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5                                  \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jsoo_dl.cmo jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
@@ -82,7 +84,10 @@ JSOO_OPTS=
 
 # --toplevel includes the linking information.
 jscoq.js: jscoq.byte $(JSFILES)
-	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
+	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
+
+# For when we remove dyncomp
+# js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
 # js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
 
 jscoq64: jscoq.js

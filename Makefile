@@ -1,14 +1,18 @@
-.PHONY: clean upload libs all coq-js coq-tools jsoo-util libs
+.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64
 
 COQDIR=~/external/coq-git/
 
-all: coq-js jsoo-util libs
+all:
 
-coq-js:
-	$(MAKE) -C coq-js
+jscoq32:
+	$(MAKE) -C coq-js jscoq32
 
-jsoo-util:
-	$(MAKE) -C jsoo-util
+jscoq64:
+	$(MAKE) -C coq-js jscoq64
+
+# Disabled for now
+# jsoo-util:
+# 	$(MAKE) -C jsoo-util
 
 coq-tools:
 	$(MAKE) -C coq-tools
@@ -54,7 +58,7 @@ libs: Makefile.libs lib-addons
 clean:
 	$(MAKE) -C coq-js    clean
 	$(MAKE) -C coq-tools clean
-	$(MAKE) -C jsoo-util clean
+# $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs
 	rm -rf coq-fs
 
