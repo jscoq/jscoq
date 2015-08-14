@@ -7,10 +7,9 @@
 open Format
 open Yojson.Basic
 
-(* Make the json file for the installed libraries *)
-let to_name = String.concat "_"
-let prefix = "filesys"
+module Dl = Dftlibs
 
+(* Make the json file for the installed libraries *)
 let is_vo s =
   Filename.check_suffix s ".vo"
 
@@ -18,7 +17,7 @@ let is_cma s =
   Filename.check_suffix s ".cma"
 
 let build_pkg (pid : string list) : Jslib.coq_pkg =
-  let dir       = prefix ^ "/" ^ to_name pid       in
+  let dir       = Dl.prefix ^ "/" ^ Dl.to_name pid in
   let files     = Array.to_list @@ Sys.readdir dir in
   let vo_files  = List.filter is_vo files          in
   let cma_files = List.filter is_cma files         in
@@ -30,8 +29,8 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
   }
 
 let build_pkgs () =
-  let coq_std_pkgs = List.map (fun s -> "Coq" :: s) @@ Jsdftlib.plugin_list @ Jsdftlib.coq_theory_list in
-  List.map build_pkg @@ coq_std_pkgs @ Jsdftlib.addons_list
+  let coq_std_pkgs = List.map (fun s -> "Coq" :: s) @@ Dl.plugin_list @ Dl.coq_theory_list in
+  List.map build_pkg @@ coq_std_pkgs @ Dl.addons_list
 
 let _ =
   let pkgs = List.map Jslib.pkg_to_json (build_pkgs ()) in

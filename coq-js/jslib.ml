@@ -1,7 +1,16 @@
-(* This file contains the basic coq library definitions used in jscoq *)
+(* Coq JavaScript API. Based in the coq source code and js_of_ocaml.
+ *
+ * By Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * LICENSE: GPLv3+
+ *
+ * This file contains the basic coq library definitions used in jscoq.
+ *)
 
-(* Information about a Coq library. We could access Loadpath.t, etc...,
-   but we've opted to keep this module separated from Coq *)
+(* Information about a Coq library.
+ *
+ * We could have accessed Loadpath.t, etc..., but we've opted to keep
+ * this module separated from Coq
+ *)
 type coq_pkg = {
   pkg_id    : string list;
   vo_files  : (string * Digest.t) list;

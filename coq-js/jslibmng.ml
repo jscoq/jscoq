@@ -13,7 +13,7 @@ open Jslib
 open Lwt
 
 let json_file = "coq_pkg.json"
-let fs_prefix = "filesys/"
+let fs_prefix = "coq-fs/"
 
 (* We likely want these to be Hashtbls of just js arrays. *)
 type cache_entry = {

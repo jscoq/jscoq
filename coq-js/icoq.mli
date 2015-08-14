@@ -47,9 +47,9 @@ val add_to_doc : Stateid.t -> edit_id -> string -> Stateid.t
     all edits added after [sid] *)
 val edit_doc : Stateid.t -> unit
 
-(** [commit ()] commit the changes to the current document. It can
+(** [commit sid] commit the changes to the current document. It will
     produce an exception in case of error. *)
-val commit : unit -> unit
+val commit : Stateid.t -> unit
 
 
 

@@ -16,13 +16,13 @@
 //Requires: caml_failwith
 function caml_reify_bytecode (code, _sz) {
 
-  var md5 = joo_global_object.digest(code);
-  console.log("Reify bytecode of {" + joo_global_object.lastCoqReq + "} [" + md5 + "/" + _sz + "]");
+  if(joo_global_object.digest) {
+    var md5 = joo_global_object.digest(code);
+    console.log("Reify bytecode of {" + joo_global_object.lastCoqReq + "} [" + md5 + "/" + _sz + "]");
+  }
 
   if(joo_global_object.toplevelCompile)
     return joo_global_object.toplevelCompile(code);
   else caml_failwith("Toplevel not initialized (toplevelCompile)")
-
-  // return joo_global_object.fake_cc;
 }
 

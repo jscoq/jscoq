@@ -15,7 +15,20 @@
 open Js
 open Dom
 
-class type addCodeEvent = object
+class type jsCoq = object
+  method init        : ('self t, js_string t)         meth_callback writeonly_prop
+  method add         : ('self t, js_string t -> unit) meth_callback writeonly_prop
+  method onLog       : ('self t, js_string t)         event_listener writeonly_prop
+end
+
+(*
+class type coqLogEvent = object
+  inherit [jsCoq] event
+
+  method msg : js_string t readonly_prop
+end
+
+and addCodeEvent = object
   inherit [jsCoq] event
 
   method code : js_string t readonly_prop
@@ -38,10 +51,10 @@ and coqErrorEvent = object
 end
 
 and jsCoq = object
-
-  method addCode     : ('self t, addCodeEvent)     event_listener writeonly_prop
-  method assignState : ('self t, assignStateEvent) event_listener writeonly_prop
-  method coqError    : ('self t, coqErrorEvent)    event_listener writeonly_prop
-
+  method addCode     : ('self t, addCodeEvent     t) event_listener writeonly_prop
+  method assignState : ('self t, assignStateEvent t) event_listener writeonly_prop
+  method coqError    : ('self t, coqErrorEvent    t) event_listener writeonly_prop
 end
 
+
+*)

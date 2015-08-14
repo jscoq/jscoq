@@ -95,7 +95,7 @@ let add_to_doc sid eid s = fst @@ Stm.add ~ontop:sid false eid s
 
 let edit_doc sid = let _ = Stm.edit_at sid in ()
 
-let commit = Stm.finish
+let commit = Stm.observe
 
 (*
 let print_toplevel_error (e, info) =

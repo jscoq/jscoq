@@ -5,9 +5,7 @@
 *)
 
 open Format
-
-let to_name f = String.concat "_" ("Coq" :: f)
-let to_dir    = String.concat "/"
+module Dl = Dftlibs
 
 let pp_str ppf s = fprintf ppf "%s" s
 
@@ -17,12 +15,12 @@ let rec pp_list pp fmt l = match l with
   | csx :: csl -> fprintf fmt "%a %a" pp csx (pp_list pp) csl
 
 let output_librule fmt bpath path =
-  let name    = to_name path                     in
-  let dir     = to_dir  path                     in
-  let coqdir  = to_dir ["$(COQDIR)"; bpath; dir] in
-  let fsdir   = to_dir ["filesys"; name]  in
-  let vo_pat  = to_dir [coqdir; "*.vo"]          in
-  let cma_pat = to_dir [coqdir; "*.cma"]         in
+  let name    = Dl.to_name ("Coq" :: path)          in
+  let dir     = Dl.to_dir path                      in
+  let coqdir  = Dl.to_dir ["$(COQDIR)"; bpath; dir] in
+  let fsdir   = Dl.to_dir [Dl.prefix; name]         in
+  let vo_pat  = Dl.to_dir [coqdir; "*.vo"]          in
+  let cma_pat = Dl.to_dir [coqdir; "*.cma"]         in
   (* Rule for the dir *)
   fprintf fmt "%s:\n\tmkdir -p %s\n" fsdir fsdir;
   (* Pattern expansion *)
@@ -41,11 +39,11 @@ let output_librule fmt bpath path =
 let output_global_rules fmt =
   (* XXX: make dirs *)
   fprintf fmt "libs-auto: %a\n" (pp_list pp_str) @@
-    List.map to_name (Jsdftlib.coq_theory_list @ Jsdftlib.plugin_list)
+    List.map (fun s -> Dl.to_name ("Coq" :: s)) (Dl.coq_theory_list @ Dl.plugin_list)
 
 let gen_makefile () =
-  List.iter (output_librule std_formatter "plugins")  Jsdftlib.plugin_list;
-  List.iter (output_librule std_formatter "theories") Jsdftlib.coq_theory_list;
+  List.iter (output_librule std_formatter "plugins")  Dl.plugin_list;
+  List.iter (output_librule std_formatter "theories") Dl.coq_theory_list;
   output_global_rules std_formatter
 
 let _ =

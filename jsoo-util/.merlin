@@ -1,0 +1,2 @@
+PKG lwt js_of_ocaml js_of_ocaml.syntax js_of_ocaml.compiler js_of_ocaml.toplevel
+EXT lwt js

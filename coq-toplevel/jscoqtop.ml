@@ -23,12 +23,13 @@
 module O = Option
 open Lwt
 
-let by_id s = Dom_html.getElementById s
-let by_id_coerce s f  = Js.Opt.get (f (Dom_html.getElementById s)) (fun () -> raise Not_found)
-let do_by_id s f = try f (Dom_html.getElementById s) with Not_found -> ()
+(* XXX: Global jsCoq object must be already initialized
+ *)
+let jsCoq : #jsCoq = Js.Unsafe.global##jsCoq
 
-let setup_pseudo_fs () =
-  Sys_js.register_autoload' "/" (fun (_,s) -> Jslibmng.coq_vo_req s)
+let by_id s           = Dom_html.getElementById s
+let by_id_coerce s f  = Js.Opt.get (f (Dom_html.getElementById s)) (fun () -> raise Not_found)
+let do_by_id s f      = try f (Dom_html.getElementById s) with Not_found -> ()
 
 let resize ~container ~textbox ()  =
   Lwt.pause () >>= fun () ->
@@ -37,66 +38,10 @@ let resize ~container ~textbox ()  =
   container##scrollTop   <- container##scrollHeight;
   Lwt.return ()
 
-let text s =
-  Tyxml_js.Html5.(span ~a:[a_class []] [pcdata s])
+let text s = Tyxml_js.Html5.(span ~a:[a_class []] [pcdata s])
 
-let append output s =
-  Dom.appendChild output (Tyxml_js.To_dom.of_element (text s))
-
+let append output s  = Dom.appendChild output (Tyxml_js.To_dom.of_element (text s))
 let current_position = ref 0
-
-(* type feedback = { *)
-(*   id : edit_or_state_id;        (\* The document part concerned *\) *)
-(*   contents : feedback_content;  (\* The payload *\) *)
-(*   route : route_id;             (\* Extra routing info *\) *)
-(* } *)
-
-let jscoq_feedback fb =
-  let open Feedback in
-  let fb_string fb =
-    match fb with
-  (* STM mandatory data (must be displayed) *)
-    | Processed      -> "Processed"
-    | Incomplete     -> "Incomplete"
-    | Complete       -> "Complete"
-    | ErrorMsg(l, s) -> "ErrorMsg: " ^ s
-
-  (* STM optional data *)
-    | ProcessingIn s       -> "ProcessingIn " ^ s
-    | InProgress d         -> "InProgress " ^ (string_of_int d)
-    | WorkerStatus(w1, w2) -> "WorkerStatus " ^ w1 ^ ", " ^ w2
-
-  (* Generally useful metadata *)
-    | Goals(_loc, g) -> "goals :" ^ g
-    | AddedAxiom -> "AddedAxiom"
-    | GlobRef (_loc, s1, s2, s3, s4) -> "GlobRef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3 ^ ", " ^ s4
-    | GlobDef (_loc, s1, s2, s3) -> "GlobDef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3
-    | FileDependency (os, s) -> "FileDep: " ^ (Option.default "" os) ^ ", " ^ s
-    | FileLoaded (s1, s2)    -> "FileLoaded " ^ s1 ^ " " ^ s2
-
-  (* Extra metadata *)
-    | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
-  (* Old generic messages *)
-    | Message m -> "Msg: " ^ m.message_content       in
-
-  let eosid_string esid =
-    match esid with
-    | Edit  eid -> "eid: " ^ string_of_int eid
-    | State sid -> "sid: " ^ (Stateid.to_string sid) in
-
-  Jslog.printf Jslog.jscoq_log "feedback for [%s]: %s\n%!"
-    (eosid_string fb.id) (fb_string fb.contents)
-
-let setup_coq hdr =
-  let coqv, coqd, ccd, ccv = Icoq.version                     in
-  let header1 = Printf.sprintf
-      " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
-      coqv coqd ccd ccv                                       in
-  let header2 = Printf.sprintf
-      " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
-  append hdr @@ header1 ^ header2;
-  Icoq.init { ml_load    = Jslibmng.coq_cma_req;
-              fb_handler = jscoq_feedback; }
 
 module History = struct
   let data = ref [|""|]
@@ -138,78 +83,17 @@ module History = struct
     then begin incr idx; textbox##value <- Js.string (!data.(!idx)) end
 end
 
-(* Hack to support dynamic linking *)
-open Compiler
-
-let split_primitives p =
-  let len = String.length p in
-  let rec split beg cur =
-    if cur >= len then []
-    else if p.[cur] = '\000' then
-      String.sub p beg (cur - beg) :: split (cur + 1) (cur + 1)
-    else
-      split beg (cur + 1) in
-  Array.of_list(split 0 0)
-
-let setup_dynlink () =
-  (*  *)
-  let initial_primitive_count =
-    Array.length (split_primitives (Symtable.data_primitive_names ())) in
-
-  let compile s =
-    let prims =
-      split_primitives (Symtable.data_primitive_names ()) in
-    let unbound_primitive p =
-      try ignore (Js.Unsafe.eval_string p); false with _ -> true in
-    let stubs = ref [] in
-    (* Array.iteri (fun i p -> *)
-    (*   Jslog.printf Jslog.jscoq_log "primitive %d %s initial\n%!" i p *)
-    (* ) prims; *)
-    Array.iteri
-      (fun i p ->
-         if i >= initial_primitive_count && unbound_primitive p then
-           stubs :=
-             Format.sprintf
-               "function %s(){caml_failwith(\"%s not implemented\")}" p p
-             :: !stubs)
-      prims;
-    (* Speed things up *)
-    (* Option.Optim.disable "inline"; *)
-    (* Option.Optim.disable "compact"; *)
-    let output_program = Driver.from_string prims s in
-    let b = Buffer.create 500000                    in
-    output_program (Pretty_print.to_buffer b);
-    Format.(pp_print_flush std_formatter ());
-    Format.(pp_print_flush err_formatter ());
-    flush stdout; flush stderr;
-    let res = Buffer.contents b                     in
-    let res = String.concat "" !stubs ^ res         in
-    Js.Unsafe.global##toplevelEval(res)
-  in
-  Js.Unsafe.global##toplevelCompile <- compile (*XXX HACK!*);
-  Js.Unsafe.global##toplevelEval <- (fun x -> Js.Unsafe.eval_string x);
-  ()
-
 let run _ =
   let container = by_id "toplevel-container" in
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
-
-  let sid = ref None in
-  let eid = ref 0    in
 
   let execute () =
     let execute_com content =
       current_position := output##childNodes##length;
       append output ("# " ^ content ^ "\n");
       History.push content;
-      sid := O.map (fun osid ->
-        decr eid;
-        let nsid = Icoq.add_to_doc osid !eid content in
-        try
-          Icoq.commit (); nsid
-        with _ ->
-          Icoq.edit_doc osid; osid) !sid;
+      let _ = jsCoq##add content in
       resize ~container ~textbox ()                                     >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
@@ -223,17 +107,6 @@ let run _ =
     let commands = List.map (fun s -> s ^ ".") commands                 in
     textbox##value <- Js.string "";
     Lwt_list.iter_s execute_com commands
-  in
-
-  let add_to_doc (coq_cmd : Js.js_string Js.t) (id : int) : unit =
-    let cmd = Js.to_string coq_cmd                                      in
-    sid := O.map (fun osid ->
-        decr eid;
-        let nsid = Icoq.add_to_doc osid !eid cmd in
-        try
-          Icoq.commit (); nsid
-        with _ ->
-          Icoq.edit_doc osid; osid) !sid
   in
 
   let history_down e =
@@ -277,8 +150,8 @@ let run _ =
   in
 
   begin (* setup handlers *)
-    textbox##onkeyup <-   Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
-    textbox##onchange <-  Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
+    textbox##onkeyup   <- Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
+    textbox##onchange  <- Dom_html.handler (fun _ -> Lwt.async (resize ~container ~textbox); Js._true);
     textbox##onkeydown <- Dom_html.handler (fun e ->
         match e##keyCode with
         | 13 when not (meta e) -> Lwt.async execute; Js._false
@@ -306,22 +179,17 @@ let run _ =
     textbox##focus ();
     Lwt.return_unit);
 
-
   setup_printers  ();
-  setup_pseudo_fs ();
-  setup_dynlink   ();
   History.setup   ();
-  sid := Some (setup_coq output);
+  append output (jsCoq##init ());
 
-  (* Start downloads of libs *)
-  (* XXX: add modules to load by default as the parameters *)
-  Jslibmng.init   ();
-
+(*
   let digest_aux s = Js.string @@ Digest.to_hex @@ Digest.string s in
   Js.Unsafe.global##digest <- digest_aux;
 
-  (* let k () = () in *)
-  (* Js.Unsafe.global##fake_cc <- k; *)
+  let k () = () in
+  Js.Unsafe.global##fake_cc <- k;
+ *)
 
   (* Setup an initial value. *)
   Lwt.async (fun () ->

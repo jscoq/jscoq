@@ -1,0 +1,4 @@
+B /home/egallego/external/coq-git/**
+PKG lwt js_of_ocaml js_of_ocaml.syntax
+EXT lwt js
+
