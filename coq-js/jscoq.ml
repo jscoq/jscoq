@@ -20,7 +20,9 @@ class type jsCoq = object
   method add         : ('self t, js_string t -> unit)      meth_callback writeonly_prop
   (* method add         : ('self t, js_string t -> Stateid.t) meth_callback writeonly_prop *)
   (* method commit      : ('self t, bool)                     meth_callback writeonly_prop *)
-  method onLog       : ('self t, js_string t)              event_listener writeonly_prop
+  method onLog       : ('self t, js_string t)         event_listener writeonly_prop
+  (* We don't want to use event_listener due to limitations of invoke_handler... *)
+  (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
 end
 
 let setup_pseudo_fs () =
@@ -70,7 +72,9 @@ let jscoq_feedback_handler jscoq (fb : Feedback.feedback) =
   let fb_s = Printf.sprintf "feedback for [%s]: %s\n%!"
                             (string_of_eosid fb.id)
                             (string_of_feedback fb.contents)  in
+
   let _    = invoke_handler jscoq##onLog jscoq (string fb_s)  in
+  (* Opt.iter jscoq##onLog (fun h -> Js.Unsafe.call jscoq [|Js.Unsafe.inject (string fb_s)|]); *)
   ()
 
 let sid = ref None
@@ -88,7 +92,6 @@ let jscoq_init this =
   sid := Some (Icoq.init { ml_load    = Jslibmng.coq_cma_req;
                            fb_handler = (jscoq_feedback_handler this);
                          });
-
   Jslibmng.init ();
   string @@ header1 ^ header2
 

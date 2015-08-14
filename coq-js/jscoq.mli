@@ -19,6 +19,7 @@ class type jsCoq = object
   method init        : ('self t, js_string t)         meth_callback writeonly_prop
   method add         : ('self t, js_string t -> unit) meth_callback writeonly_prop
   method onLog       : ('self t, js_string t)         event_listener writeonly_prop
+  (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
 end
 
 (*
