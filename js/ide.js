@@ -83,13 +83,6 @@ var Editor;
         var self = this;
         this._editor.on('change', function(evt){self.onCMChange(evt);});
 
-        jsCoq.onLog   = function(e) { console.log(e.toString()); };
-        jsCoq.onError = function(e) { console.log(e.toString());
-                                      jsCoq.sid.pop();
-                                      jsCoq.edit(jsCoq.sid.last());
-                                    };
-        jsCoq.sid = [];
-        jsCoq.sid.push(jsCoq.init());
     };
 
     Editor.prototype.eatNextStatement = function() {
@@ -161,8 +154,8 @@ var Editor;
         jsCoq.sid.push(jsCoq.add(jsCoq.sid.last(), -1, stm.text));
 
         // We should wait for the events that signal the correct behaviour.
-        mark.clear();
         jsCoq.commit(jsCoq.sid.last());
+        mark.clear();
         mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
 
         mark.stm = stm;

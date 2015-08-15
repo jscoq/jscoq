@@ -42,7 +42,19 @@ Check x.
     <script src="coq-js/jscoq.js" type="text/javascript"></script>
     <script src="js/ide.js" type="text/javascript"></script>
     <script type="text/javascript">
-      var ide = new IDELayout();
+     var ide = new IDELayout();
+
+     /* We need to do the setup here for now... */
+     jsCoq.onError = function(e) { console.log(e.toString());
+                                   jsCoq.sid.pop();
+                                   jsCoq.edit(jsCoq.sid.last());
+                                   ide.editor.popStatement();
+     };
+
+     jsCoq.onLog   = function(e) { console.log(e.toString()); };
+
+     jsCoq.sid = [];
+     jsCoq.sid.push(jsCoq.init());
     </script>
   </body>
 
