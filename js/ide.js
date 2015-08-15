@@ -80,8 +80,12 @@ var Editor;
         
         var self = this;
         this._editor.on('change', function(evt){self.onCMChange(evt);});
+
+        jsCoq.onLog   = function(e) { console.log(e.toString()) };
+        jsCoq.onError = function(e) { console.log(e.toString()) };
+        this.sid = jsCoq.init();
     };
-    
+
     Editor.prototype.eatNextStatement = function() {
         var cm = this._editor;
         var doc = cm.getDoc();
@@ -143,21 +147,22 @@ var Editor;
             }
         }
     };
-    
+
     Editor.prototype.coqEval = function(stm) {
         var doc = this._editor.getDoc();
         var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
-        if (coq_add_to_doc(stm.text)) {
-            mark.clear();
-            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
-        } else {
-            mark.clear();
-            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
-        }
+
+        this.sid = jsCoq.add(this.sid, -1, stm.text);
+
+        // We should wait for the events that signal the correct behaviour.
+        mark.clear();
+        jsCoq.commit(this.sid);
+        mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+
         mark.stm = stm;
         stm.mark = mark;
     };
-    
+
     var IDGen = function() {
         this.id = 1;
     };
