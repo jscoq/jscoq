@@ -20,12 +20,70 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *)
 
-module O = Option
 open Lwt
+open Js
+open Dom
 
-(* XXX: Global jsCoq object must be already initialized
- *)
-let jsCoq : #jsCoq = Js.Unsafe.global##jsCoq
+(* XXX: Global jsCoq object must be already initialized *)
+(* XXX: Sad fact about sync *)
+
+module Stateid = struct
+  type t = int
+end
+
+module Jslog = struct
+
+(* HTML log buffers *)
+type t = {
+  buffer : Dom_html.element Js.t;
+  append : bool;
+}
+type log_level =
+  | Debug
+  | Info
+  | Warn
+  | Error
+
+let init el app = {
+  buffer = el;
+  append = app;
+}
+
+let init_by_id id app =
+  let b = Dom_html.getElementById id in
+  init b app
+
+let add lb ll el =
+  if lb.append then (
+    Dom.appendChild lb.buffer el;
+    lb.buffer##scrollTop <- lb.buffer##scrollHeight
+  ) else
+    Dom.insertBefore lb.buffer el (lb.buffer##firstChild)
+
+let text s =
+  Tyxml_js.Html5.(span ~a:[a_class []] [pcdata s])
+
+let add_text lb ll msg =
+  add lb ll (Tyxml_js.To_dom.of_element (text msg))
+
+let printf lb =
+  Printf.ksprintf (add_text lb Info)
+
+let jscoq_log : t =
+  init_by_id "jscoq-log-area" false
+
+end
+
+class type jsCoq = object
+  method init        : Stateid.t meth
+  method add         : Stateid.t -> int -> js_string t -> Stateid.t meth
+  method edit        : Stateid.t -> unit meth
+  method commit      : Stateid.t -> unit meth
+  method onLog       : ('self t, js_string t -> unit) meth_callback writeonly_prop
+  method onError     : ('self t, Stateid.t   -> unit) meth_callback writeonly_prop
+end
+
+let jsCoq : #jsCoq Js.t = Js.Unsafe.global##jsCoq
 
 let by_id s           = Dom_html.getElementById s
 let by_id_coerce s f  = Js.Opt.get (f (Dom_html.getElementById s)) (fun () -> raise Not_found)
@@ -84,6 +142,9 @@ module History = struct
 end
 
 let run _ =
+  let csid = ref 0                           in
+  let osid = ref 0                           in
+  let eid  = ref (-1)                        in
   let container = by_id "toplevel-container" in
   let output    = by_id "output" in
   let textbox : 'a Js.t = by_id_coerce "userinput" Dom_html.CoerceTo.textarea in
@@ -93,7 +154,10 @@ let run _ =
       current_position := output##childNodes##length;
       append output ("# " ^ content ^ "\n");
       History.push content;
-      let _ = jsCoq##add content in
+      Jslog.printf Jslog.jscoq_log "sending to %d\n" !csid;
+      osid := !csid; decr eid;
+      csid := jsCoq##add(!csid, !eid, string content);
+      jsCoq##commit(!csid);
       resize ~container ~textbox ()                                     >>= fun () ->
       container##scrollTop <- container##scrollHeight;
       textbox##focus();
@@ -168,8 +232,6 @@ let run _ =
   Lwt.async_exception_hook:=(fun exc ->
     Format.eprintf "exc during Lwt.async: %s@." (Printexc.to_string exc);
     match exc with
-    | Errors.UserError(s, ppmsg) -> Jslog.printf Jslog.jscoq_log
-       "UserError %s | %s\n%!" s (Pp.string_of_ppcmds ppmsg)
     | Js.Error e -> Firebug.console##log(e##stack)
     | _ -> ());
 
@@ -181,15 +243,16 @@ let run _ =
 
   setup_printers  ();
   History.setup   ();
-  append output (jsCoq##init ());
-
-(*
-  let digest_aux s = Js.string @@ Digest.to_hex @@ Digest.string s in
-  Js.Unsafe.global##digest <- digest_aux;
-
-  let k () = () in
-  Js.Unsafe.global##fake_cc <- k;
- *)
+  jsCoq##onLog   <- Js.wrap_callback
+                    (function s -> Jslog.printf Jslog.jscoq_log "log %s!" (Js.to_string s));
+  jsCoq##onError <- Js.wrap_callback
+                      (function se ->
+                                Jslog.printf Jslog.jscoq_log "error on se %d, setting from %d to %d!" se !csid !osid;
+                                csid := !osid;
+                                jsCoq##edit(!csid)
+                      );
+  csid := jsCoq##init ();
+  jsCoq##commit(!csid);
 
   (* Setup an initial value. *)
   Lwt.async (fun () ->

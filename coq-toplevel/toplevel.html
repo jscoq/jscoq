@@ -5,9 +5,9 @@
   <head>
     <title>JsCoq toplevel</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" href="ejs/pace.css" />
-    <link rel="stylesheet" href="css/jscoq.css" />
+    <link rel="stylesheet" href="../css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../external/pace/pace.css" />
+    <link rel="stylesheet" href="../css/jscoq.css" />
     <script type="text/javascript">
 
       window.onhashchange = function() { window.location.reload() }
@@ -31,18 +31,15 @@
       }
      function loadscript(url) { load_script(url); }
 
-     load_script("ejs/pace.min.js")
-         /* load_script("filesys/cmas/runtime.js");
-            load_script("filesys/cmas/predefined_exceptions.js");
-            load_script("filesys/cmas/stdlib.js");
-            load_script("filesys/cmas/bigint.cmo.js"); */
+     load_script("../external/pace/pace.min.js");
+     load_script("../coq-js/jscoq.js");
      load_script("jscoqtop.js");
     </script>
   </head>
   <body>
     <div id="toplevel-container">
       <a href="" >
-          Welcome to JsCoq 0.2s, castles edition!
+          Welcome to JsCoq 0.2z, castles edition!
       </a>
       <pre id="output"></pre>
       <div>
