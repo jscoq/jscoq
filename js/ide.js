@@ -4,7 +4,9 @@ var Editor;
 (function(){
     var SEP_SIZE = 6;
     var DOT_R = /\.$|\.\s/;
-    
+
+    Array.prototype.last = function() { return this[this.length-1]; }
+
     IDELayout = function() {
         this.left_panel = document.getElementById('left-panel');
         this.toolsbar = document.getElementById('toolsbar');
@@ -77,13 +79,17 @@ var Editor;
              matchBrackets: true
             }
         );
-        
+
         var self = this;
         this._editor.on('change', function(evt){self.onCMChange(evt);});
 
-        jsCoq.onLog   = function(e) { console.log(e.toString()) };
-        jsCoq.onError = function(e) { console.log(e.toString()) };
-        this.sid = jsCoq.init();
+        jsCoq.onLog   = function(e) { console.log(e.toString()); };
+        jsCoq.onError = function(e) { console.log(e.toString());
+                                      jsCoq.sid.pop();
+                                      jsCoq.edit(jsCoq.sid.last());
+                                    };
+        jsCoq.sid = [];
+        jsCoq.sid.push(jsCoq.init());
     };
 
     Editor.prototype.eatNextStatement = function() {
@@ -152,11 +158,11 @@ var Editor;
         var doc = this._editor.getDoc();
         var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
 
-        this.sid = jsCoq.add(this.sid, -1, stm.text);
+        jsCoq.sid.push(jsCoq.add(jsCoq.sid.last(), -1, stm.text));
 
         // We should wait for the events that signal the correct behaviour.
         mark.clear();
-        jsCoq.commit(this.sid);
+        jsCoq.commit(jsCoq.sid.last());
         mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
 
         mark.stm = stm;
