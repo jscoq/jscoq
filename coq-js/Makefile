@@ -61,10 +61,15 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 # 	   $(JSOOFLAGS) -package camlp5                                  \
 # 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
 
-jscoq.byte: $(COQDEPS) jscoq.cmo jsoo_dl.cmo
+
+# Enable/disable dynlink hack (this bundles the whole compiler)
+# JSOO_DL=jsoo_dl.cmo
+JSOO_DL=
+
+jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5                                  \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jsoo_dl.cmo jscoq.cmo -o jscoq.byte
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
