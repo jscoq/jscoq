@@ -132,7 +132,11 @@ var Editor;
         if (!this.statements.length)
             return false;
         var stm = this.statements.pop();
-        stm.mark.clear();
+        if(stm.mark) {
+            stm.mark.clear();
+        }
+        jsCoq.sid.pop();
+        jsCoq.edit(jsCoq.sid.last());
         return true;
     };
     
@@ -155,7 +159,11 @@ var Editor;
 
         // We should wait for the events that signal the correct behaviour.
         jsCoq.commit(jsCoq.sid.last());
-        mark.clear();
+
+        // Should be on the onProcessed handler.
+        // indeed it comes from state_ready_hook / Complete feedback
+
+        if(mark) {mark.clear();}
         mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
 
         mark.stm = stm;
