@@ -11,10 +11,7 @@ INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR
 CAMLDEBUG=
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
-JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml
-JSOOFLAGS+=-package yojson,js_of_ocaml.compiler,js_of_ocaml.toplevel
-# For when we remove dyncomp
-# JSOOFLAGS+=-package yojson
+JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -55,17 +52,15 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/parsing/highparsing.cma	\
 	$(COQDIR)/tactics/hightactics.cma
 
-# -linkall is delicate here due the way js_of_ocaml works.
-# jscoq.byte: $(COQDEPS) jscoq.cmo
-# 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
-# 	   $(JSOOFLAGS) -package camlp5                                  \
-# 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
-
-
-# Enable/disable dynlink hack (this bundles the whole compiler)
+# Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
 # JSOO_DL=jsoo_dl.cmo
 JSOO_DL=
 
+ifeq "${JSOO_DL}" "jsoo_dl.cmo"
+JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
+endif
+
+# -linkall seems necessary, otherwise some internal Coq tables are dropped.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5                                  \
