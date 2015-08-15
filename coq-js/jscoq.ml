@@ -16,11 +16,13 @@ open Js
 open Dom
 
 class type jsCoq = object
-  method init        : ('self t, js_string t)              meth_callback writeonly_prop
-  method add         : ('self t, js_string t -> unit)      meth_callback writeonly_prop
-  (* method add         : ('self t, js_string t -> Stateid.t) meth_callback writeonly_prop *)
-  (* method commit      : ('self t, bool)                     meth_callback writeonly_prop *)
-  method onLog       : ('self t, js_string t)         event_listener writeonly_prop
+  method init        : ('self t, Stateid.t)             meth_callback writeonly_prop
+  method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t)
+                         meth_callback writeonly_prop
+  method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
+  method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
+  method onLog       : ('self t, js_string t)           event_listener writeonly_prop
+  method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
   (* We don't want to use event_listener due to limitations of invoke_handler... *)
   (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
 end
@@ -67,18 +69,15 @@ let string_of_eosid esid =
   | Edit  eid -> "eid: " ^ string_of_int eid
   | State sid -> "sid: " ^ (Stateid.to_string sid)
 
-let jscoq_feedback_handler jscoq (fb : Feedback.feedback) =
+let jscoq_feedback_handler this (fb : Feedback.feedback) =
   let open Feedback in
   let fb_s = Printf.sprintf "feedback for [%s]: %s\n%!"
                             (string_of_eosid fb.id)
                             (string_of_feedback fb.contents)  in
 
-  let _    = invoke_handler jscoq##onLog jscoq (string fb_s)  in
+  let _    = invoke_handler this##onLog this (string fb_s)  in
   (* Opt.iter jscoq##onLog (fun h -> Js.Unsafe.call jscoq [|Js.Unsafe.inject (string fb_s)|]); *)
   ()
-
-let sid = ref None
-let eid = ref 0
 
 let jscoq_init this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
@@ -89,22 +88,32 @@ let jscoq_init this =
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
 
   setup_pseudo_fs ();
-  sid := Some (Icoq.init { ml_load    = Jslibmng.coq_cma_req;
-                           fb_handler = (jscoq_feedback_handler this);
-                         });
+  let sid = Icoq.init { ml_load    = Jslibmng.coq_cma_req;
+                        fb_handler = (jscoq_feedback_handler this);
+                      } in
   Jslibmng.init ();
-  string @@ header1 ^ header2
+  let _ = string @@ header1 ^ header2 in
+  sid
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
-let jscoq_add this (cmd : js_string t) : unit =
-  sid := Option.map (fun osid ->
-             decr eid;
-             let nsid = Icoq.add_to_doc osid !eid (to_string cmd) in
-             try
-               Icoq.commit nsid; nsid
-             with _ ->
-               Icoq.edit_doc osid;
-               osid) !sid
+let jscoq_add this sid eid cmd  =
+  Icoq.add_to_doc sid eid (to_string cmd)
+
+let jscoq_edit this sid : unit = Icoq.edit_doc sid
+
+let jscoq_commit this sid =
+  let ee () = let _ = invoke_handler this##onError this sid in () in
+  try
+    (* XXX: Careful with the difference between Stm.observe and Stm.finish XXX *)
+    Icoq.commit_doc sid
+  with
+    | Errors.UserError(msg, pp) ->
+       (* console.log *)
+       ee ()
+    | Errors.AlreadyDeclared pp ->
+       ee ()
+    | _ ->
+       ee ()
 
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
@@ -113,9 +122,12 @@ let jsCoq : jsCoq t =
   global##jsCoq
 
 let _ =
-  jsCoq##init  <- Js.wrap_meth_callback jscoq_init;
-  jsCoq##add   <- Js.wrap_meth_callback jscoq_add;
-  jsCoq##onLog <- no_handler;
+  jsCoq##init    <- Js.wrap_meth_callback jscoq_init;
+  jsCoq##add     <- Js.wrap_meth_callback jscoq_add;
+  jsCoq##edit    <- Js.wrap_meth_callback jscoq_edit;
+  jsCoq##commit  <- Js.wrap_meth_callback jscoq_commit;
+  jsCoq##onLog   <- no_handler;
+  jsCoq##onError <- no_handler;
   ()
 
 (*

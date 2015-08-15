@@ -49,7 +49,5 @@ val edit_doc : Stateid.t -> unit
 
 (** [commit sid] commit the changes to the current document. It will
     produce an exception in case of error. *)
-val commit : Stateid.t -> unit
-
-
+val commit_doc : Stateid.t -> unit
 

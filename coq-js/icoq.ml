@@ -93,9 +93,9 @@ let add_load_path pkg pkg_path =
 
 let add_to_doc sid eid s = fst @@ Stm.add ~ontop:sid false eid s
 
-let edit_doc sid = let _ = Stm.edit_at sid in ()
+let edit_doc   sid       = let _ = Stm.edit_at sid in ()
 
-let commit = Stm.observe
+let commit_doc = Stm.observe
 
 (*
 let print_toplevel_error (e, info) =
