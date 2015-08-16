@@ -27,12 +27,27 @@ var Editor;
 
         /* Setup Coq */
 
+        function add_to_log(txt) {
+            var txt_span = document.createElement("span");
+            txt_span.textContent = txt;
+            var lb = document.getElementById("message-panel");
+            lb.insertBefore(txt_span, lb.firstChild);
+        }
+
         // On error we go back to the last sid.
         jsCoq.onError = function(e) { console.log(e.toString());
+                                      // add_to_log(e.toString());
                                       self.editor.popStatement();
                                     };
 
-        jsCoq.onLog   = function(e) { console.log(e.toString()); };
+        jsCoq.onLog   = function(e) { var estr = e.toString();
+                                      console.log(estr);
+                                      // Hack
+                                      var errstr = "ErrorMsg";
+                                      if (estr.indexOf(errstr) != -1) {
+                                          add_to_log(estr);
+                                      }
+                                    };
 
         // Initial sid.
         jsCoq.sid = [];
