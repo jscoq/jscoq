@@ -59,13 +59,16 @@ clean:
 	$(MAKE) -C coq-js    clean
 	$(MAKE) -C coq-tools clean
 # $(MAKE) -C jsoo-util clean
-	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs
+	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-fs
 
 ########################################################################
 # Local stuff
 upload: all
-	rsync --delete -avzp index.html jscoq.html jscoqtop.js coq_pkg.json filesys css ejs ~/x80/rhino-coq/
+	ln -sf ide.html index.html
+	rsync --delete -avzp index.html ide.html js css images coq-fs coq_pkg.json external ~/x80/rhino-coq/
+	mkdir -p ~/x80/rhino-coq/coq-js/
+	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
 # $(shell ./x80-sync.sh)
 
 pau:
