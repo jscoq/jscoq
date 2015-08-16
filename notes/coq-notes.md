@@ -215,9 +215,12 @@ overlap between the new error reporting using feedback and Coq's
 kernel raising exceptions. This is not a big problem, but care must be
 taken when using the STM API.
 
-The approach CoqIDE takes is to wrap all the exceptions.
+The approach CoqIDE takes is to wrap all the exceptions, see
+[`ide_slave.ml`](https://github.com/ejgallego/coq/blob/ejga-commentary/ide/ide_slave.ml#L327)
 
-The error hooks in `Feedback` are set by default to send 
+The error hooks in `Feedback` are set by default to send `ErrorMsg` feedback messages.
+
+Some of exceptions we are allowed to catch are:
 
 ```ocaml
 [in errors.mli]
