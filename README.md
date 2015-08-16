@@ -57,6 +57,7 @@ Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install/Build ##
 
+* _warning_: The build process takes more than 8GiB of RAM.
 * First, you need a dual 32/64 bits Ocaml toolchain. Get a
   recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then run:
