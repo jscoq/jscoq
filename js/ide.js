@@ -37,7 +37,7 @@ var Editor;
         // Initial sid.
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
-
+        document.getElementById("goal-text").textContent = jsCoq.version();
     };
 
     IDELayout.prototype.fitToScreen = function(evt) {

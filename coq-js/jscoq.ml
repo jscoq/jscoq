@@ -17,6 +17,7 @@ open Dom
 
 class type jsCoq = object
   method init        : ('self t, Stateid.t)             meth_callback writeonly_prop
+  method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
@@ -92,21 +93,22 @@ let setup_printers () =
   with Not_found -> ()
 
 let jscoq_init this =
-  let coqv, coqd, ccd, ccv = Icoq.version                     in
-  let header1 = Printf.sprintf
-      " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
-      coqv coqd ccd ccv                                       in
-  let header2 = Printf.sprintf
-      " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
-
   setup_pseudo_fs ();
   setup_printers ();
   let sid = Icoq.init { ml_load    = Jslibmng.coq_cma_req;
                         fb_handler = (jscoq_feedback_handler this);
                       } in
   Jslibmng.init ();
-  let _ = string @@ header1 ^ header2 in
   sid
+
+let jscoq_version this =
+  let coqv, coqd, ccd, ccv = Icoq.version                     in
+  let header1 = Printf.sprintf
+      " JsCoq alpha, Coq %s (%s), compiled on %s, Ocaml %s\n"
+      coqv coqd ccd ccv                                       in
+  let header2 = Printf.sprintf
+      " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
+  string @@ header1 ^ header2
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
 let jscoq_add this sid eid cmd  =
@@ -141,6 +143,7 @@ let jsCoq : jsCoq t =
 
 let _ =
   jsCoq##init    <- Js.wrap_meth_callback jscoq_init;
+  jsCoq##version <- Js.wrap_meth_callback jscoq_version;
   jsCoq##add     <- Js.wrap_meth_callback jscoq_add;
   jsCoq##edit    <- Js.wrap_meth_callback jscoq_edit;
   jsCoq##commit  <- Js.wrap_meth_callback jscoq_commit;
