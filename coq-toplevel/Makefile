@@ -35,4 +35,4 @@ jscoqtop.js: jscoqtop.byte
 	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoqtop.byte
 
 clean:
-	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.{byte,js}
+	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoqtop.byte jscoqtop.js
