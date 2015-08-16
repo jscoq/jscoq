@@ -47,6 +47,6 @@ let printf lb =
 (* jscoq internal log *)
 let jscoq_log : t =
   try
-    init_by_id "jscoq-log-area" false
-  with Not_found ->
     init_by_id "message-panel"  false
+  with Not_found ->
+    init_by_id "jscoq-log-area" false

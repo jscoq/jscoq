@@ -81,14 +81,14 @@ let jscoq_feedback_handler this (fb : Feedback.feedback) =
 
 let setup_printers () =
   try
-    let open Jslog  in
-    let proof_msg   = init_by_id "message-panel" true in
-    let query_msg   = init_by_id "message-panel" true in
+    let open Jslog            in
+    let js_stdout = jscoq_log in
+    let js_stderr = jscoq_log in
     (* How to create a channel *)
     (* let _sharp_chan = open_out "/dev/null0" in *)
     (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
-    Sys_js.set_channel_flusher stdout (add_text proof_msg Info);
-    Sys_js.set_channel_flusher stderr (add_text query_msg Info)
+    Sys_js.set_channel_flusher stdout (add_text js_stdout Info);
+    Sys_js.set_channel_flusher stderr (add_text js_stderr Info)
   with Not_found -> ()
 
 let jscoq_init this =

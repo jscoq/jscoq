@@ -59,11 +59,14 @@ let preload_vo_file base_url (file, hash) : unit Lwt.t =
          md5        = Digest.bytes s;
        } in
        Hashtbl.add file_cache (Js.string full_url) cache_entry;
+       Jslog.printf Jslog.jscoq_log "Cached %s [%d]\n%!" full_url bl
+       (*
        Jslog.printf Jslog.jscoq_log
          "Cached %s [%d/%d/%d/%s]\n%!"
           full_url bl (u8arr##length)
           (cache_entry.vo_content##length)
           (Digest.to_hex cache_entry.md5)
+        *)
       );
   Lwt.return_unit
 
@@ -129,7 +132,7 @@ let coq_vo_req url =
   (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
   if not @@ is_bad_url url then
     try let c_entry = Hashtbl.find file_cache url in
-        Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url);
+        (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
         Js.Unsafe.global##lastCoqReq <- url;
         Some c_entry.vo_content
     with
