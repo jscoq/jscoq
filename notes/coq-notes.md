@@ -68,12 +68,13 @@ The basic datatypes involved are:
 * [`add`](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.mli#L22-24)
 
   `add` builds a document by appending a new node.
-```
+
+   ```ocaml
 (* [add ontop check vebose eid s]
 val add : ontop:Stateid.t -> ?newtip:Stateid.t -> ?check:(located_vernac_expr -> unit) ->
   bool -> edit_id -> string ->
     Stateid.t * [ `NewTip | `Unfocus of Stateid.t ]
-```
+   ```
 
    It basically parses the input text and returns the new document
    id. If parsing fails, it will produce an exception and send
@@ -83,7 +84,7 @@ val add : ontop:Stateid.t -> ?newtip:Stateid.t -> ?check:(located_vernac_expr ->
 
 * [edit_at](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.mli#L40)
 
-   ```
+   ```ocaml
 val edit_at : Stateid.t -> [ `NewTip | `Focus of focus ]
    ```
 
@@ -95,19 +96,19 @@ val edit_at : Stateid.t -> [ `NewTip | `Focus of focus ]
 
 * [`observe`](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.mli#L45)
 
-```
+   ```ocaml
 val observe : Stateid.t -> unit
-```
+   ```
 
    `add` just builds the document, `observe` will actually "run" Coq
     until the specified `Stateid.t`.
 
 * The stm API is completed by other functions, such as:
 
-```
+   ```ocaml
 val init : unit -> unit
 val get_current_state : unit -> Stateid.t
-```
+   ```
 
 ### Feedback
 
@@ -138,11 +139,11 @@ Operations related to feedback are split among three modules:
   The main function called from Coq is
   [`feedback`](https://github.com/ejgallego/coq/blob/ejga-commentary/lib/pp.mli#L175-178)
 
-```
+  ```ocaml
 val feedback :
   ?state_id:Feedback.state_id -> ?edit_id:Feedback.edit_id ->
   ?route:Feedback.route_id -> Feedback.feedback_content -> unit
-```
+  ```
 
   which will produce the corresponding feedback.
 
@@ -151,9 +152,9 @@ val feedback :
 
    Feedback consumers register with:
 
-```
+   ```ocaml
 val set_feeder : (Feedback.feedback -> unit) -> unit
-```
+   ```
 
    Note that it seems only one consumer can be registered.
 
@@ -161,13 +162,13 @@ val set_feeder : (Feedback.feedback -> unit) -> unit
 
   `Stm` has finer-grained `Hooks` for crucial events:
 
-```
+   ```ocaml
 val state_computed_hook    : (Stateid.t -> in_cache:bool -> unit) Hook.t
 val parse_error_hook       : (Feedback.edit_or_state_id -> Loc.t -> Pp.std_ppcmds -> unit) Hook.t
 val execution_error_hook   : (Stateid.t -> Loc.t -> Pp.std_ppcmds -> unit) Hook.t
 val unreachable_state_hook : (Stateid.t -> unit) Hook.t
 val state_ready_hook       : (Stateid.t -> unit) Hook.t
-```
+   ```
 
    By default, this functions just call `feedback` with an appropriate
    constructor (usually `MsgError`) but ideally their implementation
@@ -194,7 +195,7 @@ The approach CoqIDE takes is to wrap all the exceptions.
 
 The error hooks in `Feedback` are set by default to send 
 
-```
+```ocaml
 [in errors.mli]
 exception UserError of string * std_ppcmds
 exception AlreadyDeclared of std_ppcmds
