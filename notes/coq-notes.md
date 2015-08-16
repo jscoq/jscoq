@@ -80,7 +80,7 @@ The basic datatypes involved are:
   split into particular cases and the `edit_or_state_id` removed. But
   this is a big clenaup.
 
-* [`message`]((https://github.com/ejgallego/coq/blob/ejga-commentary/lib/feedback.mli#L12-22))
+* [`message`](https://github.com/ejgallego/coq/blob/ejga-commentary/lib/feedback.mli#L12-22)
 
   _fixme?_: As noted in the Coq sources, this is the old type of
   feedback, which doesn't include information about which particular
@@ -106,7 +106,7 @@ val add : ontop:Stateid.t -> ?newtip:Stateid.t -> ?check:(located_vernac_expr ->
 
    _todo_: I have no clue when `Unfocus` is returned.
 
-* [edit_at](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.mli#L40)
+* [`edit_at`](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.mli#L40)
 
    ```ocaml
 val edit_at : Stateid.t -> [ `NewTip | `Focus of focus ]
