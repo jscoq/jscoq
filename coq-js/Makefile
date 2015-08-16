@@ -53,8 +53,11 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/tactics/hightactics.cma
 
 # Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
-# JSOO_DL=jsoo_dl.cmo
-JSOO_DL=
+DL_HACK=yes
+
+ifeq "${DL_HACK}" "yes"
+JSOO_DL=jsoo_dl.cmo
+endif
 
 ifeq "${JSOO_DL}" "jsoo_dl.cmo"
 JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
