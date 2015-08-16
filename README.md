@@ -9,14 +9,13 @@ running in the browser! Try it:
 
 <https://x80.org/rhino-coq/>
 
-Coq runs in the browser using the `js_of_ocaml` compiler, so no
-servers or external programs are needed.
-
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-The current release provides a `jsCoq` JS object, so you can embed Coq
-in your particular javascript application.
+Coq runs in the browser using the `js_of_ocaml` compiler, so no
+servers or external programs are needed. The current release provides
+a `jsCoq` JS object, so you can embed Coq in your particular
+javascript application.
 
 Chrome (>= 45) or Mozilla Firefox are required for now. Browsers'
 stack will tend to overflow when loading large plugins (that is,
