@@ -22,39 +22,34 @@
         </div>
         <div id="script-panel">
           <textarea>
-Inductive False := .
-Inductive False := .
-Inductive False2 := .
 Require Import Coq.Init.Prelude.
-Definition x := 0.
-Print x.
-Check x.
-</textarea>
+
+Lemma addn0 n : n + 0 = 0 + n.
+Proof. now induction n. Qed.
+
+Lemma addSn n m : n + S m = S (n + m).
+Proof. now auto. Qed.
+
+Lemma addnC n m : n + m = m + n.
+Proof.
+induction n.
+  now rewrite addn0.
+now simpl; rewrite addSn; auto.
+Qed.
+          </textarea>
         </div>
       </div>
       <div id="vsep"><br/></div>
       <div id="right-panel">
-        <div id="goal-panel">goal</div>
+        <div id="goal-panel"><pre id="goal-text">goal</pre></div>
         <div id="hsep"><br/></div>
-        <div id="message-panel">message</div>
+        <div class="msg-area" id="message-panel">message</div>
       </div>
     </div>
     <script src="coq-js/jscoq.js" type="text/javascript"></script>
     <script src="js/ide.js" type="text/javascript"></script>
     <script type="text/javascript">
      var ide = new IDELayout();
-
-     /* We need to do the setup here for now... */
-     jsCoq.onError = function(e) { console.log(e.toString());
-                                   jsCoq.sid.pop();
-                                   jsCoq.edit(jsCoq.sid.last());
-                                   ide.editor.popStatement();
-     };
-
-     jsCoq.onLog   = function(e) { console.log(e.toString()); };
-
-     jsCoq.sid = [];
-     jsCoq.sid.push(jsCoq.init());
     </script>
   </body>
 

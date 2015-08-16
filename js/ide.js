@@ -2,108 +2,162 @@ var IDELayout;
 var Editor;
 
 (function(){
+
     var SEP_SIZE = 6;
     var DOT_R = /\.$|\.\s/;
 
     Array.prototype.last = function() { return this[this.length-1]; }
 
     IDELayout = function() {
-        this.left_panel = document.getElementById('left-panel');
-        this.toolsbar = document.getElementById('toolsbar');
-        this.right_panel = document.getElementById('right-panel');
-        this.script_panel = document.getElementById('script-panel');
-        this.goal_panel = document.getElementById('goal-panel');
+
+        this.left_panel    = document.getElementById('left-panel');
+        this.toolsbar      = document.getElementById('toolsbar');
+        this.right_panel   = document.getElementById('right-panel');
+        this.script_panel  = document.getElementById('script-panel');
+        this.goal_panel    = document.getElementById('goal-panel');
         this.message_panel = document.getElementById('message-panel');
-        this.vsep = document.getElementById('vsep');
-        this.hsep = document.getElementById('hsep');
-        this.editor = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
+        this.vsep          = document.getElementById('vsep');
+        this.hsep          = document.getElementById('hsep');
+        this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
-        this.toolsbar.addEventListener('click', function(evt){self.toolbarClickHandler(evt);});
-        window.addEventListener('load', function(evt){self.fitToScreen(evt);});
-        window.addEventListener('resize', function(evt){self.fitToScreen(evt);});
+        this.toolsbar.addEventListener('click',  function(evt){ self.toolbarClickHandler(evt); });
+        window.addEventListener       ('load',   function(evt){ self.fitToScreen(evt); });
+        window.addEventListener       ('resize', function(evt){ self.fitToScreen(evt); });
+
+        /* Setup Coq */
+
+        // On error we go back to the last sid.
+        jsCoq.onError = function(e) { console.log(e.toString());
+                                      self.editor.popStatement();
+                                    };
+
+        jsCoq.onLog   = function(e) { console.log(e.toString()); };
+
+        // Initial sid.
+        jsCoq.sid = [];
+        jsCoq.sid.push(jsCoq.init());
+
     };
-    
+
     IDELayout.prototype.fitToScreen = function(evt) {
-        var height = window.innerHeight;
-        var width = window.innerWidth;
-        var panel_width = (width - SEP_SIZE) / 2;
 
-        this.left_panel.style.height = height + 'px';
-        this.left_panel.style.width = panel_width + 'px';
+        var height      = window.innerHeight;
+        var width       = window.innerWidth;
+        // XXX: Fix broken layout
+        var panel_width = (width - SEP_SIZE) / 2 - 8;
 
-        this.right_panel.style.height = height + 'px';
-        this.right_panel.style.width = panel_width + 'px';
-        
-        this.vsep.style.height = height + 'px';
-        this.vsep.style.left = panel_width + 'px';
-        this.vsep.style.width = SEP_SIZE + 'px';
-        
-        this.goal_panel.style.height =
+        this.left_panel.style.height        = height + 'px';
+        this.left_panel.style.width         = panel_width + 'px';
+
+        this.right_panel.style.height       = height + 'px';
+        this.right_panel.style.width        = panel_width + 'px';
+
+        this.vsep.style.height              = height + 'px';
+        this.vsep.style.left                = panel_width + 'px';
+        this.vsep.style.width               = SEP_SIZE + 'px';
+
+        this.goal_panel.style.height        =
             this.message_panel.style.height = (height - SEP_SIZE) / 2 + 'px';
-        this.message_panel.style.marginTop = SEP_SIZE + 'px';
-        
-        this.hsep.style.height = SEP_SIZE + 'px';
-        this.hsep.style.width = width/2 + 'px';
+        this.message_panel.style.marginTop  = SEP_SIZE + 'px';
+
+        this.hsep.style.height              = SEP_SIZE + 'px';
+        this.hsep.style.width               = width/2 + 'px';
 
         this.left_panel.getElementsByClassName('CodeMirror')[0].style.height = height + 'px';
     };
-    
+
     IDELayout.prototype.toolbarClickHandler = function(evt) {
+
         var target = evt.target;
+
         switch (target.name) {
+
             case 'ceiling' :
+                // EG: Uh uh
                 while(this.editor.popStatement());
                 break;
+
             case 'floor' :
                 while(this.editor.eatNextStatement());
                 break;
+
             case 'up' :
                 this.editor.popStatement();
                 break;
+
             case 'down' :
                 this.editor.eatNextStatement();
                 break;
         }
     };
-    
+
     Editor = function(name, element) {
+
         this.idgen = new IDGen();
+
+        // Statements holds the code already sent to Coq.
         this.statements = [];
+
         this._editor = CodeMirror.fromTextArea(element,
-            {mode: {name: "coq",
-                    version: 3,
-                    singleLineStringErrors: false},
-             lineNumbers: true,
-             indentUnit: 4,
-             matchBrackets: true
+            {mode : { name                   : "coq"
+                    , version                : 3
+                    , singleLineStringErrors : false
+                   },
+             lineNumbers   : true,
+             indentUnit    : 4,
+             matchBrackets : true
             }
         );
 
         var self = this;
-        this._editor.on('change', function(evt){self.onCMChange(evt);});
+        this._editor.on('change', function(evt){ self.onCMChange(evt); });
 
     };
 
+
+
+    /* EG:
+     *
+     * I'm not still sure how we want to do it, but I think we want to
+     * maintain a richer structure of the Coq's document.
+     *
+     * Parsing should be done asynchronously (as in Emacs) and the
+     * user should get some feedback out of it.
+     *
+     */
+
+    // Send next statement to Coq.
     Editor.prototype.eatNextStatement = function() {
-        var cm = this._editor;
-        var doc = cm.getDoc();
+
+        var cm    = this._editor;
+        var doc   = cm.getDoc();
         var start = {line : 0, ch : 0};
+
+        // Locate the end of the document.
         if (this.statements.length) {
-            var lastStm = this.statements[this.statements.length - 1];
+
+            var lastStm = this.statements.last();
             start = lastStm.end;
+
+            // If there are no more statements, stop.
+            // EG: Fix this.
             if (start.line === doc.lastLine() &&
                 start.ch === doc.getLine(doc.lastLine()).length) {
                 return false;
             }
         }
-        
+
         var start_ch = start.ch;
         var text, handle, end_ch=0, dotmatch=null;
+
+        // EG: This seems broken...
         for (var i=start.line ; i<doc.lineCount() ; i++) {
+
             handle = doc.getLineHandle(i);
             text = handle.text.slice(start_ch);
             dotmatch = DOT_R.exec(text);
+
             if(dotmatch !== null &&
                 cm.getTokenAt({line: i,
                                ch: dotmatch.index + 1}).type !== 'comment') {
@@ -112,73 +166,113 @@ var Editor;
             }
             start_ch = 0;
         }
-        
+
+
         if (dotmatch === null)
             return false;
 
+        // We found a statement!
         var stm = new Statement(start,
                                 {line : handle.lineNo(),
                                  ch   : end_ch},
                                  text
                                );
+
+        // Add the statement to our list.
         stm.id = this.idgen.next();
         this.statements.push(stm);
         stm.position = this.statements.length - 1;
+
+        // EG: The stm should gain eid and sid properties.
+        // In fact, there are 3 states for a statement: new, parsed, and executed/errored.
         this.coqEval(stm);
         return true;
     };
-    
-    Editor.prototype.popStatement = function() {
-        if (!this.statements.length)
-            return false;
-        var stm = this.statements.pop();
-        if(stm.mark) {
-            stm.mark.clear();
-        }
-        jsCoq.sid.pop();
-        jsCoq.edit(jsCoq.sid.last());
-        return true;
-    };
-    
-    Editor.prototype.onCMChange = function(evt) {
-        var doc = this._editor.getDoc();
-        var marks = doc.findMarksAt(doc.getCursor());
-        if (marks.length === 1) {
-            for (var i = this.statements.length -1 ; i >= marks[0].stm.position ; i-- ) {
-                this.statements[i].mark.clear();
-                this.statements.pop();
+
+    Editor.prototype.coqEval = function(stm) {
+
+        // Mark the statement
+        var doc  = this._editor.getDoc();
+
+        // XXX: Quack!
+        var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
+        mark.stm = stm;
+        stm.mark = mark;
+
+        // We should be fully event driven here...
+
+        // Two things can happen: a parsing error (thus we will never get a sid),
+        // of a succesful parse, we get a sid.
+
+        // EG: For now we use a hack, parsing error returns 0
+        var nsid = jsCoq.add(jsCoq.sid.last(), -1, stm.text);
+
+        // Should we hook in the check add to request the commit after
+        // the parse feedback?
+        if (nsid) {
+
+            // Try to execute it.
+            jsCoq.sid.push(nsid);
+            jsCoq.commit(nsid);
+
+            // Commit was successful
+            if (nsid == jsCoq.sid.last()) {
+                mark.clear();
+                mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+                mark.stm = stm;
+                stm.mark = mark;
+
+              // Print goals
+              document.getElementById("goal-text").textContent = jsCoq.goals();
             }
         }
     };
 
-    Editor.prototype.coqEval = function(stm) {
-        var doc = this._editor.getDoc();
-        var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
+    // Back...
+    Editor.prototype.popStatement = function() {
 
-        jsCoq.sid.push(jsCoq.add(jsCoq.sid.last(), -1, stm.text));
+        if (this.statements.length <= 1)
+            return false;
 
-        // We should wait for the events that signal the correct behaviour.
-        jsCoq.commit(jsCoq.sid.last());
+        // Clear the mark from the last statement.
+        var stm = this.statements.pop();
+        stm.mark.clear();
 
-        // Should be on the onProcessed handler.
-        // indeed it comes from state_ready_hook / Complete feedback
+        // Drop the last sid
+        jsCoq.sid.pop();
+        // And tell coq to go back to the old state.
+        jsCoq.edit(jsCoq.sid.last());
 
-        if(mark) {mark.clear();}
-        mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+        // Update goals
+        document.getElementById("goal-text").textContent = jsCoq.goals();
+        return true;
+    };
 
-        mark.stm = stm;
-        stm.mark = mark;
+    // This is an event, shouldn't it return true?
+    Editor.prototype.onCMChange = function(evt) {
+
+        var doc   = this._editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+
+        if (this.statements.length <= 1)
+            return;
+
+        if (marks.length === 1) {
+            for (var i = this.statements.length - 1 ; i >= marks[0].stm.position ; i-- ) {
+                this.popStatement();
+            }
+        }
     };
 
     var IDGen = function() {
         this.id = 1;
     };
-    
+
     IDGen.prototype.next = function() {
         this.id--;
         return this.id;
     };
-    
+
     var Statement = function(start, end, text){
         // start, end: {line: l, ch: c}
         this.start = start;

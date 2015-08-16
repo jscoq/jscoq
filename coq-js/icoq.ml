@@ -97,6 +97,20 @@ let edit_doc   sid       = let _ = Stm.edit_at sid in ()
 
 let commit_doc = Stm.observe
 
+(* XXX: We want to implement our custom proof printer (from
+ * printing/printer.ml
+ *
+
+ * At a minimum, we want to output a the list of hypothesis and the
+ * goal separatedly. See pr_context_of.
+ *)
+let string_of_goals () =
+  let pp_goals =
+    try Printer.pr_open_subgoals ()
+    with Proof_global.NoCurrentProof -> str ""
+  in
+  string_of_ppcmds pp_goals
+
 (*
 let print_toplevel_error (e, info) =
   Errors.iprint (e, info)
@@ -115,23 +129,13 @@ let e_dinfo eid cmd s (s' : Stateid.t) (t : [ `NewTip | `Unfocus of Stateid.t ])
   ()
 
 let execute eid s =
-  try
-    let cs', r = Stm.add ~ontop:!cs true eid s in
-    (* e_dinfo eid s !cs cs' r; *)
-    Stm.finish ();
-    cs := cs';
-    msg_notice (pr_open_cur_subgoals ());
+try
     flush stdout;
     flush stderr;
     flush_all ();
     (* Printf.eprintf "execute end\n%!"; *)
-    true
   with
   | any ->
-     (* Printf.eprintf "exn in execute sid %s\n%!" (Stateid.to_string !cs); *)
-     (* We need to revert the add *)
-     let _ = Stm.edit_at !cs in
-     (* cs := (Stm.get_current_state ()); *)
      let any = Errors.push any in
      Format.set_formatter_out_channel stdout;
      let msg = print_toplevel_error any ++ fnl () in

@@ -51,3 +51,5 @@ val edit_doc : Stateid.t -> unit
     produce an exception in case of error. *)
 val commit_doc : Stateid.t -> unit
 
+(** [string_or_goals ()] returns a string representing the current goals  *)
+val string_of_goals : unit -> string

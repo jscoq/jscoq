@@ -7,6 +7,7 @@ body {
   position:absolute;
   left:0;
   background: #CF6;
+  overflow: hidden;
 /*  border: 1px solid red;*/
 }
 
@@ -49,4 +50,25 @@ body {
 
 .coq-eval-failed {
   background: #f00;
+}
+
+div.msg-area {
+    padding-top: 0.2em;
+    border-top: 2px solid black;
+    overflow: auto;
+    resize: vertical;
+    float: left;
+    width: 100%;
+}
+
+.msg-area span {
+    display: block;
+    padding: 2px;
+    margin-top: 2px;
+    margin-bottom: 0px;
+    border-left: 2px solid red;
+    border-top: 1px dashed red;
+    /* border-bottom: 1px solid red; */
+    border-right: 1px solid red;
+    width: 100%;
 }

@@ -20,6 +20,7 @@ class type jsCoq = object
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
+  method goals       : ('self t, js_string t)           meth_callback writeonly_prop
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
   (* We don't want to use event_listener due to limitations of invoke_handler... *)
@@ -78,6 +79,18 @@ let jscoq_feedback_handler this (fb : Feedback.feedback) =
   (* Opt.iter jscoq##onLog (fun h -> Js.Unsafe.call jscoq [|Js.Unsafe.inject (string fb_s)|]); *)
   ()
 
+let setup_printers () =
+  try
+    let open Jslog  in
+    let proof_msg   = init_by_id "message-panel" true in
+    let query_msg   = init_by_id "message-panel" true in
+    (* How to create a channel *)
+    (* let _sharp_chan = open_out "/dev/null0" in *)
+    (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
+    Sys_js.set_channel_flusher stdout (add_text proof_msg Info);
+    Sys_js.set_chaannel_flusher stderr (add_text query_msg Info)
+  with Not_found -> ()
+
 let jscoq_init this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
   let header1 = Printf.sprintf
@@ -87,6 +100,7 @@ let jscoq_init this =
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
 
   setup_pseudo_fs ();
+  setup_printers ();
   let sid = Icoq.init { ml_load    = Jslibmng.coq_cma_req;
                         fb_handler = (jscoq_feedback_handler this);
                       } in
@@ -96,7 +110,12 @@ let jscoq_init this =
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
 let jscoq_add this sid eid cmd  =
-  Icoq.add_to_doc sid eid (to_string cmd)
+  (* Catch parsing errors. *)
+  try
+    Icoq.add_to_doc sid eid (to_string cmd)
+  with
+  (* Hackkk *)
+  | _ -> Obj.magic 0
 
 let jscoq_edit this sid : unit = Icoq.edit_doc sid
 
@@ -125,6 +144,7 @@ let _ =
   jsCoq##add     <- Js.wrap_meth_callback jscoq_add;
   jsCoq##edit    <- Js.wrap_meth_callback jscoq_edit;
   jsCoq##commit  <- Js.wrap_meth_callback jscoq_commit;
+  jsCoq##goals   <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
   jsCoq##onLog   <- no_handler;
   jsCoq##onError <- no_handler;
   ()
