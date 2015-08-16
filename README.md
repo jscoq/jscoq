@@ -5,43 +5,41 @@ Run Coq in your browser!
  expert expect trouble*
 
 A [Coq](https://coq.inria.fr) Integrated Development Enviroment
-running in the browser!
+running in the browser! Try it:
 
-Try it: <https://x80.org/rhino-coq/> !
+<https://x80.org/rhino-coq/>
 
-We run vanilla Coq in the browser using the `js_of_ocaml` compiler, no
-servers or external dependencies are needed.
+Coq runs in the browser using the `js_of_ocaml` compiler, so no
+servers or external programs are needed.
 
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-The current version also provides a `jsCoq` object, so it should be
-possible to embed Coq in any javascript application.
+The current release provides a `jsCoq` JS object, so you can embed Coq
+in your particular javascript application.
 
-Chrome 45 or later is basically mandatory for now. Mozilla Firefox
-seems to work fine, but it will stack overflow when loading large
-plugins (i.e. ssreflect).
-
-We recommend starting Chrome with extra stack size:
+Chrome (>= 45) or Mozilla Firefox are required for now. Browsers'
+stack will tend to overflow when loading large plugins (that is,
+ssreflect), so we recommend starting Chrome with some extra stack
+size:
 
 ```
 google-chrome --js-flags="--stack-size=65536"
 ```
 
-should do the trick. Unfortunately, it seems there's no way to do so
-in Firefox.
+Unfortunately, it seems there is no way to increase stack size in
+Firefox.
 
-It also runs in my old Galaxy Nexus, but it has some performance
-problems due to the Chrome version (44).
+The IDE also runs in my old Galaxy Nexus, but it has some
+performance problems likely due to the Chrome version (44).
 
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-The code is far from stable now, but it should be possible to contribute.
-
-Any contribution or comment is really welcome!
+The code is far from stable now, but it should be possible to
+contribute.  Any contribution or comment is really welcome!
 
 ## What is broken ##
 
