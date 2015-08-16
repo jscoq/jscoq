@@ -88,7 +88,7 @@ let setup_printers () =
     (* let _sharp_chan = open_out "/dev/null0" in *)
     (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
     Sys_js.set_channel_flusher stdout (add_text proof_msg Info);
-    Sys_js.set_chaannel_flusher stderr (add_text query_msg Info)
+    Sys_js.set_channel_flusher stderr (add_text query_msg Info)
   with Not_found -> ()
 
 let jscoq_init this =
