@@ -70,7 +70,7 @@ The basic datatypes involved are:
   `add` builds a document by appending a new node.
 
    ```ocaml
-(* [add ontop check vebose eid s]
+(* [add ontop check vebose eid s] *)
 val add : ontop:Stateid.t -> ?newtip:Stateid.t -> ?check:(located_vernac_expr -> unit) ->
   bool -> edit_id -> string ->
     Stateid.t * [ `NewTip | `Unfocus of Stateid.t ]
