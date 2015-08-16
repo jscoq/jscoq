@@ -104,7 +104,7 @@ let jscoq_init this =
 let jscoq_version this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
   let header1 = Printf.sprintf
-      " JsCoq alpha, Coq %s (%s), compiled on %s\n Ocaml %s\n"
+      " JsCoq alpha, Coq %s (%s), compiled on %s\n Ocaml %s"
       coqv coqd ccd ccv                                       in
   let header2 = Printf.sprintf
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in

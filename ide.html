@@ -15,11 +15,12 @@
     <div id="ide">
       <div id="left-panel">
         <div id="toolsbar">
+          <a href="https://github.com/ejgallego/jscoq">[GitHub]</a>
           <img src="images/ceiling.png" width="21" height="25" alt="Ceiling" name="ceiling"/>
           <img src="images/floor.png" width="21" height="24" alt="Floor" name="floor"/>
           <img src="images/up.png" width="21" height="24" alt="Up" name="up"/>
           <img src="images/down.png" width="21" height="25" alt="Down" name="down"/>
-          <a href="about.html">[See the Readme]</a>
+          <a href="about.html">[Readme]</a>
         </div>
         <div id="script-panel">
           <textarea>
@@ -58,7 +59,6 @@ have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
-
           </textarea>
         </div>
       </div>
