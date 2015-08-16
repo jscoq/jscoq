@@ -16,19 +16,43 @@ consumer to build Coq documents as a DAG. This enables
 The current version is functional but doesn't seem complete. Also,
 some _technical debt_ and a fair amount of compatibility code seems present.
 
+More details can be found in the ITP 2015 paper https://hal.inria.fr/hal-01135919
+
 ### Operation Overview
 
-The basic idea for the consumer is build a document as a Direct
-Acyclic Graph and let Coq process the document asynchronously/in
-parallel.
+The basic idea of the stm API is to represent Coq document as a Direct
+Acyclic Graph. This should enable Coq process the document
+asynchronously/in parallel.
 
-To that effect, every node of the document is assigned a unique id,
-and the user provides a set of event handlers that Coq will call as
-appropriate.
+Every node of the document is assigned a unique id, which when used as
+a state represents the path from the root of the tree to that
+particular state. Things are a bit tricky sometimes:
+the core of Coq is very stateful and some commands produce
+_interesting_ side effects.
 
-Thing are a bit tricky, as a lot of commands produce _interesting_
-side effects, thus processing of "parallel" branches must be done with
-care.
+The user can "append" to the document, and request Coq to process
+particular paths (or all of them). A typical API user-workflow loop in pseudocode is:
+
+```
+while(new_command) {
+
+  old_state := cur_state
+
+  try
+    cur_state := add_to_doc(cur_state, new_command)
+  catch ParsingError(..) -> ...
+
+  try
+    execute(cur_state);
+  catch Error (..) -> -- go back to the old state
+                      cur_state := old_state;
+                      edit_at(cur_state)
+end while
+```
+
+Note that in the above pseudo code we have used `try ... catch ...`
+blocks to capture errors, in fact, Coq will both generate an exception
+and call a hook for reporting errors, completion, etc...
 
 ### Basic Datatypes
 
