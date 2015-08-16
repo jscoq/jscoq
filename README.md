@@ -1,45 +1,47 @@
 Run Coq in your browser!
 ------------------------
 
-*WARNING: This project is not production ready yet, but a proof
- of concept. If you are not a Coq expert you may want to wait a bit
- before trying it*
+*WARNING: This project is a proof of concept. If you are not a Coq
+ expert expect trouble*
 
-Build a [Coq](https://coq.inria.fr) toplevel for the browser, using
-the `js_of_ocaml` compiler. The whole Coq runs in the browser, no
-servers or external dependencies are needed.q
+A [Coq](https://coq.inria.fr) Integrated Development Enviroment
+running in the browser!
+
+Try it: <https://x80.org/rhino-coq/> !
+
+We run vanilla Coq in the browser using the `js_of_ocaml` compiler, no
+servers or external dependencies are needed.
 
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-The current toplevel is a minimal modification of the
-[js\_of\_ocaml](http://ocsigen.org/js_of_ocaml/) one, but it will
-evolve to something more tailored to Coq.
+The current version also provides a `jsCoq` object, so it should be
+possible to embed Coq in any javascript application.
 
-Chrome dev (45) is basically mandatory for now. Mozilla Firefox seems
-to work fine too, but has some problems with large plugins due to a small
-stack size.
+Chrome 45 or later is basically mandatory for now. Mozilla Firefox
+seems to work fine, but it will stack overflow when loading large
+plugins (i.e. ssreflect).
 
-Chrome should be started with an increased stack size: `google-chrome
---js-flags="--stack-size=65536"`. Unfortunately, it seems there's no
-way to do so in Firefox.
+We recommend starting Chrome with extra stack size:
 
-Try it: <https://x80.org/rhino-coq/> !
+```
+google-chrome --js-flags="--stack-size=65536"
+```
 
-[Warning: This URL is not stable. Rememeber, this is still alpha
-software, we will provide a more stable link soon.]
+should do the trick. Unfortunately, it seems there's no way to do so
+in Firefox.
 
-It also runs in my old Galaxy Nexus, but it has some
-performance problems due to the Chrome version (43).
+It also runs in my old Galaxy Nexus, but it has some performance
+problems due to the Chrome version (44).
 
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-The code is a mess for now, we are working on internals. IMHO, pull
-requests don't make a lot of sense yet as we will rewrite the whole
-thing soon, but any other contribution or comment is really welcome!
+The code is far from stable now, but it should be possible to contribute.
+
+Any contribution or comment is really welcome!
 
 ## What is broken ##
 
@@ -53,16 +55,17 @@ threading and performance problems.
 
 Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
-## How to Install ##
+## How to Install/Build ##
 
-* First you need to build a dual 32/64 bits Ocaml toolchain. You need a
-  recent opam system and a multiarch gcc (`gcc-multilib` package in
+* First, you need a dual 32/64 bits Ocaml toolchain. Get a
+  recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then run:
 ````
+$ cp -a opam/4.02.3+32bit ~/.opam/compilers/4.02.3/
 $ git clone https://github.com/ocsigen/js_of_ocaml.git ~/external/js_of_ocaml
 $ ./toolchain-setup.sh
 ````
-  and that should do the trick.
+  and it should do the trick.
 
   If your copy of js_of_ocaml is in a different location, edit the setup
   script and set the JS_OF_OCAML_DIR variable appropriately. Tweaking the NJOBS
@@ -71,36 +74,36 @@ $ ./toolchain-setup.sh
 ````
 $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
-$ opam switch 4.02.1+32bit
+$ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ ./configure -local -natdynlink no -coqide no -no-native-compiler
 $ make               # use -j N as desired
 ````
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
-* You may want to select what libraries get included. `jslib.ml` allows
-  you to do that. For now we recommend editing
-  $(COQDIR)/theories/Init/Prelude.v and comment out the extraction
-  and recdef plugins, as they take long time to compile.
+
+  We recommend to edit $(COQDIR)/theories/Init/Prelude.v and comment
+  out the extraction and recdef plugins, they take long time to
+  compile.
+* You may want to select what libraries get
+  included. `coq-tools/dftlibs.ml` allows you to do that.
 * Finally:
 ````
 $ ./build.sh
 ````
   should build jscoq. The script tries to manage the pain of the 32/64
-  bit switch, but you can also use make if you know what you are doing.
-* In order to use a browser locally you may need to start it as:
+  bit switch, you can also use make if you know what you are doing.
+* To run jscoq in locally you may need to start your browser as:
 ````
-$ google-chrome-unstable --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
+$ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
 ````
 * Profit!
-* Extra/Experimental: ssreflect. If you know how to build ssreflect
-  for Coq trunk, you can use the `ssr` makefile target to install the
-  libraries.
-* We used to support building a coqtop.js executable, to be run with
-  `node`, linked with atom, etc...
+* Extra/Experimental: ssreflect.
 
-  `coqtop.patch` contains the old patch in case you are interested:
-````
-$ make coqtop.js
-$ nodejs coqtop.js
-````
-  used to work.
+Get the ssreflect distribution at `git://scm.gforge.inria.fr/coq-contribs/ssreflect`. Then build with
+```
+$ opam switch 4.02.3+32bit
+$ eval `opam config env`
+$ export PATH=~/external/coq-git/bin:$PATH
+$ coq_makefile -f Make > Makefile
+$ make byte
+```
