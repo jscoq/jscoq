@@ -35,14 +35,33 @@ let add lb ll el =
   ) else
     Dom.insertBefore lb.buffer el (lb.buffer##firstChild)
 
+let replace lb ll el =
+  if lb.append then (
+    Js.Opt.case (lb.buffer##lastChild)
+      (fun () -> add lb ll el)
+      (fun rn -> Dom.replaceChild lb.buffer el rn);
+    lb.buffer##scrollTop <- lb.buffer##scrollHeight
+  ) else (
+    Js.Opt.case (lb.buffer##firstChild)
+      (fun () -> add lb ll el)
+      (fun rn -> Dom.replaceChild lb.buffer el rn)
+  )
+
 let text s =
   Tyxml_js.Html5.(span ~a:[a_class []] [pcdata s])
 
 let add_text lb ll msg =
   add lb ll (Tyxml_js.To_dom.of_element (text msg))
 
+let replace_text lb ll msg =
+  replace lb ll (Tyxml_js.To_dom.of_element (text msg))
+
 let printf lb =
   Printf.ksprintf (add_text lb Info)
+
+(* Replace the particular element *)
+let printf_rep lb =
+  Printf.ksprintf (replace_text lb Info)
 
 (* jscoq internal log *)
 let jscoq_log : t =

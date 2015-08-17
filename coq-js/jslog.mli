@@ -22,6 +22,7 @@ val init_by_id : string -> bool -> t
 val add      : t -> log_level -> Dom_html.element Js.t -> unit
 val add_text : t -> log_level -> string -> unit
 
-val printf : t -> ('a, unit, string, unit) format4 -> 'a
+val printf     : t -> ('a, unit, string, unit) format4 -> 'a
+val printf_rep : t -> ('a, unit, string, unit) format4 -> 'a
 
 val jscoq_log : t
