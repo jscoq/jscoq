@@ -233,6 +233,19 @@ exception NoCurrentProof
 exception FailedBullet of t * suggestion
 ```
 
+## Settable Vernacular Options
+
+Vernacular Options (as `Set Printing All`) are defined and accessed
+using the
+[`Goptions`](https://github.com/ejgallego/coq/blob/ejga-commentary/library/goptions.mli)
+module.
+
+An option declared through this interface can perform any arbitrary
+action.
+
+Strangely enough, there is no easy way in the API to query what the
+status of an option is.
+
 ## Other (minor) comments
 
 ### VM static initializers
