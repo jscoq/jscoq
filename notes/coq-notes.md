@@ -36,18 +36,19 @@ particular paths (or all of them). A typical API user-workflow loop in pseudocod
 ```
 while(new_command) {
 
-  old_state := cur_state
+  old_state := cur_state;
 
   try
     cur_state := add_to_doc(cur_state, new_command)
-  catch ParsingError(..) -> ...
+  catch ParsingError(..) { }
 
-  try
+  try {
     execute(cur_state);
-  catch Error (..) -> -- go back to the old state
-                      cur_state := old_state;
-                      edit_at(cur_state)
-end while
+  } catch Error (..) { -- go back to the old state
+                       cur_state := old_state;
+                       edit_at(cur_state);
+                     }
+}
 ```
 
 Note that in the above pseudo code we have used `try ... catch ...`
