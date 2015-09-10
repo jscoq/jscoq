@@ -92,19 +92,20 @@ let preload_cma_file base_url (file, hash) : unit Lwt.t =
   Lwt.return_unit
 
 let preload_pkg pkg : unit Lwt.t =
-  let pkg_dir = to_name pkg.pkg_id in
+  let pkg_dir = to_name pkg.pkg_id        in
+  let ncma    = List.length pkg.cma_files in
   let nfiles  = List.length pkg.vo_files + List.length pkg.cma_files in
   Jslog.printf Jslog.jscoq_log "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
-  let preload_vo_and_log i f =
+  let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
-    Jslog.printf_rep Jslog.jscoq_log "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+1) nfiles;
+    Jslog.printf_rep Jslog.jscoq_log "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
     Lwt.return_unit
   in
-  Lwt_list.iteri_s preload_vo_and_log pkg.vo_files  >>= fun () ->
   (if Icoq.dyn_comp then
-    Lwt_list.iteri_s preload_vo_and_log pkg.cma_files
+    Lwt_list.iteri_s (preload_vo_and_log 0) pkg.cma_files
   else
     Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files) >>= fun () ->
+  Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
   Icoq.add_load_path pkg.pkg_id pkg_dir;
   Lwt.return_unit
 
