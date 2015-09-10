@@ -3,29 +3,69 @@ body {
   padding:0;
 }
 
+#ide {
+  height: 100vh;
+}
+
 #left-panel {
   position:absolute;
   left:0;
   background: #CF6;
   overflow: hidden;
-/*  border: 1px solid red;*/
+  width: calc(50% - 3px);
+  height: 100%;
 }
 
 #right-panel {
+  width: calc(50% - 3px);
+  height: 100%;
+  overflow: hidden;
   position:absolute;
   right: 0;
   background: #6FC;
 }
 
+#script-panel {
+  height: 100%;
+}
+
+#script-panel textarea {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: none;
+}
+
 #goal-panel, #message-panel {
   background: #fff;
-  padding-left: 3px;
+  width: 100%;
+}
+
+#goal-panel {
+  top:0;
+  height: 60%;
+}
+
+#message-panel {
+  height: 100%;
+  margin-top: 6px;
 }
 
 #vsep, #hsep {
   position:absolute;
   background: #f7f7f7;
   z-index: 3;
+}
+
+#vsep {
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 100%;
+}
+
+#hsep {
+  width: 100%;
+  height: 6px;
 }
 
 #toolsbar {
@@ -53,12 +93,12 @@ body {
 }
 
 div.msg-area {
-    padding-top: 0.2em;
-    border-top: 2px solid black;
-    overflow: auto;
-    resize: vertical;
-    float: left;
-    width: 100%;
+/*    padding-top: 0.2em;*/
+/*    border-top: 2px solid black;*/
+/*    overflow: auto;*/
+/*    resize: vertical;*/
+/*    float: left;*/
+/*    width: 100%;*/
 }
 
 .msg-area span {
