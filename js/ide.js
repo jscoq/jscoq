@@ -6,7 +6,7 @@ var Editor;
     var SEP_SIZE = 6;
     var DOT_R = /\.$|\.\s/;
 
-    Array.prototype.last = function() { return this[this.length-1]; }
+    Array.prototype.last = function() { return this[this.length-1]; };
 
     IDELayout = function() {
 
@@ -115,9 +115,9 @@ var Editor;
         this.statements = [];
 
         this._editor = CodeMirror.fromTextArea(element,
-            {mode : { name                   : "coq"
-                    , version                : 3
-                    , singleLineStringErrors : false
+            {mode : {name : "coq",
+                     version: 3,
+                     singleLineStringErrors : false
                    },
              lineNumbers   : true,
              indentUnit    : 4,
