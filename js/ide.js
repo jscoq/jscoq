@@ -35,6 +35,9 @@ var Editor;
         }
 
         // On error we go back to the last sid.
+
+        // NOTE: This is only called on jsCoq.commit() for parser
+        // errors we must handle the error at jsCoq.add time.
         jsCoq.onError = function(e) { console.log(e.toString());
                                       // add_to_log(e.toString());
                                       self.editor.popStatement();
@@ -240,6 +243,11 @@ var Editor;
               // Print goals
               document.getElementById("goal-text").textContent = jsCoq.goals();
             }
+        } else { // Parse/library loading error.
+
+            // Similar to popStatement but without sid handling.
+            var stm = this.statements.pop();
+            stm.mark.clear();
         }
     };
 
