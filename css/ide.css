@@ -1,6 +1,16 @@
 body {
   margin:0;
   padding:0;
+  font-family: Helvetica,Geneva,Swiss,Arial,SunSans-Regular,sans-serif;
+}
+
+a, a:link, a:visited, a:active {
+  color: #369;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #5af;
 }
 
 #ide {
@@ -11,7 +21,7 @@ body {
   position:absolute;
   left:0;
   background: #CF6;
-  overflow: hidden;
+/*  overflow: hidden;*/
   width: calc(50% - 3px);
   height: 100%;
 }
@@ -19,14 +29,14 @@ body {
 #right-panel {
   width: calc(50% - 3px);
   height: 100%;
-  overflow: hidden;
+/*  overflow: hidden;*/
   position:absolute;
   right: 0;
   background: #6FC;
 }
 
 #script-panel {
-  height: 100%;
+  height: calc(100% - 37px);
 }
 
 #script-panel textarea {
@@ -34,11 +44,13 @@ body {
   height: 100%;
   margin: 0;
   border: none;
+  resize: none;
 }
 
 #goal-panel, #message-panel {
   background: #fff;
   width: 100%;
+  overflow: scroll;
 }
 
 #goal-panel {
@@ -47,7 +59,7 @@ body {
 }
 
 #message-panel {
-  height: 100%;
+  height: calc(40% - 6px);
   margin-top: 6px;
 }
 
@@ -73,6 +85,7 @@ body {
   padding-top: 5px;
   text-align: center;
   border-bottom: 1px solid #ddd;
+  height: 31px;
 }
 
 #toolsbar img {
@@ -103,12 +116,12 @@ div.msg-area {
 
 .msg-area span {
     display: block;
-    padding: 2px;
-    margin-top: 2px;
-    margin-bottom: 0px;
-    border-left: 2px solid red;
-    border-top: 1px dashed red;
-    /* border-bottom: 1px solid red; */
-    border-right: 1px solid red;
-    width: 100%;
+/*    padding: 2px;*/
+/*    margin-top: 2px;*/
+/*    margin-bottom: 0px;*/
+/*    border-left: 2px solid red;*/
+/*    border-top: 1px dashed red;*/
+/* border-bottom: 1px solid red; */
+/*    border-right: 1px solid red;*/
+/*    width: 100%;*/
 }
