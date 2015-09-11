@@ -125,3 +125,8 @@ div.msg-area {
 /*    border-right: 1px solid red;*/
 /*    width: 100%;*/
 }
+
+/* overloads */
+.CodeMirror {
+  height: 100%;
+}
