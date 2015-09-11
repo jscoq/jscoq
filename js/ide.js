@@ -45,6 +45,10 @@ var Editor;
         // Initial sid.
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
+
+        // EG: This previously used textContents, given than
+        // jsCoq.version() is a string IMHO it was more appropiate, see:
+        // http://stackoverflow.com/questions/21311299/nodevalue-vs-innerhtml-and-textcontent-how-to-choose
         this.goal_text.innerHTML = jsCoq.version();
     };
     
@@ -61,7 +65,11 @@ var Editor;
         switch (target.name) {
 
             case 'ceiling' :
-                // EG: Uh uh
+                /*
+                  FIXME [EG]: This need to yield back to the browser
+                  content in every iteration so the user sees the
+                  progress.
+                */
                 while(this.editor.popStatement());
                 break;
 
@@ -274,3 +282,7 @@ var Editor;
         this.mark = undefined;
     };
 }());
+
+// Local Variables:
+// js-indent-level: 4
+// End:
