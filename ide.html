@@ -4,8 +4,8 @@
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <!-- <link rel="stylesheet" href="../css/bootstrap.min.css" /> -->
     <link rel="stylesheet" href="external/pace/pace.css" />
-    <link rel="stylesheet" href="css/ide.css" type="text/css" media="screen">
     <link rel="stylesheet" href="js/CodeMirror/lib/codemirror.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ide.css" type="text/css" media="screen">
     <script src="external/pace/pace.min.js" type="text/javascript"></script>
     <script src="js/CodeMirror/lib/codemirror.js" type="text/javascript"></script>
     <script src="js/CodeMirror/mode/coq/coq.js" type="text/javascript"></script>
@@ -15,12 +15,14 @@
     <div id="ide">
       <div id="left-panel">
         <div id="toolsbar">
-          <a href="https://github.com/ejgallego/jscoq">[GitHub]</a>
+          <div style="float:left">
+            <a href="https://github.com/ejgallego/jscoq">GitHub</a> | 
+            <a href="about.html">Readme</a>
+          </div>
           <img src="images/ceiling.png" width="21" height="25" alt="Ceiling" name="ceiling"/>
           <img src="images/floor.png" width="21" height="24" alt="Floor" name="floor"/>
           <img src="images/up.png" width="21" height="24" alt="Up" name="up"/>
           <img src="images/down.png" width="21" height="25" alt="Down" name="down"/>
-          <a href="about.html">[Readme]</a>
         </div>
         <div id="script-panel">
           <textarea>
@@ -59,7 +61,7 @@ have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
-          </textarea>
+</textarea>
         </div>
       </div>
       <div id="vsep"><br/></div>
@@ -69,7 +71,6 @@ Qed.
         <div class="msg-area" id="message-panel"></div>
       </div>
     </div>
-    <script src="coq-js/jscoq.js" type="text/javascript"></script>
     <script src="js/ide.js" type="text/javascript"></script>
     <script type="text/javascript">
      var ide = new IDELayout();
