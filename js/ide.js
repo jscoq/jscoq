@@ -6,7 +6,7 @@ var Editor;
     var SEP_SIZE = 6;
     var DOT_R = /\.$|\.\s/;
 
-    Array.prototype.last = function() { return this[this.length-1]; }
+    Array.prototype.last = function() { return this[this.length-1]; };
 
     IDELayout = function() {
 
@@ -15,76 +15,45 @@ var Editor;
         this.right_panel   = document.getElementById('right-panel');
         this.script_panel  = document.getElementById('script-panel');
         this.goal_panel    = document.getElementById('goal-panel');
+        this.goal_text = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
         this.vsep          = document.getElementById('vsep');
         this.hsep          = document.getElementById('hsep');
         this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
-        this.toolsbar.addEventListener('click',  function(evt){ self.toolbarClickHandler(evt); });
-        window.addEventListener       ('load',   function(evt){ self.fitToScreen(evt); });
-        window.addEventListener       ('resize', function(evt){ self.fitToScreen(evt); });
-
-        /* Setup Coq */
-
-        function add_to_log(txt) {
-            var txt_span = document.createElement("span");
-            txt_span.textContent = txt;
-            var lb = document.getElementById("message-panel");
-            lb.insertBefore(txt_span, lb.firstChild);
-        }
-
-        // On error we go back to the last sid.
-
-        // NOTE: This is only called on jsCoq.commit() for parser
-        // errors we must handle the error at jsCoq.add time.
-        jsCoq.onError = function(e) { console.log(e.toString());
-                                      // add_to_log(e.toString());
-                                      self.editor.popStatement();
-                                    };
-
-        jsCoq.onLog   = function(e) { var estr = e.toString();
-                                      console.log(estr);
-                                      // Hack
-                                      var errstr = "ErrorMsg";
-                                      if (estr.indexOf(errstr) != -1) {
-                                          add_to_log(estr);
-                                      }
-                                    };
-
+        this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+        window.addEventListener('load', function(evt){self.onload(evt);});
+    };
+    
+    IDELayout.prototype.onload = function(evt) {
+        var jscoqscript = document.createElement('script');
+        jscoqscript.type = 'text/javascript';
+        document.head.appendChild(jscoqscript);
+        var self = this;
+        jscoqscript.onload = function(evt){self.setupCoq(evt);};
+        jscoqscript.src = 'coq-js/jscoq.js';
+    };
+    
+    IDELayout.prototype.setupCoq = function() {
+        var self = this;
+        jsCoq.onError = function(e){self.printCoqEvent(e);};
+        jsCoq.onLog = function(e){// Hack
+                                  if (e.toString().indexOf("ErrorMsg") != -1)
+                                          self.printCoqEvent(e);
+                                 };
         // Initial sid.
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
-        document.getElementById("goal-text").textContent = jsCoq.version();
+        this.goal_text.innerHTML = jsCoq.version();
     };
-
-    IDELayout.prototype.fitToScreen = function(evt) {
-
-        var height      = window.innerHeight;
-        var width       = window.innerWidth;
-        // XXX: Fix broken layout
-        var panel_width = (width - SEP_SIZE) / 2 - 8;
-
-        this.left_panel.style.height        = height + 'px';
-        this.left_panel.style.width         = panel_width + 'px';
-
-        this.right_panel.style.height       = height + 'px';
-        this.right_panel.style.width        = panel_width + 'px';
-
-        this.vsep.style.height              = height + 'px';
-        this.vsep.style.left                = panel_width + 'px';
-        this.vsep.style.width               = SEP_SIZE + 'px';
-
-        this.goal_panel.style.height        =
-            this.message_panel.style.height = (height - SEP_SIZE) / 2 + 'px';
-        this.message_panel.style.marginTop  = SEP_SIZE + 'px';
-
-        this.hsep.style.height              = SEP_SIZE + 'px';
-        this.hsep.style.width               = width/2 + 'px';
-
-        this.left_panel.getElementsByClassName('CodeMirror')[0].style.height = height + 'px';
+    
+    IDELayout.prototype.printCoqEvent = function(coqevt) {
+        var span = document.createElement('span');
+        span.innerHTML = coqevt.toString();
+        this.message_panel.insertBefore(this.message_panel.firstChild);
     };
-
+    
     IDELayout.prototype.toolbarClickHandler = function(evt) {
 
         var target = evt.target;
@@ -118,9 +87,9 @@ var Editor;
         this.statements = [];
 
         this._editor = CodeMirror.fromTextArea(element,
-            {mode : { name                   : "coq"
-                    , version                : 3
-                    , singleLineStringErrors : false
+            {mode : {name : "coq",
+                     version: 3,
+                     singleLineStringErrors : false
                    },
              lineNumbers   : true,
              indentUnit    : 4,
