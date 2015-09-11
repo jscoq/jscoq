@@ -46,10 +46,7 @@ var Editor;
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
 
-        // EG: This previously used textContents, given than
-        // jsCoq.version() is a string IMHO it was more appropiate, see:
-        // http://stackoverflow.com/questions/21311299/nodevalue-vs-innerhtml-and-textcontent-how-to-choose
-        this.goal_text.innerHTML = jsCoq.version();
+        this.goal_text.textContent = jsCoq.version();
     };
     
     IDELayout.prototype.printCoqEvent = function(coqevt) {
@@ -223,7 +220,7 @@ var Editor;
         } else { // Parse/library loading error.
 
             // Similar to popStatement but without sid handling.
-            var stm = this.statements.pop();
+            stm = this.statements.pop();
             stm.mark.clear();
         }
     };
