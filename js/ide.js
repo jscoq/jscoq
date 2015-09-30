@@ -156,8 +156,9 @@ var Editor;
         var stm = new Statement(start,
                                 {line : handle.lineNo(),
                                  ch   : token.end},
-                                 doc.getRange({line : start.line, ch : start.ch},
-                                              {line : handle.lineNo(), ch : token.end})
+                                doc.getRange({line : start.line, ch : start.ch},
+                                             {line : handle.lineNo(), ch : token.end}),
+                                token.type === 'comment'
                                );
 
         // Add the statement to our list.
@@ -177,7 +178,14 @@ var Editor;
         var doc  = this._editor.getDoc();
 
         // XXX: Quack!
-        var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
+        var mark;
+        if(stm.is_comment) {
+            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+            mark.stm = stm;
+            stm.mark = mark;
+            return;
+        }
+        mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
         mark.stm = stm;
         stm.mark = mark;
 
@@ -224,6 +232,8 @@ var Editor;
         // Clear the mark from the last statement.
         var stm = this.statements.pop();
         stm.mark.clear();
+        if(stm.is_comment)
+            return true;
 
         // Drop the last sid
         jsCoq.sid.pop();
@@ -260,11 +270,12 @@ var Editor;
         return this.id;
     };
 
-    var Statement = function(start, end, text){
+    var Statement = function(start, end, text, is_comment) {
         // start, end: {line: l, ch: c}
         this.start = start;
         this.end = end;
         this.text = text;
+        this.is_comment = is_comment;
         this.id = 0;
         this.mark = undefined;
     };
