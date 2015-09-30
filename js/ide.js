@@ -142,7 +142,6 @@ var Editor;
                 }
                 do {
                     token = cm.getTokenAt({line: i, ch: startch});
-                    console.log(token);
                     if (token.type === 'statementend' ||
                         token.type === 'comment')
                         break line_loop;
@@ -168,7 +167,6 @@ var Editor;
 
         // EG: The stm should gain eid and sid properties.
         // In fact, there are 3 states for a statement: new, parsed, and executed/errored.
-        console.log(stm.text);
         this.coqEval(stm);
         return true;
     };
