@@ -3,22 +3,14 @@ var Editor;
 
 (function(){
 
-    var SEP_SIZE = 6;
-    var DOT_R = /\.$|\.\s/;
-
     Array.prototype.last = function() { return this[this.length-1]; };
 
     IDELayout = function() {
 
-        this.left_panel    = document.getElementById('left-panel');
         this.toolsbar      = document.getElementById('toolsbar');
-        this.right_panel   = document.getElementById('right-panel');
         this.script_panel  = document.getElementById('script-panel');
-        this.goal_panel    = document.getElementById('goal-panel');
         this.goal_text = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
-        this.vsep          = document.getElementById('vsep');
-        this.hsep          = document.getElementById('hsep');
         this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
@@ -126,48 +118,47 @@ var Editor;
         var doc   = cm.getDoc();
         var start = {line : 0, ch : 0};
 
-        // Locate the end of the document.
+        // get last evaluated statement
         if (this.statements.length) {
 
             var lastStm = this.statements.last();
             start = lastStm.end;
 
-            // If there are no more statements, stop.
-            // EG: Fix this.
             if (start.line === doc.lastLine() &&
                 start.ch === doc.getLine(doc.lastLine()).length) {
                 return false;
             }
         }
 
-        var start_ch = start.ch;
-        var text, handle, end_ch=0, dotmatch=null;
+        var startch = start.ch + 1;
+        var token, handle;
 
-        // EG: This seems broken...
-        for (var i=start.line ; i<doc.lineCount() ; i++) {
-
-            handle = doc.getLineHandle(i);
-            text = handle.text.slice(start_ch);
-            dotmatch = DOT_R.exec(text);
-
-            if(dotmatch !== null &&
-                cm.getTokenAt({line: i,
-                               ch: dotmatch.index + 1}).type !== 'comment') {
-                end_ch = start_ch + dotmatch.index + 1;
-                break;
+        line_loop: {
+            for (var i = start.line; i < doc.lineCount(); i++) {
+                handle = doc.getLineHandle(i);
+                if(startch === handle.text.length + 1) {
+                    startch = 0;
+                    continue;
+                }
+                do {
+                    token = cm.getTokenAt({line: i, ch: startch});
+                    console.log(token);
+                    if (token.type === 'statementend' ||
+                        token.type === 'comment')
+                        break line_loop;
+                    startch = token.end + 1;
+                } while (startch < handle.text.length + 1);
+                startch = 0;
             }
-            start_ch = 0;
-        }
-
-
-        if (dotmatch === null)
             return false;
+        }
 
         // We found a statement!
         var stm = new Statement(start,
                                 {line : handle.lineNo(),
-                                 ch   : end_ch},
-                                 text
+                                 ch   : token.end},
+                                 doc.getRange({line : start.line, ch : start.ch},
+                                              {line : handle.lineNo(), ch : token.end})
                                );
 
         // Add the statement to our list.
@@ -177,6 +168,7 @@ var Editor;
 
         // EG: The stm should gain eid and sid properties.
         // In fact, there are 3 states for a statement: new, parsed, and executed/errored.
+        console.log(stm.text);
         this.coqEval(stm);
         return true;
     };
