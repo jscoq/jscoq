@@ -114,8 +114,12 @@ let init () = Lwt.async (fun () ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
   | `List coq_pkgs ->
-     Jslog.printf Jslog.jscoq_log "number of packages to preload %d\n%!" (List.length coq_pkgs);
+    let open List in
     let pkgs = List.map Jslib.json_to_pkg coq_pkgs in
+    Jslog.printf Jslog.jscoq_log "number of packages to preload %d [%d files]\n%!"
+      (length coq_pkgs)
+      (fold_left (+) 0
+         (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
     Lwt_list.iter_s preload_pkg pkgs
   | _ -> raise (Failure "JSON");
 )
