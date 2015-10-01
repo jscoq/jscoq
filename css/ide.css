@@ -110,8 +110,24 @@ a:hover {
 .cm-statementend {
 /*  background: #6C64FE;*/
 }
+
+/* Gallina keywords */
+.cm-keyword {
+  color: #98FB98;
+}
+
+/* Vernaculars */
+.cm-builtin {
+  color: #00FFFF;
+}
+
+/* Tactics */
 .cm-tactic {
-  color: #800040;
+  color: #9370DB;
+}
+
+.cm-terminator {
+  color: #FF0000;
 }
 /* overloads */
 .CodeMirror {
