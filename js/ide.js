@@ -35,13 +35,23 @@ var Editor;
         };
 
         jsCoq.onLog   = function(e){
-            if (e.toString().indexOf("ErrorMsg") != -1)
-                self.printCoqEvent(e);
+            console.log("CoqLog: " + e.toString());
+
+            // Hacks, we should refine...
+
+            // Error msg.
+            if (e.toString().indexOf("ErrorMsg:") != -1)
+                // Sanitize
+                self.addToQueryBuffer(e.toString().replace(/^.*ErrorMsg:/, ""));
+
+            // User queries, usually in the query buffer
+            if (e.toString().indexOf("Msg:") != -1)
+                self.addToQueryBuffer(e.toString().replace(/^.*Msg:/, ""));
         };
 
         jsCoq.onInit = function(e){
 
-            document.getElementById("goal-text").textContent = "JsCoq filesystem initalized with success!";
+            document.getElementById("goal-text").textContent += "\n===> JsCoq filesystem initalized with success!";
             // Enable the buttons
             self.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         };
@@ -50,12 +60,14 @@ var Editor;
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
 
-        this.goal_text.textContent = jsCoq.version();
+        this.goal_text.textContent = jsCoq.version() + "\nPlease wait for the libraries to load, thanks!";
     };
 
-    IDELayout.prototype.printCoqEvent = function(coqevt) {
+    IDELayout.prototype.addToQueryBuffer = function(text) {
+
         var span = document.createElement('span');
-        span.textContent = coqevt.toString();
+        // Due to the way Coq works we use pre...
+        span.appendChild(document.createElement('pre')).textContent = text;
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
 
