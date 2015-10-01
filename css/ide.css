@@ -112,12 +112,16 @@ a:hover {
 }
 
 /* Gallina keywords */
-.cm-keyword {
+.cm-s-default .cm-keyword {
   color: #98FB98;
 }
 
+.cm-s-default .cm-number {
+  color: #FFFFFF;
+}
+
 /* Vernaculars */
-.cm-builtin {
+.cm-s-default .cm-builtin {
   color: #00FFFF;
 }
 
