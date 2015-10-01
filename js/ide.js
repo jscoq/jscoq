@@ -17,7 +17,7 @@ var Editor;
         this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         window.addEventListener('load', function(evt){self.onload(evt);});
     };
-    
+
     IDELayout.prototype.onload = function(evt) {
         var jscoqscript = document.createElement('script');
         jscoqscript.type = 'text/javascript';
@@ -26,7 +26,7 @@ var Editor;
         jscoqscript.onload = function(evt){self.setupCoq(evt);};
         jscoqscript.src = 'coq-js/jscoq.js';
     };
-    
+
     IDELayout.prototype.setupCoq = function() {
 
         var self = this;
@@ -46,13 +46,13 @@ var Editor;
 
         this.goal_text.textContent = jsCoq.version();
     };
-    
+
     IDELayout.prototype.printCoqEvent = function(coqevt) {
         var span = document.createElement('span');
         span.textContent = coqevt.toString();
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
-    
+
     IDELayout.prototype.toolbarClickHandler = function(evt) {
 
         var target = evt.target;
