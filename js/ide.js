@@ -49,7 +49,7 @@ var Editor;
     
     IDELayout.prototype.printCoqEvent = function(coqevt) {
         var span = document.createElement('span');
-        span.innerHTML = coqevt.toString();
+        span.textContent = coqevt.toString();
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
     
