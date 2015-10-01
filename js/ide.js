@@ -19,12 +19,12 @@ var Editor;
     };
 
     IDELayout.prototype.onload = function(evt) {
-        var jscoqscript = document.createElement('script');
-        jscoqscript.type = 'text/javascript';
-        document.head.appendChild(jscoqscript);
-        var self = this;
+        var self           = this;
+        var jscoqscript    = document.createElement('script');
+        jscoqscript.type   = 'text/javascript';
+        jscoqscript.src    = 'coq-js/jscoq.js';
         jscoqscript.onload = function(evt){self.setupCoq(evt);};
-        jscoqscript.src = 'coq-js/jscoq.js';
+        document.head.appendChild(jscoqscript);
     };
 
     IDELayout.prototype.setupCoq = function() {
