@@ -1,0 +1,15 @@
+JsCoq is released under the AGPL 3 licence, or at your option, any
+later version.
+
+The following files derive from js_of_ocaml are under the LGPL 2:
+
+  - jsoo_util/jsoo_dl.ml
+  - coq-toplevel/jscoqtop.ml
+
+The following files derive from Coq are under the LGPL 2.1:
+
+  - We currently have no direct derivative from Coq.
+  - icoq.ml was based on Coq's source at some point.
+
+[Note: This file is in beta and needs deeper review]
+
