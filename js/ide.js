@@ -28,12 +28,18 @@ var Editor;
     };
     
     IDELayout.prototype.setupCoq = function() {
+
         var self = this;
-        jsCoq.onError = function(e){self.printCoqEvent(e);};
-        jsCoq.onLog = function(e){// Hack
-                                  if (e.toString().indexOf("ErrorMsg") != -1)
-                                          self.printCoqEvent(e);
-                                 };
+
+        jsCoq.onError = function(e){
+            self.editor.popStatement();
+        };
+
+        jsCoq.onLog   = function(e){
+            if (e.toString().indexOf("ErrorMsg") != -1)
+                self.printCoqEvent(e);
+        };
+
         // Initial sid.
         jsCoq.sid = [];
         jsCoq.sid.push(jsCoq.init());
@@ -44,7 +50,7 @@ var Editor;
     IDELayout.prototype.printCoqEvent = function(coqevt) {
         var span = document.createElement('span');
         span.innerHTML = coqevt.toString();
-        this.message_panel.insertBefore(this.message_panel.firstChild);
+        this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
     
     IDELayout.prototype.toolbarClickHandler = function(evt) {
