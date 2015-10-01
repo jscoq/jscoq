@@ -107,6 +107,12 @@ a:hover {
   display: block;
 }
 
+.cm-statementend {
+/*  background: #6C64FE;*/
+}
+.cm-tactic {
+  color: #800040;
+}
 /* overloads */
 .CodeMirror {
   height: 100%;
