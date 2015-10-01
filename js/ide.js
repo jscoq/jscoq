@@ -9,12 +9,11 @@ var Editor;
 
         this.toolsbar      = document.getElementById('toolsbar');
         this.script_panel  = document.getElementById('script-panel');
-        this.goal_text = document.getElementById("goal-text");
+        this.goal_text     = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
         this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
-        this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         window.addEventListener('load', function(evt){self.onload(evt);});
     };
 
@@ -38,6 +37,13 @@ var Editor;
         jsCoq.onLog   = function(e){
             if (e.toString().indexOf("ErrorMsg") != -1)
                 self.printCoqEvent(e);
+        };
+
+        jsCoq.onInit = function(e){
+
+            document.getElementById("goal-text").textContent = "JsCoq filesystem initalized with success!";
+            // Enable the buttons
+            self.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         };
 
         // Initial sid.

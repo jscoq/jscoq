@@ -10,8 +10,8 @@
  * loading in the browser.
 *)
 
-(** [init ()] gather package list and start preloading  *)
-val init : unit -> unit
+(** [init callback] gather package list and start preloading, call [callback] when done *)
+val init : (unit -> unit) -> unit
 
 (** [coq_resource_req url] query the manager's cache. *)
 val coq_vo_req  : Js.js_string Js.t -> Js.js_string Js.t option

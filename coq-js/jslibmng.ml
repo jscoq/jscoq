@@ -109,7 +109,7 @@ let preload_pkg pkg : unit Lwt.t =
   Icoq.add_load_path pkg.pkg_id pkg_dir;
   Lwt.return_unit
 
-let init () = Lwt.async (fun () ->
+let init callback = Lwt.async (fun () ->
   XmlHttpRequest.get json_file >>= fun res ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
@@ -120,7 +120,8 @@ let init () = Lwt.async (fun () ->
       (length coq_pkgs)
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
-    Lwt_list.iter_s preload_pkg pkgs
+    Lwt_list.iter_s preload_pkg pkgs >>= fun _ ->
+    (callback (); Lwt.return_unit)
   | _ -> raise (Failure "JSON");
 )
 

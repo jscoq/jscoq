@@ -16,13 +16,21 @@ open Js
 open Dom
 
 class type jsCoq = object
+
+  (* When init is finished, we call on init  *)
   method init        : ('self t, Stateid.t)             meth_callback writeonly_prop
+  method onInit      : ('self t, unit)                  event_listener writeonly_prop
+
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
+  method goals       : ('self t, js_string t)           meth_callback writeonly_prop
+
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
-  method goals       : ('self t, js_string t)           meth_callback writeonly_prop
+
+  (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
+  (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
   (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
 end
