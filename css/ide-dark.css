@@ -67,10 +67,6 @@ a:hover {
   background: #aa0000;
 }
 
-.cm-statementend {
-  background: #6C64FE;
-}
-
 /* Gallina keywords */
 .cm-s-blackboard .cm-keyword {
   color: #98FB98;
@@ -85,6 +81,18 @@ a:hover {
   color: #00FFFF;
 }
 
+.cm-s-blackboard .cm-comment {
+  color: #a50;
+}
+
+.cm-s-blackboard .cm-variable {
+  color: #FFFFFF;
+}
+
+.cm-s-blackboard .cm-operator {
+  color: #FFFFFF;
+}
+
 /* Tactics */
 .cm-tactic {
   color: #9370DB;
@@ -92,6 +100,11 @@ a:hover {
 
 .cm-terminator {
   color: #FF0000;
+}
+
+/*  */
+.cm-statementend {
+  /* background: #6C64FE; */
 }
 
 
