@@ -137,8 +137,11 @@ var Editor;
         // Statements holds the code already sent to Coq.
         this.statements = [];
 
+        CodeMirror.defineMathMode("coq+math", {name: "coq",
+                                               underscoresBreakWords: false});
+
         this._editor = CodeMirror.fromTextArea(element,
-            {mode : {name : "coq",
+            {mode : {name : "coq+math",
                      version: 3,
                      singleLineStringErrors : false
                    },
@@ -148,6 +151,9 @@ var Editor;
              theme : 'blackboard'
             }
         );
+
+        CodeMirror.hookMath(this._editor, MathJax);
+        this._editor.renderAllMath();
 
         var self = this;
         this._editor.on('change', function(evt){ self.onCMChange(evt); });
