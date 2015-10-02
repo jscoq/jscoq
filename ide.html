@@ -19,14 +19,16 @@
             <a href="https://github.com/ejgallego/jscoq">GitHub</a> | 
             <a href="about.html">Readme</a>
           </div>
-          <img src="images/ceiling.png" width="21" height="25" alt="Ceiling" name="ceiling"/>
-          <img src="images/floor.png" width="21" height="24" alt="Floor" name="floor"/>
+          <!-- <img src="images/ceiling.png" width="21" height="25" alt="Ceiling" name="ceiling"/>
+               <img src="images/floor.png" width="21" height="24" alt="Floor" name="floor"/>
+          -->
           <img src="images/up.png" width="21" height="24" alt="Up" name="up"/>
           <img src="images/down.png" width="21" height="25" alt="Down" name="down"/>
         </div>
         <div id="script-panel">
           <textarea>
 Require Import Coq.Init.Prelude.
+Require Import Coq.Unicode.Utf8.
 
 Lemma addn0 n : n + 0 = 0 + n.
 Proof. now induction n. Qed.
