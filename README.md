@@ -12,25 +12,25 @@ running in the browser! Try it:
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-Coq runs in the browser using the `js_of_ocaml` compiler, so no
-servers or external programs are needed. The current release provides
-a `jsCoq` JS object, so you can embed Coq in your particular
-javascript application.
+Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
+servers or external programs are needed.
 
-Chrome (>= 45) or Mozilla Firefox are required for now. Browsers'
-stack will tend to overflow when loading large plugins (that is,
-ssreflect), so we recommend starting Chrome with some extra stack
-size:
+jsCoq runs fine in Chrome (>= 45) or Mozilla Firefox. We recommend
+starting Chrome with:
 
 ```
 google-chrome --js-flags="--stack-size=65536"
 ```
 
-Unfortunately, it seems there is no way to increase stack size in
-Firefox.
+The IDE also runs in my old Galaxy Nexus.
 
-The IDE also runs in my old Galaxy Nexus, but it has some
-performance problems likely due to the Chrome version (44).
+*Important:* Plugin loading is still very slow, so be patient at `Require Import` time.
+*Important:* Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+
+## API
+
+The current release provides a `jsCoq` javascript object, so you can
+embed Coq in your particular javascript application.
 
 ## Reporting Bugs ##
 
@@ -42,15 +42,16 @@ contribute.  Any contribution or comment is really welcome!
 
 ## What is broken ##
 
-Loading ML modules is quite slow due to dynamic
-compilation. Performance is bad in Chrome 43, 44.
+* Loading ML modules is quite slow due to dynamic compilation.
+* `vm_compute` and `native_compute` are not supported.
+* There may be threading and performance problems.
 
-`vm_compute` and `native_compute` are not supported. There may be
-threading and performance problems.
-
-## Contact ##
+## Contact & Sponsorship ##
 
 Emilio J. Gallego Arias `e+jscoq at x80.org`.
+
+jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
+![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
 
 ## How to Install/Build ##
 
