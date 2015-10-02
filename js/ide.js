@@ -31,7 +31,7 @@ var Editor;
         var self = this;
 
         jsCoq.onError = function(e){
-            self.editor.popStatement();
+            self.editor.popStatement(true);
         };
 
         jsCoq.onLog   = function(e){
@@ -43,9 +43,8 @@ var Editor;
             if (e.toString().indexOf("ErrorMsg:") != -1)
                 // Sanitize
                 self.addToQueryBuffer(e.toString().replace(/^.*ErrorMsg:/, ""));
-
             // User queries, usually in the query buffer
-            if (e.toString().indexOf("Msg:") != -1)
+            else if (e.toString().indexOf("Msg:") != -1)
                 self.addToQueryBuffer(e.toString().replace(/^.*Msg:/, ""));
         };
 
@@ -65,8 +64,8 @@ var Editor;
 
     IDELayout.prototype.addToQueryBuffer = function(text) {
 
+        // Due to the way Coq works we use a <pre> tag...
         var span = document.createElement('span');
-        // Due to the way Coq works we use pre...
         span.appendChild(document.createElement('pre')).textContent = text;
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
@@ -83,7 +82,7 @@ var Editor;
                   content in every iteration so the user sees the
                   progress.
                 */
-                while(this.editor.popStatement());
+                while(this.editor.popStatement(false));
                 break;
 
             case 'floor' :
@@ -91,7 +90,7 @@ var Editor;
                 break;
 
             case 'up' :
-                this.editor.popStatement();
+                this.editor.popStatement(false);
                 break;
 
             case 'down' :
@@ -120,10 +119,7 @@ var Editor;
 
         var self = this;
         this._editor.on('change', function(evt){ self.onCMChange(evt); });
-
     };
-
-
 
     /* EG:
      *
@@ -191,7 +187,9 @@ var Editor;
         stm.position = this.statements.length - 1;
 
         // EG: The stm should gain eid and sid properties.
-        // In fact, there are 3 states for a statement: new, parsed, and executed/errored.
+
+        // In fact, there are 3 states for a statement: new, parsed,
+        // and executed/errored.
         this.coqEval(stm);
         return true;
     };
@@ -240,22 +238,43 @@ var Editor;
               document.getElementById("goal-text").textContent = jsCoq.goals();
             }
         } else { // Parse/library loading error.
-
-            // Similar to popStatement but without sid handling.
+            // XXXX: Similar to popStatement but without sid handling.
             stm = this.statements.pop();
+
             stm.mark.clear();
+            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
+            mark.stm = stm;
+            stm.mark = mark;
+            this.errorMark = stm.mark;
         }
     };
 
     // Back...
-    Editor.prototype.popStatement = function() {
+    Editor.prototype.popStatement = function(is_error) {
 
+        // This is very important, we cannot unload the prelude.
         if (this.statements.length <= 1)
             return false;
+
+        // Clear the last errorMark
+        if(this.errorMark) {
+            this.errorMark.clear();
+            this.errorMark = null;
+        }
 
         // Clear the mark from the last statement.
         var stm = this.statements.pop();
         stm.mark.clear();
+
+        // Mark errors as failed... We need a pending stack for this to work fine...
+        if(is_error) {
+            var doc  = this._editor.getDoc();
+            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
+            mark.stm = stm;
+            stm.mark = mark;
+            this.errorMark = mark;
+        }
+
         if(stm.is_comment)
             return true;
 
