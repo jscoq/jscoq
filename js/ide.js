@@ -143,7 +143,8 @@ var Editor;
                    },
              lineNumbers   : true,
              indentUnit    : 4,
-             matchBrackets : true
+             matchBrackets : true,
+             theme : 'blackboard'
             }
         );
 

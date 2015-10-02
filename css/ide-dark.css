@@ -34,13 +34,26 @@ a:hover {
   color: #5af;
 }
 
+#toolsbar {
+  border-bottom: 1px solid #272727;
+}
+
 /* Code settings */
-.CodeMirror-gutters { background-color: #000; }
-.CodeMirror-scroll { background-color: #000; }
+/*.CodeMirror-gutters { background-color: #000; }*/
+/*.CodeMirror-scroll { background-color: #000; }*/
 
-.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }
+/*.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }*/
 
-.CodeMirror { color: #fff; }
+/*.CodeMirror { color: #fff; }*/
+
+.cm-s-blackboard.CodeMirror {
+    background: #000;
+}
+
+.cm-s-blackboard .CodeMirror-gutters {
+    background: #000;
+    border-right: 1px solid #272727;
+}
 
 .coq-eval-ok {
   background: #483D8B;
@@ -59,16 +72,16 @@ a:hover {
 }
 
 /* Gallina keywords */
-.cm-s-default .cm-keyword {
+.cm-s-blackboard .cm-keyword {
   color: #98FB98;
 }
 
-.cm-s-default .cm-number {
+.cm-s-blackboard .cm-number {
   color: #FFFFFF;
 }
 
 /* Vernaculars */
-.cm-s-default .cm-builtin {
+.cm-s-blackboard .cm-builtin {
   color: #00FFFF;
 }
 
