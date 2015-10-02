@@ -1,16 +1,11 @@
 body {
-  margin:0;
-  padding:0;
+  margin : 0;
+  padding: 0;
   font-family: Helvetica,Geneva,Swiss,Arial,SunSans-Regular,sans-serif;
 }
 
 a, a:link, a:visited, a:active {
-  color: #369;
   text-decoration: none;
-}
-
-a:hover {
-  color: #5af;
 }
 
 #ide {
@@ -20,7 +15,6 @@ a:hover {
 #left-panel {
   position:absolute;
   left:0;
-  background: #CF6;
   width: calc(50% - 3px);
   height: 100%;
 }
@@ -30,7 +24,6 @@ a:hover {
   height: 100%;
   position:absolute;
   right: 0;
-  background: #6FC;
 }
 
 #script-panel {
@@ -46,9 +39,8 @@ a:hover {
 }
 
 #goal-panel, #message-panel {
-  background: #fff;
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
 }
 
 #goal-panel {
@@ -63,7 +55,6 @@ a:hover {
 
 #vsep, #hsep {
   position:absolute;
-  background: #f7f7f7;
   z-index: 3;
 }
 
@@ -79,7 +70,6 @@ a:hover {
 }
 
 #toolsbar {
-  background: #f7f7f7;
   padding-top: 5px;
   text-align: center;
   border-bottom: 1px solid #ddd;
@@ -91,48 +81,10 @@ a:hover {
   cursor: pointer;
 }
 
-.coq-eval-ok {
-  background: #cf6;
-}
-
-.coq-eval-pending {
-  background: #fc6;
-}
-
-.coq-eval-failed {
-  background: #f00;
-}
-
 .msg-area span {
   display: block;
 }
 
-.cm-statementend {
-/*  background: #6C64FE;*/
-}
-
-/* Gallina keywords */
-.cm-s-default .cm-keyword {
-  color: #98FB98;
-}
-
-.cm-s-default .cm-number {
-  color: #FFFFFF;
-}
-
-/* Vernaculars */
-.cm-s-default .cm-builtin {
-  color: #00FFFF;
-}
-
-/* Tactics */
-.cm-tactic {
-  color: #9370DB;
-}
-
-.cm-terminator {
-  color: #FF0000;
-}
 /* overloads */
 .CodeMirror {
   height: 100%;

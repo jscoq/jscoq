@@ -1,0 +1,84 @@
+/* Dark mode */
+
+/* Panel/body settings */
+
+body {
+  background-color: #000;
+  color: #fff;
+}
+
+#vsep, #hsep {
+  background: #272727;
+}
+
+#script-panel {
+  background-color: #000;
+}
+
+.msg-area span {
+   padding: 2px;
+   margin-top: 2px;
+   margin-bottom: 0px;
+   border-left: 2px solid #300;
+   border-top: 1px dashed #300;
+   border-bottom: 1px solid #300;
+   border-right: 1px solid #300;
+   width: 100%;
+}
+
+a, a:link, a:visited, a:active {
+  color: #abc;
+}
+
+a:hover {
+  color: #5af;
+}
+
+/* Code settings */
+.CodeMirror-gutters { background-color: #000; }
+.CodeMirror-scroll { background-color: #000; }
+
+.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }
+
+.CodeMirror { color: #fff; }
+
+.coq-eval-ok {
+  background: #483D8B;
+}
+
+.coq-eval-pending {
+  background: #fc6;
+}
+
+.coq-eval-failed {
+  background: #aa0000;
+}
+
+.cm-statementend {
+  background: #6C64FE;
+}
+
+/* Gallina keywords */
+.cm-s-default .cm-keyword {
+  color: #98FB98;
+}
+
+.cm-s-default .cm-number {
+  color: #FFFFFF;
+}
+
+/* Vernaculars */
+.cm-s-default .cm-builtin {
+  color: #00FFFF;
+}
+
+/* Tactics */
+.cm-tactic {
+  color: #9370DB;
+}
+
+.cm-terminator {
+  color: #FF0000;
+}
+
+
