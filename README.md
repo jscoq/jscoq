@@ -24,8 +24,8 @@ google-chrome --js-flags="--stack-size=65536"
 
 The IDE also runs in my old Galaxy Nexus.
 
-*Important:* Plugin loading is still very slow, so be patient at `Require Import` time.
-*Important:* Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+* **Important:** Plugin loading is still very slow, so be patient at `Require Import` time.
+* **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
 
 ## API
 
@@ -47,11 +47,10 @@ contribute.  Any contribution or comment is really welcome!
 * There may be threading and performance problems.
 
 ## Contact & Sponsorship ##
-
-Emilio J. Gallego Arias `e+jscoq at x80.org`.
-
-jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
 ![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
+jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
+
+Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install/Build ##
 
