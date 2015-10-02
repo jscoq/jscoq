@@ -14,10 +14,12 @@ var Editor;
         this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
-        window.addEventListener('load', function(evt){self.onload(evt);});
+        window.addEventListener('load', function(evt){ self.onload(evt); });
     };
 
     IDELayout.prototype.onload = function(evt) {
+
+        // Load JsCoq
         var self           = this;
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
@@ -25,6 +27,15 @@ var Editor;
         jscoqscript.onload = function(evt){self.setupCoq(evt);};
         document.head.appendChild(jscoqscript);
     };
+
+
+    IDELayout.prototype.enable = function() {
+
+        var self = this;
+
+        this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+        this.script_panel.addEventListener('keydown', function(evt) { self.keyHandler(evt); });
+    }
 
     IDELayout.prototype.setupCoq = function() {
 
@@ -51,8 +62,8 @@ var Editor;
         jsCoq.onInit = function(e){
 
             document.getElementById("goal-text").textContent += "\n===> JsCoq filesystem initalized with success!";
-            // Enable the buttons
-            self.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+            // Enable the IDE.
+            self.enable();
         };
 
         // Initial sid.
@@ -98,6 +109,25 @@ var Editor;
                 break;
         }
     };
+
+    IDELayout.prototype.keyHandler = function(evt) {
+
+        // console.log("Keycode: " + evt.keycode + ", alt: " + evt.altKey);
+
+        switch(evt.keyCode) {
+
+        case 78:
+            if(evt.metaKey || evt.altKey) {
+                this.editor.eatNextStatement();
+            }
+            break;
+        case 80:
+            if(evt.metaKey || evt.altKey) {
+                this.editor.popStatement(false);
+            }
+            break;
+        }
+    }
 
     Editor = function(name, element) {
 
