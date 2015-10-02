@@ -48,6 +48,7 @@ contribute.  Any contribution or comment is really welcome!
 
 ## Contact & Sponsorship ##
 ![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
+
 jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
 
 Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
