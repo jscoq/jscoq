@@ -34,8 +34,8 @@ var Editor;
         var self = this;
 
         this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
-        this.script_panel.addEventListener('keydown', function(evt) { self.keyHandler(evt); });
-    }
+        this.script_panel.addEventListener('keydown', function(evt) { self.keydownHandler(evt); });
+    };
 
     IDELayout.prototype.setupCoq = function() {
 
@@ -110,7 +110,7 @@ var Editor;
         }
     };
 
-    IDELayout.prototype.keyHandler = function(evt) {
+    IDELayout.prototype.keydownHandler = function(evt) {
 
         // console.log("Keycode: " + evt.keycode + ", alt: " + evt.altKey);
 
@@ -127,7 +127,7 @@ var Editor;
             }
             break;
         }
-    }
+    };
 
     Editor = function(name, element) {
 
