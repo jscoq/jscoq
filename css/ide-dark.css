@@ -107,4 +107,12 @@ a:hover {
   /* background: #6C64FE; */
 }
 
+.cm-bullet,
+.cm-brace{
+  /*
+  background: bisque;
+  color: black;
+  */
+}
+
 

@@ -204,7 +204,7 @@ var Editor;
             }
         }
 
-        var token = this.getNextToken(start, /statementend/);
+        var token = this.getNextToken(start, /statementend|bullet|brace/);
         if(!token) return false;
 
         var stm = new Statement(start,
