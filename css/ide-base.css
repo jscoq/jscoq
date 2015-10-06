@@ -70,15 +70,23 @@ a, a:link, a:visited, a:active {
 }
 
 #toolsbar {
-  padding-top: 5px;
-  text-align: center;
   border-bottom: 1px solid #ddd;
-  height: 31px;
+  height: 36px;
+}
+
+#toolsbar .exits {
+  white-space: nowrap;
+  display: table-cell;
+  vertical-align: top;
 }
 
 #buttons {
+  display: table-cell;
   opacity: 0;
+  text-align: center;
+  width:100%;
   transition: opacity 500ms ease;
+  vertical-align: middle;
 }
 
 #buttons img {
@@ -88,6 +96,7 @@ a, a:link, a:visited, a:active {
 
 .msg-area span {
   display: block;
+  padding: 3px;
 }
 
 /* overloads */

@@ -15,17 +15,6 @@ body {
   background-color: #000;
 }
 
-.msg-area span {
-   padding: 2px;
-   margin-top: 2px;
-   margin-bottom: 0px;
-   border-left: 2px solid #300;
-   border-top: 1px dashed #300;
-   border-bottom: 1px solid #300;
-   border-right: 1px solid #300;
-   width: 100%;
-}
-
 a, a:link, a:visited, a:active {
   color: #abc;
 }
@@ -109,10 +98,8 @@ a:hover {
 
 .cm-bullet,
 .cm-brace{
-  /*
   background: bisque;
   color: black;
-  */
 }
 
 
