@@ -7,7 +7,7 @@ var Editor;
 
     IDELayout = function() {
 
-        this.toolsbar      = document.getElementById('toolsbar');
+        this.buttons      = document.getElementById('buttons');
         this.script_panel  = document.getElementById('script-panel');
         this.goal_text     = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
@@ -30,10 +30,9 @@ var Editor;
 
 
     IDELayout.prototype.enable = function() {
-
         var self = this;
-
-        this.toolsbar.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+        this.buttons.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+        this.buttons.style.opacity = 1;
         this.script_panel.addEventListener('keydown', function(evt) { self.keydownHandler(evt); });
     };
 
@@ -162,6 +161,30 @@ var Editor;
      *
      */
 
+    // Returns the next token after the one seen at position: {line:…, ch:…}
+    // type_re: regexp to match token type.
+    // The returned object is a CodeMirror token with an additional attribute 'line'.
+    Editor.prototype.getNextToken = function(position, type_re) {
+        var cm = this._editor;
+        var linecount = cm.getDoc().lineCount();
+        var token, next, ch, line;
+        do {
+            token = cm.getTokenAt(position);
+            ch = token.end + 1;
+            line = position.line;
+            if (token.end === cm.getLine(line).length) {
+                line++;
+                ch = 0;
+                if (line >= linecount)
+                    return null;
+            }
+            next = cm.getTokenAt({line:line, ch:ch});
+            next.line = line;
+            position = {line:next.line, ch:next.end};
+        } while(type_re && !(type_re.test(next.type)));
+        return next;
+    };
+
     // Send next statement to Coq.
     Editor.prototype.eatNextStatement = function() {
 
@@ -181,34 +204,14 @@ var Editor;
             }
         }
 
-        var startch = start.ch + 1;
-        var token, handle;
+        var token = this.getNextToken(start, /statementend/);
+        if(!token) return false;
 
-        line_loop: {
-            for (var i = start.line; i < doc.lineCount(); i++) {
-                handle = doc.getLineHandle(i);
-                if(startch === handle.text.length + 1) {
-                    startch = 0;
-                    continue;
-                }
-                do {
-                    token = cm.getTokenAt({line: i, ch: startch});
-                    if (token.type === 'statementend' ||
-                        token.type === 'comment')
-                        break line_loop;
-                    startch = token.end + 1;
-                } while (startch < handle.text.length + 1);
-                startch = 0;
-            }
-            return false;
-        }
-
-        // We found a statement!
         var stm = new Statement(start,
-                                {line : handle.lineNo(),
+                                {line : token.line,
                                  ch   : token.end},
                                 doc.getRange({line : start.line, ch : start.ch},
-                                             {line : handle.lineNo(), ch : token.end}),
+                                             {line : token.line, ch : token.end}),
                                 token.type === 'comment'
                                );
 
