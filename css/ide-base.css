@@ -76,7 +76,12 @@ a, a:link, a:visited, a:active {
   height: 31px;
 }
 
-#toolsbar img {
+#buttons {
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+#buttons img {
   margin: 0 2px;
   cursor: pointer;
 }
