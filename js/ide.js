@@ -34,7 +34,7 @@ var Editor;
         this.buttons.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         this.buttons.style.display = 'table-cell';
         this.buttons.style.opacity = 1;
-        this.script_panel.addEventListener('keydown', function(evt) { self.keydownHandler(evt); });
+        this.editor.focus();
     };
 
     JSCoqIDE.prototype.setupCoq = function() {
@@ -98,25 +98,18 @@ var Editor;
         }
     };
 
-    JSCoqIDE.prototype.keydownHandler = function(evt) {
-
-        // console.log("Keycode: " + evt.keycode + ", alt: " + evt.altKey);
-
-        switch(evt.keyCode) {
-
-        case 78:
-            if(evt.metaKey || evt.altKey) {
-                this.editor.eatNextStatement();
+    JSCoqIDE.prototype._raiseButton = function(btn_name) {
+        var btns = this.buttons.getElementsByTagName('img');
+        for(var i=0 ; i<btns.length ; i++){
+            if(btns[i].name == btn_name) {
+                btns[i].dispatchEvent(new MouseEvent('click',
+                                                     {'view': window,
+                                                      'bubbles': true,
+                                                      'cancelable' : true}));
+                break;
             }
-            break;
-        case 80:
-            if(evt.metaKey || evt.altKey) {
-                this.editor.popStatement(false);
-            }
-            break;
         }
     };
-
 
     Editor = function(ide, element) {
         this.ide = ide;
@@ -139,6 +132,13 @@ var Editor;
 
         var self = this;
         this._editor.on('change', function(evt){ self.onCMChange(evt); });
+        this._editor.setOption("extraKeys",
+            {
+                "Ctrl-N": function(){self.ide._raiseButton('down');},
+                "Ctrl-P": function(){self.ide._raiseButton('up');},
+                "Ctrl-Enter": function(){self.ide._raiseButton('to-cursor');}
+            }
+        )
     };
 
     /* EG:
