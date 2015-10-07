@@ -1,23 +1,23 @@
-var IDELayout;
+var JSCoqIDE;
 var Editor;
 
 (function(){
 
     Array.prototype.last = function() { return this[this.length-1]; };
 
-    IDELayout = function() {
+    JSCoqIDE = function() {
 
         this.buttons      = document.getElementById('buttons');
         this.script_panel  = document.getElementById('script-panel');
         this.goal_text     = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
-        this.editor        = new Editor('coq', this.script_panel.getElementsByTagName('textarea')[0]);
+        this.editor        = new Editor(this, this.script_panel.getElementsByTagName('textarea')[0]);
 
         var self = this;
         window.addEventListener('load', function(evt){ self.onload(evt); });
     };
 
-    IDELayout.prototype.onload = function(evt) {
+    JSCoqIDE.prototype.onload = function(evt) {
 
         // Load JsCoq
         var self           = this;
@@ -29,14 +29,14 @@ var Editor;
     };
 
 
-    IDELayout.prototype.enable = function() {
+    JSCoqIDE.prototype.enable = function() {
         var self = this;
         this.buttons.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
         this.buttons.style.opacity = 1;
         this.script_panel.addEventListener('keydown', function(evt) { self.keydownHandler(evt); });
     };
 
-    IDELayout.prototype.setupCoq = function() {
+    JSCoqIDE.prototype.setupCoq = function() {
 
         var self = this;
 
@@ -72,15 +72,13 @@ var Editor;
         this.goal_text.textContent = jsCoq.version() + "\nPlease wait for the libraries to load, thanks!";
     };
 
-    IDELayout.prototype.addToQueryBuffer = function(text) {
-
-        // Due to the way Coq works we use a <pre> tag...
+    JSCoqIDE.prototype.addToQueryBuffer = function(text) {
         var span = document.createElement('span');
-        span.appendChild(document.createElement('pre')).textContent = text;
+        span.textContent = text;
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
 
-    IDELayout.prototype.toolbarClickHandler = function(evt) {
+    JSCoqIDE.prototype.toolbarClickHandler = function(evt) {
 
         var target = evt.target;
 
@@ -96,7 +94,7 @@ var Editor;
                 break;
 
             case 'floor' :
-                while(this.editor.eatNextStatement());
+                this.editor.eatStatementsToCursor();
                 break;
 
             case 'up' :
@@ -109,7 +107,7 @@ var Editor;
         }
     };
 
-    IDELayout.prototype.keydownHandler = function(evt) {
+    JSCoqIDE.prototype.keydownHandler = function(evt) {
 
         // console.log("Keycode: " + evt.keycode + ", alt: " + evt.altKey);
 
@@ -128,8 +126,9 @@ var Editor;
         }
     };
 
-    Editor = function(name, element) {
 
+    Editor = function(ide, element) {
+        this.ide = ide;
         this.idgen = new IDGen();
 
         // Statements holds the code already sent to Coq.
@@ -200,12 +199,12 @@ var Editor;
 
             if (start.line === doc.lastLine() &&
                 start.ch === doc.getLine(doc.lastLine()).length) {
-                return false;
+                return null;
             }
         }
 
         var token = this.getNextToken(start, /statementend|bullet|brace/);
-        if(!token) return false;
+        if(!token) return null;
 
         var stm = new Statement(start,
                                 {line : token.line,
@@ -225,7 +224,22 @@ var Editor;
         // In fact, there are 3 states for a statement: new, parsed,
         // and executed/errored.
         this.coqEval(stm);
-        return true;
+        return stm;
+    };
+
+    Editor.prototype.eatStatementsToCursor = function () {
+        var cm = this._editor;
+        var doc = cm.getDoc();
+        var cursor = doc.getCursor();
+        var marks = doc.findMarksAt(cursor);
+        if(marks.length) {
+            this.ide.addToQueryBuffer("Code from the beginning to cursor already evaluated.");
+            return;
+        }
+        var stm;
+        do {
+            stm = this.eatNextStatement();
+        } while(stm.end.line < cursor.line || stm.end.ch < cursor.ch);
     };
 
     Editor.prototype.coqEval = function(stm) {

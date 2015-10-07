@@ -97,6 +97,7 @@ a, a:link, a:visited, a:active {
 .msg-area span {
   display: block;
   padding: 3px;
+  white-space: pre;
 }
 
 /* overloads */
