@@ -81,7 +81,7 @@ a, a:link, a:visited, a:active {
 }
 
 #buttons {
-  display: table-cell;
+  display: none;
   opacity: 0;
   text-align: center;
   width:100%;

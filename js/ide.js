@@ -32,6 +32,7 @@ var Editor;
     JSCoqIDE.prototype.enable = function() {
         var self = this;
         this.buttons.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+        this.buttons.style.display = 'table-cell';
         this.buttons.style.opacity = 1;
         this.script_panel.addEventListener('keydown', function(evt) { self.keydownHandler(evt); });
     };
@@ -81,19 +82,9 @@ var Editor;
     JSCoqIDE.prototype.toolbarClickHandler = function(evt) {
 
         var target = evt.target;
-
+        this.editor.focus();
         switch (target.name) {
-
-            case 'ceiling' :
-                /*
-                  FIXME [EG]: This need to yield back to the browser
-                  content in every iteration so the user sees the
-                  progress.
-                */
-                while(this.editor.popStatement(false));
-                break;
-
-            case 'floor' :
+            case 'to-cursor' :
                 this.editor.eatStatementsToCursor();
                 break;
 
@@ -232,14 +223,20 @@ var Editor;
         var doc = cm.getDoc();
         var cursor = doc.getCursor();
         var marks = doc.findMarksAt(cursor);
-        if(marks.length) {
-            this.ide.addToQueryBuffer("Code from the beginning to cursor already evaluated.");
-            return;
-        }
         var stm;
-        do {
-            stm = this.eatNextStatement();
-        } while(stm.end.line < cursor.line || stm.end.ch < cursor.ch);
+        if(marks.length) {
+            // backward
+            marks = doc.findMarksAt(cursor);
+            for (var i = this.statements.length - 1 ; i >= marks[0].stm.position ; i-- ) {
+                this.popStatement();
+            }
+        }
+        else {
+            // forward
+            do {
+                stm = this.eatNextStatement();
+            } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
+        }
     };
 
     Editor.prototype.coqEval = function(stm) {
@@ -302,7 +299,7 @@ var Editor;
 
         // This is very important, we cannot unload the prelude.
         if (this.statements.length <= 1)
-            return false;
+            return null;
 
         // Clear the last errorMark
         if(this.errorMark) {
@@ -317,14 +314,14 @@ var Editor;
         // Mark errors as failed... We need a pending stack for this to work fine...
         if(is_error) {
             var doc  = this._editor.getDoc();
-            mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
+            var mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
             mark.stm = stm;
             stm.mark = mark;
             this.errorMark = mark;
         }
 
         if(stm.is_comment)
-            return true;
+            return stm;
 
         // Drop the last sid
         jsCoq.sid.pop();
@@ -333,7 +330,7 @@ var Editor;
 
         // Update goals
         document.getElementById("goal-text").textContent = jsCoq.goals();
-        return true;
+        return stm;
     };
 
     // This is an event, shouldn't it return true?
@@ -350,6 +347,10 @@ var Editor;
                 this.popStatement();
             }
         }
+    };
+
+    Editor.prototype.focus = function() {
+        this._editor.focus();
     };
 
     var IDGen = function() {
