@@ -2,7 +2,7 @@ var JSCoqIDE;
 var Editor;
 
 (function(){
-
+    "use strict";
     Array.prototype.last = function() { return this[this.length-1]; };
 
     JSCoqIDE = function() {
@@ -138,7 +138,7 @@ var Editor;
                 "Ctrl-P": function(){self.ide._raiseButton('up');},
                 "Ctrl-Enter": function(){self.ide._raiseButton('to-cursor');}
             }
-        )
+        );
     };
 
     /* EG:
