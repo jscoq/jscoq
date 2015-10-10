@@ -2,7 +2,7 @@ Run Coq in your browser!
 ------------------------
 
 *WARNING: This project is a proof of concept. If you are not a Coq
- expert expect trouble*
+ expert, expect trouble*
 
 A [Coq](https://coq.inria.fr) Integrated Development Enviroment
 running in the browser! Try it:
@@ -79,7 +79,7 @@ $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
-$ ./configure -local -natdynlink no -coqide no -no-native-compiler
+$ ./configure -local -natdynlink no -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
@@ -119,3 +119,5 @@ $ export PATH=~/external/coq-git/bin:$PATH
 $ coq_makefile -f Make > Makefile
 $ make byte
   ```
+
+  For current Coq trunk, you'll need to patch ssr [look in the patch folder].

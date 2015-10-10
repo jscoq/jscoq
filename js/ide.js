@@ -74,8 +74,10 @@ var Editor;
     };
 
     JSCoqIDE.prototype.addToQueryBuffer = function(text) {
+
         var span = document.createElement('span');
-        span.textContent = text;
+        // Now Coq logs escaped pseudo-xml...
+        span.innerHTML = text;
         this.message_panel.insertBefore(span, this.message_panel.firstChild);
     };
 

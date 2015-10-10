@@ -1,0 +1,13 @@
+diff --git a/src/ssreflect.ml4 b/src/ssreflect.ml4
+index 401182f..4b11661 100644
+--- a/src/ssreflect.ml4
++++ b/src/ssreflect.ml4
+@@ -6081,7 +6081,7 @@ GEXTEND Gram
+           let s = coerce_reference_to_id qid in
+ 	  Vernacexpr.VernacDefinition
+ 	    ((Some Decl_kinds.Global,Decl_kinds.CanonicalStructure),
+-             (dummy_loc,s),(d  ))
++             ((dummy_loc,s),None),(d  ))
+   ]];
+ END
+ 
