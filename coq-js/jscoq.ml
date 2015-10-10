@@ -70,7 +70,9 @@ let string_of_feedback fb : string =
   (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
   (* Old generic messages *)
-    | Message m -> "Msg: " ^ m.message_content
+    (* Richer printing disabled.. *)
+    (* | Message m -> "Msg: " ^ (Xml_printer.to_string_fmt m.message_content) *)
+    | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content)
 
 let string_of_eosid esid =
   let open Feedback in

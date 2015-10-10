@@ -72,7 +72,7 @@ let init opts =
   Stm.init();
 
   (* Initialize logging. *)
-  Pp.log_via_feedback ();
+  Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg));
   Pp.set_feeder opts.fb_handler;
 
   (* Misc tweaks *)
