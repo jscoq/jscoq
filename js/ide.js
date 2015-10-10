@@ -46,6 +46,14 @@ var Editor;
         this.editor._editor.addWidget({line: line, ch:ch}, oImg, false);
     }
 
+    JSCoqIDE.prototype.addh2 = function(text, width, line, ch) {
+
+        var elem = document.createElement("h2");
+        elem.textContent = text;
+
+        this.editor._editor.addWidget({line: line, ch:ch}, elem, false);
+    }
+
     JSCoqIDE.prototype.setupCoq = function() {
 
         var self = this;
