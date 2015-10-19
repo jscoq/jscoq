@@ -73,9 +73,11 @@ let preload_vo_file base_url (file, hash) : unit Lwt.t =
 
 (* Unfortunately this is a tad different than preload_vo_file *)
 let preload_cma_file base_url (file, hash) : unit Lwt.t =
-  Jslog.printf Jslog.jscoq_log "pre-loading cma file %s-%s\n%!" base_url file;
+  (* Jslog.printf Jslog.jscoq_log "pre-loading cma file %s-%s\n%!" base_url file; *)
+  Format.eprintf "pre-loading cma file %s-%s\n%!" base_url file;
   let cma_url   = fs_prefix ^ "cmas/" ^ file ^ ".js" in
-  Jslog.printf Jslog.jscoq_log "cma url %s\n%!" cma_url;
+  (* Jslog.printf Jslog.jscoq_log "cma url %s\n%!" cma_url; *)
+  Format.eprintf "cma url %s\n%!" cma_url;
   (* Avoid costly string conversions *)
   let open XmlHttpRequest in
   perform_raw ~response_type:Text cma_url >>= fun frame ->
@@ -83,7 +85,8 @@ let preload_cma_file base_url (file, hash) : unit Lwt.t =
     let byte_entry = {
       js_content = frame.content;
     } in
-    Jslog.printf Jslog.jscoq_log "added cma %s with length %d\n%!" cma_url (frame.content)##length;
+    Format.eprintf "added cma %s with length %d\n%!" cma_url (frame.content)##length;
+    (* Jslog.printf Jslog.jscoq_log "added cma %s with length %d\n%!" cma_url (frame.content)##length; *)
 
     (* XXXX: This  called without qualitification so
        filename conflicts are possible *)
@@ -95,10 +98,12 @@ let preload_pkg pkg : unit Lwt.t =
   let pkg_dir = to_name pkg.pkg_id        in
   let ncma    = List.length pkg.cma_files in
   let nfiles  = List.length pkg.vo_files + List.length pkg.cma_files in
-  Jslog.printf Jslog.jscoq_log "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
+  (* Jslog.printf Jslog.jscoq_log "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles; *)
+  Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
-    Jslog.printf_rep Jslog.jscoq_log "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
+    (* Jslog.printf_rep Jslog.jscoq_log "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles; *)
+    Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
     Lwt.return_unit
   in
   (if Icoq.dyn_comp then
@@ -116,7 +121,8 @@ let init callback = Lwt.async (fun () ->
   | `List coq_pkgs ->
     let open List in
     let pkgs = List.map Jslib.json_to_pkg coq_pkgs in
-    Jslog.printf Jslog.jscoq_log "number of packages to preload %d [%d files]\n%!"
+    (* Jslog.printf Jslog.jscoq_log "number of packages to preload %d [%d files]\n%!" *)
+    Format.eprintf "number of packages to preload %d [%d files]\n%!"
       (length coq_pkgs)
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
@@ -124,6 +130,7 @@ let init callback = Lwt.async (fun () ->
     (callback (); Lwt.return_unit)
   | _ -> raise (Failure "JSON");
 )
+
 
 (*
   let handler xml =
@@ -165,7 +172,8 @@ let coq_vo_req url =
     end
 
 let coq_cma_req cma =
-  Jslog.printf Jslog.jscoq_log "cma file %s requested\n%!" cma;
+  (* Jslog.printf Jslog.jscoq_log "cma file %s requested\n%!" cma; *)
+  Format.eprintf "cma file %s requested\n%!" cma;
   let str = (Js.string (fs_prefix ^ "cmas/" ^ cma ^ ".js")) in
   Js.Unsafe.global##load_script_(str)
 (*

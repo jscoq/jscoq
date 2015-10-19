@@ -15,6 +15,10 @@
 open Js
 open Dom
 
+class type jsCoqLib = object
+(* method onError     : ('self t, Stateid.t)             event_listener writeonly_prop *)
+end
+
 class type jsCoq = object
 
   (* When init is finished, we call on init  *)
@@ -28,12 +32,18 @@ class type jsCoq = object
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
 
+  (* Library management *)
+  (* method libManager  : ('self t, jsCoqLib t)            meth_callback writeonly_prop *)
+
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
+
+  (* Error from Coq *)
   (* We don't want to use event_listener due to limitations of invoke_handler... *)
   (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
+
 end
 
 let setup_pseudo_fs () =
@@ -80,31 +90,34 @@ let string_of_eosid esid =
   | Edit  eid -> "eid: " ^ string_of_int eid
   | State sid -> "sid: " ^ (Stateid.to_string sid)
 
+
+
+let internal_log this (str : js_string t) =
+  let _    = invoke_handler this##onLog this str  in
+  ()
+
 let jscoq_feedback_handler this (fb : Feedback.feedback) =
   let open Feedback in
   let fb_s = Printf.sprintf "feedback for [%s]: %s\n%!"
                             (string_of_eosid fb.id)
                             (string_of_feedback fb.contents)  in
 
-  let _    = invoke_handler this##onLog this (string fb_s)  in
-  (* Opt.iter jscoq##onLog (fun h -> Js.Unsafe.call jscoq [|Js.Unsafe.inject (string fb_s)|]); *)
-  ()
+  internal_log this (string fb_s)
 
-let setup_printers () =
+let setup_printers this =
   try
-    let open Jslog            in
-    let js_stdout = jscoq_log in
-    let js_stderr = jscoq_log in
     (* How to create a channel *)
     (* let _sharp_chan = open_out "/dev/null0" in *)
     (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
-    Sys_js.set_channel_flusher stdout (add_text js_stdout Info);
-    Sys_js.set_channel_flusher stderr (add_text js_stderr Info)
+    (* Sys_js.set_channel_flusher stdout (add_text js_stdout Info); *)
+    (* Sys_js.set_channel_flusher stderr (add_text js_stderr Info) *)
+    Sys_js.set_channel_flusher stdout (fun s -> internal_log this (string s));
+    Sys_js.set_channel_flusher stderr (fun s -> internal_log this (string s))
   with Not_found -> ()
 
 let jscoq_init this =
   setup_pseudo_fs ();
-  setup_printers ();
+  setup_printers this;
   let sid = Icoq.init { ml_load    = Jslibmng.coq_cma_req;
                         fb_handler = (jscoq_feedback_handler this);
                       } in

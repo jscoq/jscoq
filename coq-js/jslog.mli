@@ -25,4 +25,4 @@ val add_text : t -> log_level -> string -> unit
 val printf     : t -> ('a, unit, string, unit) format4 -> 'a
 val printf_rep : t -> ('a, unit, string, unit) format4 -> 'a
 
-val jscoq_log : t
+(* val jscoq_log : t *)
