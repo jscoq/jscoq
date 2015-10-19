@@ -15,12 +15,12 @@ a, a:link, a:visited, a:active {
 #left-panel {
   position:absolute;
   left:0;
-  width: calc(50% - 3px);
+  width: calc(55% - 3px);
   height: 100%;
 }
 
 #right-panel {
-  width: calc(50% - 3px);
+  width: calc(45% - 3px);
   height: 100%;
   position:absolute;
   right: 0;
@@ -40,16 +40,16 @@ a, a:link, a:visited, a:active {
 
 #goal-panel, #message-panel {
   width: 100%;
-  overflow: auto;
+  overflow: hidden;
 }
 
 #goal-panel {
   top:0;
-  height: 60%;
+  height: 78%;
 }
 
 #message-panel {
-  height: calc(40% - 6px);
+  height: calc(22% - 6px);
   margin-top: 6px;
 }
 
@@ -59,7 +59,7 @@ a, a:link, a:visited, a:active {
 }
 
 #vsep {
-  left: calc(50% - 3px);
+  left: calc(55% - 3px);
   width: 6px;
   height: 100%;
 }
