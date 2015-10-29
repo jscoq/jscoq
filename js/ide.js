@@ -3,6 +3,7 @@ var Editor;
 
 (function(){
     "use strict";
+
     Array.prototype.last = function() { return this[this.length-1]; };
 
     JSCoqIDE = function() {
@@ -25,11 +26,13 @@ var Editor;
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
         jscoqscript.src    = jscoq_mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
+        // Chain to Coq Initilization
         jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
     };
 
 
+    // Enable the buttons.
     JSCoqIDE.prototype.enable = function() {
 
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
@@ -114,18 +117,22 @@ var Editor;
         }
     };
 
+    // Simulates a click in the button.
     JSCoqIDE.prototype._raiseButton = function(btn_name) {
+
         var btns = this.buttons.getElementsByTagName('img');
-        for(var i=0 ; i<btns.length ; i++){
-            if(btns[i].name == btn_name) {
-                btns[i].dispatchEvent(new MouseEvent('click',
-                                                     {'view': window,
-                                                      'bubbles': true,
-                                                      'cancelable' : true}));
-                break;
-            }
+        var btn  = btns.namedItem(btn_name);
+
+        if (btn) {
+            btn.dispatchEvent(new MouseEvent('click',
+                                             {'view'       : window,
+                                              'bubbles'    : true,
+                                              'cancelable' : true}));
         }
     };
+
+    ////////////////////////////////////////////////////////////////////
+    // Editor
 
     Editor = function(ide, element) {
         this.ide = ide;
