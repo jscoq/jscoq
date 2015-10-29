@@ -7,31 +7,32 @@ var Editor;
 
     JSCoqIDE = function() {
 
-        this.buttons      = document.getElementById('buttons');
+        this.buttons       = document.getElementById('buttons');
         this.script_panel  = document.getElementById('script-panel');
         this.goal_text     = document.getElementById("goal-text");
         this.message_panel = document.getElementById('message-panel');
         this.editor        = new Editor(this, this.script_panel.getElementsByTagName('textarea')[0]);
 
-        var self = this;
-        window.addEventListener('load', function(evt){ self.onload(evt); });
+        window.addEventListener('load', evt => { this.onload(evt); } );
     };
 
     JSCoqIDE.prototype.onload = function(evt) {
 
+        // XXX: make it a config parameter.
+        var jscoq_mock     = true;
+
         // Load JsCoq
-        var self           = this;
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
-        jscoqscript.src    = 'coq-js/jscoq.js';
-        jscoqscript.onload = function(evt){self.setupCoq(evt);};
+        jscoqscript.src    = jscoq_mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
+        jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
     };
 
 
     JSCoqIDE.prototype.enable = function() {
-        var self = this;
-        this.buttons.addEventListener('click', function(evt){ self.toolbarClickHandler(evt); });
+
+        this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
         this.buttons.style.display = 'table-cell';
         this.buttons.style.opacity = 1;
         this.editor.focus();
@@ -56,13 +57,9 @@ var Editor;
 
     JSCoqIDE.prototype.setupCoq = function() {
 
-        var self = this;
+        jsCoq.onError = e => { this.editor.popStatement(true); };
 
-        jsCoq.onError = function(e){
-            self.editor.popStatement(true);
-        };
-
-        jsCoq.onLog   = function(e){
+        jsCoq.onLog   = e => {
             console.log("CoqLog: " + e.toString());
 
             // Hacks, we should refine...
@@ -70,17 +67,17 @@ var Editor;
             // Error msg.
             if (e.toString().indexOf("ErrorMsg:") != -1)
                 // Sanitize
-                self.addToQueryBuffer(e.toString().replace(/^.*ErrorMsg:/, ""));
+                this.addToQueryBuffer(e.toString().replace(/^.*ErrorMsg:/, ""));
             // User queries, usually in the query buffer
             else if (e.toString().indexOf("Msg:") != -1)
-                self.addToQueryBuffer(e.toString().replace(/^.*Msg:/, ""));
+                this.addToQueryBuffer(e.toString().replace(/^.*Msg:/, ""));
         };
 
-        jsCoq.onInit = function(e){
+        jsCoq.onInit = e => {
 
-            document.getElementById("goal-text").textContent += "\n===> JsCoq filesystem initalized with success!";
             // Enable the IDE.
-            self.enable();
+            document.getElementById("goal-text").textContent += "\n===> JsCoq filesystem initalized with success!";
+            this.enable();
         };
 
         // Initial sid.
@@ -137,11 +134,12 @@ var Editor;
         // Statements holds the code already sent to Coq.
         this.statements = [];
 
-        CodeMirror.defineMathMode("coq+math", {name: "coq",
-                                               underscoresBreakWords: false});
+        // CodeMirror.defineMathMode("coq+math", {name: "coq",
+        //                                        underscoresBreakWords: false});
 
         this._editor = CodeMirror.fromTextArea(element,
-            {mode : {name : "coq+math",
+            // {mode : {name : "coq+math",
+            {mode : {name : "coq",
                      version: 3,
                      singleLineStringErrors : false
                    },
@@ -152,16 +150,15 @@ var Editor;
             }
         );
 
-        CodeMirror.hookMath(this._editor, MathJax);
-        this._editor.renderAllMath();
+        // CodeMirror.hookMath(this._editor, MathJax);
+        // this._editor.renderAllMath();
 
-        var self = this;
         this._editor.on('change', function(evt){ self.onCMChange(evt); });
         this._editor.setOption("extraKeys",
             {
-                "Ctrl-N": function(){self.ide._raiseButton('down');},
-                "Ctrl-P": function(){self.ide._raiseButton('up');},
-                "Ctrl-Enter": function(){self.ide._raiseButton('to-cursor');}
+                "Ctrl-N":     () => { this.ide._raiseButton('down'); },
+                "Ctrl-P":     () => { this.ide._raiseButton('up');   },
+                "Ctrl-Enter": () => { tihs.ide._raiseButton('to-cursor'); }
             }
         );
     };
@@ -244,10 +241,10 @@ var Editor;
     };
 
     Editor.prototype.eatStatementsToCursor = function () {
-        var cm = this._editor;
-        var doc = cm.getDoc();
+        var cm     = this._editor;
+        var doc    = cm.getDoc();
         var cursor = doc.getCursor();
-        var marks = doc.findMarksAt(cursor);
+        var marks  = doc.findMarksAt(cursor);
         var stm;
         if(marks.length) {
             // backward
