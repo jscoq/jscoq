@@ -19,13 +19,14 @@ var CmCoqProvider;
 
         this.editor = CodeMirror.fromTextArea(element,
             {mode : {name : "coq",
-                     version: 3,
+                     version: 4,
                      singleLineStringErrors : false
                    },
              lineNumbers   : true,
              indentUnit    : 4,
              matchBrackets : true,
-             theme : 'blackboard'
+             theme         : 'blackboard',
+             keyMap        : "emacs"
             }
         );
 
@@ -72,10 +73,10 @@ var CmCoqProvider;
         }
 
         var stm = new CmSentence(start, end,
-                                  doc.getRange({line : start.line, ch : start.ch},
-                                               {line : token.line, ch : token.end}),
-                                  token.type === 'comment'
-                                 );
+                                 doc.getRange({line : start.line, ch : start.ch},
+                                              {line : token.line, ch : token.end}),
+                                 token.type === 'comment'
+                                );
         return stm;
     };
 
@@ -157,7 +158,6 @@ var CmCoqProvider;
         } while(type_re && !(type_re.test(next.type)));
         return next;
     };
-
 
 }());
 
