@@ -63,60 +63,63 @@ var ProviderContainer;
     }
 
     /***********************************************************************/
-    /* A Provider Container coordinates the coq code objects, js objects   */
-    /* well as Coq state                                                   */
+    /* A Provider Container aggregates several containers, the main deal   */
+    /* here is keeping track of focus, as the focused container can be     */
+    /* different from the "active" one                                     */
     /***********************************************************************/
 
     ProviderContainer = function(elms) {
 
-        // Current snippet.
+        // Code snippets.
         this.snippets = [];
+
+        // Debug variables
         var idx = 0;
 
-        // for (e of elms) useless here without the new let
+        // for (e of elms) not very covenient here due to the closure.
         elms.forEach(function (e) {
 
-            // Init
+            // Init.
             var cm = new CmCoqProvider(document.getElementById(e));
             cm.idx = idx++;
-
             this.snippets.push(cm);
 
-            // Blur shoudln't be needed.
-            cm.editor.on('focus', evt => {
-                console.log("Getting focus on: " + cm.idx);
-                this.currentFocus = cm;
-            });
+            // Track focus XXX (make generic)
+            cm.editor.on('focus', evt => { this.currentFocus = cm; });
 
-            cm.onInvalidate = () => { this.doInvalidate(); };
+            // Track invalidate
+            cm.onInvalidate = () => { this.onInvalidate(); };
 
+            // XXX: We use a strong assumption for now: the cursor is
+            // at the invalid region, so we just do goCursor().
+
+            // however, in the future, onInvalidate should provice the
+            // concrete invalid statement.
         },this);
-            // Invalidate some previous region.
-            // this.provider.onInvalidate = smt => { this.goSentence(smt); };
-        // We follow a simpler approach for now XXX.
-        // this.provider.onInvalidate = () => {
-        //     this.goCursor();
-        //     // We must do one more!
-        //     this.goPrev()
-        // };
-    }
-
-    ProviderContainer.prototype.doInvalidate = function() {
-        this.onInvalidate();
     }
 
     // Get the next candidate and mark it.
     ProviderContainer.prototype.getNext = function(prev) {
-        if (prev) {
 
+        // First element
+        if (!prev) {
+            var spr  = this.snippets[0];
+            var next = spr.getNext(null);
+            next.sp = spr;
+            return next;
+        } else {
+            // Try next on the current snippet.
             var spr  = prev.sp;
             var next = spr.getNext(prev);
-            if(next) {
+
+            if (next) {
                 next.sp = spr;
                 return next;
-            } else {            // go to next snippet
+            } else {
+                // go to next snippet.
                 var idx = this.snippets.indexOf(spr);
                 if (idx >= this.snippets.length - 1) {
+                    // No next snippet.
                     return null;
                 } else {
                     spr  = this.snippets[idx+1];
@@ -125,11 +128,6 @@ var ProviderContainer;
                     return next;
                 }
             }
-        } else {                 // prev
-            var spr  = this.snippets[0];
-            var next = spr.getNext(null);
-            next.sp = spr;
-            return next;
         }
     }
 
@@ -164,7 +162,7 @@ var ProviderContainer;
 
         this.provider.onInvalidate = () => {
             this.goCursor();
-            // We must do one more!
+            // We must do one more back, as the one in the cursor is the invalid one!
             this.goPrev()
         }
         // Coq Setup
@@ -352,6 +350,7 @@ var ProviderContainer;
         }
     }
 
+    // XXX Not used.
     CoqManager.prototype.goSentence = function (smt) {
 
         var idx = this.sentences.indexOf(smt);

@@ -126,8 +126,8 @@ var CmCoqProvider;
         var doc   = this.editor.getDoc();
         var marks = doc.findMarksAt(doc.getCursor());
 
+        // We assume that the cursor is positioned in the change.
         if (marks.length === 1) {
-            // We assume that the cursor is on the change.
             this.onInvalidate();
         }
 
