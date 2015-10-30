@@ -10,13 +10,14 @@
 
 var CoqPanel;
 var CoqManager;
+var ProviderContainer;
 
 (function(){
     "use strict";
 
     /***********************************************************************/
     /* The CoqPanel object contains the goal and the query buffer          */
-    var CoqPanel = function(jsCoq) {
+    CoqPanel = function(jsCoq) {
 
         // Our copy of the jsCoq object.
         this.coq = jsCoq;
@@ -60,19 +61,39 @@ var CoqManager;
     }
 
     /***********************************************************************/
+    /* A Provider Container coordinates the coq code objects, js objects.  */
+    /*                                                                     */
+    /***********************************************************************/
+
+    ProviderContainer = function(elms) {
+
+        this.snippets = [];
+
+        for(var e in elms) {
+            this.snippets.push(new CmCoqProvider(document.getElementById(e)));
+        }
+    }
+
+    /***********************************************************************/
     /* CoqManager coordinates the coq code objects, the panel, and the coq */
     /* js object.                                                          */
     /*                                                                     */
     /***********************************************************************/
 
+    // XXX: Rename to Coq Director?
     CoqManager = function() {
 
         // UI setup.
-        this.buttons       = document.getElementById('buttons');
-        this.script_panel  = document.getElementById('script-panel');
+        this.buttons   = document.getElementById('buttons');
 
-        // Setup our provider of Coq statements.
-        this.provider      = new CmCoqProvider(this.script_panel.getElementsByTagName('textarea')[0]);
+        // Setup our providers of Coq statements.
+        // this.provider  = new ProviderContainer(['code-part1', 'code-part2']);
+
+        var script     = document.getElementById('code-part1');
+        this.provider  = new CmCoqProvider(script);
+
+        var script2    = document.getElementById('code-part2');
+        this.provider2 = new CmCoqProvider(script2);
 
         // Invalidate some previous region.
         // this.provider.onInvalidate = smt => { this.goSentence(smt); };
@@ -91,7 +112,7 @@ var CoqManager;
     CoqManager.prototype.loadJsCoq = function(evt) {
 
         // XXX: make it a config parameter.
-        var jscoq_mock     = false;
+        var jscoq_mock     = true;
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -105,8 +126,8 @@ var CoqManager;
 
         this.coq   = jsCoq;
         this.panel = new CoqPanel(this.coq);
-
         this.panel.show();
+        $("#hide-panel").click(evt => this.panel.toggle());
 
         this.coq.onError = e => {
 
@@ -155,11 +176,27 @@ var CoqManager;
     CoqManager.prototype.enable = function() {
 
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
-        // Trying with a different apporach?
-        $("#hide-panel").click(evt => this.panel.toggle());
-        this.buttons.style.display = 'table-cell';
+        this.buttons.style.display = 'inline-block';
         this.buttons.style.opacity = 1;
         this.provider.focus();
+
+        $(document).keydown(e => {
+            switch (e.keyCode) {
+            case 13:
+                if (e.altKey) { this.goCursor(); }
+                break;
+            case 76:
+                // Alt-l, recenter (XXX)
+                if (e.altKey) {  }
+                break;
+            case 78:
+                if (e.altKey) { this.goNext(); }
+                break;
+            case 80:
+                if (e.altKey) { this.goPrev(); }
+                break;
+            }
+        });
     }
 
     CoqManager.prototype.toolbarClickHandler = function(evt) {
@@ -191,12 +228,16 @@ var CoqManager;
         this.sid.pop();
         this.coq.edit(this.sid.last());
         this.panel.update();
+
     }
 
     // Return if we had success.
     CoqManager.prototype.goNext = function () {
 
         var next = this.provider.getNext(this.sentences.last());
+
+        // We are the the end
+        if(!next) { return false; }
 
         // Hack....
         if(next.is_comment) {
