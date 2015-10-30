@@ -15,6 +15,8 @@ var ProviderContainer;
 (function(){
     "use strict";
 
+    Array.prototype.last = function() { return this[this.length-1]; };
+
     /***********************************************************************/
     /* The CoqPanel object contains the goal and the query buffer          */
     CoqPanel = function(jsCoq) {
@@ -61,17 +63,88 @@ var ProviderContainer;
     }
 
     /***********************************************************************/
-    /* A Provider Container coordinates the coq code objects, js objects.  */
-    /*                                                                     */
+    /* A Provider Container coordinates the coq code objects, js objects   */
+    /* well as Coq state                                                   */
     /***********************************************************************/
 
     ProviderContainer = function(elms) {
 
+        // Current snippet.
         this.snippets = [];
+        var idx = 0;
 
-        for(var e in elms) {
-            this.snippets.push(new CmCoqProvider(document.getElementById(e)));
+        // for (e of elms) useless here without the new let
+        elms.forEach(function (e) {
+
+            // Init
+            var cm = new CmCoqProvider(document.getElementById(e));
+            cm.idx = idx++;
+
+            this.snippets.push(cm);
+
+            // Blur shoudln't be needed.
+            cm.editor.on('focus', evt => {
+                console.log("Getting focus on: " + cm.idx);
+                this.currentFocus = cm;
+            });
+
+            cm.onInvalidate = () => { this.doInvalidate(); };
+
+        },this);
+            // Invalidate some previous region.
+            // this.provider.onInvalidate = smt => { this.goSentence(smt); };
+        // We follow a simpler approach for now XXX.
+        // this.provider.onInvalidate = () => {
+        //     this.goCursor();
+        //     // We must do one more!
+        //     this.goPrev()
+        // };
+    }
+
+    ProviderContainer.prototype.doInvalidate = function() {
+        this.onInvalidate();
+    }
+
+    // Get the next candidate and mark it.
+    ProviderContainer.prototype.getNext = function(prev) {
+        if (prev) {
+
+            var spr  = prev.sp;
+            var next = spr.getNext(prev);
+            if(next) {
+                next.sp = spr;
+                return next;
+            } else {            // go to next snippet
+                var idx = this.snippets.indexOf(spr);
+                if (idx >= this.snippets.length - 1) {
+                    return null;
+                } else {
+                    spr  = this.snippets[idx+1];
+                    next = spr.getNext(null);
+                    next.sp = spr
+                    return next;
+                }
+            }
+        } else {                 // prev
+            var spr  = this.snippets[0];
+            var next = spr.getNext(null);
+            next.sp = spr;
+            return next;
         }
+    }
+
+    ProviderContainer.prototype.mark  = function(stm, mark) {
+        stm.sp.mark(stm, mark);
+    }
+
+    ProviderContainer.prototype.focus = function() {
+        if (this.currentFocus)
+            this.currentFocus.focus();
+    }
+
+    // Get the point of the current focused element.
+    ProviderContainer.prototype.getAtPoint = function() {
+        return this.currentFocus.getAtPoint();
     }
 
     /***********************************************************************/
@@ -87,24 +160,13 @@ var ProviderContainer;
         this.buttons   = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        // this.provider  = new ProviderContainer(['code-part1', 'code-part2']);
+        this.provider  = new ProviderContainer(['code-part1', 'code-part2']);
 
-        var script     = document.getElementById('code-part1');
-        this.provider  = new CmCoqProvider(script);
-
-        var script2    = document.getElementById('code-part2');
-        this.provider2 = new CmCoqProvider(script2);
-
-        // Invalidate some previous region.
-        // this.provider.onInvalidate = smt => { this.goSentence(smt); };
-
-        // We follow a simpler approach for now XXX.
         this.provider.onInvalidate = () => {
             this.goCursor();
             // We must do one more!
             this.goPrev()
-        };
-
+        }
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
     };
@@ -112,7 +174,7 @@ var ProviderContainer;
     CoqManager.prototype.loadJsCoq = function(evt) {
 
         // XXX: make it a config parameter.
-        var jscoq_mock     = true;
+        var jscoq_mock     = false;
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -202,6 +264,7 @@ var ProviderContainer;
     CoqManager.prototype.toolbarClickHandler = function(evt) {
 
         this.provider.focus();
+
         switch (evt.target.name) {
             case 'to-cursor' :
                 this.goCursor();
