@@ -38,7 +38,7 @@ var CoqManager;
     CoqPanel.prototype.update = function() {
 
         // TODO: Add diff/history of goals.
-        this.proof.textContent = jsCoq.goals();
+        this.proof.textContent = this.coq.goals();
     }
 
     // Add a log event received from Coq.
@@ -74,7 +74,7 @@ var CoqManager;
     CoqManager.prototype.loadJsCoq = function(evt) {
 
         // XXX: make it a config parameter.
-        var jscoq_mock     = true;
+        var jscoq_mock     = false;
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -104,18 +104,18 @@ var CoqManager;
         };
 
         // Hacks, we should refine...
-        jsCoq.onLog   = e => {
+        this.coq.onLog   = e => {
             console.log("CoqLog: " + e.toString());
         };
 
-        jsCoq.onInit = e => {
+        this.coq.onInit = e => {
             // Enable the IDE.
             this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!";
             this.enable();
         };
 
         // Initial coq state.
-        this.panel.proof.textContent = jsCoq.version() + "\nPlease wait for the libraries to load, thanks!";
+        this.panel.proof.textContent = this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
 
         this.sid = [];
         this.sid.push(this.coq.init());
@@ -137,7 +137,7 @@ var CoqManager;
         this.provider.focus();
         switch (evt.target.name) {
             case 'to-cursor' :
-                // this.editor.eatStatementsToCursor();
+                this.goCursor();
                 break;
 
             case 'up' :
@@ -151,6 +151,8 @@ var CoqManager;
     };
 
     CoqManager.prototype.goPrev = function () {
+
+        if (this.sentences.length <= 1) return;
 
         var stm = this.sentences.pop()
         this.provider.mark(stm, "clear");
@@ -199,18 +201,46 @@ var CoqManager;
 
                 // Print goals
                 this.panel.update();
-            }
+                return true;
+            } else
+                // Cleanup was done in the onError handler.
+                return false;
         } else { // Parse/library loading error.
 
             this.provider.mark(next, "clear");
             this.provider.mark(next, "error");
 
             // Tell coq to go back to the old state.
-            jsCoq.sid.pop();
-            jsCoq.edit(jsCoq.sid.last());
+            this.sid.pop();
+            this.coq.edit(this.sid.last());
+            return false;
         }
     }
 
+    CoqManager.prototype.goCursor = function () {
+
+        var cur = this.provider.getAtPoint();
+
+        if (cur) {
+            var idx = this.sentences.indexOf(cur);
+            if (0 <= idx) {
+                console.log("Going back to: " + idx + " " + this.sentences[idx].toString());
+                while (this.sentences.length > idx + 1) {
+                    this.goPrev();
+                }
+            } else {
+                console.log("Schedule goNext!");
+                if (this.goNext()) {
+                    setTimeout(100, () => { this.goCursor(); } );
+                }
+            }
+        } else {
+            console.log("No cur at point! Trying a heuristic");
+            if (this.goNext()) {
+                setTimeout(() => { this.goCursor(); }, 50 );
+            }
+        }
+    }
 }());
 
 // Local Variables:

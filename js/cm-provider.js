@@ -79,6 +79,21 @@ var CmCoqProvider;
         return stm;
     };
 
+    // Gets sentence at point;
+    CmCoqProvider.prototype.getAtPoint = function() {
+
+        var doc   = this.editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+
+        // XXX
+        if (marks.length) {
+            return marks[0].stm;
+        } else {
+            return null
+        }
+        // } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
+    }
+
     // Mark a sentence with {clear, processing, error, ok}
     CmCoqProvider.prototype.mark = function(stm, mark) {
 
