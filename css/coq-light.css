@@ -1,0 +1,92 @@
+/* Light mode */
+
+/* Panel/body settings */
+
+body {
+}
+
+#vsep, #hsep {
+  background: #272727;
+}
+
+a, a:link, a:visited, a:active {
+  color: #222;
+}
+
+a:hover {
+  color: #5af;
+}
+
+#toolsbar {
+  border-bottom: 1px solid #272727;
+}
+
+#goal-text {
+    background-color: #FFF;
+    /* color: #FFF; */
+}
+
+/* Coq settings */
+
+.coq-eval-ok {
+  background: #aaaabb;
+}
+
+.coq-eval-pending {
+    background: #fc6;
+}
+
+.coq-eval-failed {
+    background: #ff7878;
+}
+
+/* Normal theme settings */
+
+.cm-s-default.CodeMirror {
+    background: #f1f1f1;
+}
+
+/* Vernaculars */
+.cm-builtin {
+  color: #00FFFF;
+}
+
+.cm-comment {
+  color: #a50;
+}
+
+.cm-variable {
+  color: #000;
+}
+
+.cm-operator {
+  color: #000;
+}
+
+/* Tactics */
+.cm-keyword {
+  color: #98FB98;
+}
+
+.cm-tactic {
+  color: #0011FF;
+}
+
+.cm-terminator {
+  color: #FF0000;
+}
+
+.cm-s-default .cm-bullet,
+.cm-s-default .cm-brace,
+.cm-s-default .cm-bracket {
+  background: bisque;
+  color: red;
+}
+
+/*  */
+.cm-statementend {
+  /* background: #6C64FE; */
+}
+
+
+

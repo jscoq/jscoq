@@ -138,6 +138,8 @@ var ProviderContainer;
     ProviderContainer.prototype.focus = function() {
         if (this.currentFocus)
             this.currentFocus.focus();
+        else
+            this.snippets[0].focus();
     }
 
     // Get the point of the current focused element.
@@ -158,7 +160,7 @@ var ProviderContainer;
         this.buttons   = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        this.provider  = new ProviderContainer(['code-part1', 'code-part2']);
+        this.provider  = new ProviderContainer(['addnC', 'prime_above']);
 
         this.provider.onInvalidate = () => {
             this.goCursor();
@@ -186,7 +188,7 @@ var ProviderContainer;
 
         this.coq   = jsCoq;
         this.panel = new CoqPanel(this.coq);
-        this.panel.show();
+        // this.panel.show();
         $("#hide-panel").click(evt => this.panel.toggle());
 
         this.coq.onError = e => {
@@ -241,21 +243,32 @@ var ProviderContainer;
         this.provider.focus();
 
         $(document).keydown(e => {
+            // All our keybinding are prefixed by alt.
+            if (!e.altKey) return;
+
             switch (e.keyCode) {
             case 13:
-                if (e.altKey) { this.goCursor(); }
+                this.goCursor();
+                break;
+            // case 38:
+            //     this.panel.show();
+            //     break;
+            case 39:
+                this.panel.toggle();
                 break;
             case 76:
-                // Alt-l, recenter (XXX)
-                if (e.altKey) {  }
+                // Alt-l, recenter (XXX)k
                 break;
             case 78:
-                if (e.altKey) { this.goNext(); }
+                this.goNext();
                 break;
             case 80:
-                if (e.altKey) { this.goPrev(); }
+                this.goPrev();
                 break;
+            default:
+                console.log("Uncapture alt command: " + e.keyCode);
             }
+            this.provider.focus();
         });
     }
 
@@ -373,7 +386,8 @@ var ProviderContainer;
                 while (this.sentences.length > idx + 1) {
                     this.goPrev();
                 }
-            } else {
+                this.panel.show();
+            } else { // We need to go next!
                 console.log("Schedule goNext!");
                 if (this.goNext()) {
                     setTimeout(100, () => { this.goCursor(); } );

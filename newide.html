@@ -11,22 +11,35 @@
     <link rel="stylesheet" href="js/CodeMirror/lib/codemirror.css" type="text/css" media="screen">
     <link rel="stylesheet" href="js/CodeMirror/theme/blackboard.css" type="text/css" media="screen">
 
-    <link rel="stylesheet" href="css/coq-base.css" type="text/css" media="screen">
-    <link rel="stylesheet" href="css/coq-dark.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/coq-base.css"  type="text/css" media="screen">
+    <link rel="stylesheet" href="css/coq-light.css" type="text/css" media="screen">
+    <!-- <link rel="stylesheet" href="css/coq-dark.css" type="text/css" media="screen"> -->
 
     <script src="js/CodeMirror/lib/codemirror.js" type="text/javascript"></script>
     <script src="js/CodeMirror/mode/coq/coq.js"   type="text/javascript"></script>
     <script src="js/CodeMirror/keymap/emacs.js"   type="text/javascript"></script>
 
     <title>Use Coq in Your Browser: The Js Coq Theorem Prover IDE!</title>
-
   </head>
   <body>
-    <div id="ide-wrapper" class="toggled">
+    <div id="ide-wrapper" class="toggled container-fluid">
       <div id="code-wrapper">
         <div id="document">
-        <div class="coq-script">
-          <textarea id="code-part1" >
+          <div class="panel-heading">
+            <h3> A first proof in Coq </h3>
+              <p>
+                Welcome to the JsCoq Interactive System! Please bear
+                with us as this software is a beta, an in particular
+                loading is expected to take a long time.
+              </p>
+              <p>
+                A first proof to do in Coq is the addition over natual
+                numbers. Place the cursor somewhere below and press
+                Alt-Enter!
+              </p>
+          </div> <!-- panel-heading -->
+        <div class="coq-script panel-body">
+          <textarea id="addnC" >
 Require Import Coq.Init.Prelude.
 Require Import Coq.Unicode.Utf8.
 
@@ -42,7 +55,24 @@ induction n.
   now rewrite addn0.
 now simpl; rewrite addSn; auto.
 Qed.
-
+          </textarea>
+        </div> <!-- /#panel-body -->
+        <div class="panel-heading">
+          <h4> Cool! </h4>
+          <p>
+            This was quite interesting, we hope. For now, that is
+            all, you can write your own programs and run them in
+            the browser using this tool.
+          </p>
+          <p>
+            Below, you'll find a funnier proof using the Mathematical
+            Components libraries. Leave some time (≈ 1 min.) for
+            Ssreflect to load! [Preloading will be fixed some day]
+          </p>
+          <h5>Have fun!</h5>
+        </div> <!-- panel-heading -->
+        <div class="coq-script panel-body">
+          <textarea id="prime_above" >
 (* This takes a long time to load, will be fixed in the future... *)
 From Ssreflect
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat div prime.
@@ -58,22 +88,6 @@ case: m => //= m; elim: n => //= n IHn; rewrite ltnS leq_eqVlt.
 by case/predU1P=> [-> | /IHn]; [apply: dvdn_mulr | apply: dvdn_mull].
 Qed.
 
-</textarea>
-        </div> <!-- /#code-part1 -->
-        <p>
-          Then, the main proof mainly relies in the `pdivP` lemma,
-          that asserts that every number is divided by a prime
-          (picking the first prime divisor actually).
-        </p>
-        <p>
-          Indeed, we will prove that for any n, the first prime
-          divisor of $!m + 1$ is greater than m. By contraposition,
-          assume such prime is indeed less or equal than m, then it
-          would contradict that p is a divisor of !m +1, completing
-          the proof.
-        </p>
-        <div class="coq-script">
-          <textarea  id="code-part2">
 Lemma prime_above m : {p | m < p & prime p}.
 Proof.
 have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
@@ -81,13 +95,25 @@ exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
 </textarea>
-        </div> <!-- /#code-part2 -->
+        <p>
+          The main proof relies in the `pdivP` lemma, that asserts
+          that every number is divided by a prime (picking the first
+          prime divisor actually).
+        </p>
+        <p>
+          We have proven that for any n, the first prime divisor of
+          $!m + 1$ is greater than m. By contraposition, assume such
+          prime is indeed less or equal than m, then it would
+          contradict that p is a divisor of !m +1, completing the
+          proof.
+        </p>
+        </div> <!-- /#panel body -->
         </div> <!-- /#document -->
-      </div> <!-- /# code-wrapper -->
+      </div> <!-- /#code-wrapper  -->
       <div id="panel-wrapper">
         <div id="toolbar">
-          <img src="images/power-button-512.png" width="28" height="28"
-               alt="Hide panel" title="Hide Panel" name="hide-panel" id="hide-panel"/>
+          <img src="images/power-button-512-black.png" width="28" height="28"
+               alt="Toogle Panel (Alt+Right Arrow)" title="Toogle Panel (Alt+Right Arrow)" name="hide-panel" id="hide-panel"/>
           <div class="exits">
             <a href="http://feever.fr/"> <img src="images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
                                                    style="vertical-align: middle"/>

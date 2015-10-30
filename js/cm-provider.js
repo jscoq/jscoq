@@ -25,7 +25,7 @@ var CmCoqProvider;
              lineNumbers   : true,
              indentUnit    : 4,
              matchBrackets : true,
-             theme         : 'blackboard',
+             // theme         : 'blackboard',
              keyMap        : "emacs"
             }
         );

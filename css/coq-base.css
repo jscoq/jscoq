@@ -49,9 +49,9 @@ a, a:link, a:visited, a:active {
 }
 
 #script-panel {
+
     height: calc(100% - 37px);
 }
-
 
 #script-panel textarea {
   width: 100%;
@@ -93,12 +93,10 @@ a, a:link, a:visited, a:active {
 
 #goal-text {
     border: 0;
-    background-color: #000;
     padding: 0;
     padding-top: 1em;
     padding-left: 0em;
     border-radius: 0px;
-    color: #FFF;
     width: 50em;
 }
 
@@ -176,3 +174,16 @@ a, a:link, a:visited, a:active {
 .CodeMirror {
   height: 100%;
 }
+
+/* Proper  */
+#code-wrapper {
+}
+
+#document {
+    margin: auto;
+    position: relative;
+    padding: auto;
+    width: 50em;
+}
+
+
