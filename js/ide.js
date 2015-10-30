@@ -165,7 +165,7 @@ var Editor;
             {
                 "Ctrl-N":     () => { this.ide._raiseButton('down'); },
                 "Ctrl-P":     () => { this.ide._raiseButton('up');   },
-                "Ctrl-Enter": () => { tihs.ide._raiseButton('to-cursor'); }
+                "Ctrl-Enter": () => { this.ide._raiseButton('to-cursor'); }
             }
         );
     };
