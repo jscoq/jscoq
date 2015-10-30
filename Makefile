@@ -66,8 +66,8 @@ clean:
 ########################################################################
 # Local stuff
 upload: all
-	ln -sf ide.html index.html
-	rsync --delete -avzp index.html ide.html js css images coq-fs coq_pkg.json external ~/x80/rhino-coq/
+	ln -sf newide.html index.html
+	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq_pkg.json external ~/x80/rhino-coq/
 	mkdir -p ~/x80/rhino-coq/coq-js/
 	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
 # $(shell ./x80-sync.sh)
