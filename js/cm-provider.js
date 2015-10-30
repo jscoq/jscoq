@@ -119,9 +119,16 @@ var CmCoqProvider;
         }
     }
 
+    // If any marks, then call the invalidate callback!
     CmCoqProvider.prototype.onCMChange = function(evt) {
 
-        // If any marks, then do the modification callback!
+        var doc   = this.editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+
+        if (marks.length === 1) {
+            // We assume that the cursor is on the change.
+            this.onInvalidate();
+        }
 
     }
 

@@ -46,8 +46,11 @@ var CoqManager;
     }
 
     // Add a log event received from Coq.
-    CoqPanel.prototype.log    = function(log) {
+    CoqPanel.prototype.log    = function(text) {
 
+        var span = document.createElement('span');
+        // Now Coq logs escaped pseudo-xml...
+        span.innerHTML = text;
         this.query.insertBefore(span, this.query.firstChild);
     }
 
@@ -71,6 +74,16 @@ var CoqManager;
         // Setup our provider of Coq statements.
         this.provider      = new CmCoqProvider(this.script_panel.getElementsByTagName('textarea')[0]);
 
+        // Invalidate some previous region.
+        // this.provider.onInvalidate = smt => { this.goSentence(smt); };
+
+        // We follow a simpler approach for now XXX.
+        this.provider.onInvalidate = () => {
+            this.goCursor();
+            // We must do one more!
+            this.goPrev()
+        };
+
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
     };
@@ -78,7 +91,7 @@ var CoqManager;
     CoqManager.prototype.loadJsCoq = function(evt) {
 
         // XXX: make it a config parameter.
-        var jscoq_mock     = true;
+        var jscoq_mock     = false;
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -109,7 +122,18 @@ var CoqManager;
 
         // Hacks, we should refine...
         this.coq.onLog   = e => {
+
             console.log("CoqLog: " + e.toString());
+
+            // Error msgs.
+            if (e.toString().indexOf("ErrorMsg:") != -1)
+                // Sanitize
+                this.panel.log(e.toString().replace(/^.*ErrorMsg:/, ""));
+            // User queries, usually in the query buffer
+            else if (e.toString().indexOf("Msg:") != -1)
+                this.panel.log(e.toString().replace(/^.*Msg:/, ""));
+            else if (e.toString().indexOf("pre-loading") != -1)
+                this.panel.log(e.toString());
         };
 
         this.coq.onInit = e => {
@@ -221,6 +245,17 @@ var CoqManager;
             this.coq.edit(this.sid.last());
             return false;
         }
+    }
+
+    CoqManager.prototype.goSentence = function (smt) {
+
+        var idx = this.sentences.indexOf(smt);
+        if (0 <= idx) {
+            console.log("Going back to: " + idx + " " + this.sentences[idx].toString());
+            while (this.sentences.length > idx + 1) {
+                this.goPrev();
+            }
+        } else {}
     }
 
     CoqManager.prototype.goCursor = function () {
