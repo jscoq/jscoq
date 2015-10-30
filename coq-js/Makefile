@@ -27,13 +27,11 @@ icoq.cmo: icoq.cmi
 # No mli file
 # jslib.cmo: jslib.cmi
 
-jslog.cmo: jslog.cmi
-
-jslibmng.cmo: icoq.cmo jslib.cmo jslog.cmo jslibmng.cmi
+jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
 # Main file
 jscoq.cmi: jscoq.mli
-jscoq.cmo: icoq.cmo jslibmng.cmo jslog.cmo jscoq.cmi
+jscoq.cmo: icoq.cmo jslibmng.cmo jscoq.cmi
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
@@ -67,7 +65,7 @@ endif
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5                                  \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslog.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
