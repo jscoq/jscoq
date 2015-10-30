@@ -190,6 +190,7 @@ var CoqManager;
         // Tell coq to go back to the old state.
         this.sid.pop();
         this.coq.edit(this.sid.last());
+        this.panel.update();
     }
 
     // Return if we had success.
