@@ -26,16 +26,20 @@
       <div id="code-wrapper">
         <div id="document">
           <div class="panel-heading">
-            <h3> A first proof in Coq </h3>
+            <h3>Welcome to the JsCoq Interactive System!</h3>
               <p>
                 Welcome to the JsCoq Interactive System! Please bear
-                with us as this software is a beta, an in particular
-                loading is expected to take a long time.
+                with us as this software is pretty much a technology
+                demo, and loading takes a long time. You should be
+                using the lastest Chrome or Firefox, if not, don't
+                even try :D!
               </p>
+              <h5>Let's do a first proof in Coq! </h5>
               <p>
-                A first proof to do in Coq is the addition over natual
-                numbers. Place the cursor somewhere below and press
-                Alt-Enter!
+                A typical first proof to do in Coq is the
+                commutativity of addition over natural numbers. Place
+                the cursor somewhere below and press Alt-Enter! (Once
+                the system is loaded)
               </p>
           </div> <!-- panel-heading -->
         <div class="coq-script panel-body">
@@ -73,7 +77,11 @@ Qed.
         </div> <!-- panel-heading -->
         <div class="coq-script panel-body">
           <textarea id="prime_above" >
-(* This takes a long time to load, will be fixed in the future... *)
+About addnC.
+
+(* WARNING:
+   This takes a long time to load, will be fixed in the future...
+*)
 From Ssreflect
 Require Import ssreflect ssrfun ssrbool eqtype ssrnat div prime.
 
@@ -106,6 +114,10 @@ Qed.
           prime is indeed less or equal than m, then it would
           contradict that p is a divisor of !m +1, completing the
           proof.
+        </p>
+        <p>
+          Pretty much all the mathematical components are available,
+          so feel free to experiment. ¡Adiós!
         </p>
         </div> <!-- /#panel body -->
         </div> <!-- /#document -->
