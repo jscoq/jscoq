@@ -34,6 +34,10 @@ var CoqManager;
         $("#ide-wrapper").addClass("toggled");
     }
 
+    CoqPanel.prototype.toggle = function() {
+        $("#ide-wrapper").toggleClass("toggled");
+    }
+
     // Call jsCoq to get the info.
     CoqPanel.prototype.update = function() {
 
@@ -74,7 +78,7 @@ var CoqManager;
     CoqManager.prototype.loadJsCoq = function(evt) {
 
         // XXX: make it a config parameter.
-        var jscoq_mock     = false;
+        var jscoq_mock     = true;
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -127,6 +131,8 @@ var CoqManager;
     CoqManager.prototype.enable = function() {
 
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
+        // Trying with a different apporach?
+        $("#hide-panel").click(evt => this.panel.toggle());
         this.buttons.style.display = 'table-cell';
         this.buttons.style.opacity = 1;
         this.provider.focus();

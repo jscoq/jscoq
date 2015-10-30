@@ -136,7 +136,8 @@ a, a:link, a:visited, a:active {
 #buttons {
   display: none;
   opacity: 0;
-  text-align: center;
+  text-align: left;
+  padding-left: 10em;
   width:100%;
   transition: opacity 500ms ease;
   vertical-align: middle;
