@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="external/pace/pace.css" />
+    <script src="external/pace/pace.min.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="js/CodeMirror/lib/codemirror.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="js/CodeMirror/theme/blackboard.css" type="text/css" media="screen">
+
+    <link rel="stylesheet" href="css/coq-base.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/coq-dark.css" type="text/css" media="screen">
+
+    <script src="js/CodeMirror/lib/codemirror.js" type="text/javascript"></script>
+    <script src="js/CodeMirror/mode/coq/coq.js" type="text/javascript"></script>
+
+    <title>Use Coq in Your Browser: The Js Coq Theorem Prover IDE!</title>
+
+  </head>
+  <body>
+    <div id="ide-wrapper" class="toggled">
+      <div id="code-wrapper">
+        <div id="toolsbar">
+          <div class="exits">
+            <a href="http://feever.fr/"> <img src="images/feever-logo.png" alt="FEEVER Logo" height="36" width="67"
+                                                   style="vertical-align: middle"/>
+            </a>
+            <a href="https://github.com/ejgallego/jscoq">GitHub</a>
+             | 
+            <a href="about.html">Readme</a>
+          </div> <!-- /#exits -->
+          <span id="buttons">
+            <img src="images/up.png" width="21" height="24"
+                 alt="Up (Ctrl-P)" title="Up (Ctrl-P)" name="up"/>
+            <img src="images/down.png" width="21" height="25"
+                 alt="Down (Ctrl-N)" title="Down (Ctrl-N)" name="down"/>
+            <img src="images/to-cursor.png" width="38" height="24"
+                 alt="To cursor (Ctrl-Enter)" title="To cursor (Ctrl-Enter)" name="to-cursor"/>
+          </span>
+        </div> <!-- /#toolsbar -->
+
+        <div id="script-panel">
+          <textarea>
+Require Import Coq.Init.Prelude.
+Require Import Coq.Unicode.Utf8.
+
+Lemma addn0 n : n + 0 = 0 + n.
+Proof. now induction n. Qed.
+
+Lemma addSn n m : n + S m = S (n + m).
+Proof. now auto. Qed.
+
+Lemma addnC n m : n + m = m + n.
+Proof.
+induction n.
+  now rewrite addn0.
+now simpl; rewrite addSn; auto.
+Qed.
+
+(* This takes a long time to load, will be fixed in the future... *)
+From Ssreflect
+Require Import ssreflect ssrfun ssrbool eqtype ssrnat div prime.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
+(* A nice proof of the infinitude of primes, by Georges Gonthier *)
+Lemma dvdn_fact m n : 0 < m <= n -> m %| n`!.
+Proof.
+case: m => //= m; elim: n => //= n IHn; rewrite ltnS leq_eqVlt.
+by case/predU1P=> [-> | /IHn]; [apply: dvdn_mulr | apply: dvdn_mull].
+Qed.
+
+Lemma prime_above m : {p | m < p & prime p}.
+Proof.
+have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
+exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
+by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
+Qed.
+</textarea>
+        </div> <!-- /#script-panel -->
+      </div> <!-- /# code-wrapper -->
+      <div id="panel-wrapper">
+        <div id="goal-panel">
+          <pre id="goal-text">
+          </pre>
+        </div> <!-- /#goal-panel -->
+        <div id="hsep"><br/> </div>
+        <div class="" id="query-panel">
+        </div> <!-- /#query-panel -->
+      </div> <!-- /#panel-wrapper -->
+    </div> <!-- /#ide-wrapper -->
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+    <script src="js/cm-provider.js" type="text/javascript"></script>
+    <script src="js/coq-manager.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+     var coq = new CoqManager ();
+    </script>
+  </body>
+
+</html>

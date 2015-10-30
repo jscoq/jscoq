@@ -1,0 +1,107 @@
+/* Dark mode */
+
+/* Panel/body settings */
+
+body {
+  background-color: #000;
+  color: #fff;
+}
+
+#vsep, #hsep {
+  background: #272727;
+}
+
+#script-panel {
+  background-color: #000;
+}
+
+a, a:link, a:visited, a:active {
+  color: #abc;
+}
+
+a:hover {
+  color: #5af;
+}
+
+#toolsbar {
+  border-bottom: 1px solid #272727;
+}
+
+/* Code settings */
+/*.CodeMirror-gutters { background-color: #000; }*/
+/*.CodeMirror-scroll { background-color: #000; }*/
+
+/*.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }*/
+
+/*.CodeMirror { color: #fff; }*/
+
+.cm-s-blackboard.CodeMirror {
+    background: #000;
+}
+
+.cm-s-blackboard .CodeMirror-gutters {
+    background: #000;
+    border-right: 1px solid #272727;
+}
+
+.coq-eval-ok {
+  background: #483D8B;
+}
+
+.coq-eval-pending {
+  background: #fc6;
+}
+
+.coq-eval-failed {
+  background: #aa0000;
+}
+
+/* Gallina keywords */
+.cm-s-blackboard .cm-keyword {
+  color: #98FB98;
+}
+
+.cm-s-blackboard .cm-number {
+  color: #FFFFFF;
+}
+
+/* Vernaculars */
+.cm-s-blackboard .cm-builtin {
+  color: #00FFFF;
+}
+
+.cm-s-blackboard .cm-comment {
+  color: #a50;
+}
+
+.cm-s-blackboard .cm-variable {
+  color: #FFFFFF;
+}
+
+.cm-s-blackboard .cm-operator {
+  color: #FFFFFF;
+}
+
+/* Tactics */
+.cm-tactic {
+  color: #9370DB;
+}
+
+.cm-terminator {
+  color: #FF0000;
+}
+
+/*  */
+.cm-statementend {
+  /* background: #6C64FE; */
+}
+
+.cm-bullet,
+.cm-brace{
+  /*
+  background: bisque;
+  color: black;
+  */
+}
+
+
