@@ -58,6 +58,7 @@ var CmCoqProvider;
             start = prev.end;
         }
 
+        // EOF
         if (start.line === doc.lastLine() &&
             start.ch === doc.getLine(doc.lastLine()).length) {
             return null;
@@ -104,6 +105,8 @@ var CmCoqProvider;
         case "clear":
             stm.mark.clear();
             stm.mark = null;
+            // XXX: Check this is the right place.
+            // doc.setCursor(stm.start);
             break;
         case "processing":
             stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
@@ -112,10 +115,15 @@ var CmCoqProvider;
         case "error":
             stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
             stm.mark.stm = stm;
+            // XXX: Check this is the right place.
+            doc.setCursor(stm.end);
             break;
         case "ok":
             stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
             stm.mark.stm = stm;
+            // XXX: Check this is the right place.
+            // This interferes with the go to target.
+            // doc.setCursor(stm.end);
             break;
         }
     }
@@ -128,9 +136,12 @@ var CmCoqProvider;
 
         // We assume that the cursor is positioned in the change.
         if (marks.length === 1) {
+            // XXX: Notify of the latest mark.
+            this.onInvalidate(marks[0].stm);
+        } else if (marks.length > 1) {
+            console.log("Cursor in mark boundary, invalidating the first...");
             this.onInvalidate(marks[0].stm);
         }
-
     }
 
     // CM specific functions.
