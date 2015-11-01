@@ -315,6 +315,11 @@ var ProviderContainer;
 
         if (this.sentences.length <= 1) return;
 
+        if (this.error) {
+            this.provider.mark(this.error, "clear");
+            this.error = null;
+        }
+
         var stm = this.sentences.pop()
         this.provider.mark(stm, "clear");
 
