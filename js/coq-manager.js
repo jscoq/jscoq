@@ -12,6 +12,11 @@ var CoqPanel;
 var CoqManager;
 var ProviderContainer;
 
+function dumpCache() {
+    var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheB));
+    $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
+}
+
 (function(){
     "use strict";
 
@@ -154,15 +159,15 @@ var ProviderContainer;
     /***********************************************************************/
 
     // XXX: Rename to Coq Director?
-    CoqManager = function() {
+    CoqManager = function(elems) {
 
         // UI setup.
         this.buttons   = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        this.provider  = new ProviderContainer(['addnC', 'prime_above']);
+        this.provider  = new ProviderContainer(elems);
 
-        this.provider.onInvalidate = (stm) => {
+        this.provider.onInvalidate = stm => {
 
             // Clear the last error, XXX it is a bit of a hack.
             if (this.error && this.error == stm) {
@@ -221,7 +226,7 @@ var ProviderContainer;
         // Hacks, we should refine...
         this.coq.onLog   = e => {
 
-            console.log("CoqLog: " + e.toString());
+            // console.log("CoqLog: " + e.toString());
 
             // Error msgs.
             if (e.toString().indexOf("ErrorMsg:") != -1)
@@ -255,7 +260,7 @@ var ProviderContainer;
         // All our keybinding are prefixed by alt.
         if (!e.altKey) return true;
 
-        console.log("key alt-code: " + e.keyCode);
+        // console.log("key alt-code: " + e.keyCode);
         switch (e.keyCode) {
         case 13:
             this.goCursor();
