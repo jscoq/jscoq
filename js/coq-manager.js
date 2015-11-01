@@ -88,7 +88,7 @@ var ProviderContainer;
             cm.editor.on('focus', evt => { this.currentFocus = cm; });
 
             // Track invalidate
-            cm.onInvalidate = () => { this.onInvalidate(); };
+            cm.onInvalidate = (smt) => { this.onInvalidate(smt); };
 
             // XXX: We use a strong assumption for now: the cursor is
             // at the invalid region, so we just do goCursor().
@@ -162,10 +162,24 @@ var ProviderContainer;
         // Setup our providers of Coq statements.
         this.provider  = new ProviderContainer(['addnC', 'prime_above']);
 
-        this.provider.onInvalidate = () => {
-            this.goCursor();
-            // We must do one more back, as the one in the cursor is the invalid one!
-            this.goPrev()
+        this.provider.onInvalidate = (stm) => {
+
+            // Clear the last error, XXX it is a bit of a hack.
+            if (this.error && this.error == stm) {
+                this.provider.mark(this.error, "clear");
+                this.error = null;
+                return;
+            } else if (this.error) {
+                // Not the one invalidated, clear and go.
+                this.provider.mark(this.error, "clear");
+                this.error = null;
+            }
+
+            setTimeout( () => {
+                this.goCursor();
+                // We must do one more back, as the one in the cursor is the invalid one!
+                this.goPrev();
+            }, 100);
         }
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
@@ -196,6 +210,7 @@ var ProviderContainer;
             var stm = this.sentences.pop()
             this.provider.mark(stm, "clear");
             this.provider.mark(stm, "error");
+            this.error = stm;
 
             // Tell coq to go back to the old state.
             this.sid.pop();
@@ -235,6 +250,38 @@ var ProviderContainer;
         this.sentences = [];
     }
 
+
+    CoqManager.prototype.keyHandler = function(e) {
+        // All our keybinding are prefixed by alt.
+        if (!e.altKey) return true;
+
+        console.log("key alt-code: " + e.keyCode);
+        switch (e.keyCode) {
+        case 13:
+            this.goCursor();
+            break;
+        // case 38:
+        //     this.panel.show();
+        //     break;
+        case 39:
+            this.panel.toggle();
+            break;
+        case 76:
+            // Alt-l, recenter (XXX)k
+            break;
+        case 78:
+            this.goNext();
+            break;
+        case 80:
+            this.goPrev();
+            break;
+        default:
+            console.log("Uncapture alt command: " + e.keyCode);
+        }
+        this.provider.focus();
+        return true;
+    };
+
     CoqManager.prototype.enable = function() {
 
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
@@ -242,34 +289,7 @@ var ProviderContainer;
         this.buttons.style.opacity = 1;
         this.provider.focus();
 
-        $(document).keydown(e => {
-            // All our keybinding are prefixed by alt.
-            if (!e.altKey) return;
-
-            switch (e.keyCode) {
-            case 13:
-                this.goCursor();
-                break;
-            // case 38:
-            //     this.panel.show();
-            //     break;
-            case 39:
-                this.panel.toggle();
-                break;
-            case 76:
-                // Alt-l, recenter (XXX)k
-                break;
-            case 78:
-                this.goNext();
-                break;
-            case 80:
-                this.goPrev();
-                break;
-            default:
-                console.log("Uncapture alt command: " + e.keyCode);
-            }
-            this.provider.focus();
-        });
+        $(document).keydown(this.keyHandler.bind(this));
     }
 
     CoqManager.prototype.toolbarClickHandler = function(evt) {
@@ -355,9 +375,11 @@ var ProviderContainer;
 
             this.provider.mark(next, "clear");
             this.provider.mark(next, "error");
+            this.error = next;
 
             // Tell coq to go back to the old state.
-            this.sid.pop();
+            // this.sid.pop(); No need to pop as this is a parsing error!
+            // XXX: Is this edit needed?
             this.coq.edit(this.sid.last());
             return false;
         }

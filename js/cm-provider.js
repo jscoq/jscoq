@@ -128,7 +128,7 @@ var CmCoqProvider;
 
         // We assume that the cursor is positioned in the change.
         if (marks.length === 1) {
-            this.onInvalidate();
+            this.onInvalidate(marks[0].stm);
         }
 
     }
