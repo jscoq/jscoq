@@ -159,8 +159,13 @@ function dumpCache() {
     /***********************************************************************/
 
     // XXX: Rename to Coq Director?
-    CoqManager = function(elems) {
+    CoqManager = function(elems, mock) {
 
+        if (typeof(mock) === 'undefined') {
+            mock = false;
+        }
+
+        this.mock = mock;
         // UI setup.
         this.buttons   = document.getElementById('buttons');
 
@@ -192,13 +197,10 @@ function dumpCache() {
 
     CoqManager.prototype.loadJsCoq = function(evt) {
 
-        // XXX: make it a config parameter.
-        var jscoq_mock     = false;
-
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
-        jscoqscript.src    = jscoq_mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
+        jscoqscript.src    = this.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
         jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
     };
