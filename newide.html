@@ -68,17 +68,22 @@ Qed.
           </textarea>
         </div> <!-- /#panel-body -->
         <div class="panel-heading">
-          <h4> Cool! </h4>
+          <h4>Cool! </h4>
           <p>
-            This was quite interesting, we hope. For now, that is
-            all, you can write your own programs and run them in
-            the browser using this tool.
+            This was interesting, we hope. For now, that is all we
+            have here, you can write, share, and run your own
+            programs using this tool.
           </p>
           <p>
-            Below, you'll find a funnier proof using the Mathematical
-            Components libraries. It loads around 50 libraries, as
-            ssrnat pulls half of Coq Std lib so allow it for a few
-            secons to load.
+            Below, you'll find a more interesting proof, the
+            infinitude of primes, using the Mathematical Components
+            libraries by MSR.
+          </p>
+          <p>
+            Note that the proof will load around 50 libraries,
+            unfortunately ssrnat pulls half of the Coq standard
+            library, so allow a few secons for the Require line to be
+            processed.
           </p>
           <h5>Have fun!</h5>
         </div> <!-- panel-heading -->
@@ -110,20 +115,20 @@ Qed.
 </textarea>
         <p>
           The main proof relies in the `pdivP` lemma, that asserts
-          that every number is divided by a prime (picking the first
-          prime divisor actually).
+          that every number is divided by a prime (it actually picks
+          the first prime divisor).
         </p>
         <p>
-          We have proven that for any n, the first prime divisor of
-          $!m + 1$ is greater than m. By contraposition, assume such
-          prime is indeed less or equal than m, then it would
+          Now, we have proven that for any n, the first prime divisor
+          of $!m + 1$ is greater than m. By contraposition, assume
+          such prime is indeed less or equal than m, then it would
           contradict that p is a divisor of !m +1, completing the
           proof.
         </p>
         <p>
-          Pretty much all the mathematical components are available,
-          so feel free to experiment. What more? You can meet us at
-          github <a href="https://github.com/ejgallego/jscoq">
+          Pretty much all the mathematical components are available in
+          JsCoq, so feel free to experiment. What more? You can meet
+          us at github <a href="https://github.com/ejgallego/jscoq">
           https://github.com/ejgallego/jscoq</a> ¡Adiós!
         </p>
         </div> <!-- /#panel body -->
