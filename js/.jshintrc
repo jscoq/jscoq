@@ -3,5 +3,7 @@
   "unused": true,
   "predef": [ "$" ],
   "esnext": true,
-  "predef": [ "jsCoq", "$", "window", "document", "console" ]
+  "predef": [ "jsCoq", "$"],
+  "browser": true,
+  "devel":true
 }

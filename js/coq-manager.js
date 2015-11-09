@@ -425,13 +425,13 @@ function dumpCache() {
             } else { // We need to go next!
                 console.log("Schedule goNext!");
                 if (this.goNext()) {
-                    setTimeout(100, () => { this.goCursor(); } );
+                    setTimeout(() => { this.goCursor(); }, 100);
                 }
             }
         } else {
             console.log("No cur at point! Trying a heuristic");
             if (this.goNext()) {
-                setTimeout(() => { this.goCursor(); }, 50 );
+                setTimeout(() => { this.goCursor(); }, 50);
             }
         }
     };
