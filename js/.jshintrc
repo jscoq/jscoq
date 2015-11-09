@@ -1,3 +1,7 @@
 {
-  "predef": [ "jsCoq" ]
+  "undef": true,
+  "unused": true,
+  "predef": [ "$" ],
+  "esnext": true,
+  "predef": [ "jsCoq", "$", "window", "document", "console" ]
 }

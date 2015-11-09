@@ -13,6 +13,7 @@ var CoqManager;
 var ProviderContainer;
 
 function dumpCache() {
+    "use strict";
     var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheB));
     $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
 }
@@ -32,26 +33,26 @@ function dumpCache() {
         // Proof display & query buffer.
         this.proof = document.getElementById("goal-text");
         this.query = document.getElementById("query-panel");
-    }
+    };
 
     CoqPanel.prototype.show = function() {
         $("#ide-wrapper").removeClass("toggled");
-    }
+    };
 
     CoqPanel.prototype.hide = function() {
         $("#ide-wrapper").addClass("toggled");
-    }
+    };
 
     CoqPanel.prototype.toggle = function() {
         $("#ide-wrapper").toggleClass("toggled");
-    }
+    };
 
     // Call jsCoq to get the info.
     CoqPanel.prototype.update = function() {
 
         // TODO: Add diff/history of goals.
         this.proof.textContent = this.coq.goals();
-    }
+    };
 
     // Add a log event received from Coq.
     CoqPanel.prototype.log    = function(text) {
@@ -60,12 +61,12 @@ function dumpCache() {
         // Now Coq logs escaped pseudo-xml...
         span.innerHTML = text;
         this.query.insertBefore(span, this.query.firstChild);
-    }
+    };
 
     // Execute a query to Coq
     CoqPanel.prototype.query  = function(query) {
         return true;
-    }
+    };
 
     /***********************************************************************/
     /* A Provider Container aggregates several containers, the main deal   */
@@ -101,21 +102,21 @@ function dumpCache() {
             // however, in the future, onInvalidate should provice the
             // concrete invalid statement.
         },this);
-    }
+    };
 
     // Get the next candidate and mark it.
     ProviderContainer.prototype.getNext = function(prev) {
-
+        var spr, next;
         // First element
         if (!prev) {
-            var spr  = this.snippets[0];
-            var next = spr.getNext(null);
+            spr  = this.snippets[0];
+            next = spr.getNext(null);
             next.sp = spr;
             return next;
         } else {
             // Try next on the current snippet.
-            var spr  = prev.sp;
-            var next = spr.getNext(prev);
+            spr  = prev.sp;
+            next = spr.getNext(prev);
 
             if (next) {
                 next.sp = spr;
@@ -129,28 +130,28 @@ function dumpCache() {
                 } else {
                     spr  = this.snippets[idx+1];
                     next = spr.getNext(null);
-                    next.sp = spr
+                    next.sp = spr;
                     return next;
                 }
             }
         }
-    }
+    };
 
     ProviderContainer.prototype.mark  = function(stm, mark) {
         stm.sp.mark(stm, mark);
-    }
+    };
 
     ProviderContainer.prototype.focus = function() {
         if (this.currentFocus)
             this.currentFocus.focus();
         else
             this.snippets[0].focus();
-    }
+    };
 
     // Get the point of the current focused element.
     ProviderContainer.prototype.getAtPoint = function() {
         return this.currentFocus.getAtPoint();
-    }
+    };
 
     /***********************************************************************/
     /* CoqManager coordinates the coq code objects, the panel, and the coq */
@@ -167,10 +168,10 @@ function dumpCache() {
 
         this.mock = mock;
         // UI setup.
-        this.buttons   = document.getElementById('buttons');
+        this.buttons = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        this.provider  = new ProviderContainer(elems);
+        this.provider = new ProviderContainer(elems);
 
         this.provider.onInvalidate = stm => {
 
@@ -190,7 +191,7 @@ function dumpCache() {
                 // We must do one more back, as the one in the cursor is the invalid one!
                 this.goPrev();
             }, 100);
-        }
+        };
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
     };
@@ -255,7 +256,7 @@ function dumpCache() {
 
         // This is a sid-based statement index.
         this.sentences = [];
-    }
+    };
 
 
     CoqManager.prototype.keyHandler = function(e) {
@@ -297,7 +298,7 @@ function dumpCache() {
         this.provider.focus();
 
         $(document).keydown(this.keyHandler.bind(this));
-    }
+    };
 
     CoqManager.prototype.toolbarClickHandler = function(evt) {
 
@@ -335,7 +336,7 @@ function dumpCache() {
         this.coq.edit(this.sid.last());
         this.panel.update();
 
-    }
+    };
 
     // Return if we had success.
     CoqManager.prototype.goNext = function () {
@@ -395,7 +396,7 @@ function dumpCache() {
             this.coq.edit(this.sid.last());
             return false;
         }
-    }
+    };
 
     // XXX Not used.
     CoqManager.prototype.goSentence = function (smt) {
@@ -407,7 +408,7 @@ function dumpCache() {
                 this.goPrev();
             }
         } else {}
-    }
+    };
 
     CoqManager.prototype.goCursor = function () {
 
@@ -433,7 +434,7 @@ function dumpCache() {
                 setTimeout(() => { this.goCursor(); }, 50 );
             }
         }
-    }
+    };
 }());
 
 // Local Variables:
