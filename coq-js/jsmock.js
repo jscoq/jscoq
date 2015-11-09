@@ -36,7 +36,7 @@ var jsCoq;
         // Go back to sid;
         this.cur_sid = sid;
         return;
-    }
+    };
 
     JsCoq.prototype.commit = function (sid) {
         // commit sid; may throw on error?
@@ -48,6 +48,8 @@ var jsCoq;
         }
         return;
     }
+    
+    // JsCoq.prototype.preload_pkg = function ({pkg_id, vo_files, cma_files}) {
 
 })();
 

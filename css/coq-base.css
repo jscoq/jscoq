@@ -6,11 +6,16 @@
 
 /* Toggle Styles */
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin : 0;
   padding: 0;
   font-family: Helvetica,Geneva,Swiss,Arial,SunSans-Regular,sans-serif;
   line-height: 1;
+  font-size: 14px;
 }
 
 a, a:link, a:visited, a:active {
@@ -18,13 +23,12 @@ a, a:link, a:visited, a:active {
 }
 
 #ide-wrapper {
-    padding-left: 0;
-    padding-right: calc(45% - 3px);
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    transition: all 0.5s ease;
-    height: 90vh;
+  /*padding-left: 0;*/
+  padding-right: calc(45% - 3px);
+  transition: all 0.5s ease;
+  height: 90vh;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 #ide-wrapper.toggled {
@@ -38,9 +42,6 @@ a, a:link, a:visited, a:active {
     height: 100%;
     margin-left: 0px;
     padding-right: calc(45% - 3px);
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
     transition: all 0.5s ease;
 }
 
@@ -70,9 +71,6 @@ a, a:link, a:visited, a:active {
     height: 100%;
     overflow: hidden;
     /* background: #000; */
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
     transition: all 0.5s ease;
 }
 
@@ -180,10 +178,15 @@ a, a:link, a:visited, a:active {
 }
 
 #document {
-    margin: auto;
-    position: relative;
-    padding: auto;
-    width: 50em;
+  margin: auto;
+  position: relative;
+  padding: auto;
+  width: 50em;
+  padding: 15px;
 }
 
+
+#document code {
+  white-space: pre;
+}
 

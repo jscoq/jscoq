@@ -36,15 +36,19 @@ function dumpCache() {
     };
 
     CoqPanel.prototype.show = function() {
-        $("#ide-wrapper").removeClass("toggled");
+        document.getElementById('ide-wrapper').classList.remove('toggled');
     };
 
     CoqPanel.prototype.hide = function() {
-        $("#ide-wrapper").addClass("toggled");
+        document.getElementById('ide-wrapper').classList.add('toggled');
     };
 
     CoqPanel.prototype.toggle = function() {
-        $("#ide-wrapper").toggleClass("toggled");
+        var ide = document.getElementById('ide-wrapper');
+        if (ide.classList.contains('toggled'))
+            ide.classList.remove('toggled');
+        else
+            ide.classList.add('toggled');
     };
 
     // Call jsCoq to get the info.
@@ -162,11 +166,7 @@ function dumpCache() {
     // XXX: Rename to Coq Director?
     CoqManager = function(elems, mock) {
 
-        if (typeof(mock) === 'undefined') {
-            mock = false;
-        }
-
-        this.mock = mock;
+        this.mock = mock ? mock : false;
         // UI setup.
         this.buttons = document.getElementById('buttons');
 
@@ -211,7 +211,8 @@ function dumpCache() {
         this.coq   = jsCoq;
         this.panel = new CoqPanel(this.coq);
         // this.panel.show();
-        $("#hide-panel").click(evt => this.panel.toggle());
+        document.getElementById('hide-panel')
+            .addEventListener('click', evt => this.panel.toggle());
 
         this.coq.onError = e => {
 
@@ -297,7 +298,8 @@ function dumpCache() {
         this.buttons.style.opacity = 1;
         this.provider.focus();
 
-        $(document).keydown(this.keyHandler.bind(this));
+        //$(document).keydown(this.keyHandler.bind(this));
+        document.addEventListener('keydown', evt => this.keyHandler(evt));
     };
 
     CoqManager.prototype.toolbarClickHandler = function(evt) {

@@ -30,7 +30,7 @@ var CmCoqProvider;
             }
         );
 
-        this.editor.on('change', evt => { this.onCMChange(evt); } );
+        this.editor.on('change', evt => this.onCMChange(evt));
 
         /*
         this.editor.on('change', evt => { this.onCMChange(evt); } );
@@ -46,7 +46,7 @@ var CmCoqProvider;
 
     CmCoqProvider.prototype.focus = function() {
         this.editor.focus();
-    }
+    };
 
     // If prev == null then get the first.
     CmCoqProvider.prototype.getNext = function(prev) {
@@ -94,7 +94,7 @@ var CmCoqProvider;
             return null
         }
         // } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
-    }
+    };
 
     // Mark a sentence with {clear, processing, error, ok}
     CmCoqProvider.prototype.mark = function(stm, mark) {
@@ -126,7 +126,7 @@ var CmCoqProvider;
             // doc.setCursor(stm.end);
             break;
         }
-    }
+    };
 
     // If any marks, then call the invalidate callback!
     CmCoqProvider.prototype.onCMChange = function(evt) {
