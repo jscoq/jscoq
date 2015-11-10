@@ -28,24 +28,23 @@
           <div class="panel-heading">
             <h3>Welcome to the JsCoq Interactive System!</h3>
               <p>
-                Welcome to the JsCoq Interactive System! Please bear
-                with us as this software is pretty much a technology
-                demo, and loading may take a bit. You must use a
-                recent Chrome or Firefox, don't even try with old browsers :D!
+                Welcome to the JsCoq Interactive System technology
+                demo! Note that this page requires a recent Chrome or
+                Firefox browser.
               </p>
-              <h4>Let's do a first proof in Coq! </h4>
+              <p>
+                We assume familiarity with Coq. Alt/Meta-Enter go the
+                point; Alt-N/P moves through the proof; Alt-"Right
+                Arrow" or the power icons toogles the goal panel.
+                Loading times should be reasonably snappy, but please
+                be a bit patient.
+              </p>
+              <h4>An example proof in Coq! </h4>
               <p>
                 A typical first proof in Coq is the commutativity of
                 addition over natural numbers. In the standard
-                library, it is quite straigforward, as you can see below.
-              </p>
-              <p>
-                Place the cursor somewhere below and press Alt-Enter
-                to go to the point. Alt-N/P will move you throu the
-                proof, Alt-"Right Arrow" or the icon will hide/show
-                the goal panel. We currently load 100MiB of libraries,
-                so be patient the first time, you can see the progress
-                by opening the right panel.
+                library, it is quite straigforward to do, as you can
+                see below.
               </p>
           </div> <!-- panel-heading -->
         <div class="coq-script panel-body">
@@ -70,20 +69,13 @@ Qed.
         <div class="panel-heading">
           <h4>Cool! </h4>
           <p>
-            This was interesting, we hope. For now, that is all we
-            have here, you can write, share, and run your own
-            programs using this tool.
+            This was interesting, we hope. You can write, share, and
+            run your own Coq programs using this tool.
           </p>
           <p>
-            Below, you'll find a more interesting proof, the
+            A proof showcasing some advanced libraries is below: the
             infinitude of primes, using the Mathematical Components
             libraries by MSR.
-          </p>
-          <p>
-            Note that the proof will load around 50 libraries,
-            unfortunately ssrnat pulls half of the Coq standard
-            library, so allow a few secons for the Require line to be
-            processed.
           </p>
           <h5>Have fun!</h5>
         </div> <!-- panel-heading -->
@@ -120,7 +112,7 @@ Qed.
         </p>
         <p>
           Now, we have proven that for any n, the first prime divisor
-          of $!m + 1$ is greater than m. By contraposition, assume
+          of !m + 1 is greater than m. By contraposition, assume
           such prime is indeed less or equal than m, then it would
           contradict that p is a divisor of !m +1, completing the
           proof.
@@ -177,6 +169,7 @@ Qed.
      var coq = new CoqManager (['addnC', 'prime_above']);
 
     </script>
+
   </body>
 
 </html>
