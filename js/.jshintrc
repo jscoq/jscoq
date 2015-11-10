@@ -3,7 +3,7 @@
   "unused": true,
   "predef": [ "$" ],
   "esnext": true,
-  "predef": [ "jsCoq", "$"],
-  "browser": true,
+  "predef": [ "jsCoq", "$", "CodeMirror"],
+//  "browser": true,
   "devel":true
 }
