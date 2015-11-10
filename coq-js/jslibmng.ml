@@ -12,8 +12,9 @@
 open Jslib
 open Lwt
 
-let json_file = "coq_pkg.json"
-let fs_prefix = "coq-fs/"
+let json_file     = "coq_pkg.json"
+let json_file_aux = "coq_pkg_aux.json"
+let fs_prefix     = "coq-fs/"
 
 (* We likely want these to be Hashtbls of just js arrays. *)
 type cache_entry = {
@@ -114,8 +115,8 @@ let preload_pkg pkg : unit Lwt.t =
   Icoq.add_load_path pkg.pkg_id pkg_dir;
   Lwt.return_unit
 
-let init callback = Lwt.async (fun () ->
-  XmlHttpRequest.get json_file >>= fun res ->
+let preload_from_file file =
+  XmlHttpRequest.get file >>= (fun res ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
   | `List coq_pkgs ->
@@ -126,11 +127,15 @@ let init callback = Lwt.async (fun () ->
       (length coq_pkgs)
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
-    Lwt_list.iter_s preload_pkg pkgs >>= fun _ ->
-    (callback (); Lwt.return_unit)
-  | _ -> raise (Failure "JSON");
-)
+    Lwt_list.iter_s preload_pkg pkgs
+  | _ -> raise (Failure "JSON")
+  )
 
+let init callback = Lwt.async (fun () ->
+        preload_from_file json_file >>= fun () ->
+        callback ();
+        preload_from_file json_file_aux
+  )
 
 (*
   let handler xml =
@@ -150,6 +155,7 @@ let is_bad_url _ = false
 let coq_vo_req url =
   (* Wait until we have enough UI support *)
   (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
+  (* Format.eprintf "file %s requested\n%!" url; (* with category info *) *)
   if not @@ is_bad_url url then
     try let c_entry = Hashtbl.find file_cache url in
         (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)

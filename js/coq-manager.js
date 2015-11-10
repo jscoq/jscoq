@@ -14,7 +14,10 @@ var ProviderContainer;
 
 function dumpCache() {
     "use strict";
-    var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheB));
+    var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheA));
+    $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
+
+    data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheB));
     $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
 }
 
@@ -244,7 +247,7 @@ function dumpCache() {
 
         this.coq.onInit = e => {
             // Enable the IDE.
-            this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!";
+            this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!\n===> Loading additional packages in the background...";
             this.enable();
         };
 
@@ -261,7 +264,7 @@ function dumpCache() {
 
     CoqManager.prototype.keyHandler = function(e) {
         // All our keybinding are prefixed by alt.
-        if (!e.altKey) return true;
+        if (!e.altKey && !e.metaKey) return true;
 
         // console.log("key alt-code: " + e.keyCode);
         switch (e.keyCode) {

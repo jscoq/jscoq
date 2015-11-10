@@ -9,6 +9,9 @@ let plugin_list =
   ; ["cc"]
   ; ["firstorder"]
   ; ["setoid_ring"]
+  (* These two were disabled *)
+  ; ["extraction"]
+  ; ["funind"]
   ; ["quote"]
   ]
 

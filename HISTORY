@@ -1,3 +1,20 @@
++ JsCoq 0.5 "Alexandria"
+--------------------------------
+
+  - Library manager support.
+  - Support for deck.js?
+
++ JsCoq 0.4 "For real"
+--------------------------------
+
+  - New manager for multi-snippet documents.
+  - Rudimentary Cache cma => js support.
+
++ JsCoq 0.3 "Kitties everywhere"
+--------------------------------
+
+  - New IDE/parsing based on CodeMirror.
+
 + JsCoq 0.2 "Castle edition"
 ----------------------------
 

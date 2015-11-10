@@ -6,9 +6,11 @@
 coq-js/jscoq.js
 coq-tools/mklibfs
 coq-tools/mklibjson
-coq_pkg.json
 jsoo-util/jsoo_dl.js
 coq-toplevel/jscoqtop.js
 Makefile.libs
 coq-fs/
+coq_pkg.json
 local/
+bcache
+bcache.list

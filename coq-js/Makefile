@@ -38,7 +38,6 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/kernel/byterun/dllcoqrun.so	\
 	$(COQDIR)/kernel/kernel.cma		\
 	$(COQDIR)/library/library.cma		\
-	$(COQDIR)/engine/engine.cma		\
 	$(COQDIR)/pretyping/pretyping.cma	\
 	$(COQDIR)/interp/interp.cma		\
 	$(COQDIR)/proofs/proofs.cma		\
@@ -49,12 +48,17 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
 	$(COQDIR)/parsing/highparsing.cma	\
 	$(COQDIR)/tactics/hightactics.cma
+	# $(COQDIR)/engine/engine.cma		\
 
 # Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
 DL_HACK=yes
 
 ifeq "${DL_HACK}" "yes"
 JSOO_DL=jsoo_dl.cmo
+endif
+
+ifeq "${DL_HACK}" "no"
+JSOO_DL=jsoo_cache.cmo
 endif
 
 ifeq "${JSOO_DL}" "jsoo_dl.cmo"
