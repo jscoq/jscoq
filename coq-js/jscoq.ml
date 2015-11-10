@@ -77,12 +77,12 @@ let string_of_feedback fb : string =
     | FileDependency (os, s) -> "FileDep: " ^ (Option.default "" os) ^ ", " ^ s
     | FileLoaded (s1, s2)    -> "FileLoaded " ^ s1 ^ " " ^ s2
 
-  (* Extra metadata *)
+    (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
-  (* Old generic messages *)
-    (* Richer printing disabled.. *)
-    (* | Message m -> "Msg: " ^ (Xml_printer.to_string_fmt m.message_content) *)
-    | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content)
+    (* Old generic messages *)
+    | Message m -> "Msg: " ^ m.message_content
+    (* Richer printing needed in trunk. *)
+    (* | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content) *)
 
 let string_of_eosid esid =
   let open Feedback in

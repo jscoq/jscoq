@@ -72,7 +72,9 @@ let init opts =
   Stm.init();
 
   (* Initialize logging. *)
-  Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg));
+  (* This is for Coq trunk *)
+  (* Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg)); *)
+  Pp.log_via_feedback ();
   Pp.set_feeder opts.fb_handler;
 
   (* Misc tweaks *)
