@@ -72,14 +72,16 @@ function dumpCache() {
         return true;
     };
 
+
+
     /***********************************************************************/
     /* A Provider Container aggregates several containers, the main deal   */
     /* here is keeping track of focus, as the focused container can be     */
     /* different from the "active" one                                     */
     /***********************************************************************/
 
-    ProviderContainer = function(elms) {
-
+    ProviderContainer = function(manager, elms) {
+        this.manager = manager;
         // Code snippets.
         this.snippets = [];
 
@@ -90,7 +92,7 @@ function dumpCache() {
         elms.forEach(function (e) {
 
             // Init.
-            var cm = new CmCoqProvider(document.getElementById(e));
+            var cm = new CmCoqProvider(document.getElementById(e), this.manager);
             cm.idx = idx++;
             this.snippets.push(cm);
 
@@ -157,6 +159,9 @@ function dumpCache() {
         return this.currentFocus.getAtPoint();
     };
 
+
+
+
     /***********************************************************************/
     /* CoqManager coordinates the coq code objects, the panel, and the coq */
     /* js object.                                                          */
@@ -171,7 +176,7 @@ function dumpCache() {
         this.buttons = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        this.provider = new ProviderContainer(elems);
+        this.provider = new ProviderContainer(this, elems);
 
         this.provider.onInvalidate = stm => {
 
@@ -262,33 +267,30 @@ function dumpCache() {
 
     CoqManager.prototype.keyHandler = function(e) {
         // All our keybinding are prefixed by alt.
-        if (!e.altKey) return true;
-
-        // console.log("key alt-code: " + e.keyCode);
         switch (e.keyCode) {
-        case 13:
-            this.goCursor();
-            break;
-        // case 38:
-        //     this.panel.show();
-        //     break;
-        case 39:
-            this.panel.toggle();
-            break;
-        case 76:
-            // Alt-l, recenter (XXX)k
-            break;
-        case 78:
-            this.goNext();
-            break;
-        case 80:
-            this.goPrev();
-            break;
-        default:
-            console.log("Uncapture alt command: " + e.keyCode);
+            case 119 : // F8
+                this.panel.toggle();
+                return;
         }
-        this.provider.focus();
-        return true;
+
+        if (!e.ctrlKey) return;
+
+        var btn_name = undefined;
+        switch (e.keyCode) {
+            case 13: // ENTER
+                btn_name = 'to-cursor';
+                break;
+            case 78: // N
+                btn_name = 'down';
+                break;
+            case 80: // P
+                btn_name = 'up';
+                break;
+        }
+        if(btn_name) {
+            this.provider.focus();
+            this.raiseButton(btn_name);
+        }
     };
 
     CoqManager.prototype.enable = function() {
@@ -318,6 +320,18 @@ function dumpCache() {
             case 'down' :
                 this.goNext();
                 break;
+        }
+    };
+
+    CoqManager.prototype.raiseButton= function(btn_name) {
+        var btns = this.buttons.getElementsByTagName('img');
+        var btn  = btns.namedItem(btn_name);
+
+        if (btn) {
+            btn.dispatchEvent(new MouseEvent('click',
+                                             {'view'       : window,
+                                              'bubbles'    : true,
+                                              'cancelable' : true}));
         }
     };
 

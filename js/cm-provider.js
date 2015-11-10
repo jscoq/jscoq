@@ -3,8 +3,6 @@ var CmCoqProvider;
 (function(){
     "use strict";
 
-    Array.prototype.last = function() { return this[this.length-1]; };
-
     var CmSentence = function(start, end, text, is_comment) {
         // start, end: {line: l, ch: c}
         this.start = start;
@@ -15,8 +13,8 @@ var CmCoqProvider;
     };
 
     // A CodeMirror-based Provider of coq statements.
-    CmCoqProvider = function(element) {
-
+    CmCoqProvider = function(element, manager) {
+        this.manager = manager;
         this.editor = CodeMirror.fromTextArea(element,
             {mode : {name : "coq",
                      version: 4,
@@ -30,7 +28,17 @@ var CmCoqProvider;
             }
         );
 
+        this.editor.setOption("extraKeys",
+            {
+                "Ctrl-N":     () => { this.manager.raiseButton('down'); },
+                "Ctrl-P":     () => { this.manager.raiseButton('up');   },
+                "Ctrl-Enter": () => { this.manager.raiseButton('to-cursor'); }
+            });
+
         this.editor.on('change', evt => this.onCMChange(evt));
+        this.editor.on('keyHandled',
+            (cm, name, evt) => evt.stopPropagation()
+        );
 
         /*
         this.editor.on('change', evt => { this.onCMChange(evt); } );
