@@ -91,8 +91,7 @@ function dumpCache () {
     /* different from the "active" one                                     */
     /***********************************************************************/
 
-    ProviderContainer = function(manager, elms) {
-        this.manager = manager;
+    ProviderContainer = function(elms) {
         // Code snippets.
         this.snippets = [];
 
@@ -103,7 +102,7 @@ function dumpCache () {
         elms.forEach(function (e) {
 
             // Init.
-            var cm = new CmCoqProvider(document.getElementById(e), this.manager);
+            var cm = new CmCoqProvider(document.getElementById(e));
             cm.idx = idx++;
             this.snippets.push(cm);
 
@@ -187,7 +186,7 @@ function dumpCache () {
         this.buttons = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
-        this.provider = new ProviderContainer(this, elems);
+        this.provider = new ProviderContainer(elems);
 
         this.provider.onInvalidate = stm => {
 
@@ -278,7 +277,7 @@ function dumpCache () {
 
     CoqManager.prototype.keyHandler = function(e) {
         // All our keybinding are prefixed by alt.
-        if (e.keyCode = 119)
+        if (e.keyCode === 119) // F8
             this.panel.toggle();
 
         if (!e.altKey && !e.metaKey) return true;
@@ -298,6 +297,7 @@ function dumpCache () {
         if(btn_name) {
             this.provider.focus();
             this.raiseButton(btn_name);
+            e.preventDefault();
         }
     };
 

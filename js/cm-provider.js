@@ -13,8 +13,7 @@ var CmCoqProvider;
     };
 
     // A CodeMirror-based Provider of coq statements.
-    CmCoqProvider = function(element, manager) {
-        this.manager = manager;
+    CmCoqProvider = function(element) {
         this.editor = CodeMirror.fromTextArea(element,
             {mode : {name : "coq",
                      version: 4,
@@ -28,28 +27,7 @@ var CmCoqProvider;
             }
         );
 
-        this.editor.setOption("extraKeys",
-            {
-                "Ctrl-N":     () => { this.manager.raiseButton('down'); },
-                "Ctrl-P":     () => { this.manager.raiseButton('up');   },
-                "Ctrl-Enter": () => { this.manager.raiseButton('to-cursor'); }
-            });
-
         this.editor.on('change', evt => this.onCMChange(evt));
-        this.editor.on('keyHandled',
-            (cm, name, evt) => evt.stopPropagation()
-        );
-
-        /*
-        this.editor.on('change', evt => { this.onCMChange(evt); } );
-        this.editor.setOption("extraKeys",
-            {
-                "Ctrl-N":     () => { this.ide._raiseButton('down'); },
-                "Ctrl-P":     () => { this.ide._raiseButton('up');   },
-                "Ctrl-Enter": () => { this.ide._raiseButton('to-cursor'); }
-            }
-        );
-        */
     };
 
     CmCoqProvider.prototype.focus = function() {
