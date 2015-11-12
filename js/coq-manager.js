@@ -12,13 +12,21 @@ var CoqPanel;
 var CoqManager;
 var ProviderContainer;
 
-function dumpCache() {
+function dumpCache () {
     "use strict";
-    var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheA));
-    $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
 
-    data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dumpJsCacheB));
-    $('<a href="data:' + data + '" download="data.json">download JSON</a>').appendTo('#ide-wrapper');
+    var download = function (text,filename) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    };
+
+    download(JSON.stringify(dumpJsCacheA), "bc-md5.json");
+    download(JSON.stringify(dumpJsCacheB), "bc-js.json");
 }
 
 (function(){
