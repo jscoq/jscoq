@@ -10,11 +10,17 @@
  * loading in the browser.
 *)
 
+open Js
+
 (** [init callback] gather package list and start preloading, call [callback] when done *)
 val init : (unit -> unit) -> unit
 
-(** [coq_resource_req url] query the manager's cache. *)
-val coq_vo_req  : Js.js_string Js.t -> Js.js_string Js.t option
+(** [coq_resource_req url] query the manager's cache for object [url] *)
+val coq_vo_req  : js_string t -> js_string t option
 
 (** [coq_cma_req cma] load the [cma] file or else do nothing *)
 val coq_cma_req : string -> unit
+
+(** [request_byte_cache md5] return [Some js] if bytecode with with
+    digest [md5] is in the cache, None otherwise *)
+val request_byte_cache : Digest.t -> js_string t option
