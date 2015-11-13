@@ -82,6 +82,7 @@ a, a:link, a:visited, a:active {
   border: 1px solid #9f9f9f;
   flex: 1000 1;
   overflow: hidden;
+  transition: all 0.5s ease-in-out;
 }
 
 .flex-panel > .caption {
@@ -109,6 +110,7 @@ a, a:link, a:visited, a:active {
   overflow: scroll;
   height: calc(100% - 20px);
   margin: 0;
+  transition: all 0.5s ease-in-out;
   /*padding: 5px;*/
 }
 

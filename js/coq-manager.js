@@ -36,6 +36,8 @@ function dumpCache() {
         // Proof display & query buffer.
         this.proof = document.getElementById("goal-text");
         this.query = document.getElementById("query-panel");
+        var flex_container = document.getElementById('panel-wrapper').getElementsByClassName('flex-container')[0];
+        flex_container.addEventListener('click', evt => {this.panelClickHandler(evt);});
     };
 
     CoqPanel.prototype.show = function() {
@@ -73,6 +75,18 @@ function dumpCache() {
     // Execute a query to Coq
     CoqPanel.prototype.query  = function(query) {
         return true;
+    };
+
+    CoqPanel.prototype.panelClickHandler = function(evt) {
+        var target = evt.target;
+        if(target.classList.contains('caption') &&
+            target.parentNode.classList.contains('flex-panel')) {
+            var panel = target.parentNode;
+            if(panel.classList.contains('collapsed'))
+                panel.classList.remove('collapsed');
+            else
+                panel.classList.add('collapsed');
+        }
     };
 
 
