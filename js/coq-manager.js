@@ -84,8 +84,14 @@ function dumpCache() {
             var panel = target.parentNode;
             if(panel.classList.contains('collapsed'))
                 panel.classList.remove('collapsed');
-            else
+            else {
+                var wrapper = document.getElementById('panel-wrapper');
+                var panels_cpt = wrapper.getElementsByClassName('flex-panel').length;
+                var collapsed_panels_cpt = wrapper.getElementsByClassName('collapsed').length;
+                if(collapsed_panels_cpt + 1 >= panels_cpt) // at least one panel opened
+                    return;
                 panel.classList.add('collapsed');
+            }
         }
     };
 
