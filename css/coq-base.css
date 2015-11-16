@@ -109,7 +109,7 @@ a, a:link, a:visited, a:active {
 }
 
 .flex-panel > .content {
-  margin-top: 20px;
+  margin: 22px 4px 4px 4px;
   transition: all 0.5s ease-in-out;
 }
 
@@ -221,3 +221,12 @@ a, a:link, a:visited, a:active {
   white-space: pre;
 }
 
+#packages-panel > div {
+  padding-bottom: 4px;
+}
+
+#packages-panel > div > img {
+  margin-right: 4px;
+  vertical-align: bottom;
+  cursor: pointer;
+}

@@ -14,6 +14,7 @@
     <script src="js/CodeMirror/lib/codemirror.js" type="text/javascript"></script>
     <script src="js/CodeMirror/mode/coq/coq.js"   type="text/javascript"></script>
     <script src="js/CodeMirror/keymap/emacs.js"   type="text/javascript"></script>
+    <script src="js/d3.min.js" type="text/javascript"></script>
 
     <title>Use Coq in Your Browser: The Js Coq Theorem Prover IDE!</title>
   </head>
@@ -168,16 +169,15 @@ Qed.
             <div class="caption">Messages</div>
             <div class="content" id="query-panel"></div>
           </div>
-          <div class="flex-panel collapsed">
+          <div class="flex-panel">
             <div class="caption">Packages</div>
-            <div class="content">
-              #Packages manager soon
-            </div>
+            <div id="packages-panel" class="content collapsed"></div>
           </div>
         </div>
       </div>
     </div>
     <script src="js/cm-provider.js" type="text/javascript"></script>
+    <script src="js/coq-packages.js" type="text/javascript"></script>
     <script src="js/coq-manager.js" type="text/javascript"></script>
 
     <script type="text/javascript">
