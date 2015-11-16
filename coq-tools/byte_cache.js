@@ -2,25 +2,18 @@
 // cache.md5 and cache.js and outputs a directory bcache/$MD5 containing
 // the proper JS
 
-var cache = require('./cache');
-
-// In cache.js
-/*
-
-module.exports = {
-  md5: [...],
-  js : [...]
-  }
-};
-*/
+var bc_md5 = require('./bc-md5.json');
+var bc_js  = require('./bc-js.json');
 
 var fs = require('fs');
 
-for(var i = 0; i < cache.md5.length; i++) {
-  fs.writeFile("bcache/" + cache.md5[i], cache.js[i],
+for(var i = 0; i < bc_md5.length; i++) {
+  fs.writeFile("bcache/" + bc_md5[i], bc_js[i],
                function(err) { });
 }
 
-for(var i = 0; i < cache.md5.length; i++) {
-  process.stdout.write(cache.md5[i] + "\n");
+for(var i = 0; i < bc_md5.length; i++) {
+  process.stdout.write(bc_md5[i]);
+  if (i + 1 < bc_md5.length)
+    process.stdout.write("\n");
 }
