@@ -230,3 +230,22 @@ a, a:link, a:visited, a:active {
   vertical-align: bottom;
   cursor: pointer;
 }
+
+.rel-pos {
+  position: relative;
+  height:0;
+}
+
+.progressbar {
+  background: #3c57a6;
+  height:2px;
+  border-radius: 2px;
+  position:relative;
+  width:0;
+}
+
+.progress-egg {
+  position: absolute;
+  top: -18px;
+  right: 0;
+}

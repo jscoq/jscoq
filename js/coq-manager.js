@@ -208,7 +208,8 @@ function dumpCache () {
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
         this.packages = new PackagesManager('coq_pkg.json',
-                                           document.getElementById('packages-panel'));
+                                            'coq-fs/',
+                                            document.getElementById('packages-panel'));
 
         this.provider.onInvalidate = stm => {
 
