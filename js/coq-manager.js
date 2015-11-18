@@ -304,15 +304,17 @@ function dumpCache () {
             this.panel.toggle();
 
         if (!e.altKey && !e.metaKey) return true;
-        var btn_name = undefined;
+        var btn_name;
         switch (e.keyCode) {
             case 13: // ENTER
                 btn_name = 'to-cursor';
                 break;
             case 78: // N
+            case 40: // flèche en bas
                 btn_name = 'down';
                 break;
             case 80: // P
+            case 38: // flèche en haut
                 btn_name = 'up';
                 break;
         }
