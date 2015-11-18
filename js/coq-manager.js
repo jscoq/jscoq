@@ -44,6 +44,8 @@ function dumpCache () {
         // Proof display & query buffer.
         this.proof = document.getElementById("goal-text");
         this.query = document.getElementById("query-panel");
+        var flex_container = document.getElementById('panel-wrapper').getElementsByClassName('flex-container')[0];
+        flex_container.addEventListener('click', evt => {this.panelClickHandler(evt);});
     };
 
     CoqPanel.prototype.show = function() {
@@ -81,6 +83,24 @@ function dumpCache () {
     // Execute a query to Coq
     CoqPanel.prototype.query  = function(query) {
         return true;
+    };
+
+    CoqPanel.prototype.panelClickHandler = function(evt) {
+        var target = evt.target;
+        if(target.classList.contains('caption') &&
+            target.parentNode.classList.contains('flex-panel')) {
+            var panel = target.parentNode;
+            if(panel.classList.contains('collapsed'))
+                panel.classList.remove('collapsed');
+            else {
+                var wrapper = document.getElementById('panel-wrapper');
+                var panels_cpt = wrapper.getElementsByClassName('flex-panel').length;
+                var collapsed_panels_cpt = wrapper.getElementsByClassName('collapsed').length;
+                if(collapsed_panels_cpt + 1 >= panels_cpt) // at least one panel opened
+                    return;
+                panel.classList.add('collapsed');
+            }
+        }
     };
 
 
@@ -187,6 +207,9 @@ function dumpCache () {
 
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
+        this.packages = new PackagesManager('coq_pkg.json',
+                                            'coq-fs/',
+                                            document.getElementById('packages-panel'));
 
         this.provider.onInvalidate = stm => {
 
@@ -281,15 +304,17 @@ function dumpCache () {
             this.panel.toggle();
 
         if (!e.altKey && !e.metaKey) return true;
-        var btn_name = undefined;
+        var btn_name;
         switch (e.keyCode) {
             case 13: // ENTER
                 btn_name = 'to-cursor';
                 break;
             case 78: // N
+            case 40: // flèche en bas
                 btn_name = 'down';
                 break;
             case 80: // P
+            case 38: // flèche en haut
                 btn_name = 'up';
                 break;
         }

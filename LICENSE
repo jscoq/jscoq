@@ -25,5 +25,12 @@ LGPL 2.1, however:
   - quite a bit of the Ocaml code is tightly integrated with Coq so it
     could be considered to derive from it.
 
+Pictograms credits
+
+  - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
+  - Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
+  - Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
+  Other graphics are parts, and so licenced, as JsCoq.
+
 The frameworks in external, pace, codemirror, etc... are under their
 own licence, see the directories for more details.
