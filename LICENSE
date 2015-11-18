@@ -11,5 +11,13 @@ The following files derive from Coq are under the LGPL 2.1:
   - We currently have no direct derivative from Coq.
   - icoq.ml was based on Coq's source at some point.
 
+Pictograms credits
+
+  - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
+  - Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
+  - Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
+  
+  Other graphics are parts, and so licenced, as JsCoq.
+
 [Note: This file is in beta and needs deeper review]
 
