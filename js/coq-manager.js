@@ -232,6 +232,7 @@ function dumpCache () {
         };
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
+        document.addEventListener('keydown', evt => this.keyHandler(evt));
     };
 
     CoqManager.prototype.loadJsCoq = function(evt) {
@@ -327,14 +328,10 @@ function dumpCache () {
     };
 
     CoqManager.prototype.enable = function() {
-
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
         this.buttons.style.display = 'inline-block';
         this.buttons.style.opacity = 1;
         this.provider.focus();
-
-        //$(document).keydown(this.keyHandler.bind(this));
-        document.addEventListener('keydown', evt => this.keyHandler(evt));
     };
 
     CoqManager.prototype.toolbarClickHandler = function(evt) {
