@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <!-- keep coq-log.css on first -->
     <link rel="stylesheet" href="css/coq-log.css" type="text/css" media="screen"/>
     <link rel="stylesheet" href="js/CodeMirror/lib/codemirror.css" type="text/css" media="screen"/>
     <link rel="stylesheet" href="js/CodeMirror/theme/blackboard.css" type="text/css" media="screen"/>
@@ -167,7 +168,15 @@ Qed.
             <div id="goal-text" class="content"></div>
           </div>
           <div class="msg-area flex-panel">
-            <div class="caption">Messages</div>
+            <div class="caption">
+              Messages
+              <select name="msg_filter">
+                <option value="0">debug</option>
+                <option value="1">info</option>
+                <option value="2">warn</option>
+                <option value="3">error</option>
+              </select>
+            </div>
             <div class="content" id="query-panel"></div>
           </div>
           <div class="flex-panel collapsed">

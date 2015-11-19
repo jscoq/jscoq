@@ -51,8 +51,11 @@ var COQ_LOG_LEVELS = {
         // Proof display & query buffer.
         this.proof = document.getElementById("goal-text");
         this.query = document.getElementById("query-panel");
+        this.log_css_rules = document.styleSheets[0].cssRules;
         var flex_container = document.getElementById('panel-wrapper').getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => {this.panelClickHandler(evt);});
+        d3.select('select[name=msg_filter]')
+            .on('change', () => this.filterLog(d3.event.target));
     };
 
     CoqPanel.prototype.show = function() {
@@ -86,6 +89,16 @@ var COQ_LOG_LEVELS = {
             .text(text)
             .node()
             .scrollIntoView();
+    };
+
+    CoqPanel.prototype.filterLog = function(level_select) {
+        var length = level_select.getElementsByTagName('option').length;
+        var min_log_level = parseInt(level_select.value, 10);
+        var i;
+        for(i=0 ; i < min_log_level ; i++)
+            this.log_css_rules[i].style.display = 'none';
+        for(i=min_log_level ; i < length ; i++)
+            this.log_css_rules[i].style.display = 'block';
     };
 
     // Execute a query to Coq
