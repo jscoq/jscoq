@@ -1,23 +1,36 @@
+JsCoq (c) 2015, MINES ParisTech
+
 JsCoq is released under the AGPL 3 licence, or at your option, any
 later version.
 
-The following files derive from js_of_ocaml are under the LGPL 2:
+Note: This LICENSE file is in beta and needs a deeper review
+
+JsCoq Authors:
+
+Emilio J. Gallego Arias
+Benoît Pin
+
+Notes about additional files:
+
+The following files derive from js_of_ocaml, and are under the LGPL 2:
 
   - jsoo_util/jsoo_dl.ml
   - coq-toplevel/jscoqtop.ml
 
-The following files derive from Coq are under the LGPL 2.1:
+We currently have no "direct derivative" from Coq, which is under the
+LGPL 2.1, however:
 
-  - We currently have no direct derivative from Coq.
   - icoq.ml was based on Coq's source at some point.
+
+  - quite a bit of the Ocaml code is tightly integrated with Coq so it
+    could be considered to derive from it.
 
 Pictograms credits
 
   - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
   - Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
   - Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
-  
   Other graphics are parts, and so licenced, as JsCoq.
 
-[Note: This file is in beta and needs deeper review]
-
+The frameworks in external, pace, codemirror, etc... are under their
+own licence, see the directories for more details.
