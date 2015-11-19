@@ -129,10 +129,6 @@ a, a:link, a:visited, a:active {
   width: 0px;
 }
 
-#goal-panel, #query-panel {
-  width: 100%;
-  /*overflow: hidden;*/
-}
 
 #goal-panel {
   flex: 2000 1;
