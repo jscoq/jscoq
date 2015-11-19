@@ -1,0 +1,15 @@
+#query-panel .debug {
+
+}
+
+#query-panel .info {
+  background: url('../images/log-info.png') no-repeat;
+}
+
+#query-panel .warn {
+  background: url('../images/log-warn.png') no-repeat;
+}
+
+#query-panel .error {
+  background: url('../images/log-error.png') no-repeat;
+}

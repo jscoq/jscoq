@@ -190,10 +190,9 @@ a, a:link, a:visited, a:active {
   cursor: pointer;
 }
 
-.msg-area span {
-  display: block;
-  padding: 3px;
-  white-space: pre;
+#query-panel > div {
+  line-height: 1.25em;
+  padding-left: 18px;
 }
 
 /* overloads */

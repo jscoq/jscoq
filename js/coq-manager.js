@@ -29,6 +29,13 @@ function dumpCache () {
     download(JSON.stringify(dumpJsCacheB), "bc-js.json");
 }
 
+var COQ_LOG_LEVELS = {
+    DEBUG : 'debug',
+    INFO : 'info',
+    WARN : 'warn',
+    ERROR : 'error'
+};
+
 (function(){
     "use strict";
 
@@ -72,12 +79,13 @@ function dumpCache () {
     };
 
     // Add a log event received from Coq.
-    CoqPanel.prototype.log    = function(text) {
-
-        var span = document.createElement('span');
-        // Now Coq logs escaped pseudo-xml...
-        span.innerHTML = text;
-        this.query.insertBefore(span, this.query.firstChild);
+    CoqPanel.prototype.log = function(text, level) {
+        d3.select(this.query)
+            .append('div')
+            .attr('class', level)
+            .text(text)
+            .node()
+            .scrollIntoView();
     };
 
     // Execute a query to Coq
@@ -267,19 +275,23 @@ function dumpCache () {
         };
 
         // Hacks, we should refine...
-        this.coq.onLog   = e => {
+        this.coq.onLog = e => {
+            var level = COQ_LOG_LEVELS.DEBUG;
+            var msg = e.toString();
 
-            // console.log("CoqLog: " + e.toString());
+            if(msg.indexOf('ErrorMsg:') != -1) {
+                level = COQ_LOG_LEVELS.ERROR;
+                msg = msg.replace(/^.*ErrorMsg:/, '');
+            }
+            else if(msg.indexOf("Msg:") != -1) {
+                level = COQ_LOG_LEVELS.INFO;
+                msg = msg.toString().replace(/^.*Msg:/, '');
+            }
+            else if (msg.indexOf("pre-loading") != -1) {
+                level = COQ_LOG_LEVELS.INFO;
+            }
 
-            // Error msgs.
-            if (e.toString().indexOf("ErrorMsg:") != -1)
-                // Sanitize
-                this.panel.log(e.toString().replace(/^.*ErrorMsg:/, ""));
-            // User queries, usually in the query buffer
-            else if (e.toString().indexOf("Msg:") != -1)
-                this.panel.log(e.toString().replace(/^.*Msg:/, ""));
-            else if (e.toString().indexOf("pre-loading") != -1)
-                this.panel.log(e.toString());
+            this.panel.log(msg, level);
         };
 
         this.coq.onInit = e => {
