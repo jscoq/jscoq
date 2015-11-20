@@ -1,6 +1,6 @@
 /* do not modify order */
 #query-panel .debug {
-
+  display: none;
 }
 
 #query-panel .info {
