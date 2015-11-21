@@ -13,38 +13,33 @@ The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
 Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
-servers or external programs are needed.
+servers or external programs are needed. JsCoq runs fine in Chrome (>=
+45) or Mozilla Firefox. It also runs in my old Galaxy Nexus.
 
-jsCoq runs fine in Chrome (>= 45) or Mozilla Firefox. We recommend
-starting Chrome with:
-
-```
-google-chrome --js-flags="--stack-size=65536"
-```
-
-The IDE also runs in my old Galaxy Nexus.
-
-* **Important:** Plugin loading is still very slow, so be patient at `Require Import` time.
-* **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+**Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
 
 ## API
 
-The current release provides a `jsCoq` javascript object, so you can
+The current release provides a `coqManager` javascript object, so you can
 embed Coq in your particular javascript application.
+
+We are sorry we are scarce on documentation for now, but a look to
+`newide.html` should give you an idea on to use jsCoq in your own
+html pages.
 
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-The code is far from stable now, but it should be possible to
-contribute.  Any contribution or comment is really welcome!
+We don't consider the code/architecture stable yet, but any
+contribution or comment is really welcome!
 
 ## What is broken ##
 
-* Loading ML modules is quite slow due to dynamic compilation.
+* Loading ML modules may be slow if not using the bytecode cache.
 * `vm_compute` and `native_compute` are not supported.
-* There may be threading and performance problems.
+* There surely are threading and performance problems.
 
 ## Contact & Sponsorship ##
 ![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
@@ -106,6 +101,17 @@ $ ./build.sh
 $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
   ````
 
+* _Bytecode cache_:
+  By default JsCoq must compile ocaml's bytecode to javascript
+  on the fly to load cma plugins.
+
+  However, this process can be cached by creating a bcache. The
+  process is a bit involved. First, you must load all the .cma files
+  from a regular web browser, so they get compiled and cached. Then
+  call the `dumpCache` function from the JS console to download the
+  cache, which must be then processed using the
+  `coq-tools/byte_cache.js` program to generate a `/bcache.list` file
+  and a `/bcache` directory.
 * Profit!
 * Extra/Experimental: ssreflect.
 
@@ -113,6 +119,7 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
   `git://scm.gforge.inria.fr/coq-contribs/ssreflect`. Then build with:
 
   ```
+$ # Patch ssr if needed.
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git/bin:$PATH
@@ -120,4 +127,4 @@ $ coq_makefile -f Make > Makefile
 $ make byte
   ```
 
-  For current Coq trunk, you'll need to patch ssr [look in the patch folder].
+  For current Coq v8.5, you need to patch ssr [look in the patch folder].
