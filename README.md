@@ -1,9 +1,6 @@
 Run Coq in your browser!
 ------------------------
 
-*WARNING: This project is a proof of concept. If you are not a Coq
- expert, expect trouble*
-
 A [Coq](https://coq.inria.fr) Integrated Development Enviroment
 running in the browser! Try it:
 
@@ -16,7 +13,8 @@ Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
 servers or external programs are needed. JsCoq runs fine in Chrome (>=
 45) or Mozilla Firefox. It also runs in my old Galaxy Nexus.
 
-**Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+* **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+* **Important:** The project is pretty much at pre-alpha technology demo, you are welcome to use it but expect trouble.
 
 ## API
 
