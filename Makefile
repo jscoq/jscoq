@@ -55,6 +55,10 @@ libs: Makefile.libs lib-addons
 # 	+toplevel.js js/mutex.js js/unix.js js/coq_vm.js		\
 # 	js/byte_cache.js jscoqtop.js $< -o filesys/cmas/$<.js
 
+bcache: bc-md5.json bc-js.json
+	mkdir -p bcache
+	nodejs ./coq-tools/byte_cache.js > bcache.list
+
 clean:
 	$(MAKE) -C coq-js       clean
 	$(MAKE) -C coq-tools    clean
@@ -62,10 +66,8 @@ clean:
 # $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-fs
+	rm -rf bcache bcache.list bc-md5.json bc-js.json
 
-bcache: bc-md5.json bc-js.json
-	mkdir -p bcache
-	nodejs ./coq-tools/byte_cache.js > bcache.list
 
 ########################################################################
 # Local stuff
