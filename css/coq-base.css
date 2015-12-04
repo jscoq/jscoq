@@ -15,7 +15,7 @@ body {
   padding: 0;
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   line-height: 1;
-  font-size: 14px;
+  font-size: 11pt;
 }
 
 a, a:link, a:visited, a:active {
@@ -50,7 +50,6 @@ a, a:link, a:visited, a:active {
 }
 
 #script-panel {
-
   height: calc(100% - 37px);
 }
 
@@ -69,6 +68,7 @@ a, a:link, a:visited, a:active {
   width: 45%;
   height: 100%;
   transition: all 0.5s ease;
+  /* border-left: 1px solid #222; */
 }
 
 .flex-container {
@@ -111,6 +111,7 @@ a, a:link, a:visited, a:active {
 .flex-panel > .content {
   margin: 22px 4px 4px 4px;
   transition: all 0.5s ease-in-out;
+  font-family: monospace;
 }
 
 .flex-panel.collapsed {
@@ -127,6 +128,7 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.toggled #panel-wrapper {
   width: 0px;
+  /* overflow: auto; */
 }
 
 
@@ -208,7 +210,7 @@ a, a:link, a:visited, a:active {
   margin: auto;
   position: relative;
   padding: auto;
-  width: 50em;
+  width: 51em;
   padding: 15px;
 }
 
