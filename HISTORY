@@ -2,13 +2,13 @@
 --------------------------------
 
   - Library manager support.
-  - Support for deck.js?
+  - Coqdoc backend.
 
 + JsCoq 0.4 "For real"
 --------------------------------
 
   - New manager for multi-snippet documents.
-  - Rudimentary Cache cma => js support.
+  - Rudimentary Cache of cma => js compilation.
 
 + JsCoq 0.3 "Kitties everywhere"
 --------------------------------
