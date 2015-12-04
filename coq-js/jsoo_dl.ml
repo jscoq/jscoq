@@ -29,8 +29,8 @@ let setup_dynlink () =
     Array.length (split_primitives (Symtable.data_primitive_names ())) in
 
   let compile s =
-    Firebug.console##log(string "calling compile!");
     let md5 = Digest.string s in
+    Firebug.console##log(string ("calling compile for " ^ (Digest.to_hex md5)));
     match Jslibmng.request_byte_cache md5 with
     | Some js -> Firebug.console##log(string "cache hit!");
                  Js.Unsafe.global##toplevelEval(js)

@@ -48,16 +48,17 @@ let preload_js_code msum =
 let preload_byte_cache () =
   let open Lwt            in
   let open XmlHttpRequest in
-  (* Don't require bcache.list to exists *)
+  (* Don't fail if bcache.list doesn't exist *)
   catch (fun () ->
-         get bcache_file                                >>= fun res ->
-         let m_list = Regexp.split (Regexp.regexp "\n") res.content in
-         Lwt_list.iter_s preload_js_code m_list)
+      get bcache_file                                >>= fun res ->
+      let m_list = Regexp.split (Regexp.regexp "\n") res.content in
+      Firebug.console##log_2(string "Got binary js cache: ",
+                             string (string_of_int (List.length m_list)));
+      Lwt_list.iter_s preload_js_code m_list)
     (fun _exn ->
        Firebug.console##log(string "Getting bcache failed");
        return_unit
     )
-
   (* Firebug.console##log_2(string "bcache file: ", string res.content); *)
   (* Firebug.console##log_2(string "number of files", List.length m_list); *)
 
