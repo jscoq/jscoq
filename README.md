@@ -87,9 +87,10 @@ $ make               # use -j N as desired
   ````
 
   Note that jsCoq is currently broken by commit
-  coq/coq@3940441dffdfc3a8f968760c249f6a2e8a1e0912, please use
-  coq/coq@ef8718a7fd3bcd960d954093d8c636525e6cc492 while we work on a
-  fix.
+  coq/coq@3940441dffdfc3a8f968760c249f6a2e8a1e0912 , please use
+  coq/coq@ef8718a7fd3bcd960d954093d8c636525e6cc492 or apply the patch
+  in the patch folder which provides a workaround (the issue is not
+  fully solved).
 
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
 
@@ -116,21 +117,22 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
 
 * _Bytecode cache_:
 
-  By default JsCoq must compile ocaml's bytecode to javascript
-  on the fly to load cma plugins.
-
-  However, this process can be cached by creating a bcache. The
-  process is a bit involved:
+  By default JsCoq must compile ocaml's bytecode to javascript on the
+  fly to load cma plugins.  However, we can cache the process of
+  compilation by creating a bcache. The process is a bit involved:
 
   1) Load all the .cma files you want to be cached from a regular web
-     browser, so they get compiled and cached.
+     browser, they will get compiled and cached.
 
-  2) Call the `dumpCache` function from the JS console; this should download the
-     cache.
+  2) Call the `dumpCache()` function from the JS console; this should
+     download the cache.
 
-  3) The cache must be then processed using the
+  3) Place the files in the `jscoq` directory, and do `make
+     bcache`. The cache will be then processed using the
      `coq-tools/byte_cache.js` program to generate a `/bcache.list`
      file and a `/bcache` directory.
+
+     This requires node.
 
 * Profit!
 * Extra/Experimental: ssreflect.

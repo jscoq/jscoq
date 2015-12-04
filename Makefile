@@ -63,13 +63,17 @@ clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-fs
 
+bcache: bc-md5.json bc-js.json
+	mkdir -p bcache
+	nodejs ./coq-tools/byte_cache.js > bcache.list
+
 ########################################################################
 # Local stuff
 upload: all
 	ln -sf newide.html index.html
-	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq_pkg.json coq_pkg_aux.json bcache.list bcache external ~/x80/rhino-coq/
 	mkdir -p ~/x80/rhino-coq/coq-js/
 	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
+	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq_pkg.json coq_pkg_aux.json bcache.list bcache external ~/x80/rhino-coq/
 # $(shell ./x80-sync.sh)
 
 pau:
