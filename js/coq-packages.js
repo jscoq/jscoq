@@ -1,3 +1,4 @@
+s
 var PackagesManager;
 
 (function(){
@@ -29,8 +30,7 @@ var PackagesManager;
                 .attr('src', 'images/dl.png')
                 .on('click', function(){self.downloadPackage();});
             row.append('span')
-                .text(function(d){return d.pkg_id.join(' – ');});
-
+                .text(function(d){return d.pkg_id.join('.');});
         });
     };
 
