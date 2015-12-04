@@ -57,8 +57,8 @@ let init opts =
    *
    * XXX: Check what is going on here...
    *)
-  let coq_default_path = DirPath.make []           in
-  Loadpath.add_load_path "." coq_default_path            ~implicit:true;
+  (* let coq_default_path = DirPath.make []           in *)
+  (* Loadpath.add_load_path "." coq_default_path            ~implicit:true; *)
   Loadpath.add_load_path "." Nameops.default_root_prefix ~implicit:false;
 
   (* We need to declare a toplevel module name.
