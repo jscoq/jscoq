@@ -74,16 +74,20 @@ $ ./toolchain-setup.sh
   script and set the JS_OF_OCAML_DIR variable appropriately. Tweaking the NJOBS
   variable may be necessary too (64 jobs by default).
 
-* Second, you need to build Coq trunk/master:
+* Second, you need to build Coq v8.5:
 
   ````
 $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
+$ git checkout v8.5
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ ./configure -local -natdynlink no -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
+
+  Note that jsCoq is currently broken by commit 3940441dffdfc3a8f968760c249f6a2e8a1e0912, please use
+  ef8718a7fd3bcd960d954093d8c636525e6cc492 while we work on a fix.
 
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
 
