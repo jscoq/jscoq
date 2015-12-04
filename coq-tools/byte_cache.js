@@ -2,8 +2,8 @@
 // cache.md5 and cache.js and outputs a directory bcache/$MD5 containing
 // the proper JS
 
-var bc_md5 = require('./bc-md5.json');
-var bc_js  = require('./bc-js.json');
+var bc_md5 = require('../bc-md5.json');
+var bc_js  = require('../bc-js.json');
 
 var fs = require('fs');
 
