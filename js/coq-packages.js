@@ -1,8 +1,9 @@
-s
 var PackagesManager;
 
 (function(){
+
     "use strict";
+
     PackagesManager = function(definitions_url, base_url, panel) {
         this.base_url = base_url;
         this.panel = panel;
