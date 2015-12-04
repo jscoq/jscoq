@@ -9,8 +9,9 @@ let js_cacheb : (js_string t) js_array t = jsnew array_empty ()
 
 let add_to_jscache s res =
   let md5 = string @@ Digest.to_hex @@ Digest.string s in
-  js_cachea##push(md5);
-  js_cacheb##push(res)
+  let _ = js_cachea##push(md5) in
+  let _ = js_cacheb##push(res) in
+  ()
 
 let split_primitives p =
   let len = String.length p in
@@ -28,6 +29,7 @@ let setup_dynlink () =
     Array.length (split_primitives (Symtable.data_primitive_names ())) in
 
   let compile s =
+    Firebug.console##log(string "calling compile!");
     let md5 = Digest.string s in
     match Jslibmng.request_byte_cache md5 with
     | Some js -> Firebug.console##log(string "cache hit!");
