@@ -86,8 +86,10 @@ $ ./configure -local -natdynlink no -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
-  Note that jsCoq is currently broken by commit 3940441dffdfc3a8f968760c249f6a2e8a1e0912, please use
-  ef8718a7fd3bcd960d954093d8c636525e6cc492 while we work on a fix.
+  Note that jsCoq is currently broken by commit
+  coq/coq@3940441dffdfc3a8f968760c249f6a2e8a1e0912, please use
+  coq/coq@ef8718a7fd3bcd960d954093d8c636525e6cc492 while we work on a
+  fix.
 
   If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
 
