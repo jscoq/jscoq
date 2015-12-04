@@ -3,7 +3,7 @@ var v_log = false;
 function ll(s) { if (v_log) console.log(s); }
 
 function caml_raise_unix_error(msg) {
-  tag = caml_named_value("UnixUnixError");
+  var tag = caml_named_value("Unix.Unix_error");
   // var util = require('util');
   // console.log(util.inspect(chan, {showHidden: false, depth: null}));
   caml_raise_with_arg (tag, caml_new_string (msg));
@@ -139,7 +139,7 @@ function unix_mkdir() {
 function unix_opendir(dir) {
   // ll("unix_opendir");
 
-  caml_raise_unix_error(dir);
+  caml_raise_unix_error("opendir");
   return 0;
 }
 
@@ -156,8 +156,10 @@ function unix_read() {
 }
 
 //Provides: unix_readdir
-function unix_readdir() {
+function unix_readdir(dir) {
   // ll("unix_readdir");
+
+  caml_raise_unix_error("readdir");
   return 0;
 }
 
