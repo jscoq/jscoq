@@ -33,12 +33,6 @@ function unix_close() {
   return 0;
 }
 
-//Provides: unix_closedir
-function unix_closedir() {
-  // ll("unix_closedir");
-  return 0;
-}
-
 //Provides: unix_connect
 function unix_connect() {
   // ll("unix_connect");
@@ -134,15 +128,6 @@ function unix_mkdir() {
   // ll("unix_mkdir");
   return 0;
 }
-
-//Provides: unix_opendir
-function unix_opendir(dir) {
-  // ll("unix_opendir");
-
-  caml_raise_unix_error("opendir");
-  return 0;
-}
-
 //Provides: unix_pipe
 function unix_pipe() {
   // ll("unix_pipe");
@@ -155,12 +140,28 @@ function unix_read() {
   return 0;
 }
 
+//Provides: unix_opendir
+function unix_opendir(dir) {
+  // ll("unix_opendir");
+
+  // caml_raise_unix_error("opendir");
+  return [];
+}
+
 //Provides: unix_readdir
+//Requires: caml_raise_constant, caml_global_data
 function unix_readdir(dir) {
   // ll("unix_readdir");
 
-  caml_raise_unix_error("readdir");
-  return 0;
+  // caml_raise_unix_error("readdir");
+  caml_raise_constant(caml_global_data.End_of_file);
+  return [];
+}
+
+//Provides: unix_closedir
+function unix_closedir() {
+  // ll("unix_closedir");
+  return [];
 }
 
 //Provides: unix_select
