@@ -180,16 +180,14 @@ val observe : Stateid.t -> unit
    point_ command can be used; then, CoqIDE will do a bunch of adds
    followed by a single observe.
 
-   See `stm.ml:async_policy` for more information.
-   (https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.ml#L1637-1644)
+   See [`stm.ml:async_policy`](https://github.com/ejgallego/coq/blob/ejga-commentary/stm/stm.ml#L1619-1625) for more information.
 
-* The STM API includes some more functions, such as:
+* The STM API includes some more self-explaining functions, such as:
 
    ```ocaml
 val init : unit -> unit
 val get_current_state : unit -> Stateid.t
    ```
-  etc...
 
 ### Feedback
 
