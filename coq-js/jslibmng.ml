@@ -18,8 +18,8 @@ let json_file     = "coq_pkg.json"
 let json_file_aux = "coq_pkg_aux.json"
 let fs_prefix     = "coq-fs/"
 
-let bache_prefix  = "bcache/"
-let bache_file    = "bcache.list"
+let bcache_prefix = "bcache/"
+let bcache_file   = "bcache.list"
 
 (* Main byte_cache *)
 let byte_cache : (Digest.t, js_string t) Hashtbl.t = Hashtbl.create 200
@@ -40,7 +40,7 @@ let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
 let preload_js_code msum =
   let open Lwt                           in
   let open XmlHttpRequest                in
-  let js_url = "bcache/" ^ msum          in
+  let js_url = bcache_prefix ^ msum      in
   perform_raw ~response_type:Text js_url >>= fun frame      ->
   Hashtbl.add byte_cache (Digest.from_hex msum) frame.content;
   return_unit
@@ -48,9 +48,16 @@ let preload_js_code msum =
 let preload_byte_cache () =
   let open Lwt            in
   let open XmlHttpRequest in
-  get "bcache.list"       >>= fun res ->
-  let m_list = Regexp.split (Regexp.regexp "\n") res.content in
-  Lwt_list.iter_s preload_js_code m_list
+  (* Don't require bcache.list to exists *)
+  catch (fun () ->
+         get bcache_file                                >>= fun res ->
+         let m_list = Regexp.split (Regexp.regexp "\n") res.content in
+         Lwt_list.iter_s preload_js_code m_list)
+    (fun _exn ->
+       Firebug.console##log(string "Getting bcache failed");
+       return_unit
+    )
+
   (* Firebug.console##log_2(string "bcache file: ", string res.content); *)
   (* Firebug.console##log_2(string "number of files", List.length m_list); *)
 
@@ -160,7 +167,7 @@ let is_bad_url _ = false
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
-  (* Format.eprintf "file %s requested\n%!" url; (* with category info *) *)
+  Format.eprintf "file %s requested\n%!" (to_string url); (* with category info *)
   if not @@ is_bad_url url then
     try let c_entry = Hashtbl.find file_cache url in
         (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
