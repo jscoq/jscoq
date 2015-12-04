@@ -1,37 +1,53 @@
-JsCoq (c) 2015, MINES ParisTech
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: jsCoq
+Upstream-Contact: Emilio J. Gallego Arias <e+jscoq@x80.org>
+Source: https://github.com/ejgallego/jscoq
+License: AGPL-3+
+Copyright: 2015, MINES ParisTech
 
-JsCoq is released under the AGPL 3 licence, or at your option, any
-later version.
+Authors: Emilio J. Gallego Arias
+         Benoît Pin
 
-Note: This LICENSE file is in beta and needs a deeper review
+Files: notes/*
+License: AGPL-3+ / CC-BY-SA 3.0
 
-JsCoq Authors:
+Files: jsoo_util/jsoo_dl.ml
+Files: coq-toplevel/jscoqtop.ml
+Comment: These files derive from js_of_ocaml, and are under the LGPL 2.1 or later
+License: LGPL-2.1+
 
-Emilio J. Gallego Arias
-Benoît Pin
+Files: images/checked.png
+License: CC-BY 3.0
+Comment:
+  - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
 
-Notes about additional files:
+Files: images/dl.png
+License: CC-BY 3.0
+Comment: Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
 
-The following files derive from js_of_ocaml, and are under the LGPL 2:
+Files: images/power-button-512-black.png
+License: CC-BY 3.0
+Comment: Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
 
-  - jsoo_util/jsoo_dl.ml
-  - coq-toplevel/jscoqtop.ml
+Files: images/log-*
+License: BSD
+Comment: Log levels icons are from the firebug project, getfirebug.com, licensed under BSD License
+
+Files: images/*
+License: AGPL-3
+Comment: Other graphics are parts, and so licenced, as JsCoq.
+
+Files: external/*
+Comment: The frameworks in external, pace, codemirror, etc... are under their
+         own licence, see the directories for more details.
+
+# Regarding Coq and derivatives:
 
 We currently have no "direct derivative" from Coq, which is under the
 LGPL 2.1, however:
 
-  - icoq.ml was based on Coq's source at some point.
+  - js_jcoq.ml was based on Coq's source at some point.
 
   - quite a bit of the Ocaml code is tightly integrated with Coq so it
     could be considered to derive from it.
 
-Pictograms credits
-
-  - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
-  - Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
-  - Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
-  - Log levels icons are from the firebug project, getfirebug.com, licensed under BSD License
-  Other graphics are parts, and so licenced, as JsCoq.
-
-The frameworks in external, pace, codemirror, etc... are under their
-own licence, see the directories for more details.
