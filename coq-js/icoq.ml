@@ -99,6 +99,8 @@ let edit_doc   sid       = let _ = Stm.edit_at sid in ()
 
 let commit_doc = Stm.observe
 
+let query st cmd = Stm.query st cmd
+
 (* XXX: We want to implement our custom proof printer (from
  * printing/printer.ml
  *

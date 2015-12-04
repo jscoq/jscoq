@@ -32,6 +32,7 @@ class type jsCoq = object
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
 
+  method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
   (* Library management *)
   (* method libManager  : ('self t, jsCoqLib t)            meth_callback writeonly_prop *)
 
@@ -159,6 +160,9 @@ let jscoq_commit this sid =
     | _ ->
        ee ()
 
+let jscoq_query this sid cmd : unit =
+  Icoq.query sid (to_string cmd)
+
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
@@ -171,6 +175,7 @@ let _ =
   jsCoq##add     <- Js.wrap_meth_callback jscoq_add;
   jsCoq##edit    <- Js.wrap_meth_callback jscoq_edit;
   jsCoq##commit  <- Js.wrap_meth_callback jscoq_commit;
+  jsCoq##query   <- Js.wrap_meth_callback jscoq_query;
   jsCoq##goals   <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
   jsCoq##onLog   <- no_handler;
   jsCoq##onError <- no_handler;

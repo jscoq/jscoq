@@ -51,5 +51,8 @@ val edit_doc : Stateid.t -> unit
     produce an exception in case of error. *)
 val commit_doc : Stateid.t -> unit
 
+(** [query sid cmd] Executes a command without changing the state. *)
+val query : Stateid.t -> string -> unit
+
 (** [string_or_goals ()] returns a string representing the current goals  *)
 val string_of_goals : unit -> string
