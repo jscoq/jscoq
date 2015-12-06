@@ -14,7 +14,7 @@ var PackagesManager;
         req.addEventListener('readystatechange',
                              () => {
                                  if(req.readyState === 4 &&
-                                    (req.status === 200 || req.status === 304))
+                                    (req.status === 200 || req.status === 304 || req.status === 0))
                                     this.displayDefinitions(req);
                              });
     };

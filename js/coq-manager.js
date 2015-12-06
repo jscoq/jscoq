@@ -230,7 +230,7 @@ var COQ_LOG_LEVELS = {
         this.provider = new ProviderContainer(elems);
         this.packages = new PackagesManager('coq_pkg.json',
                                             'coq-fs/',
-                                            document.getElementById('packages-panel'));
+                                             document.getElementById('packages-panel'));
 
         this.provider.onInvalidate = stm => {
 
