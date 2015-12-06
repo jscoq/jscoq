@@ -135,18 +135,23 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
      This requires node.
 
 * Profit!
-* Extra/Experimental: ssreflect.
+* Packages: ssreflect/mathcomp.
 
-  Get the ssreflect distribution at
-  `git://scm.gforge.inria.fr/coq-contribs/ssreflect`. Then build with:
+  JsCoq supports extra addons, including ssreflect. In order to build
+  it with JsCoq, download the ssreflect distribution from
+  `https://github.com/math-comp/math-comp`
+
+  Go to the main directory and then build with:
 
   ```
-$ # Patch ssr if needed.
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git/bin:$PATH
-$ coq_makefile -f Make > Makefile
-$ make byte
+$ make -f Makefile.coq byte
   ```
 
-  For current Coq v8.5, you need to patch ssr [look in the patch folder].
+  You need to specify in the jsCoq makefile the place where math-comp
+  has been downloaded, `~/external/coq/math-comp` is the default.
+
+  A patch optimizing mathcomp loading times can be found in the patch
+  folder, highly recommended.

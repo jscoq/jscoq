@@ -23,6 +23,7 @@ let plugin_list =
 
 let coq_theory_list =
   [ ["Init"]
+  ; ["Unicode"]
   ; ["Bool"]
   ; ["Logic"]
   ; ["Program"]
@@ -36,7 +37,6 @@ let coq_theory_list =
   ; ["ZArith"]
   ; ["Lists"]
   ; ["Vectors"]
-  ; ["Unicode"]
 
   ; ["Numbers"]
   ; ["Numbers"; "NatInt"]
@@ -45,5 +45,11 @@ let coq_theory_list =
   ]
 
 let addons_list =
-  [ ["Ssreflect"] ]
+  [ ["mathcomp"; "ssreflect"]
+  ; ["mathcomp"; "algebra"]
+  ; ["mathcomp"; "fingroup"]
+  ; ["mathcomp"; "solvable"]
+  ; ["mathcomp"; "field"]
+  ]
+
 
