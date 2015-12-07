@@ -1,7 +1,7 @@
 Run Coq in your browser!
 ------------------------
 
-A [Coq](https://coq.inria.fr) Integrated Development Enviroment
+A [Coq](https://coq.inria.fr) Online Integrated Development Environment
 running in the browser! Try it:
 
 <https://x80.org/rhino-coq/>
@@ -82,7 +82,7 @@ $ cd ~/external/coq-git
 $ git checkout v8.5
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
-$ ./configure -local -natdynlink no -coqide no -native-compiler no
+$ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
