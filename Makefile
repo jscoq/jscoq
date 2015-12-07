@@ -18,81 +18,28 @@ coq-tools:
 	$(MAKE) -C coq-tools
 
 ########################################################################
-# Plugin building + base64 encoding
+# Library building                                                     #
+########################################################################
 
 coq-fs:
 	mkdir -p coq-fs
 
-Makefile.libs: coq-tools
-	./coq-tools/mklibfs > Makefile.libs
-
-# Addons
-
-SSR_HOME=~/external/coq/math-comp/mathcomp/
-
-SSR_PLUG=$(SSR_HOME)/ssreflect.cma
-
-SSR_DEST=coq-fs/mathcomp_ssreflect
-SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
-
-# XXX: Use a pattern rule!
-$(SSR_DEST):
-	mkdir -p $(SSR_DEST)
-
-ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
-	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
-	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
-
-SSR_ALG_DEST=coq-fs/mathcomp_algebra
-SSR_ALG_FILES=$(wildcard $(SSR_HOME)/algebra/*.vo)
-
-$(SSR_ALG_DEST):
-	mkdir -p $(SSR_ALG_DEST)
-
-ssr-alg: $(SSR_ALG_DEST) $(SSR_ALG_FILES)
-	$(shell for i in $(SSR_ALG_FILES); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
-
-SSR_FIN_DEST=coq-fs/mathcomp_fingroup
-SSR_FIN_FILES=$(wildcard $(SSR_HOME)/fingroup/*.vo)
-
-$(SSR_FIN_DEST):
-	mkdir -p $(SSR_FIN_DEST)
-
-ssr-fin: $(SSR_FIN_DEST) $(SSR_FIN_FILES)
-	$(shell for i in $(SSR_FIN_FILES); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
-
-SSR_SOL_DEST=coq-fs/mathcomp_solvable
-SSR_SOL_FILES=$(wildcard $(SSR_HOME)/solvable/*.vo)
-
-$(SSR_SOL_DEST):
-	mkdir -p $(SSR_SOL_DEST)
-
-ssr-sol: $(SSR_SOL_DEST) $(SSR_SOL_FILES)
-	$(shell for i in $(SSR_SOL_FILES); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
-
-SSR_FLD_DEST=coq-fs/mathcomp_field
-SSR_FLD_FILES=$(wildcard $(SSR_HOME)/field/*.vo)
-
-$(SSR_FLD_DEST):
-	mkdir -p $(SSR_FLD_DEST)
-
-ssr-fld: $(SSR_FLD_DEST) $(SSR_FLD_FILES)
-	$(shell for i in $(SSR_FLD_FILES); do cp -a $$i $(SSR_FLD_DEST)/`basename $$i`; done)
-
-
-ssr-libs: ssr ssr-alg ssr-fin ssr-sol ssr-fld
-
 coq-pkgs:
 	mkdir -p coq-pkgs
+
+Makefile.libs: coq-tools
+	./coq-tools/mklibfs > Makefile.libs
 
 # Build Coq libraries
 coq-libs: Makefile.libs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
 # Build extra libraries
-extra-libs: ssr-libs
+coq-addons:
+	make -f Makefile.addons all-addons
 
-libs: coq-libs extra-libs coq-pkgs
+# All the libraries + json generation
+libs: coq-libs coq-addons coq-pkgs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 	./coq-tools/mklibjson
 
@@ -105,6 +52,10 @@ libs: coq-libs extra-libs coq-pkgs
 # 	js_of_ocaml --toplevel --nocmis +nat.js +weak.js +dynlink.js	\
 # 	+toplevel.js js/mutex.js js/unix.js js/coq_vm.js		\
 # 	js/byte_cache.js jscoqtop.js $< -o filesys/cmas/$<.js
+
+########################################################################
+# bcache building                                                      #
+########################################################################
 
 bcache: bcache.stamp
 
@@ -129,6 +80,10 @@ dist: bcache libs
         # Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --delete-excluded $(DISTEXT) $(BUILDDIR)/external
 
+########################################################################
+# Clean                                                                #
+########################################################################
+
 clean:
 	$(MAKE) -C coq-js       clean
 	$(MAKE) -C coq-tools    clean
@@ -140,9 +95,10 @@ clean:
 	rm -rf bcache bcache.list bcache.stamp bc-md5.json bc-js.json
 	rm -rf build
 
-
 ########################################################################
 # Local stuff
+########################################################################
+
 dist-upload: all bcache
 	rsync -avzp --delete dist/ ~/x80/rhino-coq/
 
