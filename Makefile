@@ -28,60 +28,58 @@ Makefile.libs: coq-tools
 
 # Addons
 
-# SSRDIR=~/external/coq/ssr-git/
-# SSR_PLUG=$(SSRDIR)/src/ssreflect.cma
-# SSR=$(SSRDIR)/theories/*.vo
-# SSR_DEST=coq-fs/Ssreflect
+SSR_HOME=~/external/coq/math-comp/mathcomp/
 
-SSRDIR=~/external/coq/math-comp/mathcomp/
-SSR_PLUG=$(SSRDIR)/ssreflect.cma
-SSR=$(SSRDIR)/ssreflect/*.vo
+SSR_PLUG=$(SSR_HOME)/ssreflect.cma
+
 SSR_DEST=coq-fs/mathcomp_ssreflect
+SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
 
-coq-fs/ssr:
+# XXX: Use a pattern rule!
+$(SSR_DEST):
 	mkdir -p $(SSR_DEST)
 
-ssr: coq-fs/ssr $(SSR_PLUG) $(SSR)
+ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
 	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
-	$(shell for i in $(SSR); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
+	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
 
-SSR_ALG=$(SSRDIR)/algebra/*.vo
 SSR_ALG_DEST=coq-fs/mathcomp_algebra
+SSR_ALG_FILES=$(wildcard $(SSR_HOME)/algebra/*.vo)
 
-coq-fs/ssr-alg:
+$(SSR_ALG_DEST):
 	mkdir -p $(SSR_ALG_DEST)
 
-ssr-alg: coq-fs/ssr-alg $(SSR_ALG)
-	$(shell for i in $(SSR_ALG); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
+ssr-alg: $(SSR_ALG_DEST) $(SSR_ALG_FILES)
+	$(shell for i in $(SSR_ALG_FILES); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
 
-SSR_FIN=$(SSRDIR)/fingroup/*.vo
 SSR_FIN_DEST=coq-fs/mathcomp_fingroup
+SSR_FIN_FILES=$(wildcard $(SSR_HOME)/fingroup/*.vo)
 
-coq-fs/ssr-fin:
+$(SSR_FIN_DEST):
 	mkdir -p $(SSR_FIN_DEST)
 
-ssr-fin: coq-fs/ssr-fin $(SSR_FIN)
-	$(shell for i in $(SSR_FIN); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
+ssr-fin: $(SSR_FIN_DEST) $(SSR_FIN_FILES)
+	$(shell for i in $(SSR_FIN_FILES); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
 
-SSR_SOL=$(SSRDIR)/solvable/*.vo
 SSR_SOL_DEST=coq-fs/mathcomp_solvable
+SSR_SOL_FILES=$(wildcard $(SSR_HOME)/solvable/*.vo)
 
-coq-fs/ssr-sol:
+$(SSR_SOL_DEST):
 	mkdir -p $(SSR_SOL_DEST)
 
-ssr-sol: coq-fs/ssr-sol $(SSR_SOL)
-	$(shell for i in $(SSR_SOL); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
+ssr-sol: $(SSR_SOL_DEST) $(SSR_SOL_FILES)
+	$(shell for i in $(SSR_SOL_FILES); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
 
-SSR_FLD=$(SSRDIR)/field/*.vo
 SSR_FLD_DEST=coq-fs/mathcomp_field
+SSR_FLD_FILES=$(wildcard $(SSR_HOME)/field/*.vo)
 
-coq-fs/ssr-fld:
+$(SSR_FLD_DEST):
 	mkdir -p $(SSR_FLD_DEST)
 
-ssr-fld: coq-fs/ssr-fld $(SSR_FLD)
-	$(shell for i in $(SSR_FLD); do cp -a $$i $(SSR_FLD_DEST)/`basename $$i`; done)
+ssr-fld: $(SSR_FLD_DEST) $(SSR_FLD_FILES)
+	$(shell for i in $(SSR_FLD_FILES); do cp -a $$i $(SSR_FLD_DEST)/`basename $$i`; done)
 
-lib-addons: ssr ssr-alg ssr-fin ssr-sol #ssr-fld
+lib-addons: ssr ssr-alg ssr-fin ssr-sol ssr-fld
 
 libs: Makefile.libs lib-addons
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
@@ -109,7 +107,7 @@ BUILDDIR=dist
 BUILDOBJ=index.html newide.html js css images coq_pkg.json coq-fs bcache.list bcache
 DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
 
-dist: all bcache
+dist: bcache libs
 	ln -sf newide.html index.html
 	mkdir -p $(BUILDDIR)
         # Copy static files, XXX: minimize
