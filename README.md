@@ -57,6 +57,10 @@ Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## How to Install/Build ##
 
+You can download ready-to-use builds from
+https://github.com/ejgallego/jscoq-builds/ ; find below the
+instructions to build JsCoq yourself.
+
 * _warning_: The build process takes more than 8GiB of RAM.
 * First, you need a dual 32/64 bits Ocaml toolchain. Get a
   recent opam and a multiarch gcc (`gcc-multilib` package in
