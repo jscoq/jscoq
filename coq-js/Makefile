@@ -1,6 +1,6 @@
 .PHONY: clean all jscoq32 jscoq64
 
-COQDIR=~/external/coq-git/
+COQDIR=~/external/coq-git
 
 all:
 

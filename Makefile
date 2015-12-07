@@ -79,11 +79,22 @@ $(SSR_FLD_DEST):
 ssr-fld: $(SSR_FLD_DEST) $(SSR_FLD_FILES)
 	$(shell for i in $(SSR_FLD_FILES); do cp -a $$i $(SSR_FLD_DEST)/`basename $$i`; done)
 
-lib-addons: ssr ssr-alg ssr-fin ssr-sol ssr-fld
 
-libs: Makefile.libs lib-addons
+ssr-libs: ssr ssr-alg ssr-fin ssr-sol ssr-fld
+
+coq-pkgs:
+	mkdir -p coq-pkgs
+
+# Build Coq libraries
+coq-libs: Makefile.libs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
-	./coq-tools/mklibjson > coq_pkg.json
+
+# Build extra libraries
+extra-libs: ssr-libs
+
+libs: coq-libs extra-libs coq-pkgs
+	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
+	./coq-tools/mklibjson
 
 # CMAS=filesys/Coq_syntax/nat_syntax_plugin.cma	\
 #      filesys/Coq_cc/cc_plugin.cma		\
@@ -104,7 +115,7 @@ bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
 
 BUILDDIR=dist
 
-BUILDOBJ=index.html newide.html js css images coq_pkg.json coq-fs bcache.list bcache
+BUILDOBJ=index.html newide.html js css images coq-fs coq-pkgs bcache.list bcache
 DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
 
 dist: bcache libs
@@ -125,7 +136,8 @@ clean:
 # $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-fs
-	rm -rf bcache bcache.list bc-md5.json bc-js.json
+	rm -rf coq-pkgs
+	rm -rf bcache bcache.list bcache.stamp bc-md5.json bc-js.json
 	rm -rf build
 
 
@@ -138,7 +150,7 @@ upload: all
 	ln -sf newide.html index.html
 	mkdir -p ~/x80/rhino-coq/coq-js/
 	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
-	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq_pkg.json coq_pkg_aux.json bcache.list bcache external ~/x80/rhino-coq/
+	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq-pkgs bcache.list bcache external ~/x80/rhino-coq/
 # $(shell ./x80-sync.sh)
 
 pau:

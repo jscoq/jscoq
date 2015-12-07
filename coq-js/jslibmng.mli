@@ -12,8 +12,12 @@
 
 open Js
 
-(** [init callback] gather package list and start preloading, call [callback] when done *)
+(** [init callback] gather package list and start preloading, call
+    [callback] when done *)
 val init : (unit -> unit) -> unit
+
+(** [load_pkg pkg_file] load package [file] *)
+val load_pkg : string -> unit
 
 (** [coq_resource_req url] query the manager's cache for object [url] *)
 val coq_vo_req  : js_string t -> js_string t option

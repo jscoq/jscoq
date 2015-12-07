@@ -228,10 +228,13 @@ var COQ_LOG_LEVELS = {
 
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
-        this.packages = new PackagesManager('coq_pkg.json',
+
+        // XXX: This needs to be initalized when Coq is ready.
+        /*
+        this.packages = new PackagesManager('coq-pkgs/init.json',
                                             'coq-fs/',
                                              document.getElementById('packages-panel'));
-
+        */
         this.provider.onInvalidate = stm => {
 
             // Clear the last error, XXX it is a bit of a hack.
@@ -289,6 +292,7 @@ var COQ_LOG_LEVELS = {
 
         // Hacks, we should refine...
         this.coq.onLog = e => {
+
             var level = COQ_LOG_LEVELS.DEBUG;
             var msg = e.toString();
 
@@ -311,6 +315,9 @@ var COQ_LOG_LEVELS = {
             // Enable the IDE.
             this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!\n===> Loading additional packages in the background...";
             this.enable();
+            this.coq.add_pkg("math-comp");
+            // this.coq.add_("coq-base");
+            // this.coq.add_("coq-arith");
         };
 
         // Initial coq state.

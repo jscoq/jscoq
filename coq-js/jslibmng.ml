@@ -13,9 +13,10 @@ open Jslib
 open Lwt
 open Js
 
-(* XXX: Move to parameters *)
-let json_file     = "coq_pkg.json"
-let json_file_aux = "coq_pkg_aux.json"
+(* Defaults *)
+let init_pkg      = "init"
+let pkg_prefix    = "coq-pkgs/"
+
 let fs_prefix     = "coq-fs/"
 
 let bcache_prefix = "bcache/"
@@ -33,7 +34,8 @@ type cache_entry = {
 (* We'll likely want these to be Hashtbls of js typed arrays. *)
 let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
 
-(* The special cma cache has been disable, for now we have a bytecode cache *)
+(* The special cma cache has been disabled, for now we have a bytecode
+   cache. *)
 (* let cma_cache *)
 
 (* Preload some code based on its md5 *)
@@ -143,7 +145,8 @@ let preload_pkg pkg : unit Lwt.t =
   Lwt.return_unit
 
 let preload_from_file file =
-  XmlHttpRequest.get file >>= (fun res ->
+  let file_url = pkg_prefix ^ file ^ ".json" in
+  XmlHttpRequest.get file_url >>= (fun res ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
   match jpkg with
   | `List coq_pkgs ->
@@ -154,15 +157,21 @@ let preload_from_file file =
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
     Lwt_list.iter_s preload_pkg pkgs
-  | _ -> raise (Failure "JSON")
+  | _ ->
+    Format.eprintf "JSON error in preload_from_file\n%!";
+    raise (Failure "JSON")
   )
 
-let init callback = Lwt.async (fun () ->
-    preload_byte_cache ()       >>= fun () ->
-    preload_from_file json_file >>= fun () ->
+let init callback = Lwt.async     (fun () ->
+    preload_byte_cache ()      >>= fun () ->
+    preload_from_file init_pkg >>= fun () ->
     callback ();
-    preload_from_file json_file_aux
+    return_unit
   )
+
+let load_pkg pkg_file = Lwt.async (fun () ->
+      preload_from_file pkg_file
+    )
 
 let is_bad_url _ = false
 

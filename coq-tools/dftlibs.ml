@@ -2,54 +2,83 @@ let to_name = String.concat "_"
 let to_dir  = String.concat "/"
 let prefix  = "coq-fs"
 
-(* Default library list *)
+(* Default FS list *)
 let plugin_list =
-  [ ["syntax"]
-  ; ["decl_mode"]
-  ; ["cc"]
-  ; ["firstorder"]
-  ; ["setoid_ring"]
-  (* These two were disabled *)
-  ; ["extraction"]
-  ; ["funind"]
-  ; ["quote"]
+  [ ["Coq"; "syntax"]
+  ; ["Coq"; "decl_mode"]
+  ; ["Coq"; "cc"]
+  ; ["Coq"; "firstorder"]
+  ; ["Coq"; "setoid_ring"]
+  ; ["Coq"; "extraction"]
+  ; ["Coq"; "funind"]
+  ; ["Coq"; "quote"]
   ]
-
-(* Plugins disabled for performance reasons:
-
-   funind
-   extraction
-*)
 
 let coq_theory_list =
-  [ ["Init"]
-  ; ["Unicode"]
-  ; ["Bool"]
-  ; ["Logic"]
-  ; ["Program"]
-  ; ["Classes"]
-  ; ["Structures"]
-  ; ["Relations"]
-  ; ["Setoids"]
-  ; ["Arith"]
-  ; ["PArith"]
-  ; ["NArith"]
-  ; ["ZArith"]
-  ; ["Lists"]
-  ; ["Vectors"]
+  [ ["Coq"; "Init"]
+  ; ["Coq"; "Unicode"]
+  ; ["Coq"; "Bool"]
+  ; ["Coq"; "Logic"]
+  ; ["Coq"; "Program"]
+  ; ["Coq"; "Classes"]
+  ; ["Coq"; "Structures"]
+  ; ["Coq"; "Relations"]
+  ; ["Coq"; "Setoids"]
+  ; ["Coq"; "Arith"]
+  ; ["Coq"; "PArith"]
+  ; ["Coq"; "NArith"]
+  ; ["Coq"; "ZArith"]
+  ; ["Coq"; "Lists"]
+  ; ["Coq"; "Vectors"]
 
-  ; ["Numbers"]
-  ; ["Numbers"; "NatInt"]
-  ; ["Numbers"; "Natural"; "Abstract"]
-  ; ["Numbers"; "Integer"; "Abstract"]
+  ; ["Coq"; "Numbers"]
+  ; ["Coq"; "Numbers"; "NatInt"]
+  ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+  ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
   ]
 
-let addons_list =
-  [ ["mathcomp"; "ssreflect"]
-  ; ["mathcomp"; "algebra"]
-  ; ["mathcomp"; "fingroup"]
-  ; ["mathcomp"; "solvable"]
-  ; ["mathcomp"; "field"]
-  ]
+(* Packages *)
 
+let pkgs : (string * string list list) list=
+  [ "init",
+    [ ["Coq"; "syntax"]
+    ; ["Coq"; "decl_mode"]
+    ; ["Coq"; "cc"]
+    ; ["Coq"; "firstorder"]
+    ; ["Coq"; "extraction"]
+    ; ["Coq"; "funind"]
+    ; ["Coq"; "quote"]
+    ; ["Coq"; "Init"]
+    ; ["Coq"; "Bool"]
+    ; ["Coq"; "Unicode"]
+    ; ["mathcomp"; "ssreflect"]
+    ]
+  ; "math-comp",
+    [ ["mathcomp"; "algebra"]
+    ; ["mathcomp"; "fingroup"]
+    ; ["mathcomp"; "solvable"]
+    ; ["mathcomp"; "field"]
+    ]
+  ; "coq-base",
+    [ ["Coq"; "Logic"]
+    ; ["Coq"; "Program"]
+    ; ["Coq"; "Classes"]
+    ; ["Coq"; "Structures"]
+    ; ["Coq"; "Relations"]
+    ; ["Coq"; "Setoids"]
+    ; ["Coq"; "Lists"]
+    ; ["Coq"; "Vectors"]
+    ]
+  ; "coq-arith",
+    [ ["Coq"; "setoid_ring"]
+    ; ["Coq"; "Arith"]
+    ; ["Coq"; "PArith"]
+    ; ["Coq"; "NArith"]
+    ; ["Coq"; "ZArith"]
+    ; ["Coq"; "Numbers"]
+    ; ["Coq"; "Numbers"; "NatInt"]
+    ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+    ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
+    ]
+  ]
 

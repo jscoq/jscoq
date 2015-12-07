@@ -28,10 +28,14 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
     cma_files = List.map (fun s -> (s, dummy_d)) cma_files;
   }
 
-let build_pkgs () =
-  let coq_std_pkgs = List.map (fun s -> "Coq" :: s) @@ Dl.plugin_list @ Dl.coq_theory_list in
-  List.map build_pkg @@ coq_std_pkgs @ Dl.addons_list
+let out_pref = "coq-pkgs/"
+
+let build_pkg (pkg, p_mod) =
+  let out   = open_out (out_pref ^ pkg ^ ".json")      in
+  let p_mod = List.map build_pkg p_mod                 in
+  let json  = List.map Jslib.pkg_to_json p_mod         in
+  Printf.fprintf out "%s\n" @@ pretty_to_string (`List json);
+  close_out out
 
 let _ =
-  let pkgs = List.map Jslib.pkg_to_json (build_pkgs ()) in
-  Printf.printf "%s\n" @@ pretty_to_string (`List pkgs)
+  List.iter build_pkg Dl.pkgs

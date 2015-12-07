@@ -34,10 +34,14 @@ class type jsCoq = object
 
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
   (* Library management *)
-  (* method libManager  : ('self t, jsCoqLib t)            meth_callback writeonly_prop *)
+
+  method add_pkg_    : ('self t, js_string t -> unit)   meth_callback writeonly_prop
+
+  (* method libManager  : ('self t, jsCoqLib t)         meth_callback writeonly_prop *)
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
+
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
 
@@ -137,6 +141,7 @@ let jscoq_version this =
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
 let jscoq_add this sid eid cmd  =
+  Printf.eprintf "adding command %s\n%!" (to_string cmd);
   (* Catch parsing errors. *)
   try
     Icoq.add_to_doc sid eid (to_string cmd)
@@ -163,6 +168,9 @@ let jscoq_commit this sid =
 let jscoq_query this sid cmd : unit =
   Icoq.query sid (to_string cmd)
 
+let jscoq_add_pkg this pkg : unit =
+  Jslibmng.load_pkg (to_string pkg)
+
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
@@ -170,13 +178,15 @@ let jsCoq : jsCoq t =
   global##jsCoq
 
 let _ =
-  jsCoq##init    <- Js.wrap_meth_callback jscoq_init;
-  jsCoq##version <- Js.wrap_meth_callback jscoq_version;
-  jsCoq##add     <- Js.wrap_meth_callback jscoq_add;
-  jsCoq##edit    <- Js.wrap_meth_callback jscoq_edit;
-  jsCoq##commit  <- Js.wrap_meth_callback jscoq_commit;
-  jsCoq##query   <- Js.wrap_meth_callback jscoq_query;
-  jsCoq##goals   <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
+  jsCoq##init     <- Js.wrap_meth_callback jscoq_init;
+  jsCoq##version  <- Js.wrap_meth_callback jscoq_version;
+  jsCoq##add      <- Js.wrap_meth_callback jscoq_add;
+  jsCoq##edit     <- Js.wrap_meth_callback jscoq_edit;
+  jsCoq##commit   <- Js.wrap_meth_callback jscoq_commit;
+  jsCoq##query    <- Js.wrap_meth_callback jscoq_query;
+  jsCoq##add_pkg_ <- Js.wrap_meth_callback jscoq_add_pkg;
+  jsCoq##goals    <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
+
   jsCoq##onLog   <- no_handler;
   jsCoq##onError <- no_handler;
   ()

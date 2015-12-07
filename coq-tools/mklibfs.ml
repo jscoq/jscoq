@@ -15,8 +15,9 @@ let rec pp_list pp fmt l = match l with
   | csx :: csl -> fprintf fmt "%a %a" pp csx (pp_list pp) csl
 
 let output_librule fmt bpath path =
-  let name    = Dl.to_name ("Coq" :: path)          in
-  let dir     = Dl.to_dir path                      in
+  let name    = Dl.to_name path                     in
+  (* Strip "Coq" suffix *)
+  let dir     = Dl.to_dir (List.tl path)            in
   let coqdir  = Dl.to_dir ["$(COQDIR)"; bpath; dir] in
   let fsdir   = Dl.to_dir [Dl.prefix; name]         in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]          in
@@ -39,7 +40,7 @@ let output_librule fmt bpath path =
 let output_global_rules fmt =
   (* XXX: make dirs *)
   fprintf fmt "libs-auto: %a\n" (pp_list pp_str) @@
-    List.map (fun s -> Dl.to_name ("Coq" :: s)) (Dl.coq_theory_list @ Dl.plugin_list)
+    List.map Dl.to_name (Dl.coq_theory_list @ Dl.plugin_list)
 
 let gen_makefile () =
   List.iter (output_librule std_formatter "plugins")  Dl.plugin_list;
