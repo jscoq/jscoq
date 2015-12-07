@@ -88,7 +88,7 @@ a:hover {
 .cm-s-default .cm-bullet,
 .cm-s-default .cm-brace,
 .cm-s-default .cm-bracket {
-  background: bisque;
+  /* background: bisque; */
   color: red;
 }
 
