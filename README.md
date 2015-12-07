@@ -147,11 +147,12 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
 $ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git/bin:$PATH
-$ make -f Makefile.coq byte
+$ make
   ```
 
   You need to specify in the jsCoq makefile the place where math-comp
   has been downloaded, `~/external/coq/math-comp` is the default.
 
   A patch optimizing mathcomp loading times can be found in the patch
-  folder, highly recommended.
+  folder, highly recommended. Also, some parts don't seem to build
+  with 8.5, so this process can be a bit too manual as of now.
