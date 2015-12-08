@@ -34,9 +34,9 @@ val version : string * string * string * string
 (** [dyn_comp] true if dynamic compilation is enabled *)
 val dyn_comp : bool
 
-(** [add_load_path qid path] associate a coq package namespace [qid]
-    to a [path] *)
-val add_load_path : string list -> string -> unit
+(** [add_load_path qid path has_ml] associate a coq package namespace
+    [qid] to a [path], register for ml searching *)
+val add_load_path : string list -> string -> bool -> unit
 
 (** [add_to_doc sid eid cmd] Add [cmd] to the doc [sid] with edit_id
     [eid] and returns the new doc's stateid. Note that [add_to_doc] doesn't

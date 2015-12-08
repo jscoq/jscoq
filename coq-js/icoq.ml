@@ -87,11 +87,11 @@ let init opts =
 let version =
   Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version
 
-(* XXX: do add_ml_dir only if we have ml modules *)
-let add_load_path pkg pkg_path =
+(* Add a load path *)
+let add_load_path pkg pkg_path has_ml =
   let coq_path = DirPath.make @@ List.rev @@ List.map Id.of_string pkg in
   Loadpath.add_load_path ("./" ^ pkg_path) coq_path ~implicit:false;
-  Mltop.add_ml_dir pkg_path
+  if has_ml then Mltop.add_ml_dir pkg_path
 
 let add_to_doc sid eid s = fst @@ Stm.add ~ontop:sid false eid s
 

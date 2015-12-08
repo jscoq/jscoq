@@ -144,7 +144,7 @@ let jscoq_version this =
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
 let jscoq_add this sid eid cmd  =
-  Printf.eprintf "adding command %s\n%!" (to_string cmd);
+  (* Printf.eprintf "adding command %s\n%!" (to_string cmd); *)
   (* Catch parsing errors. *)
   try
     Icoq.add_to_doc sid eid (to_string cmd)

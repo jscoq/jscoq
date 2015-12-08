@@ -146,7 +146,7 @@ let preload_pkg pkg : unit Lwt.t =
     (* Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files *)
   ) >>= fun () ->
   Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
-  Icoq.add_load_path pkg.pkg_id pkg_dir;
+  Icoq.add_load_path pkg.pkg_id pkg_dir (ncma > 0);
   !load_cb pkg_dir;
   Lwt.return_unit
 
