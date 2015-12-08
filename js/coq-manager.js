@@ -31,8 +31,8 @@ function dumpCache () {
 
 var COQ_LOG_LEVELS = {
     DEBUG : 'debug',
-    INFO : 'info',
-    WARN : 'warn',
+    INFO  : 'info',
+    WARN  : 'warn',
     ERROR : 'error'
 };
 
@@ -86,7 +86,7 @@ var COQ_LOG_LEVELS = {
         d3.select(this.query)
             .append('div')
             .attr('class', level)
-            .text(text)
+            .html(text)
             .node()
             .scrollIntoView();
     };
@@ -309,6 +309,10 @@ var COQ_LOG_LEVELS = {
             }
 
             this.panel.log(msg, level);
+            if(level != COQ_LOG_LEVELS.DEBUG) {
+                msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br />');
+                this.panel.log(msg, level);
+            }
         };
 
         this.coq.onInit = e => {
