@@ -10,7 +10,7 @@ jsoo-util/jsoo_dl.js
 coq-toplevel/jscoqtop.js
 Makefile.libs
 coq-fs/
-coq_pkg.json
+coq-pkgs/
 local/
 bcache
 bcache.list

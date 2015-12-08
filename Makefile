@@ -73,7 +73,7 @@ dist: bcache libs
 	ln -sf newide.html index.html
 	mkdir -p $(BUILDDIR)
         # Copy static files, XXX: minimize
-	rsync -avp --delete --exclude='*~' --exclude='.git' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
+	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
         # The monster
 	mkdir -p $(BUILDDIR)/coq-js/
 	cp -a coq-js/jscoq.js $(BUILDDIR)/coq-js/
