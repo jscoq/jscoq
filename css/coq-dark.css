@@ -7,6 +7,14 @@ body {
   color: #fff;
 }
 
+#document {
+    background: #000;
+}
+
+#panel-wrapper {
+    background: #000;
+}
+
 #vsep, #hsep {
   background: #272727;
 }
@@ -28,11 +36,11 @@ a:hover {
 }
 
 /* Code settings */
+/* Replaced by blackboard CM theme */
 /*.CodeMirror-gutters { background-color: #000; }*/
 /*.CodeMirror-scroll { background-color: #000; }*/
 
 /*.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }*/
-
 /*.CodeMirror { color: #fff; }*/
 
 .cm-s-blackboard.CodeMirror {
