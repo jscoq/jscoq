@@ -2,7 +2,7 @@
 
 all:
 
-all-addons: ssr-libs
+all-addons: ssr-libs coquelicot flocq tlc sf
 
 # XXX: We should include the common addon makefile thing.
 
@@ -66,7 +66,58 @@ ssr-libs: ssr ssr-alg ssr-fin ssr-sol ssr-fld
 # Addons: coquelicot                                                   #
 ########################################################################
 
+COQCOT_HOME=~/external/coq/coquelicot
+COQCOT_DEST=coq-fs/Coquelicot
+COQCOT_FILES=$(wildcard $(COQCOT_HOME)/theories/*.vo)
+
+$(COQCOT_DEST):
+	mkdir -p $(COQCOT_DEST)
+
+coquelicot: $(COQCOT_DEST) $(COQCOT_FILES)
+	$(shell for i in $(COQCOT_FILES); do cp -a $$i $(COQCOT_DEST)/`basename $$i`; done)
+
 ########################################################################
 # Addons: flocq                                                        #
 ########################################################################
+
+# XXX: Must make a generic method for this
+FLOCQ_HOME=~/external/coq/flocq/
+FLOCQ_DEST=coq-fs/Flocq_Core
+FLOCQ_FILES=$(wildcard $(FLOCQ_HOME)/src/Core/*.vo)
+
+$(FLOCQ_DEST):
+	mkdir -p $(FLOCQ_DEST)
+
+flocq: $(FLOCQ_DEST) $(FLOCQ_FILES)
+	$(shell for i in $(FLOCQ_FILES); do cp -a $$i $(FLOCQ_DEST)/`basename $$i`; done)
+
+########################################################################
+# Addons: tlc                                                        #
+########################################################################
+
+# XXX: Must make a generic method for this
+TLC_HOME=~/external/coq/tlc/
+TLC_DEST=coq-fs/TLC
+TLC_FILES=$(wildcard $(TLC_HOME)/src/*.vo)
+
+$(TLC_DEST):
+	mkdir -p $(TLC_DEST)
+
+tlc: $(TLC_DEST) $(TLC_FILES)
+	$(shell for i in $(TLC_FILES); do cp -a $$i $(TLC_DEST)/`basename $$i`; done)
+
+########################################################################
+# Addons: SF                                                           #
+########################################################################
+
+# XXX: Must make a generic method for this
+SF_HOME=~/external/coq/sf/
+SF_DEST=coq-fs/SF
+SF_FILES=$(wildcard $(SF_HOME)/*.vo)
+
+$(SF_DEST):
+	mkdir -p $(SF_DEST)
+
+sf: $(SF_DEST) $(SF_FILES)
+	$(shell for i in $(SF_FILES); do cp -a $$i $(SF_DEST)/`basename $$i`; done)
 
