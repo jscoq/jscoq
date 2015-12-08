@@ -102,6 +102,9 @@ clean:
 dist-upload: all bcache
 	rsync -avzp --delete dist/ ~/x80/rhino-coq/
 
+dist-release: all bcache
+	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ ~/research/jscoq-builds/
+
 upload: all
 	ln -sf newide.html index.html
 	mkdir -p ~/x80/rhino-coq/coq-js/
