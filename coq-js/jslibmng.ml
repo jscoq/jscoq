@@ -38,6 +38,10 @@ let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
    cache. *)
 (* let cma_cache *)
 
+(* Callbacks *)
+let load_cb : (string       -> unit) ref = ref (fun pkg      -> ())
+let prog_cb : (string * int -> unit) ref = ref (fun (pkg, n) -> ())
+
 (* Preload some code based on its md5 *)
 let preload_js_code msum =
   let open Lwt                           in
@@ -131,6 +135,7 @@ let preload_pkg pkg : unit Lwt.t =
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
     Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
+    !prog_cb (pkg_dir, i+nc+1);
     Lwt.return_unit
   in
   (if Icoq.dyn_comp then
@@ -142,6 +147,7 @@ let preload_pkg pkg : unit Lwt.t =
   ) >>= fun () ->
   Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
   Icoq.add_load_path pkg.pkg_id pkg_dir;
+  !load_cb pkg_dir;
   Lwt.return_unit
 
 let preload_from_file file =
@@ -162,16 +168,21 @@ let preload_from_file file =
     raise (Failure "JSON")
   )
 
-let init callback = Lwt.async     (fun () ->
+let init init_callback load_callback progress_callback =
+  load_cb := load_callback;
+  prog_cb := progress_callback;
+  Lwt.async (fun () ->
     preload_byte_cache ()      >>= fun () ->
     preload_from_file init_pkg >>= fun () ->
-    callback ();
+    init_callback ();
     return_unit
   )
 
 let load_pkg pkg_file = Lwt.async (fun () ->
-      preload_from_file pkg_file
-    )
+    preload_from_file pkg_file >>= fun () ->
+    !load_cb pkg_file;
+    return_unit
+  )
 
 let is_bad_url _ = false
 

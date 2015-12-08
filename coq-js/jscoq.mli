@@ -29,14 +29,16 @@ class type jsCoq = object
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
 
-  (* Add a package *)
-  method add_pkg_    : ('self t, js_string t -> unit)   meth_callback writeonly_prop
+  (* Package management *)
+  method add_pkg_      : ('self t, js_string t -> unit) meth_callback  writeonly_prop
+  method onPkgLoad     : ('self t, js_string t)         event_listener writeonly_prop
+  method onPkgProgress : ('self t, js_string t * int)   event_listener writeonly_prop
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
-  (* method onLog       : ('self t, js_string t -> unit)      meth_callback opt writeonly_prop *)
+
 end
 
 (*
