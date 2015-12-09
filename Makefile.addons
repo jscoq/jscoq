@@ -2,7 +2,7 @@
 
 all:
 
-all-addons: ssr-libs coquelicot flocq tlc sf
+all-addons: ssr-libs coquelicot flocq tlc sf cpdt
 
 # XXX: We should include the common addon makefile thing.
 
@@ -120,4 +120,24 @@ $(SF_DEST):
 
 sf: $(SF_DEST) $(SF_FILES)
 	$(shell for i in $(SF_FILES); do cp -a $$i $(SF_DEST)/`basename $$i`; done)
+
+########################################################################
+# Addons: Cpdt                                                         #
+########################################################################
+
+# Warning NON-FREE
+
+# XXX: Must make a generic method for this
+CPDT_HOME=~/external/coq/cpdt/
+CPDT_DEST=coq-fs/Cpdt
+# CPDT_FILES=$(wildcard $(CPDT_HOME)/src/*.vo)
+
+# These are free files under BSD
+CPDT_FILES=$(addprefix $(CPDT_HOME)/src/, CpdtTactics.vo MoreSpecif.vo DepList.v)
+
+$(CPDT_DEST):
+	mkdir -p $(CPDT_DEST)
+
+cpdt: $(CPDT_DEST) $(CPDT_FILES)
+	$(shell for i in $(CPDT_FILES); do cp -a $$i $(CPDT_DEST)/`basename $$i`; done)
 

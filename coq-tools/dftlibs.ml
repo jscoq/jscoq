@@ -100,5 +100,7 @@ let pkgs : (string * string list list) list=
     [ ["TLC"] ]
   ; "sf",
     [ ["SF"] ]
+  ; "cpdt",
+    [ ["Cpdt"] ]
   ]
 

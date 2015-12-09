@@ -319,10 +319,10 @@ var COQ_LOG_LEVELS = {
                 level = COQ_LOG_LEVELS.INFO;
             }
 
-            if(level != COQ_LOG_LEVELS.DEBUG) {
+            // if(level != COQ_LOG_LEVELS.DEBUG) {
                 msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br />');
                 this.panel.log(msg, level);
-            }
+            // }
         };
 
         this.coq.onInit = e => {
@@ -336,6 +336,7 @@ var COQ_LOG_LEVELS = {
             this.coq.add_pkg("flocq");
             this.coq.add_pkg("tlc");
             this.coq.add_pkg("sf");
+            this.coq.add_pkg("cpdt");
             // this.coq.add_pkg("math-comp");
             // this.coq.add_("coq-base");
             // this.coq.add_("coq-arith");
