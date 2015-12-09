@@ -34,6 +34,10 @@ your own html pages.
 Coqdoc can also be used to generate jsCoq documents, we are publish a
 patched coqdoc here soon.
 
+## Troubleshooting ##
+
+Clearing the browser cache may solve lots of issues.
+
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
