@@ -90,13 +90,11 @@ $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
-  Note that jsCoq is currently broken by commit
-  coq/coq@3940441dffdfc3a8f968760c249f6a2e8a1e0912 , please use
-  coq/coq@ef8718a7fd3bcd960d954093d8c636525e6cc492 or apply the patch
-  in the patch folder which provides a workaround (the issue is not
-  fully solved).
+  jsCoq should run against vanilla Coq v8.5, however YMMV as that
+  branch is in development.
 
-  If you want to use a different location for Coq, edit the `COQDIR` variable in JsCoq's `Makefile`.
+  If you want to use a different location for Coq, edit the `COQDIR`
+  variable in JsCoq's `Makefile`.
 
   We recommend to edit $(COQDIR)/theories/Init/Prelude.v and comment
   out the extraction and recdef plugins, they take long time to
