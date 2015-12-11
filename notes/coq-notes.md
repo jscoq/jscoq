@@ -82,8 +82,10 @@ completion, etc...
 CoqIDE has a debug mode for showing the current document tree, it can
 be invoked with:
 ```
-$ coqide
+$ coqide -debug
 ```
+If dot (graphviz) is installed Coq generates `.pdf` file(s) in `/tmp/`
+every time a sentence added/removed to/from the document.
 
 ### Basic Datatypes
 
