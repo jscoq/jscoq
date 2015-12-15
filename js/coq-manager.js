@@ -406,7 +406,7 @@ var COQ_LOG_LEVELS = {
                 break;
 
             case 'down' :
-                this.goNext();
+                this.goNext(true);
                 break;
         }
     };
@@ -443,7 +443,7 @@ var COQ_LOG_LEVELS = {
     };
 
     // Return if we had success.
-    CoqManager.prototype.goNext = function () {
+    CoqManager.prototype.goNext = function (update_focus) {
 
         var next = this.provider.getNext(this.sentences.last());
 
@@ -458,6 +458,11 @@ var COQ_LOG_LEVELS = {
             this.provider.mark(next, "processing");
         }
 
+        // We focus the new snippet.
+        if(update_focus) {
+            this.currentFocus = next.sp;
+            this.currentFocus.focus();
+        }
         // We should be fully event driven here...
 
         // Two things can happen: a parsing error (thus we will never get a sid),
@@ -528,13 +533,13 @@ var COQ_LOG_LEVELS = {
                 this.panel.show();
             } else { // We need to go next!
                 console.log("Schedule goNext!");
-                if (this.goNext()) {
+                if (this.goNext(false)) {
                     setTimeout(() => { this.goCursor(); }, 100);
                 }
             }
         } else {
             console.log("No cur at point! Trying a heuristic");
-            if (this.goNext()) {
+            if (this.goNext(false)) {
                 setTimeout(() => { this.goCursor(); }, 50);
             }
         }
