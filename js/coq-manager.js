@@ -163,34 +163,38 @@ var COQ_LOG_LEVELS = {
 
     // Get the next candidate and mark it.
     ProviderContainer.prototype.getNext = function(prev) {
+
         var spr, next;
-        // First element
+
+        // If we have no previous element start with the first
+        // snippet, else get the current one.
         if (!prev) {
             spr  = this.snippets[0];
             next = spr.getNext(null);
+        } else {
+            spr  = prev.sp;
+            next = spr.getNext(prev);
+        }
+
+        // We got a snippet!
+        if (next) {
             next.sp = spr;
             return next;
         } else {
-            // Try next on the current snippet.
-            spr  = prev.sp;
-            next = spr.getNext(prev);
-
-            if (next) {
-                next.sp = spr;
-                return next;
-            } else {
-                // go to next snippet.
-                var idx = this.snippets.indexOf(spr);
-                if (idx >= this.snippets.length - 1) {
-                    // No next snippet.
-                    return null;
-                } else {
-                    spr  = this.snippets[idx+1];
-                    next = spr.getNext(null);
+            // Try the next snippet.
+            var idx = this.snippets.indexOf(spr);
+            while (idx < this.snippets.length - 1) {
+                spr  = this.snippets[idx+1];
+                next = spr.getNext(null);
+                if (next) {
                     next.sp = spr;
                     return next;
+                } else {
+                    idx = this.snippets.indexOf(spr);
                 }
-            }
+            } // while
+            // No next snippet :( !
+            return null;
         }
     };
 
