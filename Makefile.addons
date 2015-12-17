@@ -158,7 +158,7 @@ all-build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proof || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)       || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)       || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proof_vo || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
 
