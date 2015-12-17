@@ -171,3 +171,13 @@ $ make
   A patch optimizing mathcomp loading times can be found in the patch
   folder, highly recommended. Also, some parts don't seem to build
   with 8.5, so this process can be a bit too manual as of now.
+
+## Commit tag conventions [work in progress]:
+
+- [jscoq]: ML/Coq interface.
+- [ui]: Html/Css commit
+- [cm]: CodeMirror provider.
+- [libs]: Coq Library support and format.
+- [doc]: Documentation.
+- [addons]: Addons support.
+- [makefile]: Build system.
