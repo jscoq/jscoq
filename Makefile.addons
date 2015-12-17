@@ -1,5 +1,6 @@
 # Makefile for addons
 
+# XXX: Move to a common makefile
 all:
 
 all-addons: ssr-libs coquelicot flocq tlc sf cpdt
@@ -133,11 +134,31 @@ CPDT_DEST=coq-fs/Cpdt
 # CPDT_FILES=$(wildcard $(CPDT_HOME)/src/*.vo)
 
 # These are free files under BSD
-CPDT_FILES=$(addprefix $(CPDT_HOME)/src/, CpdtTactics.vo MoreSpecif.vo DepList.v)
+CPDT_FILES=$(addprefix $(CPDT_HOME)/src/, CpdtTactics.vo MoreSpecif.vo DepList.vo)
 
 $(CPDT_DEST):
 	mkdir -p $(CPDT_DEST)
 
 cpdt: $(CPDT_DEST) $(CPDT_FILES)
 	$(shell for i in $(CPDT_FILES); do cp -a $$i $(CPDT_DEST)/`basename $$i`; done)
+
+# XXX: Move to common
+COQDIR=~/external/coq-git/
+JOBS=
+
+all-build-clean:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
+
+all-build:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS)
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proofs
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -f Makefile.coq
 
