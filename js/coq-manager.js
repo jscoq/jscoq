@@ -240,7 +240,7 @@ var COQ_LOG_LEVELS = {
             mock:    false,
             prelude: true,
             coq_packages: ['coq-base', 'math-comp', 'coq-arith', 'coq-reals',
-                           'coquelicot', 'flocq', 'tlc', 'sf']
+                           'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt']
         };
 
         this.options = copyOptions(options, this.options);
