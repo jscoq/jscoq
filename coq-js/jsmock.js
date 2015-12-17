@@ -48,7 +48,11 @@ var jsCoq;
         }
         return;
     }
-    
+
+    JsCoq.prototype.add_pkg = function (pkg) {
+        return;
+    }
+
     // JsCoq.prototype.preload_pkg = function ({pkg_id, vo_files, cma_files}) {
 
 })();
