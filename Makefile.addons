@@ -155,10 +155,10 @@ all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
 
 all-build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS)
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proofs
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -f Makefile.coq
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proof || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)       || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)       || true
 
