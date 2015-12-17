@@ -174,7 +174,8 @@ Qed.
   <script src="js/coq-manager.js" type="text/javascript"></script>
 
   <script type="text/javascript">
-   var coq = new CoqManager (['addnC', 'prime_above']);
+   var coq = new CoqManager (['addnC', 'prime_above'],
+                             {prelude: false, mock: false});
   </script>
 </body>
 </html>

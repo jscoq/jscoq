@@ -214,8 +214,15 @@ var COQ_LOG_LEVELS = {
         return this.currentFocus.getAtPoint();
     };
 
-
-
+    var copyOptions = function(obj, target) {
+        if (!target) target = {};
+        for (var prop in target) {
+            if (obj.hasOwnProperty(prop)) {
+                target[prop] = obj[prop];
+            }
+        }
+        return target;
+    }
 
     /***********************************************************************/
     /* CoqManager coordinates the coq code objects, the panel, and the coq */
@@ -224,18 +231,25 @@ var COQ_LOG_LEVELS = {
     /***********************************************************************/
 
     // XXX: Rename to Coq Director?
-    CoqManager = function(elems, mock) {
+    CoqManager = function(elems, options) {
 
-        this.mock = mock ? mock : false;
+        options = options ? options : {};
+
+        // Default options
+        this.options = {
+            mock:    false,
+            prelude: true,
+            coq_packages: ['coq-base', 'math-comp', 'coq-arith', 'coq-reals',
+                           'coquelicot', 'flocq', 'tlc', 'sf']
+        };
+
+        this.options = copyOptions(options, this.options);
+
         // UI setup.
         this.buttons = document.getElementById('buttons');
 
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
-
-        // XXX: This needs to be initalized when Coq is ready.
-        var coq_packages = ['math-comp', 'coq-base', 'coq-arith', 'coq-reals',
-                            'coquelicot', 'flocq', 'tlc', 'sf'];
 
     /*
         this.packages = new PackagesManager(coq_packages,
@@ -271,7 +285,7 @@ var COQ_LOG_LEVELS = {
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
-        jscoqscript.src    = this.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
+        jscoqscript.src    = this.options.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
         jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
     };
@@ -332,18 +346,25 @@ var COQ_LOG_LEVELS = {
         this.coq.onInit = e => {
             // Enable the IDE.
             this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!\n===> Loading additional packages in the background...";
+
+            if (this.options.prelude) {
+
+                var prelude_command = "Require Import Coq.Init.Prelude. ";
+                var pid = this.coq.add(this.sid.last(), -1, prelude_command);
+
+                if (pid) {
+                    this.coq.commit(pid);
+                    this.sid.push(pid);
+                } else {
+                    console.log("Critical error: loading prelude");
+                }
+            }
+
             this.enable();
-            this.coq.add_pkg("coq-base");
-            this.coq.add_pkg("coq-arith");
-            this.coq.add_pkg("coq-reals");
-            this.coq.add_pkg("coquelicot");
-            this.coq.add_pkg("flocq");
-            this.coq.add_pkg("tlc");
-            this.coq.add_pkg("sf");
-            this.coq.add_pkg("cpdt");
-            // this.coq.add_pkg("math-comp");
-            // this.coq.add_("coq-base");
-            // this.coq.add_("coq-arith");
+
+            for (var pkg in this.options.coq_packages) {
+                this.coq.add_pkg(this.options.coq_packages[pkg]);
+            }
         };
 
         // Initial coq state.
@@ -425,7 +446,9 @@ var COQ_LOG_LEVELS = {
 
     CoqManager.prototype.goPrev = function () {
 
-        if (this.sentences.length <= 1) return;
+        // If we didn't load the prelude, prevent unloading it to
+        // workaround a bug in Coq.
+        if (!this.options.prelude && this.sentences.length <= 1) return;
 
         if (this.error) {
             this.provider.mark(this.error, "clear");

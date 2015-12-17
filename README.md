@@ -31,10 +31,16 @@ But it requires some particular UI classes present in the document for
 now. Look at `newide.html` to get more an idea on how to use jsCoq in
 your own html pages.
 
-Coqdoc can also be used to generate jsCoq documents, we are publish a
-patched coqdoc here soon.
+### Options
 
-## CoqDoc
+JsCoq accepts the following options as an optional second parameter to
+the constructor; current options are:
+
+* `prelude: bool`: Whether to load Coq's prelude or not.
+* `coq_packages`: List of Coq's packages to load.
+* `mock: bool`: Use a mock jsCoq object, useful for prototyping.
+
+### CoqDoc
 
 An experimental version of coqdoc outputting jsCoq can be found at
 https://github.com/ejgallego/coq/tree/coqdoc
