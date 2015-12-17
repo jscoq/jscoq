@@ -34,6 +34,15 @@ your own html pages.
 Coqdoc can also be used to generate jsCoq documents, we are publish a
 patched coqdoc here soon.
 
+## CoqDoc
+
+An experimental version of coqdoc outputting jsCoq can be found at
+https://github.com/ejgallego/coq/tree/coqdoc
+
+Just build coqdoc normally and use the option `--backend=jscoq`.
+
+This is work in progress and the output may need more refinement.
+
 ## Troubleshooting ##
 
 Clearing the browser cache may solve lots of issues.
