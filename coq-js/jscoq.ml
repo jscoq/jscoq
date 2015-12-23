@@ -35,9 +35,10 @@ class type jsCoq = object
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
 
   (* Package management *)
-  method add_pkg_      : ('self t, js_string t -> unit) meth_callback writeonly_prop
-  method onPkgLoad     : ('self t, js_string t)         event_listener writeonly_prop
-  method onPkgProgress : ('self t, js_string t * int)   event_listener writeonly_prop
+  method add_pkg_       : ('self t, js_string t -> unit) meth_callback writeonly_prop
+  method onPkgLoadStart : ('self t, js_string t * int)   event_listener writeonly_prop
+  method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
+  method onPkgProgress  : ('self t, js_string t * int)   event_listener writeonly_prop
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
@@ -126,11 +127,12 @@ let jscoq_init this =
                         fb_handler = (jscoq_feedback_handler this);
                       } in
 
-  let init_callback     ()      = let _ = invoke_handler this##onInit this ()                     in () in
-  let load_callback     pkg     = let _ = invoke_handler this##onPkgLoad     this (string pkg)    in () in
-  let progress_callback (pkg,n) = let _ = invoke_handler this##onPkgProgress this (string pkg, n) in () in
+  let init_callback     ()      = let _ = invoke_handler this##onInit this ()                      in () in
+  let start_callback    (pkg,n) = let _ = invoke_handler this##onPkgLoadStart this (string pkg, n) in () in
+  let load_callback     pkg     = let _ = invoke_handler this##onPkgLoad      this (string pkg)    in () in
+  let progress_callback (pkg,n) = let _ = invoke_handler this##onPkgProgress  this (string pkg, n) in () in
 
-  Jslibmng.init init_callback load_callback progress_callback;
+  Jslibmng.init init_callback start_callback load_callback progress_callback;
   sid
 
 let jscoq_version this =
@@ -189,9 +191,10 @@ let _ =
   jsCoq##query    <- Js.wrap_meth_callback jscoq_query;
   jsCoq##goals    <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
 
-  jsCoq##add_pkg_      <- Js.wrap_meth_callback jscoq_add_pkg;
-  jsCoq##onPkgLoad     <- no_handler;
-  jsCoq##onPkgProgress <- no_handler;
+  jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
+  jsCoq##onPkgLoadStart <- no_handler;
+  jsCoq##onPkgLoad      <- no_handler;
+  jsCoq##onPkgProgress  <- no_handler;
 
   jsCoq##onLog   <- no_handler;
   jsCoq##onError <- no_handler;

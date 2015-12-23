@@ -39,6 +39,7 @@ let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
 (* let cma_cache *)
 
 (* Callbacks *)
+let start_cb: (string * int -> unit) ref = ref (fun (pkg, n) -> ())
 let load_cb : (string       -> unit) ref = ref (fun pkg      -> ())
 let prog_cb : (string * int -> unit) ref = ref (fun (pkg, n) -> ())
 
@@ -132,6 +133,7 @@ let preload_pkg pkg : unit Lwt.t =
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = List.length pkg.vo_files + List.length pkg.cma_files in
   Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
+  !start_cb (pkg_dir, nfiles);
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
     Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
@@ -168,7 +170,8 @@ let preload_from_file file =
     raise (Failure "JSON")
   )
 
-let init init_callback load_callback progress_callback =
+let init init_callback start_callback load_callback progress_callback =
+  start_cb := start_callback;
   load_cb := load_callback;
   prog_cb := progress_callback;
   Lwt.async (fun () ->

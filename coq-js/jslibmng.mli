@@ -14,7 +14,7 @@ open Js
 
 (** [init callback] gather package list and start preloading, call
     [callback] when done *)
-val init : (unit -> unit) -> (string -> unit) -> (string * int -> unit) -> unit
+val init : (unit -> unit) -> (string * int -> unit) -> (string -> unit) -> (string * int -> unit) -> unit
 
 (** [load_pkg pkg_file] load package [file] *)
 val load_pkg : string -> unit
