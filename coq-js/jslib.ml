@@ -18,6 +18,7 @@ type coq_pkg = {
 }
 
 let to_name = String.concat "_"
+let to_desc = String.concat "."
 
 (* JSON handling *)
 open Yojson.Basic

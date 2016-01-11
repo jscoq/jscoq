@@ -30,7 +30,7 @@ icoq.cmo: icoq.cmi
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
 # Main file
-jscoq.cmi: jscoq.mli
+jscoq.cmi: jslibmng.cmi
 jscoq.cmo: icoq.cmo jslibmng.cmo jscoq.cmi
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\

@@ -311,6 +311,11 @@ var COQ_LOG_LEVELS = {
 
         };
 
+        this.coq.onPkgLoadInfo = pkg_info => {
+            console.log("pkg info called for: ");
+            console.log(pkg_info);
+        };
+
         this.coq.onPkgLoadStart = pkg => {
             console.log("pkg start called for: " + pkg[1] + " @ " + pkg[2].toString());
         };

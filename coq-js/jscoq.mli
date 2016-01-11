@@ -30,10 +30,13 @@ class type jsCoq = object
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
 
   (* Package management *)
-  method add_pkg_      : ('self t, js_string t -> unit) meth_callback  writeonly_prop
-  method onPkgLoadStart: ('self t, js_string t * int)   event_listener writeonly_prop
-  method onPkgLoad     : ('self t, js_string t)         event_listener writeonly_prop
-  method onPkgProgress : ('self t, js_string t * int)   event_listener writeonly_prop
+  method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
+
+  (* Events *)
+  method onPkgLoadInfo  : ('self t, Jslibmng.bundleInfo) event_listener writeonly_prop
+  method onPkgLoadStart : ('self t, js_string t * int)   event_listener writeonly_prop
+  method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
+  method onPkgProgress  : ('self t, js_string t * int)   event_listener writeonly_prop
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop

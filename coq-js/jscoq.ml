@@ -35,7 +35,10 @@ class type jsCoq = object
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
 
   (* Package management *)
-  method add_pkg_       : ('self t, js_string t -> unit) meth_callback writeonly_prop
+  method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
+
+  (* Events *)
+  method onPkgLoadInfo  : ('self t, Jslibmng.bundleInfo) event_listener writeonly_prop
   method onPkgLoadStart : ('self t, js_string t * int)   event_listener writeonly_prop
   method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
   method onPkgProgress  : ('self t, js_string t * int)   event_listener writeonly_prop
@@ -128,11 +131,12 @@ let jscoq_init this =
                       } in
 
   let init_callback     ()      = let _ = invoke_handler this##onInit this ()                      in () in
+  let info_callback     bi      = let _ = invoke_handler this##onPkgLoadInfo  this bi              in () in
   let start_callback    (pkg,n) = let _ = invoke_handler this##onPkgLoadStart this (string pkg, n) in () in
   let load_callback     pkg     = let _ = invoke_handler this##onPkgLoad      this (string pkg)    in () in
   let progress_callback (pkg,n) = let _ = invoke_handler this##onPkgProgress  this (string pkg, n) in () in
 
-  Jslibmng.init init_callback start_callback load_callback progress_callback;
+  Jslibmng.init init_callback info_callback start_callback load_callback progress_callback;
   sid
 
 let jscoq_version this =

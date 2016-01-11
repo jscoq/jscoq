@@ -38,7 +38,19 @@ let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
    cache. *)
 (* let cma_cache *)
 
-(* Callbacks *)
+(* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)
+class type pkgInfo = object
+  method name        : ('self t, js_string t) meth_callback writeonly_prop
+  method desc        : ('self t, js_string t) meth_callback writeonly_prop
+  method no_files_   : ('self t, int)         meth_callback writeonly_prop
+end
+
+class type bundleInfo = object
+  method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
+end
+
+(* Global Callbacks *)
+let info_cb:  (bundleInfo -> unit)   ref = ref (fun _bi -> ())
 let start_cb: (string * int -> unit) ref = ref (fun (pkg, n) -> ())
 let load_cb : (string       -> unit) ref = ref (fun pkg      -> ())
 let prog_cb : (string * int -> unit) ref = ref (fun (pkg, n) -> ())
@@ -62,8 +74,9 @@ let preload_byte_cache () =
       Firebug.console##log_2(string "Got binary js cache: ",
                              string (string_of_int (List.length m_list)));
       Lwt_list.iter_s preload_js_code m_list)
+  (* try *)
     (fun _exn ->
-       Firebug.console##log(string "Getting bcache failed");
+       Firebug.console##log(string @@ "Downloading " ^ bcache_file ^ " failed");
        return_unit
     )
   (* Firebug.console##log_2(string "bcache file: ", string res.content); *)
@@ -152,6 +165,22 @@ let preload_pkg pkg : unit Lwt.t =
   !load_cb pkg_dir;
   Lwt.return_unit
 
+let build_pkg_info pkg =
+  let pi      = Js.Unsafe.obj [||]   in
+  pi##name     <- string @@ to_name pkg.pkg_id;
+  pi##desc     <- string @@ to_desc pkg.pkg_id;
+  let open List in
+  pi##no_files <- length pkg.vo_files + length pkg.cma_files;
+  pi
+
+let build_bundle_info name pkgs =
+  let bi      = Js.Unsafe.obj [||]   in
+  let bi_pkgs = jsnew array_empty () in
+  List.iter (fun p -> ignore (bi_pkgs##push(build_pkg_info p))) pkgs;
+  bi##name <- string name;
+  bi##pkgs <- bi_pkgs;
+  bi
+
 let preload_from_file file =
   let file_url = pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
@@ -160,6 +189,8 @@ let preload_from_file file =
   | `List coq_pkgs ->
     let open List in
     let pkgs = map Jslib.json_to_pkg coq_pkgs in
+    let bi   = build_bundle_info file pkgs    in
+    !info_cb bi;
     Format.eprintf "number of packages to preload %d [%d files]\n%!"
       (length coq_pkgs)
       (fold_left (+) 0
@@ -170,10 +201,11 @@ let preload_from_file file =
     raise (Failure "JSON")
   )
 
-let init init_callback start_callback load_callback progress_callback =
+let init init_callback info_callback start_callback load_callback progress_callback =
+  info_cb  := info_callback;
   start_cb := start_callback;
-  load_cb := load_callback;
-  prog_cb := progress_callback;
+  load_cb  := load_callback;
+  prog_cb  := progress_callback;
   Lwt.async (fun () ->
     preload_byte_cache ()      >>= fun () ->
     preload_from_file init_pkg >>= fun () ->
@@ -191,27 +223,29 @@ let is_bad_url _ = false
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
-  Format.eprintf "file %s requested\n%!" (to_string url); (* with category info *)
-  if not @@ is_bad_url url then
-    try let c_entry = Hashtbl.find file_cache url in
-        (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
-        Some c_entry.vo_content
-    with
+  (* Format.eprintf "file %s requested\n%!" (to_string url); (\* with category info *\) *)
+  (* if not @@ is_bad_url url then *)
+  try let c_entry = Hashtbl.find file_cache url in
+    (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
+    Some c_entry.vo_content
+  with
       (* coq_vo_reg is also invoked throught the Sys.file_exists call
          in mltop:file_of_name function, a good example on how to be
          too smart for your own good $:-) *)
-      Not_found ->  None
+    Not_found -> None
 (*
         (* Check for a hit in the cma cache, return the empty string *)
         if Filename.check_suffix (to_string url) ".cma" && Hashtbl.mem byte_cache url then
           Some (string "")
         else None
 *)
+(*
   else
     begin
       Js.Unsafe.global##lastCoqReq <- Js.string "Bad URL";
       None
     end
+*)
 
 let coq_cma_req cma =
   Format.eprintf "cma file %s requested\n%!" cma;

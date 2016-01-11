@@ -12,11 +12,27 @@
 
 open Js
 
-(** [init callback] gather package list and start preloading, call
-    [callback] when done *)
-val init : (unit -> unit) -> (string * int -> unit) -> (string -> unit) -> (string * int -> unit) -> unit
+(* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)
+class type pkgInfo = object
+  method name        : ('self t, js_string t) meth_callback writeonly_prop
+  method desc        : ('self t, js_string t) meth_callback writeonly_prop
+  method no_files_   : ('self t, int)         meth_callback writeonly_prop
+end
 
-(** [load_pkg pkg_file] load package [file] *)
+class type bundleInfo = object
+  method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
+end
+
+(** [init callback pkg_callbacks] gather package list and start preloading, call
+    [callback] when done *)
+val init : (unit -> unit)         ->
+           (bundleInfo -> unit)   ->
+           (string * int -> unit) ->
+           (string -> unit)       ->
+           (string * int -> unit) -> unit
+
+(** [load_pkg pkg_file] load package [file], returns the total number
+    of packages *)
 val load_pkg : string -> unit
 
 (** [coq_resource_req url] query the manager's cache for object [url] *)
