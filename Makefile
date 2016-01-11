@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache build
+.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache dist dist-upload dist-release
 
 COQDIR=~/external/coq-git/
 
@@ -81,6 +81,11 @@ dist: bcache libs
 	rsync -avp --delete --exclude='*~' --exclude='.git' --delete-excluded $(DISTEXT) $(BUILDDIR)/external
 
 ########################################################################
+# coqDoc Object
+########################################################################
+
+
+########################################################################
 # Clean                                                                #
 ########################################################################
 
@@ -93,7 +98,7 @@ clean:
 	rm -rf coq-fs
 	rm -rf coq-pkgs
 	rm -rf bcache bcache.list bcache.stamp bc-md5.json bc-js.json
-	rm -rf build
+	rm -rf $(BUILDDIR)
 
 ########################################################################
 # Local stuff
