@@ -74,28 +74,29 @@ jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr)
 
 Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
+## jsCoq Users:
+
+Incomplete list of places where jsCoq has been used:
+
 ## How to Install/Build ##
 
 You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
 instructions to build JsCoq yourself.
 
-* _warning_: The build process takes more than 8GiB of RAM.
+* _warning_: The build process takes *more* than 8GiB of RAM.
 * First, you need a dual 32/64 bits Ocaml toolchain. Get a
   recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then run:
 
   ````
 $ cp -a opam/4.02.3+32bit ~/.opam/compilers/4.02.3/
-$ git clone https://github.com/ocsigen/js_of_ocaml.git ~/external/js_of_ocaml
 $ ./toolchain-setup.sh
   ````
 
   and it should do the trick.
 
-  If your copy of js_of_ocaml is in a different location, edit the setup
-  script and set the JS_OF_OCAML_DIR variable appropriately. Tweaking the NJOBS
-  variable may be necessary too (64 jobs by default).
+  You can tweak some variables in the `build-common.sh` file.
 
 * Second, you need to build Coq v8.5:
 
@@ -109,15 +110,11 @@ $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
-  jsCoq should run against vanilla Coq v8.5, however YMMV as that
-  branch is in development.
+  jsCoq runs against vanilla Coq v8.5.
 
-  If you want to use a different location for Coq, edit the `COQDIR`
-  variable in JsCoq's `Makefile`.
+  If you want to use a different location for the Coq sources, edit
+  the `COQDIR` variable in JsCoq's `Makefile`.
 
-  We recommend to edit $(COQDIR)/theories/Init/Prelude.v and comment
-  out the extraction and recdef plugins, they take long time to
-  compile.
 * You may want to select what libraries get
   included. `coq-tools/dftlibs.ml` allows you to do that.
 
@@ -128,7 +125,7 @@ $ ./build.sh
   ````
 
   should build jscoq. The script tries to manage the pain of the 32/64
-  bit switch, you can also use make if you know what you are doing.
+  bit switch, you can also use make if you want finer control.
 
 * To run jscoq in locally you may need to start your browser as:
 
@@ -175,8 +172,7 @@ $ make
   has been downloaded, `~/external/coq/math-comp` is the default.
 
   A patch optimizing mathcomp loading times can be found in the patch
-  folder, highly recommended. Also, some parts don't seem to build
-  with 8.5, so this process can be a bit too manual as of now.
+  folder, highly recommended.
 
 ## Commit tag conventions [work in progress]:
 

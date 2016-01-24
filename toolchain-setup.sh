@@ -4,13 +4,16 @@
 
 JS_OF_OCAML_DIR=~/external/js_of_ocaml
 
-JSCOQ_DEPS="ocamlfind camlp4 camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData yojson"
+JSCOQ_DEPS="ocamlfind camlp4 camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData yojson \
+            ppx_deriving_yojson"
 
 do_setup() {
   opam install -y -j $NJOBS $JSCOQ_DEPS
-  pushd $JS_OF_OCAML_DIR
-  make clean && make -j $NJOBS && make uninstall install
-  popd
+  # JsCoq runs now wtih js_of_ocaml OPAM
+  # git clone https://github.com/ocsigen/js_of_ocaml.git ~/external/js_of_ocaml
+  # pushd $JS_OF_OCAML_DIR
+  # make clean && make -j $NJOBS && make uninstall install
+  # popd
 }
 
 opam switch -j $NJOBS -y $OCAML_VER
