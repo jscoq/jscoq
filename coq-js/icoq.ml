@@ -40,6 +40,7 @@ let init opts =
   (* We may hook library loading to avoid dynamic bytecode-to-js
    * compilation.
    *)
+  let open Mltop in
   let jstop : Mltop.toplevel = {
     load_obj = opts.ml_load;
     (* We ignore all the other operations for now *)
