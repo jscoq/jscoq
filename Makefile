@@ -27,7 +27,8 @@ coq-fs:
 coq-pkgs:
 	mkdir -p coq-pkgs
 
-Makefile.libs: coq-tools
+# It depends on coq-tools, but coq-tools is linked with the 32bit thing...
+Makefile.libs:
 	./coq-tools/mklibfs > Makefile.libs
 
 # Build Coq libraries

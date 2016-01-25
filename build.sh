@@ -14,4 +14,9 @@ fi
 opam switch $OCAML_VER
 eval `opam config env`
 make -j $NJOBS jscoq64
+
+# coq-tools must be built in 32 bits for now
+opam switch $OCAML_VER+32bit
+eval `opam config env`
+make coq-tools
 make libs
