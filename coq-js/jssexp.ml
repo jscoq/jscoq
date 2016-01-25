@@ -1,11 +1,10 @@
 (* Example of serialization to a sexp:
 
    Coq's main datatype, constr, is a private type so we need to define
-   a serializable clone. Unfortunately, it's main view is "zippy" so we
-   need to recurse throught a constr in order to fully build its clone.
+   a serializable clone. Unfortunately, its main view is "zippy" so we
+   need to recurse throu the constr to build the clone.
 
-   Another, and maybe better, option is to use extern_constr and
-   serialize that one.
+   Another, and maybe better, option is to serialize extern_constr.
 *)
 
 (* Main type to be cloned:
