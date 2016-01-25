@@ -5,13 +5,26 @@ COQDIR=~/external/coq-git
 all:
 
 # Include coq files
-INCLUDETOP=-I $(COQDIR)/library/ -I $(COQDIR)/stm/ -I $(COQDIR)/lib/ -I $(COQDIR)/parsing/ -I $(COQDIR)/printing/ -I $(COQDIR)/kernel/ -I $(COQDIR)/proofs/ -I $(COQDIR)/toplevel -I $(COQDIR)/config
+INCLUDETOP=-I $(COQDIR)/library/   \
+           -I $(COQDIR)/stm/       \
+           -I $(COQDIR)/lib/       \
+           -I $(COQDIR)/parsing/   \
+           -I $(COQDIR)/printing/  \
+           -I $(COQDIR)/kernel/    \
+           -I $(COQDIR)/intf/      \
+           -I $(COQDIR)/interp/    \
+           -I $(COQDIR)/proofs/    \
+           -I $(COQDIR)/toplevel   \
+           -I $(COQDIR)/config
 
 # CAMLDEBUG=-g
 CAMLDEBUG=
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson
+
+
+SEXPFLAGS=-package sexplib,ppx_sexp_conv
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -29,9 +42,12 @@ icoq.cmo: icoq.cmi
 
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
+jssexp.cmo: jssexp.ml
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $<
+
 # Main file
 jscoq.cmi: jslibmng.cmi
-jscoq.cmo: icoq.cmo jslibmng.cmo jscoq.cmi
+jscoq.cmo: icoq.cmo jslibmng.cmo jssexp.cmo jscoq.cmi
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
@@ -68,8 +84,8 @@ endif
 # -linkall seems necessary, otherwise some internal Coq tables are dropped.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
-	   $(JSOOFLAGS) -package camlp5                                  \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   $(JSOOFLAGS) -package camlp5 -package sexplib                 \
+	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 

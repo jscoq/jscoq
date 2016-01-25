@@ -28,6 +28,8 @@ class type jsCoq = object
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
+  method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
+
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
@@ -126,8 +128,8 @@ let setup_printers this =
 let jscoq_init this =
   setup_pseudo_fs ();
   setup_printers this;
-  let sid = Icoq.init { ml_load    = Jslibmng.coq_cma_req;
-                        fb_handler = (jscoq_feedback_handler this);
+  let sid = Icoq.init { Icoq.ml_load    = Jslibmng.coq_cma_req;
+                        Icoq.fb_handler = (jscoq_feedback_handler this);
                       } in
 
   let init_callback     ()      = let _ = invoke_handler this##onInit this ()                      in () in
@@ -194,6 +196,8 @@ let _ =
   jsCoq##commit   <- Js.wrap_meth_callback jscoq_commit;
   jsCoq##query    <- Js.wrap_meth_callback jscoq_query;
   jsCoq##goals    <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
+
+  jsCoq##goal_sexp_ <- Js.wrap_meth_callback (fun _this -> string @@ Jssexp.string_of_proof ());
 
   jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
   jsCoq##onPkgLoadStart <- no_handler;
