@@ -25,6 +25,7 @@ class type jsCoq = object
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
   method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
+  method goal_json_  : ('self t, 'a t)                  meth_callback writeonly_prop
 
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop

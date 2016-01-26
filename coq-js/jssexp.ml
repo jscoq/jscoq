@@ -34,9 +34,9 @@ module N = Names
 
 open Sexplib.Std
 
-type coq_name = NS of string | Anonymous [@@deriving sexp]
+type coq_name = NS of string | Anonymous [@@deriving sexp, yojson]
 
-type coq_sort = Prop | Type (* of universe Sorts.t *) [@@deriving sexp]
+type coq_sort = Prop | Type (* of universe Sorts.t *) [@@deriving sexp, yojson]
 
 type coq_constr =
   | Rel       of int
@@ -56,7 +56,7 @@ type coq_constr =
   | Fix       of string        (* XXX: I'm lazy *)
   | CoFix     of string        (* XXX: I'm lazy *)
   | Proj      of string * coq_constr
-and coq_types = coq_constr [@@deriving sexp]
+and coq_types = coq_constr [@@deriving sexp, yojson]
 
 let name_reify (n : N.Name.t) : coq_name =
   match n with
@@ -91,7 +91,7 @@ let rec constr_reify (c : C.constr) : coq_constr =
   | C.CoFix _            -> CoFix "I'm lazy"
   | C.Proj(p,c)          -> Proj(N.Projection.to_string p, cr c)
 
-let sexp_of_proof () : Sexplib.Sexp.t option =
+let the_proof () : Term.constr option =
   let open Proof_global in
   try
     let pf = give_me_the_proof ()                                 in
@@ -100,11 +100,27 @@ let sexp_of_proof () : Sexplib.Sexp.t option =
     | []     -> None
     | g :: _ ->
       let g_type = Goal.V82.concl sigma g                   in
+      Some g_type
+  with NoCurrentProof -> None
       (* let env    = Goal.V82.env   sigma g                           in *)
       (* let _term  = Constrextern.extern_constr true env sigma g_type in *)
       (* let _k     = Term.kind_of_term g_type                         in *)
-      Some (sexp_of_coq_constr (constr_reify g_type))
-  with NoCurrentProof -> None
 
-let string_of_proof () : string =
-  Option.cata Sexplib.Sexp.to_string "" (sexp_of_proof ())
+let sexp_of_proof () =
+  Option.cata (fun p -> p |> constr_reify |> sexp_of_coq_constr |> Sexplib.Sexp.to_string)
+    "" (the_proof ())
+
+let yojson_of_proof () =
+  Option.cata (fun p -> p |> constr_reify |> coq_constr_to_yojson)
+      (`Assoc []) (the_proof ())
+
+(* let json_of_proof () = *)
+(*   Option.cata (fun p -> p |> constr_reify |> coq_constr_to_yojson) *)
+(*       (`Assoc []) (the_proof ()) *)
+
+(* let string_of_proof () : string = *)
+(*   Option.cata Sexplib.Sexp.to_string "" (sexp_of_proof ()) *)
+
+(* let json_of_proof () : json = *)
+(*   json_of_proof () *)
+

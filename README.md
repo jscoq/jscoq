@@ -14,7 +14,7 @@ servers or external programs are needed. JsCoq runs fine in Chrome (>=
 45) or Mozilla Firefox. It also runs in my old Galaxy Nexus.
 
 * **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
-* **Important:** The project is pretty much at pre-alpha technology demo, you are welcome to use it but expect trouble.
+* **Important:** The project is pretty much a pre-alpha technology demo, you are welcome to use it but expect trouble.
 
 ## API / How to use
 
@@ -39,6 +39,14 @@ the constructor; current options are:
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `coq_packages`: List of Coq's packages to load.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
+
+### Serialization
+
+JsCoq supports serialization to Json or Sexps for Coq's internal data
+structures. This is still not implemented in a systematic way, for now
+you can get the current goal using the `goal_sexp` and `goal_json`
+methods. We are working to add a more systematic implementation, as
+well as to provide access to Coq printing facilities from JS.
 
 ### CoqDoc
 
@@ -77,6 +85,8 @@ Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 ## jsCoq Users:
 
 Incomplete list of places where jsCoq has been used:
+
+* https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
 
 ## How to Install/Build ##
 

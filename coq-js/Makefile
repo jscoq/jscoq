@@ -21,10 +21,11 @@ INCLUDETOP=-I $(COQDIR)/library/   \
 CAMLDEBUG=
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
 
-JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson
+JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,ppx_deriving_yojson
 
 
 SEXPFLAGS=-package sexplib,ppx_sexp_conv
+YOJSONFLAGS=-package yojson,ppx_deriving_yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -43,7 +44,11 @@ icoq.cmo: icoq.cmi
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
 jssexp.cmo: jssexp.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $<
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) $<
+
+# PPXJSOO=-package ppx_deriving,js_of_ocaml.ppx
+# jsjson.cmo: jsjson.ml
+# 	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(PPXJSON) $<
 
 # Main file
 jscoq.cmi: jslibmng.cmi

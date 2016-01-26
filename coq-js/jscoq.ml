@@ -30,6 +30,8 @@ class type jsCoq = object
 
   method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
 
+  method goal_json_  : ('self t, 'a t)                  meth_callback writeonly_prop
+
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
@@ -182,6 +184,10 @@ let jscoq_query this sid cmd : unit =
 let jscoq_add_pkg this pkg : unit =
   Jslibmng.load_pkg (to_string pkg)
 
+let jscoq_json_of_proof () =
+  let json = Jssexp.yojson_of_proof () in
+  Js._JSON##parse(string (Yojson.Safe.to_string json))
+
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
@@ -197,7 +203,9 @@ let _ =
   jsCoq##query    <- Js.wrap_meth_callback jscoq_query;
   jsCoq##goals    <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
 
-  jsCoq##goal_sexp_ <- Js.wrap_meth_callback (fun _this -> string @@ Jssexp.string_of_proof ());
+  jsCoq##goal_sexp_ <- Js.wrap_meth_callback (fun _this -> string @@ Jssexp.sexp_of_proof ());
+
+  jsCoq##goal_json_ <- Js.wrap_meth_callback (fun _this -> jscoq_json_of_proof ());
 
   jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
   jsCoq##onPkgLoadStart <- no_handler;
