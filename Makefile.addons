@@ -146,6 +146,25 @@ cpdt: $(CPDT_DEST) $(CPDT_FILES)
 COQDIR=~/external/coq-git/
 JOBS=
 
+########################################################################
+# Addons: ColoR                                                        #
+########################################################################
+
+# XXX: Must make a generic method for this
+COLOR_HOME=~/external/coq/CoLoR/color/
+COLOR_DEST=coq-fs/
+TMPDIR=/tmp/
+JSCOQ_DIR=~/research/jscoq/coq-fs/
+
+color:
+	cd $(COLOR_HOME); make install DSTROOT=$(TMPDIR)
+	rm -r $(JSCOQ_DIR)/CoLoR
+	mv /tmp/home/egallego/external/coq-git/user-contrib/CoLoR/ $(JSCOQ_DIR)/
+
+# XXX: Move to common
+COQDIR=~/external/coq-git/
+JOBS=
+
 all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean
@@ -161,4 +180,5 @@ all-build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make -j $(JOBS) proof_vo || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
 
