@@ -17,7 +17,7 @@ type coq_pkg = {
   cma_files : (string * Digest.t) list;
 }
 
-let to_name = String.concat "_"
+let to_dir  = String.concat "/"
 let to_desc = String.concat "."
 
 (* JSON handling *)

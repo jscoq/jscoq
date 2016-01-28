@@ -17,7 +17,7 @@ let is_cma s =
   Filename.check_suffix s ".cma"
 
 let build_pkg (pid : string list) : Jslib.coq_pkg =
-  let dir       = Dl.prefix ^ "/" ^ Dl.to_name pid in
+  let dir       = Dl.prefix ^ "/" ^ Dl.to_dir pid  in
   let files     = Array.to_list @@ Sys.readdir dir in
   let vo_files  = List.filter is_vo files          in
   let cma_files = List.filter is_cma files         in

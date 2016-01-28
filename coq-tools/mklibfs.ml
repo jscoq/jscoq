@@ -15,21 +15,22 @@ let rec pp_list pp fmt l = match l with
   | csx :: csl -> fprintf fmt "%a %a" pp csx (pp_list pp) csl
 
 let output_librule fmt bpath path =
-  let name    = Dl.to_name path                     in
+  let name    = Dl.to_name path                                in
   (* Strip "Coq" suffix *)
-  let dir     = Dl.to_dir (List.tl path)            in
-  let coqdir  = Dl.to_dir ["$(COQDIR)"; bpath; dir] in
-  let fsdir   = Dl.to_dir [Dl.prefix; name]         in
-  let vo_pat  = Dl.to_dir [coqdir; "*.vo"]          in
-  let cma_pat = Dl.to_dir [coqdir; "*.cma"]         in
+  let dir     = List.tl path                                   in
+  let coqdir  = Dl.to_dir ("$(COQDIR)" :: bpath :: dir)        in
+  let fsdir   = Dl.to_dir (Dl.prefix :: dir)                   in
+  let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
+  let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
+  let cma_pat = Dl.to_dir [coqdir; "*.cma"]                    in
   (* Rule for the dir *)
-  fprintf fmt "%s:\n\tmkdir -p %s\n" fsdir fsdir;
+  fprintf fmt "%s_dir:\n\tmkdir -p %s\n" name outdir;
   (* Pattern expansion *)
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;
   (* Copy rule *)
-  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
-    name fsdir name name name fsdir name fsdir
+  fprintf fmt "%s: %s_dir $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
+    name name name name name outdir name outdir
 (*
   COQ_SETOIDS=$(COQTDIR)/Setoids/*.vo
   COQ_SETOIDS_DEST=filesys/coq_setoids

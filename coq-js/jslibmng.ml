@@ -142,7 +142,7 @@ let preload_cma_file base_url (file, hash) : unit Lwt.t =
   Lwt.return_unit
 
 let preload_pkg pkg : unit Lwt.t =
-  let pkg_dir = to_name pkg.pkg_id                                   in
+  let pkg_dir = to_dir pkg.pkg_id                                    in
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = List.length pkg.vo_files + List.length pkg.cma_files in
   Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
@@ -167,7 +167,7 @@ let preload_pkg pkg : unit Lwt.t =
 
 let build_pkg_info pkg =
   let pi      = Js.Unsafe.obj [||]   in
-  pi##name     <- string @@ to_name pkg.pkg_id;
+  pi##name     <- string @@ to_dir  pkg.pkg_id;
   pi##desc     <- string @@ to_desc pkg.pkg_id;
   let open List in
   pi##no_files <- length pkg.vo_files + length pkg.cma_files;

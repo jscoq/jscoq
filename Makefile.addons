@@ -14,7 +14,7 @@ all-addons: ssr-libs coquelicot flocq tlc sf cpdt
 SSR_HOME=~/external/coq/math-comp/mathcomp/
 SSR_PLUG=$(SSR_HOME)/ssreflect.cma
 
-SSR_DEST=coq-fs/mathcomp_ssreflect
+SSR_DEST=coq-fs/mathcomp/ssreflect
 SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
 
 # XXX: Use a pattern rule!
@@ -25,7 +25,7 @@ ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
 	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
 	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
 
-SSR_ALG_DEST=coq-fs/mathcomp_algebra
+SSR_ALG_DEST=coq-fs/mathcomp/algebra
 SSR_ALG_FILES=$(wildcard $(SSR_HOME)/algebra/*.vo)
 
 $(SSR_ALG_DEST):
@@ -34,7 +34,7 @@ $(SSR_ALG_DEST):
 ssr-alg: $(SSR_ALG_DEST) $(SSR_ALG_FILES)
 	$(shell for i in $(SSR_ALG_FILES); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
 
-SSR_FIN_DEST=coq-fs/mathcomp_fingroup
+SSR_FIN_DEST=coq-fs/mathcomp/fingroup
 SSR_FIN_FILES=$(wildcard $(SSR_HOME)/fingroup/*.vo)
 
 $(SSR_FIN_DEST):
@@ -43,7 +43,7 @@ $(SSR_FIN_DEST):
 ssr-fin: $(SSR_FIN_DEST) $(SSR_FIN_FILES)
 	$(shell for i in $(SSR_FIN_FILES); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
 
-SSR_SOL_DEST=coq-fs/mathcomp_solvable
+SSR_SOL_DEST=coq-fs/mathcomp/solvable
 SSR_SOL_FILES=$(wildcard $(SSR_HOME)/solvable/*.vo)
 
 $(SSR_SOL_DEST):
@@ -52,7 +52,7 @@ $(SSR_SOL_DEST):
 ssr-sol: $(SSR_SOL_DEST) $(SSR_SOL_FILES)
 	$(shell for i in $(SSR_SOL_FILES); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
 
-SSR_FLD_DEST=coq-fs/mathcomp_field
+SSR_FLD_DEST=coq-fs/mathcomp/field
 SSR_FLD_FILES=$(wildcard $(SSR_HOME)/field/*.vo)
 
 $(SSR_FLD_DEST):
@@ -83,7 +83,7 @@ coquelicot: $(COQCOT_DEST) $(COQCOT_FILES)
 
 # XXX: Must make a generic method for this
 FLOCQ_HOME=~/external/coq/flocq/
-FLOCQ_DEST=coq-fs/Flocq_Core
+FLOCQ_DEST=coq-fs/Flocq/Core
 FLOCQ_FILES=$(wildcard $(FLOCQ_HOME)/src/Core/*.vo)
 
 $(FLOCQ_DEST):
