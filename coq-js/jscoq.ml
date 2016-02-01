@@ -71,23 +71,23 @@ let string_of_feedback fb : string =
   let open Feedback in
   match fb with
   (* STM mandatory data (must be displayed) *)
-    | Processed      -> "Processed"
-    | Incomplete     -> "Incomplete"
-    | Complete       -> "Complete"
+    | Processed      -> "Processed."
+    | Incomplete     -> "Incomplete."
+    | Complete       -> "Complete."
     | ErrorMsg(l, s) -> "ErrorMsg: " ^ s
 
   (* STM optional data *)
-    | ProcessingIn s       -> "ProcessingIn " ^ s
-    | InProgress d         -> "InProgress " ^ (string_of_int d)
-    | WorkerStatus(w1, w2) -> "WorkerStatus " ^ w1 ^ ", " ^ w2
+    | ProcessingIn s       -> "ProcessingIn: " ^ s
+    | InProgress d         -> "InProgress: " ^ (string_of_int d)
+    | WorkerStatus(w1, w2) -> "WorkerStatus: " ^ w1 ^ ", " ^ w2
 
   (* Generally useful metadata *)
-    | Goals(_loc, g) -> "goals :" ^ g
-    | AddedAxiom -> "AddedAxiom"
+    | Goals(_loc, g) -> "goals: " ^ g
+    | AddedAxiom -> "AddedAxiom."
     | GlobRef (_loc, s1, s2, s3, s4) -> "GlobRef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3 ^ ", " ^ s4
     | GlobDef (_loc, s1, s2, s3) -> "GlobDef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3
     | FileDependency (os, s) -> "FileDep: " ^ (Option.default "" os) ^ ", " ^ s
-    | FileLoaded (s1, s2)    -> "FileLoaded " ^ s1 ^ " " ^ s2
+    | FileLoaded (s1, s2)    -> "FileLoaded: " ^ s1 ^ " " ^ s2
 
     (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
@@ -101,8 +101,6 @@ let string_of_eosid esid =
   match esid with
   | Edit  eid -> "eid: " ^ string_of_int eid
   | State sid -> "sid: " ^ (Stateid.to_string sid)
-
-
 
 let internal_log this (str : js_string t) =
   let _    = invoke_handler this##onLog this str  in
@@ -123,8 +121,10 @@ let setup_printers this =
     (* let _sharp_ppf = Format.formatter_of_out_channel _sharp_chan in *)
     (* Sys_js.set_channel_flusher stdout (add_text js_stdout Info); *)
     (* Sys_js.set_channel_flusher stderr (add_text js_stderr Info) *)
-    Sys_js.set_channel_flusher stdout (fun s -> internal_log this (string s));
-    Sys_js.set_channel_flusher stderr (fun s -> internal_log this (string s))
+    Sys_js.set_channel_flusher stdout
+           (fun s -> internal_log this (string @@ "stdout: " ^ s));
+    Sys_js.set_channel_flusher stderr
+           (fun s -> internal_log this (string @@ "stderr: " ^ s))
   with Not_found -> ()
 
 let jscoq_init this =

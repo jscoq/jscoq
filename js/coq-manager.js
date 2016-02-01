@@ -151,7 +151,7 @@ var COQ_LOG_LEVELS = {
             cm.editor.on('focus', evt => { this.currentFocus = cm; });
 
             // Track invalidate
-            cm.onInvalidate = (smt) => { this.onInvalidate(smt); };
+            cm.onInvalidate = smt => { this.onInvalidate(smt); };
 
             // XXX: We use a strong assumption for now: the cursor is
             // at the invalid region, so we just do goCursor().
@@ -338,12 +338,18 @@ var COQ_LOG_LEVELS = {
                 level = COQ_LOG_LEVELS.ERROR;
                 msg = msg.replace(/^.*ErrorMsg:/, '');
             }
+            else if (msg.indexOf("pre-loading") != -1) {
+                level = COQ_LOG_LEVELS.INFO;
+            }
+            else if (msg.indexOf("stderr:") != -1) {
+                level = COQ_LOG_LEVELS.WARN;
+            }
+            else if (msg.indexOf("stdout:") != -1) {
+                level = COQ_LOG_LEVELS.INFO;
+            }
             else if(msg.indexOf("Msg:") != -1) {
                 level = COQ_LOG_LEVELS.INFO;
                 msg = msg.toString().replace(/^.*Msg:/, '');
-            }
-            else if (msg.indexOf("pre-loading") != -1) {
-                level = COQ_LOG_LEVELS.INFO;
             }
 
             // if(level != COQ_LOG_LEVELS.DEBUG) {

@@ -191,10 +191,12 @@ let preload_from_file file =
     let pkgs = map Jslib.json_to_pkg coq_pkgs in
     let bi   = build_bundle_info file pkgs    in
     !info_cb bi;
+    (*
     Format.eprintf "number of packages to preload %d [%d files]\n%!"
       (length coq_pkgs)
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
+    *)
     Lwt_list.iter_s preload_pkg pkgs
   | _ ->
     Format.eprintf "JSON error in preload_from_file\n%!";
