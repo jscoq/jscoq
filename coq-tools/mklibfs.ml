@@ -19,7 +19,6 @@ let output_librule fmt bpath path =
   (* Strip "Coq" suffix *)
   let dir     = List.tl path                                   in
   let coqdir  = Dl.to_dir ("$(COQDIR)" :: bpath :: dir)        in
-  let fsdir   = Dl.to_dir (Dl.prefix :: dir)                   in
   let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
   let cma_pat = Dl.to_dir [coqdir; "*.cma"]                    in

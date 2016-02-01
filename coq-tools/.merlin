@@ -1,2 +1,8 @@
+FLG -rectypes
+
 S .
 B .
+S ../coq-js/
+B ../coq-js/
+
+PKG yojson
