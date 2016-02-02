@@ -116,6 +116,29 @@ let string_of_goals () =
   in
   string_of_ppcmds pp_goals
 
+module Options : sig
+  type 'a t
+
+  (* Printing depth *)
+  val pw : int t
+
+  (** [set_int_option opt val] Sets integer option to val. *)
+  val set_int_option : int t -> int -> unit
+
+end = struct
+
+  open Goptions
+
+  type 'a t = option_name
+
+  let pw = ["Printing"; "Width"]
+
+  (** [set_int_option opt v] Sets integer optiont [opt] to [v]. *)
+  let set_int_option opt v = Goptions.set_int_option_value opt (Some v)
+
+end
+
+
 (*
 let print_toplevel_error (e, info) =
   Errors.iprint (e, info)

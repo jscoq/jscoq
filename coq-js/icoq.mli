@@ -56,3 +56,17 @@ val query : Stateid.t -> string -> unit
 
 (** [string_or_goals ()] returns a string representing the current goals  *)
 val string_of_goals : unit -> string
+
+module Options : sig
+  type 'a t
+
+  (* Printing depth *)
+  val pw : int t
+
+  (** [set_int_option opt val] Sets integer option to val. *)
+  val set_int_option : int t -> int -> unit
+end
+
+
+
+

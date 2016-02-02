@@ -71,6 +71,11 @@ a, a:link, a:visited, a:active {
   /* border-left: 1px solid #222; */
 }
 
+#ide-wrapper.toggled #panel-wrapper {
+  width: 0px;
+  /* overflow: auto; */
+}
+
 .flex-container {
   display: flex;
   flex-direction: column;
@@ -125,12 +130,6 @@ a, a:link, a:visited, a:active {
 .flex-panel.collapsed > .content {
   opacity: 0;
 }
-
-#ide-wrapper.toggled #panel-wrapper {
-  width: 0px;
-  /* overflow: auto; */
-}
-
 
 #goal-panel {
   flex: 2000 1;
@@ -195,6 +194,7 @@ a, a:link, a:visited, a:active {
 #query-panel > div {
   line-height: 1.25em;
   padding-left: 18px;
+  white-space: pre;
 }
 
 /* overloads */
