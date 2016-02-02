@@ -62,7 +62,7 @@ bcache: bcache.stamp
 
 bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
 	mkdir -p bcache
-	nodejs ./coq-tools/byte_cache.js >> bcache.list
+	nodejs ./coq-tools/byte_cache.js > bcache.list
 	touch bcache.stamp
 
 BUILDDIR=dist
