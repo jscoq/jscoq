@@ -68,6 +68,7 @@ a, a:link, a:visited, a:active {
   width: 45%;
   height: 100%;
   transition: all 0.5s ease;
+  z-index: 6;
   /* border-left: 1px solid #222; */
 }
 
