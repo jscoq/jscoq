@@ -95,7 +95,7 @@ let the_proof () : Term.constr option =
   let open Proof_global in
   try
     let pf = give_me_the_proof ()                                 in
-    let (goals, stack , shelf, given_up, sigma ) = Proof.proof pf in
+    let (goals, _stack , _shelf, _given_up, sigma ) = Proof.proof pf in
     match goals with
     | []     -> None
     | g :: _ ->

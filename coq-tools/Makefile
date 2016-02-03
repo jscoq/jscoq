@@ -2,7 +2,8 @@
 
 # CAMLDEBUG=-g
 CAMLDEBUG=
-BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) -package yojson -I ../coq-js/
+CAMLWARN=-w @A
+BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN) -package yojson -I ../coq-js/
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli

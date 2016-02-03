@@ -51,9 +51,9 @@ end
 
 (* Global Callbacks *)
 let info_cb:  (bundleInfo -> unit)   ref = ref (fun _bi -> ())
-let start_cb: (string * int -> unit) ref = ref (fun (pkg, n) -> ())
-let load_cb : (string       -> unit) ref = ref (fun pkg      -> ())
-let prog_cb : (string * int -> unit) ref = ref (fun (pkg, n) -> ())
+let start_cb: (string * int -> unit) ref = ref (fun (_pkg, _n) -> ())
+let load_cb : (string       -> unit) ref = ref (fun _pkg      -> ())
+let prog_cb : (string * int -> unit) ref = ref (fun (_pkg, _n) -> ())
 
 (* Preload some code based on its md5 *)
 let preload_js_code msum =
@@ -69,7 +69,7 @@ let preload_byte_cache () =
   let open XmlHttpRequest in
   (* Don't fail if bcache.list doesn't exist *)
   catch (fun () ->
-      get bcache_file                                >>= fun res ->
+      XmlHttpRequest.get bcache_file                 >>= fun res ->
       let m_list = Regexp.split (Regexp.regexp "\n") res.content in
       Firebug.console##log_2(string "Got binary js cache: ",
                              string (string_of_int (List.length m_list)));
@@ -87,7 +87,7 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
-let preload_vo_file base_url (file, hash) : unit Lwt.t =
+let preload_vo_file base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
   let full_url    = base_url  ^ "/" ^ file in
@@ -125,7 +125,7 @@ let preload_vo_file base_url (file, hash) : unit Lwt.t =
   Lwt.return_unit
 
 (* Unfortunately this is a tad different than preload_vo_file *)
-let preload_cma_file base_url (file, hash) : unit Lwt.t =
+let _preload_cma_file base_url (file, _hash) : unit Lwt.t =
   Format.eprintf "pre-loading cma file %s-%s\n%!" base_url file;
   let cma_url   = fs_prefix ^ "cmas/" ^ file ^ ".js" in
   Format.eprintf "cma url %s\n%!" cma_url;
@@ -133,7 +133,7 @@ let preload_cma_file base_url (file, hash) : unit Lwt.t =
   let open XmlHttpRequest in
   perform_raw ~response_type:Text cma_url >>= fun frame ->
   (if frame.code = 200 || frame.code = 0 then
-    let byte_entry = frame.content in
+    let _byte_entry = frame.content in
     Format.eprintf "added cma %s with length %d\n%!" cma_url (frame.content)##length;
     (* XXXX: This  called without qualitification so filename conflicts are possible *)
     (* Hashtbl.add byte_cache (Js.string file) byte_entry) *)
@@ -221,7 +221,7 @@ let load_pkg pkg_file = Lwt.async (fun () ->
     return_unit
   )
 
-let is_bad_url _ = false
+let _is_bad_url _ = false
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =

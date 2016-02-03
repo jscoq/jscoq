@@ -34,7 +34,7 @@ let build_pkg (pkg, p_mod) =
   let out   = open_out (out_pref ^ pkg ^ ".json")      in
   let p_mod = List.map build_pkg p_mod                 in
   let json  = List.map Jslib.pkg_to_json p_mod         in
-  Printf.fprintf out "%s\n" @@ pretty_to_string (`List json);
+  fprintf std_formatter "%s\n" @@ pretty_to_string (`List json);
   close_out out
 
 let _ =

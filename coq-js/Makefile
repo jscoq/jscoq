@@ -19,10 +19,10 @@ INCLUDETOP=-I $(COQDIR)/library/   \
 
 # CAMLDEBUG=-g
 CAMLDEBUG=
-BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG)
+CAMLWARN=-w @a-44-45
+BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,ppx_deriving_yojson
-
 
 SEXPFLAGS=-package sexplib,ppx_sexp_conv
 YOJSONFLAGS=-package yojson,ppx_deriving_yojson
@@ -43,8 +43,10 @@ icoq.cmo: icoq.cmi
 
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
+# Due to ppx auto-generated code.
+JSWOVR=-4-39
 jssexp.cmo: jssexp.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) $<
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) -w $(JSWOVR) $<
 
 # PPXJSOO=-package ppx_deriving,js_of_ocaml.ppx
 # jsjson.cmo: jsjson.ml
@@ -86,9 +88,14 @@ ifeq "${JSOO_DL}" "jsoo_dl.cmo"
 JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
 endif
 
+# We need to override due to
+# "/home/egallego/external/coq-git/lib/lib.cma(Errors) and
+#  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
+WOVR=-w -31
+
 # -linkall seems necessary, otherwise some internal Coq tables are dropped.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
-	ocamlfind ocamlc $(BYTEFLAGS) -linkall -linkpkg -thread -verbose \
+	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5 -package sexplib                 \
 	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 

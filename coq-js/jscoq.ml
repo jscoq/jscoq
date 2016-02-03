@@ -15,7 +15,7 @@
 open Js
 open Dom
 
-class type jsCoqLib = object
+class type _jsCoqLib = object
 (* method onError     : ('self t, Stateid.t)             event_listener writeonly_prop *)
 end
 
@@ -62,7 +62,7 @@ class type jsCoq = object
 end
 
 let setup_pseudo_fs () =
-  Sys_js.register_autoload' "/" (fun (_,s) -> Jslibmng.coq_vo_req s)
+  Sys_js.register_autoload' ~path:"/" (fun (_,s) -> Jslibmng.coq_vo_req s)
 
 (* type feedback = { *)
 (*   id : edit_or_state_id;        (\* The document part concerned *\) *)
@@ -74,10 +74,10 @@ let string_of_feedback fb : string =
   let open Feedback in
   match fb with
   (* STM mandatory data (must be displayed) *)
-    | Processed      -> "Processed."
-    | Incomplete     -> "Incomplete."
-    | Complete       -> "Complete."
-    | ErrorMsg(l, s) -> "ErrorMsg: " ^ s
+    | Processed       -> "Processed."
+    | Incomplete      -> "Incomplete."
+    | Complete        -> "Complete."
+    | ErrorMsg(_l, s) -> "ErrorMsg: " ^ s
 
   (* STM optional data *)
     | ProcessingIn s       -> "ProcessingIn: " ^ s
@@ -146,7 +146,7 @@ let jscoq_init this =
   Jslibmng.init init_callback info_callback start_callback load_callback progress_callback;
   sid
 
-let jscoq_version this =
+let jscoq_version _this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
   let header1 = Printf.sprintf
       " JsCoq alpha, Coq %s (%s),\n   compiled on %s\n Ocaml %s"
@@ -156,7 +156,7 @@ let jscoq_version this =
   string @@ header1 ^ header2
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
-let jscoq_add this sid eid cmd  =
+let jscoq_add _this sid eid cmd  =
   (* Printf.eprintf "adding command %s\n%!" (to_string cmd); *)
   (* Catch parsing errors. *)
   try
@@ -165,7 +165,7 @@ let jscoq_add this sid eid cmd  =
   (* Hackkk *)
   | _ -> Obj.magic 0
 
-let jscoq_edit this sid : unit = Icoq.edit_doc sid
+let jscoq_edit _this sid : unit = Icoq.edit_doc sid
 
 let jscoq_commit this sid =
   let ee () = let _ = invoke_handler this##onError this sid in () in
@@ -173,18 +173,18 @@ let jscoq_commit this sid =
     (* XXX: Careful with the difference between Stm.observe and Stm.finish XXX *)
     Icoq.commit_doc sid
   with
-    | Errors.UserError(msg, pp) ->
+    | Errors.UserError(_msg, _pp) ->
        (* console.log *)
        ee ()
-    | Errors.AlreadyDeclared pp ->
+    | Errors.AlreadyDeclared _pp ->
        ee ()
     | _ ->
        ee ()
 
-let jscoq_query this sid cmd : unit =
+let jscoq_query _this sid cmd : unit =
   Icoq.query sid (to_string cmd)
 
-let jscoq_add_pkg this pkg : unit =
+let jscoq_add_pkg _this pkg : unit =
   Jslibmng.load_pkg (to_string pkg)
 
 let jscoq_json_of_proof () =
