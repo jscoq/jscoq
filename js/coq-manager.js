@@ -405,9 +405,12 @@ var COQ_LOG_LEVELS = {
 
             this.enable();
 
-            for (var pkg in this.options.coq_packages) {
-                this.coq.add_pkg(this.options.coq_packages[pkg]);
-            }
+            // Load the packages.
+            this.options.coq_packages.forEach( pkg => {
+                console.log('Adding pkg: ', pkg);
+                this.coq.add_pkg(pkg);
+            });
+
         };
 
         // Initial coq state.
