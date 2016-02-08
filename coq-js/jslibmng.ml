@@ -181,15 +181,17 @@ let _preload_cma_file base_url (file, _hash) : unit Lwt.t =
   ;
   Lwt.return_unit
 
-let preload_pkg bundle pkg : unit Lwt.t =
+let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
   let pkg_dir = to_dir pkg                                           in
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = no_files pkg                                         in
-  Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
+  if verb then
+    Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
   !cb.pkg_start (mk_progressInfo bundle pkg 0);
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
-    Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
+    if verb then
+      Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
     !cb.pkg_progress (mk_progressInfo bundle pkg (i+nc+1));
     Lwt.return_unit
   in
@@ -205,7 +207,7 @@ let preload_pkg bundle pkg : unit Lwt.t =
   !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
   Lwt.return_unit
 
-let preload_from_file file =
+let preload_from_file ?(verb=false) file =
   let file_url = pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
   let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
@@ -220,7 +222,7 @@ let preload_from_file file =
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
     *)
-    Lwt_list.iter_s (preload_pkg file) pkgs
+    Lwt_list.iter_s (preload_pkg ~verb:verb file) pkgs
   | _ ->
     Format.eprintf "JSON error in preload_from_file\n%!";
     raise (Failure "JSON")
@@ -229,8 +231,8 @@ let preload_from_file file =
 let init init_callback pkg_cb = 
   cb := pkg_cb;
   Lwt.async (fun () ->
-    preload_byte_cache ()      >>= fun () ->
-    preload_from_file init_pkg >>= fun () ->
+    preload_byte_cache ()                 >>= fun () ->
+    preload_from_file ~verb:true init_pkg >>= fun () ->
     init_callback ();
     return_unit
   )
