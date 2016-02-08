@@ -275,10 +275,7 @@ var COQ_LOG_LEVELS = {
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
 
-    /*
-        this.packages = new PackagesManager(coq_packages,
-                                            document.getElementById('packages-panel'));
-    */
+        this.packages = new PackagesManager(document.getElementById('packages-panel'));
 
         this.provider.onInvalidate = stm => {
 
@@ -408,11 +405,12 @@ var COQ_LOG_LEVELS = {
 
             this.enable();
 
+            // We don't load the packages for now.
             // Load the packages.
-            this.options.coq_packages.forEach( pkg => {
-                console.log('Adding pkg: ', pkg);
-                this.coq.add_pkg(pkg);
-            });
+            // this.options.coq_packages.forEach( pkg => {
+            //     console.log('Adding pkg: ', pkg);
+            //     this.coq.add_pkg(pkg);
+            // });
 
         };
 
