@@ -15,6 +15,7 @@ let plugin_list =
 
   ; ["Coq"; "fourier"]
   ; ["Coq"; "omega"]
+  ; ["Coq"; "micromega"]
   ; ["Coq"; "romega"]
   ]
 
@@ -32,6 +33,7 @@ let coq_theory_list =
   ; ["Coq"; "PArith"]
   ; ["Coq"; "NArith"]
   ; ["Coq"; "ZArith"]
+  ; ["Coq"; "QArith"]
   ; ["Coq"; "Lists"]
   ; ["Coq"; "Vectors"]
   ; ["Coq"; "Reals"]
@@ -79,9 +81,10 @@ let pkgs : (string * string list list) list=
   ; "coq-arith",
     [ ["Coq"; "setoid_ring"]
     ; ["Coq"; "Arith"]
-    ; ["Coq"; "PArith"]
     ; ["Coq"; "NArith"]
+    ; ["Coq"; "PArith"]
     ; ["Coq"; "ZArith"]
+    ; ["Coq"; "QArith"]
     ; ["Coq"; "Numbers"]
     ; ["Coq"; "Numbers"; "NatInt"]
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
@@ -90,6 +93,7 @@ let pkgs : (string * string list list) list=
   ; "coq-reals",
     [ ["Coq"; "fourier"]
     ; ["Coq"; "omega"]
+    ; ["Coq"; "micromega"]
     ; ["Coq"; "Reals"] ]
   ; "coquelicot",
     [ [ "Coquelicot" ] ]
