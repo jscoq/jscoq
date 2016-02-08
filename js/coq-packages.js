@@ -75,7 +75,7 @@ var PackagesManager;
         req.open('GET', pkg_json_url);
         req.onreadystatechange = () => {
             if (req.readyState === 4) {
-                if (req.status === 200)
+                if (req.status === 200 || req.status === 0)
                     this._download(JSON.parse(req.responseText));
                 // XXX by design we could not access CoqPanel.log
                 // TODO: else log error message
