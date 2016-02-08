@@ -92,11 +92,14 @@ endif
 #  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
 WOVR=-w -31
 
+# Ocaml libs that we need.
+JSCAMLNK=dynlink.cma nums.cma str.cma gramlib.cma
+
 # -linkall seems necessary, otherwise some internal Coq tables are dropped.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose \
 	   $(JSOOFLAGS) -package camlp5 -package sexplib                 \
-	   dynlink.cma str.cma gramlib.cma $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   $(JSCAMLNK) $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
