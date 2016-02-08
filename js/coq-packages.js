@@ -20,6 +20,13 @@ var PackagesManager;
                              });
     };
 
+    PackagesManager.prototype.setup = function() {
+        jsCoq.onPkgProgress = (evt) => {
+            var ce = new CustomEvent('pkgProgress', {detail:evt});
+            document.body.dispatchEvent(ce);
+        };
+    };
+
     PackagesManager.prototype.displayDefinitions = function(req) {
         var rows = d3.select(this.panel).selectAll('div')
             .data(JSON.parse(req.responseText))
@@ -40,17 +47,15 @@ var PackagesManager;
 
      PackagesManager.prototype.sendCoqPkg = function() {
          var row = d3.select(d3.event.target.parentNode);
-         if(this.dl && this.dl.progress !== 1)
-             return; // hack to avoid parallel downloads
-         this.dl  = new PackageDowloader(row);
-         this.dl.download();
+         var dl  = new PackageDowloader(row);
+         dl.download();
     };
 
     var PackageDowloader = function(row) {
         this.row = row;
         this.bar = null;
         this.egg = null;
-        this.pkg_name = row.datum().name;
+        this.bundle_name = row.datum().name;
         this.progress = 0; // percent
     };
 
@@ -65,7 +70,7 @@ var PackagesManager;
             .attr('src', 'images/egg.png')
             .attr('class', 'progress-egg');
 
-        var pkg_json_url = 'coq-pkgs/' + this.pkg_name + '.json';
+        var pkg_json_url = 'coq-pkgs/' + this.bundle_name + '.json';
         var req = new XMLHttpRequest();
         req.open('GET', pkg_json_url);
         req.onreadystatechange = () => {
@@ -85,13 +90,17 @@ var PackagesManager;
         for(var i=0 ; i<json.length ; i++)
             files_total_length += json[i].vo_files.length + json[i].cma_files.length;
 
-        jsCoq.onPkgProgress = (evt) => {
-            this.progress = ++files_loaded_cpt / files_total_length;
-            this.updateProgress();
-            if (files_loaded_cpt === files_total_length)
-                this.finishDownload();
-        };
-        jsCoq.add_pkg(this.pkg_name);
+        document.body.addEventListener('pkgProgress',
+            (evt) => {
+                if(evt.detail.bundle_name === this.bundle_name) {
+                    this.progress = ++files_loaded_cpt / files_total_length;
+                    this.updateProgress();
+                    if (files_loaded_cpt === files_total_length)
+                        this.finishDownload();
+                }
+            }
+        );
+        jsCoq.add_pkg(this.bundle_name);
     };
 
     PackageDowloader.prototype.updateProgress = function() {

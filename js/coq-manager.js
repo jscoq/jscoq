@@ -411,7 +411,7 @@ var COQ_LOG_LEVELS = {
             //     console.log('Adding pkg: ', pkg);
             //     this.coq.add_pkg(pkg);
             // });
-
+            this.packages.setup();
         };
 
         // Initial coq state.
