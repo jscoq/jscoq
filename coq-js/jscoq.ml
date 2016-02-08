@@ -141,13 +141,15 @@ let jscoq_init this =
                         Icoq.fb_handler = (jscoq_feedback_handler this);
                       } in
 
-  let init_callback     ()  = let _ = invoke_handler this##onInit this ()                      in () in
-  let info_callback     bi  = let _ = invoke_handler this##onPkgLoadInfo  this bi              in () in
-  let start_callback    pi  = let _ = invoke_handler this##onPkgLoadStart this pi              in () in
-  let load_callback     pkg = let _ = invoke_handler this##onPkgLoad      this (string pkg)    in () in
-  let progress_callback pi  = let _ = invoke_handler this##onPkgProgress  this pi              in () in
-
-  Jslibmng.init init_callback info_callback start_callback load_callback progress_callback;
+  let init_callback () = ignore (invoke_handler this##onInit this ()) in
+  let open Jslibmng in
+  let pkg_callbacks = {
+    pkg_info     = (fun bi -> ignore (invoke_handler this##onPkgLoadInfo  this bi));
+    pkg_start    = (fun pi -> ignore (invoke_handler this##onPkgLoadStart this pi));
+    pkg_progress = (fun pi -> ignore (invoke_handler this##onPkgProgress  this pi));
+    pkg_load     = (fun pi -> ignore (invoke_handler this##onPkgLoad      this pi));
+  } in
+  Jslibmng.init init_callback pkg_callbacks;
   sid
 
 let jscoq_version _this =

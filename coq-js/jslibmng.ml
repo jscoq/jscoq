@@ -80,12 +80,20 @@ let mk_progressInfo bundle pkg number =
   pi##loaded       <- number;
   pi
 
-
 (* Global Callbacks *)
-let info_cb:  (bundleInfo -> unit)   ref = ref (fun _bi -> ())
-let load_cb : (string       -> unit) ref = ref (fun _pkg      -> ())
-let start_cb: (progressInfo -> unit) ref = ref (fun _pi -> ())
-let prog_cb : (progressInfo -> unit) ref = ref (fun _pi -> ())
+type pkg_callbacks = {
+  pkg_info     : bundleInfo -> unit;
+  pkg_start    : progressInfo -> unit;
+  pkg_progress : progressInfo -> unit;
+  pkg_load     : progressInfo -> unit;
+}
+
+let cb : pkg_callbacks ref = ref {
+  pkg_info     = (fun _ -> ());
+  pkg_start    = (fun _ -> ());
+  pkg_progress = (fun _ -> ());
+  pkg_load     = (fun _ -> ());
+  }
 
 (* Preload some code based on its md5 *)
 let preload_js_code msum =
@@ -178,11 +186,11 @@ let preload_pkg bundle pkg : unit Lwt.t =
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = no_files pkg                                         in
   Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
-  !start_cb (mk_progressInfo bundle pkg 0);
+  !cb.pkg_start (mk_progressInfo bundle pkg 0);
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
     Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
-    !prog_cb (mk_progressInfo bundle pkg (i+nc+1));
+    !cb.pkg_progress (mk_progressInfo bundle pkg (i+nc+1));
     Lwt.return_unit
   in
   (if Icoq.dyn_comp then
@@ -194,7 +202,7 @@ let preload_pkg bundle pkg : unit Lwt.t =
   ) >>= fun () ->
   Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
   Icoq.add_load_path pkg.pkg_id pkg_dir (ncma > 0);
-  !load_cb pkg_dir;
+  !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
   Lwt.return_unit
 
 let preload_from_file file =
@@ -205,8 +213,7 @@ let preload_from_file file =
   | `List coq_pkgs ->
     let open List in
     let pkgs = map Jslib.json_to_pkg coq_pkgs in
-    let bi   = build_bundle_info file pkgs    in
-    !info_cb bi;
+    !cb.pkg_info (build_bundle_info file pkgs);
     (*
     Format.eprintf "number of packages to preload %d [%d files]\n%!"
       (length coq_pkgs)
@@ -219,11 +226,8 @@ let preload_from_file file =
     raise (Failure "JSON")
   )
 
-let init init_callback info_callback start_callback load_callback progress_callback =
-  info_cb  := info_callback;
-  start_cb := start_callback;
-  load_cb  := load_callback;
-  prog_cb  := progress_callback;
+let init init_callback pkg_cb = 
+  cb := pkg_cb;
   Lwt.async (fun () ->
     preload_byte_cache ()      >>= fun () ->
     preload_from_file init_pkg >>= fun () ->
@@ -233,7 +237,8 @@ let init init_callback info_callback start_callback load_callback progress_callb
 
 let load_pkg pkg_file = Lwt.async (fun () ->
     preload_from_file pkg_file >>= fun () ->
-    !load_cb pkg_file;
+    (* XXX: No notification for bundle loading *)
+    (* !cb.bundle_load pkg_file; *)
     return_unit
   )
 

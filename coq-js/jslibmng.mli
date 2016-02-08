@@ -30,13 +30,16 @@ class type progressInfo = object
   method total        : ('self t, int)         meth_callback writeonly_prop
 end
 
+type pkg_callbacks = {
+  pkg_info     : bundleInfo -> unit;
+  pkg_start    : progressInfo -> unit;
+  pkg_progress : progressInfo -> unit;
+  pkg_load     : progressInfo -> unit;
+}
+
 (** [init callback pkg_callbacks] gather package list and start preloading, call
     [callback] when done *)
-val init : (unit -> unit)         ->
-           (bundleInfo -> unit)   ->
-           (progressInfo -> unit) ->
-           (string -> unit)       ->
-           (progressInfo -> unit) -> unit
+val init : (unit -> unit) -> pkg_callbacks -> unit
 
 (** [load_pkg pkg_file] load package [file], returns the total number
     of packages *)
