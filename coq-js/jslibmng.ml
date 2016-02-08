@@ -49,11 +49,43 @@ class type bundleInfo = object
   method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
 end
 
+class type progressInfo = object
+  method bundle_name_ : ('self t, js_string t) meth_callback writeonly_prop
+  method pkg_name_    : ('self t, js_string t) meth_callback writeonly_prop
+  method loaded       : ('self t, int)         meth_callback writeonly_prop
+  method total        : ('self t, int)         meth_callback writeonly_prop
+end
+
+let mk_pkgInfo pkg =
+  let pi      = Js.Unsafe.obj [||]   in
+  pi##name      <- string @@ to_dir  pkg;
+  pi##desc      <- string @@ to_desc pkg;
+  let open List in
+  pi##no_files_ <- length pkg.vo_files + length pkg.cma_files;
+  pi
+
+let build_bundle_info name pkgs =
+  let bi      = Js.Unsafe.obj [||]   in
+  let bi_pkgs = jsnew array_empty () in
+  List.iter (fun p -> ignore (bi_pkgs##push(mk_pkgInfo p))) pkgs;
+  bi##name <- string name;
+  bi##pkgs <- bi_pkgs;
+  bi
+
+let mk_progressInfo bundle pkg number =
+  let pi           = Js.Unsafe.obj [||]   in
+  pi##bundle_name_ <- string bundle;
+  pi##pkg_name_    <- string @@ to_dir  pkg;
+  pi##total        <- no_files pkg;
+  pi##loaded       <- number;
+  pi
+
+
 (* Global Callbacks *)
 let info_cb:  (bundleInfo -> unit)   ref = ref (fun _bi -> ())
-let start_cb: (string * int -> unit) ref = ref (fun (_pkg, _n) -> ())
 let load_cb : (string       -> unit) ref = ref (fun _pkg      -> ())
-let prog_cb : (string * int -> unit) ref = ref (fun (_pkg, _n) -> ())
+let start_cb: (progressInfo -> unit) ref = ref (fun _pi -> ())
+let prog_cb : (progressInfo -> unit) ref = ref (fun _pi -> ())
 
 (* Preload some code based on its md5 *)
 let preload_js_code msum =
@@ -141,16 +173,16 @@ let _preload_cma_file base_url (file, _hash) : unit Lwt.t =
   ;
   Lwt.return_unit
 
-let preload_pkg pkg : unit Lwt.t =
-  let pkg_dir = to_dir pkg.pkg_id                                    in
+let preload_pkg bundle pkg : unit Lwt.t =
+  let pkg_dir = to_dir pkg                                           in
   let ncma    = List.length pkg.cma_files                            in
-  let nfiles  = List.length pkg.vo_files + List.length pkg.cma_files in
+  let nfiles  = no_files pkg                                         in
   Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
-  !start_cb (pkg_dir, nfiles);
+  !start_cb (mk_progressInfo bundle pkg 0);
   let preload_vo_and_log nc i f =
     preload_vo_file pkg_dir f >>= fun () ->
     Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
-    !prog_cb (pkg_dir, i+nc+1);
+    !prog_cb (mk_progressInfo bundle pkg (i+nc+1));
     Lwt.return_unit
   in
   (if Icoq.dyn_comp then
@@ -164,22 +196,6 @@ let preload_pkg pkg : unit Lwt.t =
   Icoq.add_load_path pkg.pkg_id pkg_dir (ncma > 0);
   !load_cb pkg_dir;
   Lwt.return_unit
-
-let build_pkg_info pkg =
-  let pi      = Js.Unsafe.obj [||]   in
-  pi##name     <- string @@ to_dir  pkg.pkg_id;
-  pi##desc     <- string @@ to_desc pkg.pkg_id;
-  let open List in
-  pi##no_files <- length pkg.vo_files + length pkg.cma_files;
-  pi
-
-let build_bundle_info name pkgs =
-  let bi      = Js.Unsafe.obj [||]   in
-  let bi_pkgs = jsnew array_empty () in
-  List.iter (fun p -> ignore (bi_pkgs##push(build_pkg_info p))) pkgs;
-  bi##name <- string name;
-  bi##pkgs <- bi_pkgs;
-  bi
 
 let preload_from_file file =
   let file_url = pkg_prefix ^ file ^ ".json" in
@@ -197,7 +213,7 @@ let preload_from_file file =
       (fold_left (+) 0
          (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
     *)
-    Lwt_list.iter_s preload_pkg pkgs
+    Lwt_list.iter_s (preload_pkg file) pkgs
   | _ ->
     Format.eprintf "JSON error in preload_from_file\n%!";
     raise (Failure "JSON")

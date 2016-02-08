@@ -336,20 +336,23 @@ var COQ_LOG_LEVELS = {
         };
 
         this.coq.onPkgLoadInfo = pkg_info => {
-            // console.log("pkg info called for: ");
-            // console.log(pkg_info);
+            console.log("pkg info called for: ");
+            console.log(pkg_info);
         };
 
-        this.coq.onPkgLoadStart = pkg => {
-            console.log("pkg start called for: " + pkg[1] + " @ " + pkg[2].toString());
+        this.coq.onPkgLoadStart = progress => {
+            console.log("pkg start called for: ");
+            console.log(progress);
+        };
+
+        this.coq.onPkgProgress = progress => {
+            console.log("pkg progress called for: ");
+            console.log(progress);
         };
 
         this.coq.onPkgLoad = pkg => {
-            // console.log("pkg load called for: " + pkg);
-        };
-
-        this.coq.onPkgProgress = pkg => {
-            // console.log("pkg progress called for: " + pkg[1] + " @ " + pkg[2].toString());
+            console.log("pkg load called for: ");
+            console.log(pkg);
         };
 
         // Hacks, we should refine...

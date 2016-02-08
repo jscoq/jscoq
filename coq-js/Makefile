@@ -38,8 +38,7 @@ YOJSONFLAGS=-package yojson,ppx_deriving_yojson
 # Main jscoq files
 icoq.cmo: icoq.cmi
 
-# No mli file
-# jslib.cmo: jslib.cmi
+jslib.cmo: jslib.cmi
 
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 

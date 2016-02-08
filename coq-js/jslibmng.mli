@@ -23,13 +23,20 @@ class type bundleInfo = object
   method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
 end
 
+class type progressInfo = object
+  method bundle_name_ : ('self t, js_string t) meth_callback writeonly_prop
+  method pkg_name_    : ('self t, js_string t) meth_callback writeonly_prop
+  method loaded       : ('self t, int)         meth_callback writeonly_prop
+  method total        : ('self t, int)         meth_callback writeonly_prop
+end
+
 (** [init callback pkg_callbacks] gather package list and start preloading, call
     [callback] when done *)
 val init : (unit -> unit)         ->
            (bundleInfo -> unit)   ->
-           (string * int -> unit) ->
+           (progressInfo -> unit) ->
            (string -> unit)       ->
-           (string * int -> unit) -> unit
+           (progressInfo -> unit) -> unit
 
 (** [load_pkg pkg_file] load package [file], returns the total number
     of packages *)

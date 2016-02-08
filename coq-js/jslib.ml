@@ -17,8 +17,10 @@ type coq_pkg = {
   cma_files : (string * Digest.t) list;
 }
 
-let to_dir  = String.concat "/"
-let to_desc = String.concat "."
+let to_dir  pkg = String.concat "/" (pkg.pkg_id)
+let to_desc pkg = String.concat "." (pkg.pkg_id)
+
+let no_files pkg = List.length pkg.vo_files + List.length pkg.cma_files
 
 (* JSON handling *)
 open Yojson.Basic

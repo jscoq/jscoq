@@ -44,11 +44,15 @@ class type jsCoq = object
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
 
-  (* Events *)
+  (* When the package is parsed by jsCoq *)
   method onPkgLoadInfo  : ('self t, Jslibmng.bundleInfo) event_listener writeonly_prop
-  method onPkgLoadStart : ('self t, js_string t * int)   event_listener writeonly_prop
+
+  (* When the package finishes *)
   method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
-  method onPkgProgress  : ('self t, js_string t * int)   event_listener writeonly_prop
+
+  (* When the package finishes *)
+  method onPkgLoadStart : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
+  method onPkgProgress  : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener writeonly_prop
@@ -137,11 +141,11 @@ let jscoq_init this =
                         Icoq.fb_handler = (jscoq_feedback_handler this);
                       } in
 
-  let init_callback     ()      = let _ = invoke_handler this##onInit this ()                      in () in
-  let info_callback     bi      = let _ = invoke_handler this##onPkgLoadInfo  this bi              in () in
-  let start_callback    (pkg,n) = let _ = invoke_handler this##onPkgLoadStart this (string pkg, n) in () in
-  let load_callback     pkg     = let _ = invoke_handler this##onPkgLoad      this (string pkg)    in () in
-  let progress_callback (pkg,n) = let _ = invoke_handler this##onPkgProgress  this (string pkg, n) in () in
+  let init_callback     ()  = let _ = invoke_handler this##onInit this ()                      in () in
+  let info_callback     bi  = let _ = invoke_handler this##onPkgLoadInfo  this bi              in () in
+  let start_callback    pi  = let _ = invoke_handler this##onPkgLoadStart this pi              in () in
+  let load_callback     pkg = let _ = invoke_handler this##onPkgLoad      this (string pkg)    in () in
+  let progress_callback pi  = let _ = invoke_handler this##onPkgProgress  this pi              in () in
 
   Jslibmng.init init_callback info_callback start_callback load_callback progress_callback;
   sid
