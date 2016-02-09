@@ -45,17 +45,18 @@ var PackagesManager;
         });
     };
 
-     PackagesManager.prototype.sendCoqPkg = function() {
-         var row = d3.select(d3.event.target.parentNode);
-         var dl  = new PackageDowloader(row);
-         dl.download();
+    PackagesManager.prototype.sendCoqPkg = function() {
+        var row  = d3.select(d3.event.target.parentNode);
+        var dl  = new PackageDowloader(row, this.panel);
+        dl.download();
     };
 
-    var PackageDowloader = function(row) {
+    var PackageDowloader = function(row, panel) {
         this.row = row;
         this.bar = null;
         this.egg = null;
         this.bundle_name = row.datum().name;
+        this.panel = panel;
         this.progress = 0; // percent
     };
 
@@ -87,10 +88,27 @@ var PackagesManager;
     PackageDowloader.prototype._download = function(json) {
         var files_total_length = 0;
         var files_loaded_cpt = 0;
-        var json = json.pkgs;
+        var pkgs = json.pkgs;
 
-        for(var i=0 ; i<json.length ; i++)
-            files_total_length += json[i].vo_files.length + json[i].cma_files.length;
+        // XXX: Circular dependencies will kill us here.
+        var deps = json.deps;
+
+        if (deps) {
+            var deps_row = d3.select(this.panel).selectAll('div')
+            //                       ^^^^^^^^^^ ummm
+                .filter( pkg_row => deps.includes(pkg_row.name) );
+
+            deps_row.forEach( pkg_row =>
+                              {   // Pain XXX
+                                  if (pkg_row[0]) {
+                                      new PackageDowloader(d3.select(pkg_row[0]), this.panel)
+                                          .download(); }
+                              } );
+        }
+
+        // Proceed to the main download.
+        for(var i = 0; i < pkgs.length; i++)
+            files_total_length += pkgs[i].vo_files.length + pkgs[i].cma_files.length;
 
         document.body.addEventListener('pkgProgress',
             (evt) => {
