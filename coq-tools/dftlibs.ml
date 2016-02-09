@@ -45,10 +45,10 @@ let coq_theory_list =
   ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
   ]
 
-(* Packages *)
+(* Packages: name, deps, modules *)
 
-let pkgs : (string * string list list) list=
-  [ "init",
+let pkgs : (string * string list * string list list) list=
+  [ "init", [],
     [ ["Coq"; "syntax"]
     ; ["Coq"; "decl_mode"]
     ; ["Coq"; "cc"]
@@ -61,13 +61,13 @@ let pkgs : (string * string list list) list=
     ; ["Coq"; "Unicode"]
     ; ["mathcomp"; "ssreflect"]
     ]
-  ; "math-comp",
+  ; "math-comp", [],
     [ ["mathcomp"; "algebra"]
     ; ["mathcomp"; "fingroup"]
     ; ["mathcomp"; "solvable"]
     ; ["mathcomp"; "field"]
     ]
-  ; "coq-base",
+  ; "coq-base", [],
     [ ["Coq"; "Logic"]
     ; ["Coq"; "Program"]
     ; ["Coq"; "Classes"]
@@ -78,7 +78,7 @@ let pkgs : (string * string list list) list=
     ; ["Coq"; "Vectors"]
     ; ["Coq"; "Strings"]
     ]
-  ; "coq-arith",
+  ; "coq-arith", ["coq-base"],
     [ ["Coq"; "setoid_ring"]
     ; ["Coq"; "Arith"]
     ; ["Coq"; "NArith"]
@@ -90,24 +90,24 @@ let pkgs : (string * string list list) list=
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
     ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
     ]
-  ; "coq-reals",
+  ; "coq-reals", ["coq-arith"],
     [ ["Coq"; "fourier"]
     ; ["Coq"; "omega"]
     ; ["Coq"; "micromega"]
     ; ["Coq"; "Reals"] ]
-  ; "coquelicot",
+  ; "coquelicot", ["coq-reals"],
     [ [ "Coquelicot" ] ]
-  ; "flocq",
+  ; "flocq", ["coq-reals"],
     [ ["Coq"; "romega"]
     ; [ "Flocq" ; "Core" ] ]
-  ; "tlc",
+  ; "tlc", ["coq-reals"],
     [ ["TLC"] ]
-  ; "sf",
+  ; "sf", ["coq-reals"],
     [ ["SF"] ]
-  ; "cpdt",
+  ; "cpdt", ["coq-reals"],
     [ ["Cpdt"] ]
 (*
-  ; "color",
+  ; "color", ["coq-base"],
     [ ["CoLoR" ; "Filter"]
     ; ["CoLoR" ; "RPO"]
     ; ["CoLoR" ; "Coccinelle"]

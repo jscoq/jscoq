@@ -30,12 +30,18 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
 
 let out_pref = "coq-pkgs/"
 
-let build_pkg (pkg, p_mod) =
-  let out   = open_out (out_pref ^ pkg ^ ".json")      in
-  let ofmt  = formatter_of_out_channel out             in
-  let p_mod = List.map build_pkg p_mod                 in
-  let json  = List.map Jslib.pkg_to_json p_mod         in
-  fprintf ofmt "%s\n" @@ pretty_to_string (`List json);
+let build_pkg (pkg, deps, p_mod) =
+  let open List                                    in
+  let open Jslib                                   in
+  let out    = open_out (out_pref ^ pkg ^ ".json") in
+  let ofmt   = formatter_of_out_channel out        in
+  let p_mod  = map build_pkg p_mod                 in
+  let bundle = { desc = pkg;
+                 deps = deps;
+                 pkgs = p_mod;
+               } in
+  let json   = bundle_to_json bundle               in
+  fprintf ofmt "%s\n" @@ pretty_to_string json;
   close_out out
 
 let _ =

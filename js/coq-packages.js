@@ -87,6 +87,8 @@ var PackagesManager;
     PackageDowloader.prototype._download = function(json) {
         var files_total_length = 0;
         var files_loaded_cpt = 0;
+        var json = json.pkgs;
+
         for(var i=0 ; i<json.length ; i++)
             files_total_length += json[i].vo_files.length + json[i].cma_files.length;
 

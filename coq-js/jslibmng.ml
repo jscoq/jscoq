@@ -60,29 +60,28 @@ let mk_pkgInfo pkg =
   let pi      = Js.Unsafe.obj [||]   in
   pi##name      <- string @@ to_dir  pkg;
   pi##desc      <- string @@ to_desc pkg;
-  let open List in
-  pi##no_files_ <- length pkg.vo_files + length pkg.cma_files;
+  pi##no_files_ <- no_files pkg;
   pi
 
-let build_bundle_info name pkgs =
+let build_bundle_info bundle =
   let bi      = Js.Unsafe.obj [||]   in
   let bi_pkgs = jsnew array_empty () in
-  List.iter (fun p -> ignore (bi_pkgs##push(mk_pkgInfo p))) pkgs;
-  bi##name <- string name;
+  List.iter (fun p -> ignore (bi_pkgs##push(mk_pkgInfo p))) bundle.pkgs;
+  bi##name <- string bundle.desc;
   bi##pkgs <- bi_pkgs;
   bi
 
 let mk_progressInfo bundle pkg number =
   let pi           = Js.Unsafe.obj [||]   in
   pi##bundle_name_ <- string bundle;
-  pi##pkg_name_    <- string @@ to_dir  pkg;
+  pi##pkg_name_    <- string @@ to_dir pkg;
   pi##total        <- no_files pkg;
   pi##loaded       <- number;
   pi
 
 (* Global Callbacks *)
 type pkg_callbacks = {
-  pkg_info     : bundleInfo -> unit;
+  pkg_info     : bundleInfo   -> unit;
   pkg_start    : progressInfo -> unit;
   pkg_progress : progressInfo -> unit;
   pkg_load     : progressInfo -> unit;
@@ -210,25 +209,15 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
 let preload_from_file ?(verb=false) file =
   let file_url = pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
-  let jpkg = Yojson.Basic.from_string res.XmlHttpRequest.content in
-  match jpkg with
-  | `List coq_pkgs ->
-    let open List in
-    let pkgs = map Jslib.json_to_pkg coq_pkgs in
-    !cb.pkg_info (build_bundle_info file pkgs);
-    (*
-    Format.eprintf "number of packages to preload %d [%d files]\n%!"
-      (length coq_pkgs)
-      (fold_left (+) 0
-         (map (fun pkg -> length pkg.vo_files + length pkg.cma_files) pkgs));
-    *)
-    Lwt_list.iter_s (preload_pkg ~verb:verb file) pkgs
-  | _ ->
-    Format.eprintf "JSON error in preload_from_file\n%!";
-    raise (Failure "JSON")
-  )
+  let bundle = try Jslib.json_to_bundle
+                     (Yojson.Basic.from_string res.XmlHttpRequest.content)
+               with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
+                            raise (Failure "JSON"))
+  in
+  !cb.pkg_info (build_bundle_info bundle);
+  Lwt_list.iter_s (preload_pkg ~verb:verb file) bundle.pkgs)
 
-let init init_callback pkg_cb = 
+let init init_callback pkg_cb =
   cb := pkg_cb;
   Lwt.async (fun () ->
     preload_byte_cache ()                 >>= fun () ->
