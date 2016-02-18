@@ -120,7 +120,9 @@ $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ````
 
-  jsCoq runs against vanilla Coq v8.5.
+  jsCoq is compatible with vanilla Coq v8.5. However, we maintain a
+  tree with some specific patches at
+  https://github.com/ejgallego/coq/tree/jscoq-patchqueue
 
   If you want to use a different location for the Coq sources, edit
   the `COQDIR` variable in JsCoq's `Makefile`.
