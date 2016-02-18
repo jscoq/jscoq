@@ -148,8 +148,6 @@ var COQ_LOG_LEVELS = {
         }
     };
 
-
-
     /***********************************************************************/
     /* A Provider Container aggregates several containers, the main deal   */
     /* here is keeping track of focus, as the focused container can be     */
@@ -333,23 +331,23 @@ var COQ_LOG_LEVELS = {
         };
 
         this.coq.onPkgLoadInfo = pkg_info => {
-            console.log("pkg info called for: ");
-            console.log(pkg_info);
+            // console.log("pkg info called for: ");
+            // console.log(pkg_info);
         };
 
         this.coq.onPkgLoadStart = progress => {
-            console.log("pkg start called for: ");
-            console.log(progress);
+            // console.log("pkg start called for: ");
+            // console.log(progress);
         };
 
         this.coq.onPkgProgress = progress => {
-            console.log("pkg progress called for: ");
-            console.log(progress);
+            // console.log("pkg progress called for: ");
+            // console.log(progress);
         };
 
         this.coq.onPkgLoad = pkg => {
-            console.log("pkg load called for: ");
-            console.log(pkg);
+            // console.log("pkg load called for: ");
+            // console.log(pkg);
         };
 
         // Hacks, we should refine...
