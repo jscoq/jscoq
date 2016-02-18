@@ -151,7 +151,7 @@ JOBS=
 ########################################################################
 
 # XXX: Must make a generic method for this
-COLOR_HOME=~/external/coq/CoLoR/color/
+COLOR_HOME=~/external/coq/CoLoR-8.5/color/
 COLOR_DEST=coq-fs/
 TMPDIR=/tmp/
 JSCOQ_DIR=~/research/jscoq/coq-fs/
