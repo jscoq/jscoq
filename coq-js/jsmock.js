@@ -22,6 +22,10 @@ var jsCoq;
         return "Mock JsCoq goals at sid: " + this.cur_sid + "\nwith lastcmd: " + this.lastcmd;
     }
 
+    JsCoq.prototype.set_printing_width = function (w) {
+        return;
+    }
+
     JsCoq.prototype.add = function (eid, sid, goal) {
 
         // Returns sid or 0 if error.
@@ -40,7 +44,7 @@ var jsCoq;
 
     JsCoq.prototype.commit = function (sid) {
         // commit sid; may throw on error?
-        if (! (sid % 5) || 50 < sid) {
+        if (! (sid % 2) || 50 < sid) {
             this.onError(sid);
             this.onLog("ErrorMsg: Mock! " + sid);
             // this.onError.call(this, sid);
