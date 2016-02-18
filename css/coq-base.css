@@ -95,9 +95,9 @@ a, a:link, a:visited, a:active {
   background: #c4c4c4;
   height: 20px;
   padding: 3px 10px 0 10px;
-  position: fixed;
+  position: absolute;
   z-index: 3;
-  width: 45%;
+  width: 100%;
   cursor: pointer;
 }
 
@@ -118,6 +118,8 @@ a, a:link, a:visited, a:active {
   margin: 22px 4px 4px 4px;
   transition: all 0.5s ease-in-out;
   font-family: monospace;
+  overflow: auto;
+  height: fit-content;
 }
 
 .flex-panel.collapsed {

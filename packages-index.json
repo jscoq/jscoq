@@ -7,14 +7,16 @@
      "label": "Coq.Arith"},
     {"name": "coq-reals",
      "label": "Coq.Reals"},
-    {"name": "coquelicot",
-     "label": "Coquelicot"},
-    {"name": "cpdt",
-     "label": "CPDT"},
     {"name": "flocq",
      "label": "Flocq"},
-    {"name": "sf",
-     "label": "SF"},
+    {"name": "coquelicot",
+     "label": "Coquelicot"},
+    {"name": "color",
+     "label": "CoLoR"},
     {"name": "tlc",
-     "label": "TLC"}
+     "label": "TLC"},
+    {"name": "cpdt",
+     "label": "CPDT"},
+    {"name": "sf",
+     "label": "SF"}
 ]

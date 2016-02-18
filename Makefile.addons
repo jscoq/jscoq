@@ -3,7 +3,7 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: ssr-libs coquelicot flocq tlc sf cpdt
+all-addons: ssr-libs coquelicot flocq tlc color sf cpdt
 
 # XXX: We should include the common addon makefile thing.
 
@@ -158,7 +158,7 @@ JSCOQ_DIR=~/research/jscoq/coq-fs/
 
 color:
 	cd $(COLOR_HOME); make install DSTROOT=$(TMPDIR)
-	rm -r $(JSCOQ_DIR)/CoLoR
+	rm -rf $(JSCOQ_DIR)/CoLoR
 	mv /tmp/home/egallego/external/coq-git/user-contrib/CoLoR/ $(JSCOQ_DIR)/
 
 # XXX: Move to common
@@ -166,12 +166,13 @@ COQDIR=~/external/coq-git/
 JOBS=
 
 all-build-clean:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME)/src;  make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make clean
 
 all-build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true

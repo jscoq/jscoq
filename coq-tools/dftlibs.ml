@@ -37,6 +37,11 @@ let coq_theory_list =
   ; ["Coq"; "Lists"]
   ; ["Coq"; "Vectors"]
   ; ["Coq"; "Reals"]
+  ; ["Coq"; "Sets"]
+  ; ["Coq"; "FSets"]
+  ; ["Coq"; "MSets"]
+  ; ["Coq"; "Sorting"]
+  ; ["Coq"; "Wellfounded"]
   ; ["Coq"; "Strings"]
 
   ; ["Coq"; "Numbers"]
@@ -76,6 +81,11 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Setoids"]
     ; ["Coq"; "Lists"]
     ; ["Coq"; "Vectors"]
+    ; ["Coq"; "Sets"]
+    ; ["Coq"; "Sorting"]
+    ; ["Coq"; "FSets"]
+    ; ["Coq"; "MSets"]
+    ; ["Coq"; "Wellfounded"]
     ; ["Coq"; "Strings"]
     ]
   ; "coq-arith", ["coq-base"],
@@ -106,8 +116,8 @@ let pkgs : (string * string list * string list list) list=
     [ ["SF"] ]
   ; "cpdt", ["coq-reals"],
     [ ["Cpdt"] ]
-(*
-  ; "color", ["coq-base"],
+
+  ; "color", [ "coq-reals"],
     [ ["CoLoR" ; "Filter"]
     ; ["CoLoR" ; "RPO"]
     ; ["CoLoR" ; "Coccinelle"]
@@ -156,5 +166,5 @@ let pkgs : (string * string list * string list list) list=
     ; ["CoLoR" ; "MPO"]
     ; ["CoLoR" ; "MannaNess"]
     ]
-*)
+
   ]
