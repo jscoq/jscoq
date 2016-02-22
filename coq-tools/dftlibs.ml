@@ -117,6 +117,11 @@ let pkgs : (string * string list * string list list) list=
   ; "cpdt", ["coq-reals"],
     [ ["Cpdt"] ]
 
+  (* ; "hott", [], *)
+  (*   [ ["HoTT"] *)
+  (*   ; ["HoTT" ; "Basics"] *)
+  (*   ; ["HoTT" ; "Types"] ] *)
+
   ; "color", [ "coq-reals"],
     [ ["CoLoR" ; "Filter"]
     ; ["CoLoR" ; "RPO"]

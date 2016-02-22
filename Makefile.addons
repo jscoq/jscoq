@@ -3,7 +3,7 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: ssr-libs coquelicot flocq tlc color sf cpdt
+all-addons: ssr-libs coquelicot flocq tlc color sf cpdt # hott
 
 # XXX: We should include the common addon makefile thing.
 
@@ -91,6 +91,22 @@ $(FLOCQ_DEST):
 
 flocq: $(FLOCQ_DEST) $(FLOCQ_FILES)
 	$(shell for i in $(FLOCQ_FILES); do cp -a $$i $(FLOCQ_DEST)/`basename $$i`; done)
+
+########################################################################
+# Addons: HoTT                                                        #
+########################################################################
+
+# XXX: Must make a generic method for this
+HOTT_HOME=~/external/HoTT/theories
+HOTT_DEST=coq-fs/HoTT
+
+$(HOTT_DEST):
+	mkdir -p $(HOTT_DEST)
+
+hott: $(HOTT_DEST)
+	rsync -avp $(wildcard $(HOTT_HOME)/*.vo) $(HOTT_DEST)/
+	rsync -avp $(HOTT_HOME)/Basics $(HOTT_DEST)
+	rsync -avp $(HOTT_HOME)/Types  $(HOTT_DEST)
 
 ########################################################################
 # Addons: tlc                                                        #
