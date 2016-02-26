@@ -3,9 +3,28 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: ssr-libs coquelicot flocq tlc color sf cpdt # hott
+all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt # hott
 
 # XXX: We should include the common addon makefile thing.
+
+########################################################################
+# Addons: mtac                                                         #
+########################################################################
+
+MTAC_HOME=~/external/coq/mtac-plugin/
+MTAC_PLUG=$(MTAC_HOME)/src/mtac.cma
+
+MTAC_DEST=coq-fs/Mtac
+MTAC_FILES=$(wildcard $(MTAC_HOME)/theories/*.vo)
+
+# XXX: Use a pattern rule!
+$(MTAC_DEST):
+	mkdir -p $(MTAC_DEST)
+
+mtac: $(MTAC_DEST) $(MTAC_PLUG) $(MTAC_FILES)
+	$(shell cp -a $(MTAC_PLUG) $(MTAC_DEST)/mtac.cma)
+	$(shell for i in $(MTAC_FILES); do cp -a $$i $(MTAC_DEST)/`basename $$i`; done)
+
 
 ########################################################################
 # Addons: ssreflect                                                    #

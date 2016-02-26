@@ -100,6 +100,9 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
     ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
     ]
+  ; "mtac", ["coq-arith"],
+    [ ["Mtac"]
+    ]
   ; "coq-reals", ["coq-arith"],
     [ ["Coq"; "fourier"]
     ; ["Coq"; "omega"]
