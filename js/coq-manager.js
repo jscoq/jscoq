@@ -33,20 +33,15 @@ var COQ_LOG_LEVELS = {
     ERROR : 'error'
 };
 
-var CoqPanel;
-var CoqManager;
-var ProviderContainer;
+Array.prototype.last = function() { return this[this.length-1]; };
 
-(function(){
-    "use strict";
+/***********************************************************************/
+/* The CoqPanel class contains the goal and the query buffer           */
+class CoqPanel {
 
-    Array.prototype.last = function() { return this[this.length-1]; };
+    // Reference to the jsCoq object.
+    constructor(jsCoq) {
 
-    /***********************************************************************/
-    /* The CoqPanel object contains the goal and the query buffer          */
-    CoqPanel = function(jsCoq) {
-
-        // Our reference to the jsCoq object.
         this.coq = jsCoq;
 
         // Our reference to the IDE, goal display & query buffer.
@@ -63,7 +58,7 @@ var ProviderContainer;
             .on('change', () => this.filterLog(d3.event.target));
     };
 
-    CoqPanel.prototype.adjustWidth = function() {
+    adjustWidth() {
 
         setTimeout(() => {
 
@@ -78,16 +73,16 @@ var ProviderContainer;
         }, 500);
     }
 
-    CoqPanel.prototype.show = function() {
+    show() {
         this.ide.classList.remove('toggled');
         this.adjustWidth();
     };
 
-    CoqPanel.prototype.hide = function() {
+    hide() {
         this.ide.classList.add('toggled');
     };
 
-    CoqPanel.prototype.toggle = function() {
+    toggle() {
 
         if (this.ide.classList.contains('toggled')) {
             this.ide.classList.remove('toggled');
@@ -99,14 +94,14 @@ var ProviderContainer;
     };
 
     // Call jsCoq to get the info.
-    CoqPanel.prototype.update = function() {
+    update() {
 
         // TODO: Add diff/history of goals.
         this.proof.textContent = this.coq.goals();
     };
 
     // Add a log event received from Coq.
-    CoqPanel.prototype.log = function(text, level) {
+    log(text, level) {
 
         d3.select(this.query)
             .append('div')
@@ -116,7 +111,7 @@ var ProviderContainer;
             .scrollIntoView();
     };
 
-    CoqPanel.prototype.filterLog = function(level_select) {
+    filterLog(level_select) {
         var length = level_select.getElementsByTagName('option').length;
         var min_log_level = parseInt(level_select.value, 10);
         var i;
@@ -127,11 +122,11 @@ var ProviderContainer;
     };
 
     // Execute a query to Coq
-    CoqPanel.prototype.query  = function(query) {
+    query(query) {
         return true;
     };
 
-    CoqPanel.prototype.panelClickHandler = function(evt) {
+    panelClickHandler(evt) {
         var target = evt.target;
         if(target.classList.contains('caption') &&
             target.parentNode.classList.contains('flex-panel')) {
@@ -148,12 +143,15 @@ var ProviderContainer;
             }
         }
     };
+}
 
-    /***********************************************************************/
-    /* A Provider Container aggregates several containers, the main deal   */
-    /* here is keeping track of focus, as the focused container can be     */
-    /* different from the "active" one                                     */
-    /***********************************************************************/
+/***********************************************************************/
+/* A Provider Container aggregates several containers, the main deal   */
+/* here is keeping track of focus, as the focused container can be     */
+/* different from the "active" one                                     */
+/***********************************************************************/
+
+var ProviderContainer;
 
     ProviderContainer = function(elms) {
         // Code snippets.
@@ -253,6 +251,7 @@ var ProviderContainer;
     /*                                                                     */
     /***********************************************************************/
 
+var CoqManager;
     // XXX: Rename to Coq Director?
     CoqManager = function(elems, options) {
 
@@ -648,7 +647,7 @@ var ProviderContainer;
             }
         }
     };
-}());
+
 
 // Local Variables:
 // js-indent-level: 4
