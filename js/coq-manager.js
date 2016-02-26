@@ -8,6 +8,7 @@
 //
 // We also provide a side panel with proof and query buffers.
 
+// XXX: We still need to use RequireJS or something like that.
 "use strict";
 
 function dumpCache () {
@@ -37,6 +38,7 @@ Array.prototype.last = function() { return this[this.length-1]; };
 
 /***********************************************************************/
 /* The CoqPanel class contains the goal and the query buffer           */
+/***********************************************************************/
 class CoqPanel {
 
     // Reference to the jsCoq object.
@@ -56,7 +58,7 @@ class CoqPanel {
 
         d3.select('select[name=msg_filter]')
             .on('change', () => this.filterLog(d3.event.target));
-    };
+    }
 
     adjustWidth() {
 
@@ -76,11 +78,11 @@ class CoqPanel {
     show() {
         this.ide.classList.remove('toggled');
         this.adjustWidth();
-    };
+    }
 
     hide() {
         this.ide.classList.add('toggled');
-    };
+    }
 
     toggle() {
 
@@ -91,14 +93,14 @@ class CoqPanel {
         else
             this.ide.classList.add('toggled');
 
-    };
+    }
 
     // Call jsCoq to get the info.
     update() {
 
         // TODO: Add diff/history of goals.
         this.proof.textContent = this.coq.goals();
-    };
+    }
 
     // Add a log event received from Coq.
     log(text, level) {
@@ -109,7 +111,7 @@ class CoqPanel {
             .html(text)
             .node()
             .scrollIntoView();
-    };
+    }
 
     filterLog(level_select) {
         var length = level_select.getElementsByTagName('option').length;
@@ -119,12 +121,12 @@ class CoqPanel {
             this.log_css_rules[i].style.display = 'none';
         for(i=min_log_level ; i < length ; i++)
             this.log_css_rules[i].style.display = 'block';
-    };
+    }
 
     // Execute a query to Coq
     query(query) {
         return true;
-    };
+    }
 
     panelClickHandler(evt) {
         var target = evt.target;
@@ -142,7 +144,7 @@ class CoqPanel {
                 panel.classList.add('collapsed');
             }
         }
-    };
+    }
 }
 
 /***********************************************************************/
@@ -151,9 +153,9 @@ class CoqPanel {
 /* different from the "active" one                                     */
 /***********************************************************************/
 
-var ProviderContainer;
+class ProviderContainer {
 
-    ProviderContainer = function(elms) {
+    constructor(elms) {
         // Code snippets.
         this.snippets = [];
 
@@ -180,10 +182,10 @@ var ProviderContainer;
             // however, in the future, onInvalidate should provice the
             // concrete invalid statement.
         },this);
-    };
+    }
 
     // Get the next candidate and mark it.
-    ProviderContainer.prototype.getNext = function(prev) {
+    getNext(prev) {
 
         var spr, next;
 
@@ -217,43 +219,45 @@ var ProviderContainer;
             // No next snippet :( !
             return null;
         }
-    };
+    }
 
-    ProviderContainer.prototype.mark  = function(stm, mark) {
+    mark(stm, mark) {
         stm.sp.mark(stm, mark);
-    };
+    }
 
-    ProviderContainer.prototype.focus = function() {
+    focus() {
         if (this.currentFocus)
             this.currentFocus.focus();
         else
             this.snippets[0].focus();
-    };
-
-    // Get the point of the current focused element.
-    ProviderContainer.prototype.getAtPoint = function() {
-        return this.currentFocus.getAtPoint();
-    };
-
-    var copyOptions = function(obj, target) {
-        if (!target) target = {};
-        for (var prop in target) {
-            if (obj.hasOwnProperty(prop)) {
-                target[prop] = obj[prop];
-            }
-        }
-        return target;
     }
 
-    /***********************************************************************/
-    /* CoqManager coordinates the coq code objects, the panel, and the coq */
-    /* js object.                                                          */
-    /*                                                                     */
-    /***********************************************************************/
+    // Get the point of the current focused element.
+    getAtPoint() {
+        return this.currentFocus.getAtPoint();
+    }
+}
 
-var CoqManager;
-    // XXX: Rename to Coq Director?
-    CoqManager = function(elems, options) {
+
+/***********************************************************************/
+/* CoqManager coordinates the coq code objects, the panel, and the coq */
+/* js object.                                                          */
+/*                                                                     */
+/***********************************************************************/
+
+var copyOptions = function(obj, target) {
+    if (!target) target = {};
+    for (var prop in target) {
+        if (obj.hasOwnProperty(prop)) {
+            target[prop] = obj[prop];
+        }
+    }
+    return target;
+}
+
+class CoqManager {
+
+    constructor(elems, options) {
 
         options = options ? options : {};
 
@@ -298,9 +302,9 @@ var CoqManager;
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
         document.addEventListener('keydown', evt => this.keyHandler(evt));
-    };
+    }
 
-    CoqManager.prototype.loadJsCoq = function(evt) {
+    loadJsCoq(evt) {
 
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
@@ -308,9 +312,9 @@ var CoqManager;
         jscoqscript.src    = this.options.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
         jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
-    };
+    }
 
-    CoqManager.prototype.setupCoq = function() {
+    setupCoq() {
 
         this.coq      = jsCoq;
         let coq
@@ -448,12 +452,12 @@ var CoqManager;
 
         // This is a sid-based index of processed statements.
         this.sentences = [];
-    };
-
+    }
 
     // Keyboard handling
-    CoqManager.prototype.keyHandler = function(e) {
-        // All our keybinding are prefixed by alt.
+    keyHandler(e) {
+
+        // All our keybindings are prefixed by alt.
         if (e.keyCode === 119) // F8
             this.panel.toggle();
 
@@ -478,10 +482,10 @@ var CoqManager;
             this.raiseButton(btn_name);
             e.preventDefault();
         }
-    };
+    }
 
     // Enable the IDE.
-    CoqManager.prototype.enable = function() {
+    enable() {
 
         // Set Printing Width
         window.addEventListener('resize', evt => { this.panel.adjustWidth(); } );
@@ -491,9 +495,9 @@ var CoqManager;
         this.buttons.style.display = 'inline-block';
         this.buttons.style.opacity = 1;
         this.provider.focus();
-    };
+    }
 
-    CoqManager.prototype.toolbarClickHandler = function(evt) {
+    toolbarClickHandler(evt) {
 
         this.provider.focus();
 
@@ -510,9 +514,9 @@ var CoqManager;
                 this.goNext(true);
                 break;
         }
-    };
+    }
 
-    CoqManager.prototype.raiseButton= function(btn_name) {
+    raiseButton(btn_name) {
         var btns = this.buttons.getElementsByTagName('img');
         var btn  = btns.namedItem(btn_name);
 
@@ -522,9 +526,9 @@ var CoqManager;
                                               'bubbles'    : true,
                                               'cancelable' : true}));
         }
-    };
+    }
 
-    CoqManager.prototype.goPrev = function () {
+    goPrev() {
 
         // If we didn't load the prelude, prevent unloading it to
         // workaround a bug in Coq.
@@ -543,10 +547,10 @@ var CoqManager;
         this.coq.edit(this.sid.last());
         this.panel.update();
 
-    };
+    }
 
     // Return if we had success.
-    CoqManager.prototype.goNext = function (update_focus) {
+    goNext(update_focus) {
 
         var next = this.provider.getNext(this.sentences.last());
 
@@ -608,10 +612,10 @@ var CoqManager;
             this.coq.edit(this.sid.last());
             return false;
         }
-    };
+    }
 
     // XXX Not used.
-    CoqManager.prototype.goSentence = function (smt) {
+    goSentence(smt) {
 
         var idx = this.sentences.indexOf(smt);
         if (0 <= idx) {
@@ -620,9 +624,9 @@ var CoqManager;
                 this.goPrev();
             }
         } else {}
-    };
+    }
 
-    CoqManager.prototype.goCursor = function () {
+    goCursor() {
 
         var cur = this.provider.getAtPoint();
 
@@ -646,8 +650,8 @@ var CoqManager;
                 setTimeout(() => { this.goCursor(); }, 50);
             }
         }
-    };
-
+    }
+}
 
 // Local Variables:
 // js-indent-level: 4
