@@ -11,7 +11,7 @@ and to improve the acessibility of the platform itself.
 
 Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
 servers or external programs are needed. JsCoq runs fine in Chrome (>=
-45) or Mozilla Firefox. It also runs in my old Galaxy Nexus.
+49) or Mozilla Firefox. You need a recent browser. It also runs in my old Galaxy Nexus.
 
 * **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
 * **Important:** The project is pretty much a pre-alpha technology demo, you are welcome to use it but expect trouble.
@@ -37,7 +37,7 @@ JsCoq accepts the following options as an optional second parameter to
 the constructor; current options are:
 
 * `prelude: bool`: Whether to load Coq's prelude or not.
-* `coq_packages`: List of Coq's packages to load.
+* `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 
 ### Serialization
@@ -55,7 +55,9 @@ https://github.com/ejgallego/coq/tree/coqdoc
 
 Just build coqdoc normally and use the option `--backend=jscoq`.
 
-This is work in progress and the output may need more refinement.
+This is good for converting old coqdoc files, but it may produce some artifacts. A
+coqdoc replacement is being developed at
+https://github.com/ejgallego/udoc
 
 ## Troubleshooting ##
 
@@ -195,3 +197,7 @@ $ make
 - [doc]: Documentation.
 - [addons]: Addons support.
 - [makefile]: Build system.
+
+## Documents
+
+See the notes directory.
