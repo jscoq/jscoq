@@ -14,7 +14,6 @@ open Lwt
 open Js
 
 (* Defaults *)
-let init_pkg      = "init"
 let pkg_prefix    = "coq-pkgs/"
 
 let fs_prefix     = "coq-fs/"
@@ -38,36 +37,40 @@ let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
    cache. *)
 (* let cma_cache *)
 
-(* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)
+(* XXX This should be the serialization of the jslib.ml:coq_pkg, but
+   waiting for JSON support *)
 class type pkgInfo = object
-  method name        : ('self t, js_string t) meth_callback writeonly_prop
-  method desc        : ('self t, js_string t) meth_callback writeonly_prop
-  method no_files_   : ('self t, int)         meth_callback writeonly_prop
+  method name        : js_string t writeonly_prop
+  method desc        : js_string t writeonly_prop
+  method no_files_   : int         writeonly_prop
 end
 
 class type bundleInfo = object
-  method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
+  method desc        : js_string t            writeonly_prop
+  method deps        : js_string t js_array t writeonly_prop
+  method pkgs        : pkgInfo   t js_array t writeonly_prop
 end
 
 class type progressInfo = object
-  method bundle_name_ : ('self t, js_string t) meth_callback writeonly_prop
-  method pkg_name_    : ('self t, js_string t) meth_callback writeonly_prop
-  method loaded       : ('self t, int)         meth_callback writeonly_prop
-  method total        : ('self t, int)         meth_callback writeonly_prop
+  method bundle_name_ : js_string t writeonly_prop
+  method pkg_name_    : js_string t writeonly_prop
+  method loaded       : int         writeonly_prop
+  method total        : int         writeonly_prop
 end
 
-let mk_pkgInfo pkg =
+let mk_pkgInfo pkg : pkgInfo t =
   let pi      = Js.Unsafe.obj [||]   in
   pi##name      <- string @@ to_dir  pkg;
   pi##desc      <- string @@ to_desc pkg;
   pi##no_files_ <- no_files pkg;
   pi
 
-let build_bundle_info bundle =
+let build_bundle_info bundle : bundleInfo t =
   let bi      = Js.Unsafe.obj [||]   in
-  let bi_pkgs = jsnew array_empty () in
-  List.iter (fun p -> ignore (bi_pkgs##push(mk_pkgInfo p))) bundle.pkgs;
-  bi##name <- string bundle.desc;
+  let bi_deps = Js.array @@ Array.of_list @@ List.map Js.string  bundle.deps in
+  let bi_pkgs = Js.array @@ Array.of_list @@ List.map mk_pkgInfo bundle.pkgs in
+  bi##desc <- string bundle.desc;
+  bi##deps <- bi_deps;
   bi##pkgs <- bi_pkgs;
   bi
 
@@ -81,10 +84,10 @@ let mk_progressInfo bundle pkg number =
 
 (* Global Callbacks *)
 type pkg_callbacks = {
-  pkg_info     : bundleInfo   -> unit;
-  pkg_start    : progressInfo -> unit;
-  pkg_progress : progressInfo -> unit;
-  pkg_load     : progressInfo -> unit;
+  pkg_info     : bundleInfo   t -> unit;
+  pkg_start    : progressInfo t -> unit;
+  pkg_progress : progressInfo t -> unit;
+  pkg_load     : progressInfo t -> unit;
 }
 
 let cb : pkg_callbacks ref = ref {
@@ -148,7 +151,9 @@ let preload_vo_file base_url (file, _hash) : unit Lwt.t =
        done;
        let cache_entry = {
          vo_content = Js.bytestring (Bytes.to_string s);
-         md5        = Digest.bytes s;
+         md5        = Digest.string "";
+         (* XXX: Avoid expensive md5 *)
+         (* md5        = Digest.bytes s; *)
        } in
        Hashtbl.add file_cache (Js.string full_url) cache_entry;
        ()
@@ -209,19 +214,35 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
 let preload_from_file ?(verb=false) file =
   let file_url = pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
+  (* XXX: Use _JSON.json??????? *)
   let bundle = try Jslib.json_to_bundle
                      (Yojson.Basic.from_string res.XmlHttpRequest.content)
                with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
                             raise (Failure "JSON"))
   in
-  !cb.pkg_info (build_bundle_info bundle);
+  (* !cb.pkg_info (build_bundle_info bundle); *)
   Lwt_list.iter_s (preload_pkg ~verb:verb file) bundle.pkgs)
 
-let init init_callback pkg_cb =
+let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
+  let f_js = wrap_callback (fun p x _ _ -> f x >>= (fun () -> p)) in
+  l##reduce_init(f_js, return_unit)
+
+let info_from_file file =
+  let file_url = pkg_prefix ^ file ^ ".json" in
+  XmlHttpRequest.get file_url >>= fun res ->
+  let bundle = try Jslib.json_to_bundle
+                     (Yojson.Basic.from_string res.XmlHttpRequest.content)
+               with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
+                            raise (Failure "JSON"))
+  in
+  return @@ !cb.pkg_info (build_bundle_info bundle)
+
+let init init_callback pkg_cb all_pkgs init_pkgs =
   cb := pkg_cb;
   Lwt.async (fun () ->
-    preload_byte_cache ()                 >>= fun () ->
-    preload_from_file ~verb:true init_pkg >>= fun () ->
+    preload_byte_cache ()                                                     >>= fun () ->
+    iter_arr (fun x -> to_string x |> info_from_file)               all_pkgs  >>= fun () ->
+    iter_arr (fun x -> to_string x |> preload_from_file ~verb:true) init_pkgs >>= fun () ->
     init_callback ();
     return_unit
   )

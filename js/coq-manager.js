@@ -8,12 +8,9 @@
 //
 // We also provide a side panel with proof and query buffers.
 
-var CoqPanel;
-var CoqManager;
-var ProviderContainer;
+"use strict";
 
 function dumpCache () {
-    "use strict";
 
     var download = function (text,filename) {
         var element = document.createElement('a');
@@ -35,6 +32,10 @@ var COQ_LOG_LEVELS = {
     WARN  : 'warn',
     ERROR : 'error'
 };
+
+var CoqPanel;
+var CoqManager;
+var ProviderContainer;
 
 (function(){
     "use strict";
@@ -261,8 +262,10 @@ var COQ_LOG_LEVELS = {
         this.options = {
             mock:    false,
             prelude: true,
-            coq_packages: ['coq-base', 'math-comp', 'coq-arith', 'coq-reals',
-                           'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt']
+            all_pkgs:  ['init', 'math-comp', // 'mtac',
+                        'coq-base', 'coq-arith', 'coq-reals',
+                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color'],
+            init_pkgs: ['init']
         };
 
         this.options = copyOptions(options, this.options);
@@ -272,8 +275,6 @@ var COQ_LOG_LEVELS = {
 
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
-
-        this.packages = new PackagesManager(document.getElementById('packages-panel'));
 
         this.provider.onInvalidate = stm => {
 
@@ -294,6 +295,7 @@ var COQ_LOG_LEVELS = {
                 this.goPrev();
             }, 100);
         };
+
         // Coq Setup
         window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
         document.addEventListener('keydown', evt => this.keyHandler(evt));
@@ -311,12 +313,19 @@ var COQ_LOG_LEVELS = {
 
     CoqManager.prototype.setupCoq = function() {
 
-        this.coq   = jsCoq;
-        this.panel = new CoqPanel(this.coq);
-        // this.panel.show();
+        this.coq      = jsCoq;
+        let coq
+        // Panel setup 1: query panel
+        this.panel    = new CoqPanel(this.coq);
+
         document.getElementById('hide-panel')
             .addEventListener('click', evt => this.panel.toggle());
 
+        // Panel setup 2: packages panel.
+        // XXX: In the future this may also manage the downloads.
+        this.packages = new PackageManager(document.getElementById('packages-panel'));
+
+        // Bind jsCoq events 1: error
         this.coq.onError = e => {
 
             var stm = this.sentences.pop()
@@ -330,17 +339,29 @@ var COQ_LOG_LEVELS = {
 
         };
 
-        this.coq.onPkgLoadInfo = pkg_info => {
+        // Bind jsCoq events: package information
+        this.coq.onNewPkgInfo = pkg_info => {
+
+            this.packages.addPackageInfo(pkg_info);
+
             // console.log("pkg info called for: ");
             // console.log(pkg_info);
         };
 
+        // Bind jsCoq events: a package download was started
         this.coq.onPkgLoadStart = progress => {
+
+            // this.packages.sendCoqPkg();
             // console.log("pkg start called for: ");
             // console.log(progress);
         };
 
+        // Bind jsCoq events: package progress download.
         this.coq.onPkgProgress = progress => {
+
+            // var ce = new CustomEvent('pkgProgress', { detail : progress });
+            // document.body.dispatchEvent(ce);
+
             // console.log("pkg progress called for: ");
             // console.log(progress);
         };
@@ -350,7 +371,7 @@ var COQ_LOG_LEVELS = {
             // console.log(pkg);
         };
 
-        // Hacks, we should refine...
+        // XXX: Use a proper object...
         this.coq.onLog = e => {
 
             var level = COQ_LOG_LEVELS.DEBUG;
@@ -360,6 +381,7 @@ var COQ_LOG_LEVELS = {
                 level = COQ_LOG_LEVELS.ERROR;
                 msg = msg.replace(/^.*ErrorMsg:/, '');
             }
+            // XXX: This should go away.
             else if (msg.indexOf("pre-loading") != -1) {
                 level = COQ_LOG_LEVELS.INFO;
                 msg = msg.toString().replace(/^.*stderr:/, '');
@@ -377,12 +399,21 @@ var COQ_LOG_LEVELS = {
                 msg = msg.toString().replace(/^.*Msg:/, '');
             }
 
-            // if(level != COQ_LOG_LEVELS.DEBUG) {
-                // msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br />');
+            else if(msg.indexOf("FileLoaded:") != -1) {
+                level = COQ_LOG_LEVELS.INFO;
+                msg = msg.toString().replace(/^.*FileLoaded: /, '');
+                msg = msg.toString().replace(/ .*/, '');
+                msg = "Loaded Module: " + msg;
+            }
+
+            if(level != COQ_LOG_LEVELS.DEBUG) {
+                msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br />');
                 this.panel.log(msg, level);
-            // }
+            }
         };
 
+        // Coq Init: At this point, the required libraries are loaded
+        // and Coq is ready to be used.
         this.coq.onInit = e => {
 
             // Enable the IDE.
@@ -403,26 +434,25 @@ var COQ_LOG_LEVELS = {
 
             this.enable();
 
-            // We don't load the packages for now.
-            // Load the packages.
-            // this.options.coq_packages.forEach( pkg => {
-            //     console.log('Adding pkg: ', pkg);
-            //     this.coq.add_pkg(pkg);
-            // });
-            this.packages.setup();
         };
 
-        // Initial coq state.
+        // Initial Coq state.
         this.panel.proof.textContent = this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
 
         this.sid = [];
-        this.sid.push(this.coq.init());
 
-        // This is a sid-based statement index.
+        // Initialize Coq!
+        this.sid.push(this.coq.init(
+            { all_pkgs  : this.options.all_pkgs,
+              init_pkgs : this.options.init_pkgs
+            }));
+
+        // This is a sid-based index of processed statements.
         this.sentences = [];
     };
 
 
+    // Keyboard handling
     CoqManager.prototype.keyHandler = function(e) {
         // All our keybinding are prefixed by alt.
         if (e.keyCode === 119) // F8
@@ -451,10 +481,11 @@ var COQ_LOG_LEVELS = {
         }
     };
 
+    // Enable the IDE.
     CoqManager.prototype.enable = function() {
 
         // Set Printing Width
-        window.addEventListener('resise', evt => { this.panel.adjustWidth(); } );
+        window.addEventListener('resize', evt => { this.panel.adjustWidth(); } );
 
         // Enable the buttons.
         this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );

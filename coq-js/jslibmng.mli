@@ -14,32 +14,37 @@ open Js
 
 (* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)
 class type pkgInfo = object
-  method name        : ('self t, js_string t) meth_callback writeonly_prop
-  method desc        : ('self t, js_string t) meth_callback writeonly_prop
-  method no_files_   : ('self t, int)         meth_callback writeonly_prop
+  method name        : js_string t writeonly_prop
+  method desc        : js_string t writeonly_prop
+  method no_files_   : int         writeonly_prop
 end
 
 class type bundleInfo = object
-  method pkgs        : ('self t, pkgInfo js_array t) meth_callback writeonly_prop
+  method desc        : js_string t            writeonly_prop
+  method deps        : js_string t js_array t writeonly_prop
+  method pkgs        : pkgInfo   t js_array t writeonly_prop
 end
 
 class type progressInfo = object
-  method bundle_name_ : ('self t, js_string t) meth_callback writeonly_prop
-  method pkg_name_    : ('self t, js_string t) meth_callback writeonly_prop
-  method loaded       : ('self t, int)         meth_callback writeonly_prop
-  method total        : ('self t, int)         meth_callback writeonly_prop
+  method bundle_name_ : js_string t writeonly_prop
+  method pkg_name_    : js_string t writeonly_prop
+  method loaded       : int         writeonly_prop
+  method total        : int         writeonly_prop
 end
 
+(* Global Callbacks *)
 type pkg_callbacks = {
-  pkg_info     : bundleInfo -> unit;
-  pkg_start    : progressInfo -> unit;
-  pkg_progress : progressInfo -> unit;
-  pkg_load     : progressInfo -> unit;
+  pkg_info     : bundleInfo   t -> unit;
+  pkg_start    : progressInfo t -> unit;
+  pkg_progress : progressInfo t -> unit;
+  pkg_load     : progressInfo t -> unit;
 }
 
-(** [init callback pkg_callbacks] gather package list and start preloading, call
-    [callback] when done *)
-val init : (unit -> unit) -> pkg_callbacks -> unit
+(** [init callback pkg_callbacks available_pkg init_pkgs] gather
+    package list [available_pkg] and start preloading [init_pkgs],
+    calls [callback] when done. *)
+val init : (unit -> unit) -> pkg_callbacks ->
+  js_string t js_array t -> js_string t js_array t -> unit
 
 (** [load_pkg pkg_file] load package [file], returns the total number
     of packages *)

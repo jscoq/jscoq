@@ -15,21 +15,25 @@
 open Js
 open Dom
 
-class type _jsCoqLib = object
-(* method onError     : ('self t, Stateid.t)             event_listener writeonly_prop *)
+(* Packages to load *)
+class type initInfo = object
+  method init_pkgs_ : js_string t js_array t readonly_prop
+  method all_pkgs_  : js_string t js_array t readonly_prop
 end
 
 class type jsCoq = object
 
-  (* When init is finished, we call on init  *)
-  method init        : ('self t, Stateid.t)             meth_callback writeonly_prop
-  method onInit      : ('self t, unit)                  event_listener writeonly_prop
+  (* When the libraries are loaded and JsCoq is ready, onInit is called *)
+  method init        : ('self t, initInfo t -> Stateid.t) meth_callback writeonly_prop
+  method onInit      : ('self t, unit)                    event_listener prop
+
+  (* When a new package is known we push the information to the GUI *)
+  method onNewPkgInfo : ('self t, Jslibmng.bundleInfo t ) event_listener prop
 
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
   method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
-
   method goal_json_  : ('self t, 'a t)                  meth_callback writeonly_prop
 
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
@@ -44,18 +48,13 @@ class type jsCoq = object
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
 
-  (* When the package is parsed by jsCoq *)
-  method onPkgLoadInfo  : ('self t, Jslibmng.bundleInfo) event_listener writeonly_prop
-
-  (* When the package finishes *)
-  method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
-
-  (* When the package finishes *)
-  method onPkgLoadStart : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
-  method onPkgProgress  : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
+  (* When package loading starts/progresses/completes  *)
+  method onPkgLoadStart : ('self t, Jslibmng.progressInfo t) event_listener prop
+  method onPkgProgress  : ('self t, Jslibmng.progressInfo t) event_listener prop
+  method onPkgLoad      : ('self t, Jslibmng.progressInfo t) event_listener prop
 
   (* Request to log from Coq *)
-  method onLog       : ('self t, js_string t)           event_listener writeonly_prop
+  method onLog       : ('self t, js_string t)           event_listener prop
 
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
@@ -109,7 +108,7 @@ let string_of_eosid esid =
   | Edit  eid -> "eid: " ^ string_of_int eid
   | State sid -> "sid: " ^ (Stateid.to_string sid)
 
-let internal_log this (str : js_string t) =
+let internal_log (this : jsCoq t) (str : js_string t) =
   let _    = invoke_handler this##onLog this str  in
   ()
 
@@ -121,7 +120,7 @@ let jscoq_feedback_handler this (fb : Feedback.feedback) =
 
   internal_log this (string fb_s)
 
-let setup_printers this =
+let setup_printers (this : jsCoq t) =
   try
     (* How to create a channel *)
     (* let _sharp_chan = open_out "/dev/null0" in *)
@@ -134,7 +133,7 @@ let setup_printers this =
            (fun s -> internal_log this (string @@ "stderr: " ^ s))
   with Not_found -> ()
 
-let jscoq_init this =
+let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
   setup_pseudo_fs ();
   setup_printers this;
   let sid = Icoq.init { Icoq.ml_load    = Jslibmng.coq_cma_req;
@@ -144,12 +143,12 @@ let jscoq_init this =
   let init_callback () = ignore (invoke_handler this##onInit this ()) in
   let open Jslibmng in
   let pkg_callbacks = {
-    pkg_info     = (fun bi -> ignore (invoke_handler this##onPkgLoadInfo  this bi));
+    pkg_info     = (fun pi -> ignore (invoke_handler this##onNewPkgInfo   this pi));
     pkg_start    = (fun pi -> ignore (invoke_handler this##onPkgLoadStart this pi));
     pkg_progress = (fun pi -> ignore (invoke_handler this##onPkgProgress  this pi));
     pkg_load     = (fun pi -> ignore (invoke_handler this##onPkgLoad      this pi));
   } in
-  Jslibmng.init init_callback pkg_callbacks;
+  Jslibmng.init init_callback pkg_callbacks init_info##all_pkgs_ init_info##init_pkgs_;
   sid
 
 let jscoq_version _this =
@@ -222,12 +221,15 @@ let _ =
   jsCoq##goal_json_ <- Js.wrap_meth_callback (fun _this -> jscoq_json_of_proof ());
 
   jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
+
+  (* Empty handlers *)
+  jsCoq##onInit         <- no_handler;
+  jsCoq##onNewPkgInfo   <- no_handler;
   jsCoq##onPkgLoadStart <- no_handler;
   jsCoq##onPkgLoad      <- no_handler;
   jsCoq##onPkgProgress  <- no_handler;
-
-  jsCoq##onLog   <- no_handler;
-  jsCoq##onError <- no_handler;
+  jsCoq##onLog          <- no_handler;
+  jsCoq##onError        <- no_handler;
   ()
 
 (*

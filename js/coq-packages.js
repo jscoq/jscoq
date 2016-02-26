@@ -1,66 +1,57 @@
-var PackagesManager;
+"use strict";
 
-(function(){
+class PackageManager {
 
-    "use strict";
-
-    PackagesManager = function(panel) {
+    constructor(panel) {
         this.panel = panel;
+    }
 
-        var package_index_url = 'packages-index.json';
-        var req = new XMLHttpRequest();
-        req.open('GET', package_index_url);
-        req.send(null);
+    addPackageInfo(pkg_info) {
 
-        req.addEventListener('readystatechange',
-                             () => {
-                               if(req.readyState === 4 &&
-                                    (req.status === 200 || req.status === 304 || req.status === 0))
-                                    this.displayDefinitions(req);
-                             });
-    };
+        console.log("update"); console.log(pkg_info);
 
-    PackagesManager.prototype.setup = function() {
-        jsCoq.onPkgProgress = (evt) => {
-            var ce = new CustomEvent('pkgProgress', {detail:evt});
-            document.body.dispatchEvent(ce);
-        };
-    };
+        return;
 
-    PackagesManager.prototype.displayDefinitions = function(req) {
         var rows = d3.select(this.panel).selectAll('div')
-            .data(JSON.parse(req.responseText))
+            .data(pkg_info)
             .enter()
             .append('div');
 
         var self = this;
+
         rows.each(function () {
             var row = d3.select(this);
             row.append('img')
                 .attr('src', 'images/dl.png')
-                .on('click', () => {self.sendCoqPkg();});
+                .on('click', () => { self.sendCoqPkg(); });
 
             row.append('span')
                 .text(d => d.label);
         });
-    };
+    }
 
-    PackagesManager.prototype.sendCoqPkg = function() {
+    // XXX [EG]: This needs to be tweaked, package loading could be
+    // externally initiated.
+    sendCoqPkg() {
         var row  = d3.select(d3.event.target.parentNode);
         var dl  = new PackageDowloader(row, this.panel);
         dl.download();
-    };
+    }
 
-    var PackageDowloader = function(row, panel) {
+} // PackagesManager
+
+class PackageDowloader {
+
+    constructor(row, panel) {
         this.row = row;
         this.bar = null;
         this.egg = null;
         this.bundle_name = row.datum().name;
         this.panel = panel;
         this.progress = 0; // percent
-    };
+    }
 
-    PackageDowloader.prototype.download = function() {
+    download() {
         this.row.select('img').on('click', null);
         this.bar = this.row.append('div')
             .attr('class', 'rel-pos')
@@ -83,9 +74,9 @@ var PackagesManager;
             }
         };
         req.send(null);
-    };
+    }
 
-    PackageDowloader.prototype._download = function(json) {
+    _download(json) {
         var files_total_length = 0;
         var files_loaded_cpt = 0;
         var pkgs = json.pkgs;
@@ -121,21 +112,20 @@ var PackagesManager;
             }
         );
         jsCoq.add_pkg(this.bundle_name);
-    };
+    }
 
-    PackageDowloader.prototype.updateProgress = function() {
+    updateProgress() {
         var angle = (this.progress * 360 * 15) % 360;
         this.egg.style('transform', 'rotate(' + angle + 'deg)');
         this.bar.style('width', this.progress * 100 + '%');
-    };
+    }
 
-    PackageDowloader.prototype.finishDownload = function() {
+    finishDownload() {
         this.row.select('.rel-pos').remove();
         this.row.select('img')
             .attr('src', 'images/checked.png');
-    };
-
-}());
+    }
+}
 
 // Local Variables:
 // js-indent-level: 4

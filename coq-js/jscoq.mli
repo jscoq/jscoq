@@ -15,11 +15,20 @@
 open Js
 open Dom
 
+(* Packages to load first *)
+class type initInfo = object
+  method init_pkgs_ : js_string t js_array t readonly_prop
+  method all_pkgs_  : js_string t js_array t readonly_prop
+end
+
 class type jsCoq = object
 
-  (* When init is finished, we call on init  *)
-  method init        : ('self t, Stateid.t)             meth_callback writeonly_prop
-  method onInit      : ('self t, unit)                  event_listener writeonly_prop
+  (* When the libraries are loaded and JsCoq is ready, onInit is called *)
+  method init        : ('self t, initInfo t -> Stateid.t) meth_callback writeonly_prop
+  method onInit      : ('self t, unit)                    event_listener prop
+
+  (* When a new package is known we push the information to the GUI *)
+  method onNewPkgInfo : ('self t, Jslibmng.bundleInfo t ) event_listener prop
 
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
@@ -38,19 +47,13 @@ class type jsCoq = object
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
 
-  (* Events *)
-  (* When the package is parsed by jsCoq *)
-  method onPkgLoadInfo  : ('self t, Jslibmng.bundleInfo) event_listener writeonly_prop
-
-  (* When the package finishes *)
-  method onPkgLoad      : ('self t, js_string t)         event_listener writeonly_prop
-
-  (* When the package finishes *)
-  method onPkgLoadStart : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
-  method onPkgProgress  : ('self t, Jslibmng.progressInfo)   event_listener writeonly_prop
+  (* When package loading starts/progresses/completes  *)
+  method onPkgLoadStart : ('self t, Jslibmng.progressInfo t) event_listener prop
+  method onPkgProgress  : ('self t, Jslibmng.progressInfo t) event_listener prop
+  method onPkgLoad      : ('self t, Jslibmng.progressInfo t) event_listener prop
 
   (* Request to log from Coq *)
-  method onLog       : ('self t, js_string t)           event_listener writeonly_prop
+  method onLog       : ('self t, js_string t)           event_listener prop
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
 
