@@ -19,6 +19,7 @@ open Dom
 class type initInfo = object
   method init_pkgs_ : js_string t js_array t readonly_prop
   method all_pkgs_  : js_string t js_array t readonly_prop
+  method lib_path_  : js_string t            readonly_prop
 end
 
 class type jsCoq = object

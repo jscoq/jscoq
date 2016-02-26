@@ -13,11 +13,7 @@ open Jslib
 open Lwt
 open Js
 
-(* Defaults *)
-let pkg_prefix    = "coq-pkgs/"
-
-let fs_prefix     = "coq-fs/"
-
+let pkg_prefix    = ref ""
 let bcache_prefix = "bcache/"
 let bcache_file   = "bcache.list"
 
@@ -133,7 +129,7 @@ let preload_vo_file base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
   let full_url    = base_url  ^ "/" ^ file in
-  let request_url = fs_prefix ^ full_url   in
+  let request_url = !pkg_prefix ^ full_url  in
   perform_raw ~response_type:ArrayBuffer request_url >>= fun frame ->
   (* frame.code contains the request status *)
   (* Is this redudant with the Opt check? I guess so *)
@@ -171,7 +167,7 @@ let preload_vo_file base_url (file, _hash) : unit Lwt.t =
 (* Unfortunately this is a tad different than preload_vo_file *)
 let _preload_cma_file base_url (file, _hash) : unit Lwt.t =
   Format.eprintf "pre-loading cma file %s-%s\n%!" base_url file;
-  let cma_url   = fs_prefix ^ "cmas/" ^ file ^ ".js" in
+  let cma_url   = !pkg_prefix ^ "cmas/" ^ file ^ ".js" in
   Format.eprintf "cma url %s\n%!" cma_url;
   (* Avoid costly string conversions *)
   let open XmlHttpRequest in
@@ -212,7 +208,7 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
   Lwt.return_unit
 
 let preload_from_file ?(verb=false) file =
-  let file_url = pkg_prefix ^ file ^ ".json" in
+  let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
   (* XXX: Use _JSON.json??????? *)
   let bundle = try Jslib.json_to_bundle
@@ -228,7 +224,7 @@ let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
   l##reduce_init(f_js, return_unit)
 
 let info_from_file file =
-  let file_url = pkg_prefix ^ file ^ ".json" in
+  let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= fun res ->
   let bundle = try Jslib.json_to_bundle
                      (Yojson.Basic.from_string res.XmlHttpRequest.content)
@@ -237,8 +233,9 @@ let info_from_file file =
   in
   return @@ !cb.pkg_info (build_bundle_info bundle)
 
-let init init_callback pkg_cb all_pkgs init_pkgs =
-  cb := pkg_cb;
+let init init_callback pkg_cb pkg_path all_pkgs init_pkgs =
+  cb         := pkg_cb;
+  pkg_prefix := to_string pkg_path ^ "/";
   Lwt.async (fun () ->
     preload_byte_cache ()                                                     >>= fun () ->
     iter_arr (fun x -> to_string x |> info_from_file)               all_pkgs  >>= fun () ->
@@ -284,7 +281,7 @@ let coq_vo_req url =
 
 let coq_cma_req cma =
   Format.eprintf "cma file %s requested\n%!" cma;
-  let str = (Js.string (fs_prefix ^ "cmas/" ^ cma ^ ".js")) in
+  let str = (Js.string (!pkg_prefix ^ "cmas/" ^ cma ^ ".js")) in
   Js.Unsafe.global##load_script_(str)
 (*
   try let js_code = Hashtbl.find byte_cache (Js.string cma) in

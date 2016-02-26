@@ -14,7 +14,7 @@ all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt # hott
 MTAC_HOME=~/external/coq/mtac-plugin/
 MTAC_PLUG=$(MTAC_HOME)/src/mtac.cma
 
-MTAC_DEST=coq-fs/Mtac
+MTAC_DEST=coq-pkgs/Mtac
 MTAC_FILES=$(wildcard $(MTAC_HOME)/theories/*.vo)
 
 # XXX: Use a pattern rule!
@@ -33,7 +33,7 @@ mtac: $(MTAC_DEST) $(MTAC_PLUG) $(MTAC_FILES)
 SSR_HOME=~/external/coq/math-comp/mathcomp/
 SSR_PLUG=$(SSR_HOME)/ssreflect.cma
 
-SSR_DEST=coq-fs/mathcomp/ssreflect
+SSR_DEST=coq-pkgs/mathcomp/ssreflect
 SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
 
 # XXX: Use a pattern rule!
@@ -44,7 +44,7 @@ ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
 	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
 	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
 
-SSR_ALG_DEST=coq-fs/mathcomp/algebra
+SSR_ALG_DEST=coq-pkgs/mathcomp/algebra
 SSR_ALG_FILES=$(wildcard $(SSR_HOME)/algebra/*.vo)
 
 $(SSR_ALG_DEST):
@@ -53,7 +53,7 @@ $(SSR_ALG_DEST):
 ssr-alg: $(SSR_ALG_DEST) $(SSR_ALG_FILES)
 	$(shell for i in $(SSR_ALG_FILES); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
 
-SSR_FIN_DEST=coq-fs/mathcomp/fingroup
+SSR_FIN_DEST=coq-pkgs/mathcomp/fingroup
 SSR_FIN_FILES=$(wildcard $(SSR_HOME)/fingroup/*.vo)
 
 $(SSR_FIN_DEST):
@@ -62,7 +62,7 @@ $(SSR_FIN_DEST):
 ssr-fin: $(SSR_FIN_DEST) $(SSR_FIN_FILES)
 	$(shell for i in $(SSR_FIN_FILES); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
 
-SSR_SOL_DEST=coq-fs/mathcomp/solvable
+SSR_SOL_DEST=coq-pkgs/mathcomp/solvable
 SSR_SOL_FILES=$(wildcard $(SSR_HOME)/solvable/*.vo)
 
 $(SSR_SOL_DEST):
@@ -71,7 +71,7 @@ $(SSR_SOL_DEST):
 ssr-sol: $(SSR_SOL_DEST) $(SSR_SOL_FILES)
 	$(shell for i in $(SSR_SOL_FILES); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
 
-SSR_FLD_DEST=coq-fs/mathcomp/field
+SSR_FLD_DEST=coq-pkgs/mathcomp/field
 SSR_FLD_FILES=$(wildcard $(SSR_HOME)/field/*.vo)
 
 $(SSR_FLD_DEST):
@@ -87,7 +87,7 @@ ssr-libs: ssr ssr-alg ssr-fin ssr-sol ssr-fld
 ########################################################################
 
 COQCOT_HOME=~/external/coq/coquelicot
-COQCOT_DEST=coq-fs/Coquelicot
+COQCOT_DEST=coq-pkgs/Coquelicot
 COQCOT_FILES=$(wildcard $(COQCOT_HOME)/theories/*.vo)
 
 $(COQCOT_DEST):
@@ -102,7 +102,7 @@ coquelicot: $(COQCOT_DEST) $(COQCOT_FILES)
 
 # XXX: Must make a generic method for this
 FLOCQ_HOME=~/external/coq/flocq/
-FLOCQ_DEST=coq-fs/Flocq/Core
+FLOCQ_DEST=coq-pkgs/Flocq/Core
 FLOCQ_FILES=$(wildcard $(FLOCQ_HOME)/src/Core/*.vo)
 
 $(FLOCQ_DEST):
@@ -117,7 +117,7 @@ flocq: $(FLOCQ_DEST) $(FLOCQ_FILES)
 
 # XXX: Must make a generic method for this
 HOTT_HOME=~/external/HoTT/theories
-HOTT_DEST=coq-fs/HoTT
+HOTT_DEST=coq-pkgs/HoTT
 
 $(HOTT_DEST):
 	mkdir -p $(HOTT_DEST)
@@ -133,7 +133,7 @@ hott: $(HOTT_DEST)
 
 # XXX: Must make a generic method for this
 TLC_HOME=~/external/coq/tlc/
-TLC_DEST=coq-fs/TLC
+TLC_DEST=coq-pkgs/TLC
 TLC_FILES=$(wildcard $(TLC_HOME)/src/*.vo)
 
 $(TLC_DEST):
@@ -148,7 +148,7 @@ tlc: $(TLC_DEST) $(TLC_FILES)
 
 # XXX: Must make a generic method for this
 SF_HOME=~/external/coq/sf/
-SF_DEST=coq-fs/SF
+SF_DEST=coq-pkgs/SF
 SF_FILES=$(wildcard $(SF_HOME)/*.vo)
 
 $(SF_DEST):
@@ -165,7 +165,7 @@ sf: $(SF_DEST) $(SF_FILES)
 
 # XXX: Must make a generic method for this
 CPDT_HOME=~/external/coq/cpdt/
-CPDT_DEST=coq-fs/Cpdt
+CPDT_DEST=coq-pkgs/Cpdt
 # CPDT_FILES=$(wildcard $(CPDT_HOME)/src/*.vo)
 
 # These are free files under BSD
@@ -187,9 +187,9 @@ JOBS=
 
 # XXX: Must make a generic method for this
 COLOR_HOME=~/external/coq/CoLoR-8.5/color/
-COLOR_DEST=coq-fs/
+COLOR_DEST=coq-pkgs/
 TMPDIR=/tmp/
-JSCOQ_DIR=~/research/jscoq/coq-fs/
+JSCOQ_DIR=~/research/jscoq/coq-pkgs/
 
 color:
 	cd $(COLOR_HOME); make install DSTROOT=$(TMPDIR)

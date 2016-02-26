@@ -21,9 +21,6 @@ coq-tools:
 # Library building                                                     #
 ########################################################################
 
-coq-fs:
-	mkdir -p coq-fs
-
 coq-pkgs:
 	mkdir -p coq-pkgs
 
@@ -68,7 +65,7 @@ bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
 BUILDDIR=dist
 
 DISTHTML=newide.html #mtac_tutorial.html
-BUILDOBJ=index.html $(DISTHTML) js css images coq-fs coq-pkgs bcache.list bcache packages-index.json
+BUILDOBJ=index.html $(DISTHTML) js css images coq-pkgs bcache.list bcache packages-index.json
 DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
 
 dist: bcache libs
@@ -97,7 +94,6 @@ clean:
 	$(MAKE) -C coq-toplevel clean
 # $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
-	rm -rf coq-fs
 	rm -rf coq-pkgs
 	rm -rf bcache bcache.list bcache.stamp bc-md5.json bc-js.json
 	rm -rf $(BUILDDIR)
@@ -116,7 +112,7 @@ upload: all
 	ln -sf newide.html index.html
 	mkdir -p ~/x80/rhino-coq/coq-js/
 	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
-	rsync --delete -avzp index.html newide.html ide.html js css images coq-fs coq-pkgs bcache.list bcache external ~/x80/rhino-coq/
+	rsync --delete -avzp index.html newide.html ide.html js css images coq-pkgs bcache.list bcache external ~/x80/rhino-coq/
 # $(shell ./x80-sync.sh)
 
 pau:

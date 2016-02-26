@@ -19,6 +19,7 @@ open Dom
 class type initInfo = object
   method init_pkgs_ : js_string t js_array t readonly_prop
   method all_pkgs_  : js_string t js_array t readonly_prop
+  method lib_path_  : js_string t            readonly_prop
 end
 
 class type jsCoq = object
@@ -148,7 +149,7 @@ let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
     pkg_progress = (fun pi -> ignore (invoke_handler this##onPkgProgress  this pi));
     pkg_load     = (fun pi -> ignore (invoke_handler this##onPkgLoad      this pi));
   } in
-  Jslibmng.init init_callback pkg_callbacks init_info##all_pkgs_ init_info##init_pkgs_;
+  Jslibmng.init init_callback pkg_callbacks init_info##lib_path_ init_info##all_pkgs_ init_info##init_pkgs_;
   sid
 
 let jscoq_version _this =

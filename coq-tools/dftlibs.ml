@@ -1,6 +1,6 @@
 let to_name = String.concat "_"
 let to_dir  = String.concat "/"
-let prefix  = "coq-fs"
+let prefix  = "coq-pkgs"
 
 (* Default FS list *)
 let plugin_list =

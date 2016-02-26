@@ -40,10 +40,12 @@ type pkg_callbacks = {
   pkg_load     : progressInfo t -> unit;
 }
 
-(** [init callback pkg_callbacks available_pkg init_pkgs] gather
-    package list [available_pkg] and start preloading [init_pkgs],
-    calls [callback] when done. *)
+(** [init callback lib_path pkg_callbacks available_pkg init_pkgs]
+    gather package list [available_pkg] and start preloading
+    [init_pkgs] from directory [lib_path], calls [callback] when
+    done. *)
 val init : (unit -> unit) -> pkg_callbacks ->
+  js_string t ->
   js_string t js_array t -> js_string t js_array t -> unit
 
 (** [load_pkg pkg_file] load package [file], returns the total number

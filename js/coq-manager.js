@@ -265,10 +265,11 @@ class CoqManager {
         this.options = {
             mock:    false,
             prelude: true,
+            lib_path:  "coq-pkgs",
+            init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', // 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
-                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color'],
-            init_pkgs: ['init']
+                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color']
         };
 
         this.options = copyOptions(options, this.options);
@@ -444,11 +445,8 @@ class CoqManager {
 
         this.sid = [];
 
-        // Initialize Coq!
-        this.sid.push(this.coq.init(
-            { all_pkgs  : this.options.all_pkgs,
-              init_pkgs : this.options.init_pkgs
-            }));
+        // Initialize Coq! Keep in sync with options!
+        this.sid.push(this.coq.init(this.options));
 
         // This is a sid-based index of processed statements.
         this.sentences = [];
