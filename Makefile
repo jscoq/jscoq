@@ -65,7 +65,7 @@ bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
 BUILDDIR=dist
 
 DISTHTML=newide.html #mtac_tutorial.html
-BUILDOBJ=index.html $(DISTHTML) js css images coq-pkgs packages-index.json
+BUILDOBJ=index.html $(DISTHTML) js css images examples coq-pkgs
 DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
 
 dist: bcache libs
