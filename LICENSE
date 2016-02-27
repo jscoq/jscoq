@@ -37,9 +37,14 @@ Files: images/*
 License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.
 
+Files: examples/Stlc.html
+LICENSE: BSD
+Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
+
 Files: external/*
 Comment: The frameworks in external, pace, codemirror, etc... are under their
          own licence, see the directories for more details.
+
 
 # Regarding Coq and derivatives:
 
