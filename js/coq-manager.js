@@ -277,7 +277,7 @@ class CoqManager {
         this.options = {
             mock:    false,
             prelude: true,
-            lib_path:  "coq-pkgs",
+            base_path:  "",
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
@@ -322,7 +322,7 @@ class CoqManager {
         // Load JsCoq
         var jscoqscript    = document.createElement('script');
         jscoqscript.type   = 'text/javascript';
-        jscoqscript.src    = this.options.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js';
+        jscoqscript.src    = this.options.base_path + (this.options.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js');
         jscoqscript.onload = evt => { this.setupCoq(evt); };
         document.head.appendChild(jscoqscript);
     }
@@ -339,7 +339,7 @@ class CoqManager {
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(document.getElementById('packages-panel'));
+        this.packages = new PackageManager(document.getElementById('packages-panel'), this.options.base_path);
 
         // Bind jsCoq events 1: error
         this.coq.onError = e => {

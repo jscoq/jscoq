@@ -39,6 +39,7 @@ the constructor; current options are:
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
+* `base_path: string`: Path where jsCoq is installed.
 
 ### Serialization
 

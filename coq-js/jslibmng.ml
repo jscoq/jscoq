@@ -13,9 +13,9 @@ open Jslib
 open Lwt
 open Js
 
-let pkg_prefix    = ref ""
-let bcache_prefix = "bcache/"
-let bcache_file   = "bcache.list"
+let pkg_prefix  = ref ""
+let bcache_dir  = "bcache/"
+let bcache_file = "bcache.list"
 
 (* Main byte_cache *)
 let byte_cache : (Digest.t, js_string t) Hashtbl.t = Hashtbl.create 200
@@ -97,7 +97,7 @@ let cb : pkg_callbacks ref = ref {
 let preload_js_code msum =
   let open Lwt                           in
   let open XmlHttpRequest                in
-  let js_url = bcache_prefix ^ msum      in
+  let js_url = !pkg_prefix ^ bcache_dir ^ msum in
   perform_raw ~response_type:Text js_url >>= fun frame      ->
   Hashtbl.add byte_cache (Digest.from_hex msum) frame.content;
   return_unit
@@ -107,7 +107,7 @@ let preload_byte_cache () =
   let open XmlHttpRequest in
   (* Don't fail if bcache.list doesn't exist *)
   catch (fun () ->
-      XmlHttpRequest.get bcache_file                 >>= fun res ->
+      XmlHttpRequest.get (!pkg_prefix ^ bcache_file) >>= fun res ->
       let m_list = Regexp.split (Regexp.regexp "\n") res.content in
       Firebug.console##log_2(string "Got binary js cache: ",
                              string (string_of_int (List.length m_list)));
@@ -237,9 +237,9 @@ let info_from_file file =
   in
   return @@ !cb.pkg_info (build_bundle_info bundle)
 
-let init init_callback pkg_cb pkg_path all_pkgs init_pkgs =
+let init init_callback pkg_cb base_path all_pkgs init_pkgs =
   cb         := pkg_cb;
-  pkg_prefix := to_string pkg_path ^ "/";
+  pkg_prefix := to_string base_path ^ "/coq-pkgs/";
   Lwt.async (fun () ->
     preload_byte_cache ()                                                      >>= fun () ->
     iter_arr (fun x -> to_string x |> info_from_file)                all_pkgs  >>= fun () ->

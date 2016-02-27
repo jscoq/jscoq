@@ -55,17 +55,17 @@ libs: coq-libs coq-addons coq-pkgs
 # bcache building                                                      #
 ########################################################################
 
-bcache: bcache.stamp
+bcache: coq-pkgs bcache.stamp
 
 bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
-	mkdir -p bcache
-	nodejs ./coq-tools/byte_cache.js > bcache.list
+	mkdir -p coq-pkgs/bcache
+	nodejs ./coq-tools/byte_cache.js > coq-pkgs/bcache.list
 	touch bcache.stamp
 
 BUILDDIR=dist
 
 DISTHTML=newide.html #mtac_tutorial.html
-BUILDOBJ=index.html $(DISTHTML) js css images coq-pkgs bcache.list bcache packages-index.json
+BUILDOBJ=index.html $(DISTHTML) js css images coq-pkgs packages-index.json
 DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
 
 dist: bcache libs
@@ -95,7 +95,7 @@ clean:
 # $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-pkgs
-	rm -rf bcache bcache.list bcache.stamp bc-md5.json bc-js.json
+	rm -rf bcache.stamp bc-md5.json bc-js.json
 	rm -rf $(BUILDDIR)
 
 ########################################################################

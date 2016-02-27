@@ -2,7 +2,8 @@
 
 class PackageManager {
 
-    constructor(panel) {
+    constructor(panel, base_path) {
+        this.base_path = base_path;
         this.panel   = panel;
         this.bundles = {};
     }
@@ -15,7 +16,7 @@ class PackageManager {
         dsel.data([pkg_info]);
 
         dsel.append('img')
-            .attr('src', 'images/dl.png')
+            .attr('src', this.base_path + 'images/dl.png')
             .on('click', () => { this.startPackageDownload(); });
 
         dsel.append('span')
@@ -71,7 +72,7 @@ class PackageManager {
 
             var egg = bar
                 .append('img')
-                .attr('src', 'images/egg.png')
+                .attr('src', this.base_path + 'images/egg.png')
                 .attr('class', 'progress-egg');
 
             this.bundles[evt.bundle_name].bar = bar;
@@ -104,7 +105,7 @@ class PackageManager {
 
             row.select('.rel-pos').remove();
             row.select('img')
-                .attr('src', 'images/checked.png');
+                .attr('src', this.base_path + 'images/checked.png');
         }
     }
 }
