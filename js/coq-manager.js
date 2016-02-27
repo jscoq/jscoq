@@ -428,7 +428,9 @@ class CoqManager {
             pkg_panel.classList.add('collapsed');
 
             // Enable the IDE.
-            this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!\n===> Loading additional packages in the background...";
+            this.panel.proof.textContent +=
+                "\n===> JsCoq filesystem initalized with success!\n" +
+                  "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n";
 
             if (this.options.prelude) {
 
