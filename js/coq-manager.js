@@ -151,16 +151,22 @@ class CoqPanel {
         this.ide.classList.add('toggled');
     }
 
+    toggled() {
+        return this.ide.classList.contains('toggled');
+    }
+
     toggle() {
 
-        if (this.ide.classList.contains('toggled')) {
+        if (this.toggled()) {
             this.ide.classList.remove('toggled');
             this.adjustWidth();
         }
-        else
+        else {
             this.ide.classList.add('toggled');
-
+        }
+        return;
     }
+
 
     // Call jsCoq to get the info.
     update() {
