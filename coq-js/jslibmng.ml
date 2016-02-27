@@ -220,7 +220,7 @@ let rec preload_from_file ?(verb=false) file =
   in
   (* !cb.pkg_info (build_bundle_info bundle); *)
   (* Load deps *)
-  Lwt_list.iter_s (preload_from_file ~verb:verb) bundle.deps >>= fun () ->
+  Lwt_list.iter_p (preload_from_file ~verb:verb) bundle.deps >>= fun () ->
   Lwt_list.iter_s (preload_pkg ~verb:verb file) bundle.pkgs)
 
 let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
