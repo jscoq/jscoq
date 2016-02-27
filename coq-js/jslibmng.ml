@@ -147,9 +147,11 @@ let preload_vo_file base_url (file, _hash) : unit Lwt.t =
        done;
        let cache_entry = {
          vo_content = Js.bytestring (Bytes.to_string s);
-         md5        = Digest.string "";
-         (* XXX: Avoid expensive md5 *)
-         (* md5        = Digest.bytes s; *)
+         md5        = Digest.bytes s;
+         (* XXX: We'd like to avoid the expensive md5 here but, misteries of javascript!
+            if we don't do the md5, we'll eat memory too fast and the browser will crash!
+         *)
+         (* md5        = Digest.string ""; *)
        } in
        Hashtbl.add file_cache (Js.string full_url) cache_entry;
        ()
@@ -207,7 +209,7 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
   !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
   Lwt.return_unit
 
-let preload_from_file ?(verb=false) file =
+let rec preload_from_file ?(verb=false) file =
   let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
   (* XXX: Use _JSON.json??????? *)
@@ -217,6 +219,8 @@ let preload_from_file ?(verb=false) file =
                             raise (Failure "JSON"))
   in
   (* !cb.pkg_info (build_bundle_info bundle); *)
+  (* Load deps *)
+  Lwt_list.iter_s (preload_from_file ~verb:verb) bundle.deps >>= fun () ->
   Lwt_list.iter_s (preload_pkg ~verb:verb file) bundle.pkgs)
 
 let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
@@ -237,9 +241,9 @@ let init init_callback pkg_cb pkg_path all_pkgs init_pkgs =
   cb         := pkg_cb;
   pkg_prefix := to_string pkg_path ^ "/";
   Lwt.async (fun () ->
-    preload_byte_cache ()                                                     >>= fun () ->
-    iter_arr (fun x -> to_string x |> info_from_file)               all_pkgs  >>= fun () ->
-    iter_arr (fun x -> to_string x |> preload_from_file ~verb:true) init_pkgs >>= fun () ->
+    preload_byte_cache ()                                                      >>= fun () ->
+    iter_arr (fun x -> to_string x |> info_from_file)                all_pkgs  >>= fun () ->
+    iter_arr (fun x -> to_string x |> preload_from_file ~verb:false) init_pkgs >>= fun () ->
     init_callback ();
     return_unit
   )

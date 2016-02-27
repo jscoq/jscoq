@@ -54,7 +54,7 @@ class CoqPanel {
         this.log_css_rules = document.styleSheets[0].cssRules;
 
         var flex_container = document.getElementById('panel-wrapper').getElementsByClassName('flex-container')[0];
-        flex_container.addEventListener('click', evt => {this.panelClickHandler(evt);});
+        flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
         d3.select('select[name=msg_filter]')
             .on('change', () => this.filterLog(d3.event.target));
@@ -66,6 +66,7 @@ class CoqPanel {
 
             // Set Printing Width... Far from perfect (XXX: Update on resize)
             var pxSize  = parseFloat(getComputedStyle(this.query)['font-size']);
+
             // A correction of almost 2.0 is needed here ... !!!
             var emWidth = Math.floor(this.query.offsetWidth / pxSize * 1.65);
             console.log("Setting printing width to: " + emWidth );
@@ -114,6 +115,7 @@ class CoqPanel {
     }
 
     filterLog(level_select) {
+
         var length = level_select.getElementsByTagName('option').length;
         var min_log_level = parseInt(level_select.value, 10);
         var i;
@@ -129,18 +131,28 @@ class CoqPanel {
     }
 
     panelClickHandler(evt) {
+
         var target = evt.target;
+
         if(target.classList.contains('caption') &&
+
             target.parentNode.classList.contains('flex-panel')) {
+
             var panel = target.parentNode;
-            if(panel.classList.contains('collapsed'))
+
+            if(panel.classList.contains('collapsed')) {
+
                 panel.classList.remove('collapsed');
-            else {
-                var wrapper = document.getElementById('panel-wrapper');
+
+            } else {
+
+                var wrapper    = document.getElementById('panel-wrapper');
                 var panels_cpt = wrapper.getElementsByClassName('flex-panel').length;
                 var collapsed_panels_cpt = wrapper.getElementsByClassName('collapsed').length;
+
                 if(collapsed_panels_cpt + 1 >= panels_cpt) // at least one panel opened
                     return;
+
                 panel.classList.add('collapsed');
             }
         }
@@ -267,7 +279,7 @@ class CoqManager {
             prelude: true,
             lib_path:  "coq-pkgs",
             init_pkgs: ['init'],
-            all_pkgs:  ['init', 'math-comp', // 'mtac',
+            all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
                         'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color']
         };
@@ -354,25 +366,16 @@ class CoqManager {
 
         // Bind jsCoq events: a package download was started
         this.coq.onPkgLoadStart = progress => {
-
-            // this.packages.sendCoqPkg();
-            // console.log("pkg start called for: ");
-            // console.log(progress);
+            this.packages.onPkgLoadStart(progress);
         };
 
         // Bind jsCoq events: package progress download.
         this.coq.onPkgProgress = progress => {
-
-            // var ce = new CustomEvent('pkgProgress', { detail : progress });
-            // document.body.dispatchEvent(ce);
-
-            // console.log("pkg progress called for: ");
-            // console.log(progress);
+            this.packages.onPkgProgress(progress);
         };
 
-        this.coq.onPkgLoad = pkg => {
-            // console.log("pkg load called for: ");
-            // console.log(pkg);
+        this.coq.onPkgLoad = progress => {
+            this.packages.onPkgLoad(progress);
         };
 
         // XXX: Use a proper object...
@@ -420,6 +423,10 @@ class CoqManager {
         // and Coq is ready to be used.
         this.coq.onInit = e => {
 
+            // Hide the panel again.
+            var pkg_panel = document.getElementById('packages-panel').parentNode;
+            pkg_panel.classList.add('collapsed');
+
             // Enable the IDE.
             this.panel.proof.textContent += "\n===> JsCoq filesystem initalized with success!\n===> Loading additional packages in the background...";
 
@@ -444,6 +451,10 @@ class CoqManager {
         this.panel.proof.textContent = this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
 
         this.sid = [];
+
+        // Display packages panel:
+        var pkg_panel = document.getElementById('packages-panel').parentNode;
+        pkg_panel.classList.remove('collapsed');
 
         // Initialize Coq! Keep in sync with options!
         this.sid.push(this.coq.init(this.options));
