@@ -277,7 +277,7 @@ class CoqManager {
         this.options = {
             mock:    false,
             prelude: true,
-            base_path:  "",
+            base_path:  "./",
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
