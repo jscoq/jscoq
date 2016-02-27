@@ -125,11 +125,15 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
-let preload_vo_file base_url (file, _hash) : unit Lwt.t =
+let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
   let full_url    = base_url  ^ "/" ^ file in
   let request_url = !pkg_prefix ^ full_url  in
+  let cached      = Hashtbl.mem file_cache (Js.string full_url) in
+
+  (* Only reload if not cached or a refresh is requested *)
+  if not cached || refresh then begin
   perform_raw ~response_type:ArrayBuffer request_url >>= fun frame ->
   (* frame.code contains the request status *)
   (* Is this redudant with the Opt check? I guess so *)
@@ -165,6 +169,8 @@ let preload_vo_file base_url (file, _hash) : unit Lwt.t =
         *)
       );
   Lwt.return_unit
+  end
+  else Lwt.return_unit
 
 (* Unfortunately this is a tad different than preload_vo_file *)
 let _preload_cma_file base_url (file, _hash) : unit Lwt.t =
