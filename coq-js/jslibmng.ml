@@ -80,14 +80,18 @@ let mk_progressInfo bundle pkg number =
 
 (* Global Callbacks *)
 type pkg_callbacks = {
-  pkg_info     : bundleInfo   t -> unit;
+  bundle_info     : bundleInfo t -> unit;
+  bundle_start    : bundleInfo t -> unit;
+  bundle_load     : bundleInfo t -> unit;
   pkg_start    : progressInfo t -> unit;
   pkg_progress : progressInfo t -> unit;
   pkg_load     : progressInfo t -> unit;
 }
 
 let cb : pkg_callbacks ref = ref {
-  pkg_info     = (fun _ -> ());
+  bundle_info  = (fun _ -> ());
+  bundle_start = (fun _ -> ());
+  bundle_load  = (fun _ -> ());
   pkg_start    = (fun _ -> ());
   pkg_progress = (fun _ -> ());
   pkg_load     = (fun _ -> ());
@@ -215,6 +219,7 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
   !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
   Lwt.return_unit
 
+(* Load a bundle *)
 let rec preload_from_file ?(verb=false) file =
   let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
@@ -224,10 +229,13 @@ let rec preload_from_file ?(verb=false) file =
                with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
                             raise (Failure "JSON"))
   in
-  (* !cb.pkg_info (build_bundle_info bundle); *)
+  let bundle_info = build_bundle_info bundle in
+  !cb.bundle_start bundle_info;
   (* Load deps *)
   Lwt_list.iter_p (preload_from_file ~verb:verb) bundle.deps <&>
-  Lwt_list.iter_p (preload_pkg  ~verb:verb file) bundle.pkgs)
+  Lwt_list.iter_p (preload_pkg  ~verb:verb file) bundle.pkgs     >>= fun () ->
+  !cb.bundle_load  bundle_info;
+  return_unit)
 
 let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
   let f_js = wrap_callback (fun p x _ _ -> f x >>= (fun () -> p)) in
@@ -241,7 +249,7 @@ let info_from_file file =
                with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
                             raise (Failure "JSON"))
   in
-  return @@ !cb.pkg_info (build_bundle_info bundle)
+  return @@ !cb.bundle_info (build_bundle_info bundle)
 
 let init init_callback pkg_cb base_path all_pkgs init_pkgs =
   cb         := pkg_cb;

@@ -28,9 +28,6 @@ class type jsCoq = object
   method init        : ('self t, initInfo t -> Stateid.t) meth_callback writeonly_prop
   method onInit      : ('self t, unit)                    event_listener prop
 
-  (* When a new package is known we push the information to the GUI *)
-  method onNewPkgInfo : ('self t, Jslibmng.bundleInfo t ) event_listener prop
-
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
@@ -48,6 +45,11 @@ class type jsCoq = object
 
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
+
+  (* When a new package is known we push the information to the GUI *)
+  method onBundleInfo  : ('self t, Jslibmng.bundleInfo t ) event_listener prop
+  method onBundleStart : ('self t, Jslibmng.bundleInfo t ) event_listener prop
+  method onBundleLoad  : ('self t, Jslibmng.bundleInfo t ) event_listener prop
 
   (* When package loading starts/progresses/completes  *)
   method onPkgLoadStart : ('self t, Jslibmng.progressInfo t) event_listener prop
@@ -144,7 +146,9 @@ let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
   let init_callback () = ignore (invoke_handler this##onInit this ()) in
   let open Jslibmng in
   let pkg_callbacks = {
-    pkg_info     = (fun pi -> ignore (invoke_handler this##onNewPkgInfo   this pi));
+    bundle_info  = (fun pi -> ignore (invoke_handler this##onBundleInfo   this pi));
+    bundle_start = (fun pi -> ignore (invoke_handler this##onBundleStart  this pi));
+    bundle_load  = (fun pi -> ignore (invoke_handler this##onBundleLoad   this pi));
     pkg_start    = (fun pi -> ignore (invoke_handler this##onPkgLoadStart this pi));
     pkg_progress = (fun pi -> ignore (invoke_handler this##onPkgProgress  this pi));
     pkg_load     = (fun pi -> ignore (invoke_handler this##onPkgLoad      this pi));
@@ -225,7 +229,9 @@ let _ =
 
   (* Empty handlers *)
   jsCoq##onInit         <- no_handler;
-  jsCoq##onNewPkgInfo   <- no_handler;
+  jsCoq##onBundleInfo   <- no_handler;
+  jsCoq##onBundleLoad   <- no_handler;
+  jsCoq##onBundleStart  <- no_handler;
   jsCoq##onPkgLoadStart <- no_handler;
   jsCoq##onPkgLoad      <- no_handler;
   jsCoq##onPkgProgress  <- no_handler;

@@ -430,13 +430,16 @@ class CoqManager {
         };
 
         // Bind jsCoq events: package information
-        this.coq.onNewPkgInfo = pkg_info => {
-            this.packages.addPackageInfo(pkg_info);
+        this.coq.onBundleInfo = bundle_info => {
+            this.packages.addBundleInfo(bundle_info);
         };
 
-        // Bind jsCoq events: a package download was started
-        this.coq.onPkgLoadStart = progress => {
-            this.packages.onPkgLoadStart(progress);
+        this.coq.onBundleStart = bundle_info => {
+            this.packages.onBundleStart(bundle_info);
+        };
+
+        this.coq.onBundleLoad = bundle_info => {
+            this.packages.onBundleLoad(bundle_info);
         };
 
         // Bind jsCoq events: package progress download.
@@ -444,8 +447,13 @@ class CoqManager {
             this.packages.onPkgProgress(progress);
         };
 
+        // Not used fro now.
+        this.coq.onPkgLoadStart = progress => {
+            //
+        };
+
         this.coq.onPkgLoad = progress => {
-            this.packages.onPkgLoad(progress);
+            // 
         };
 
         // XXX: Use a proper object...

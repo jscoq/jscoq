@@ -34,7 +34,9 @@ end
 
 (* Global Callbacks *)
 type pkg_callbacks = {
-  pkg_info     : bundleInfo   t -> unit;
+  bundle_info     : bundleInfo t -> unit;
+  bundle_start    : bundleInfo t -> unit;
+  bundle_load     : bundleInfo t -> unit;
   pkg_start    : progressInfo t -> unit;
   pkg_progress : progressInfo t -> unit;
   pkg_load     : progressInfo t -> unit;

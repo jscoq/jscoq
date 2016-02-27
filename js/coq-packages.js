@@ -8,7 +8,7 @@ class PackageManager {
         this.bundles = {};
     }
 
-    addPackageInfo(pkg_info) {
+    addBundleInfo(pkg_info) {
 
         var div  = document.createElement('div');
         var dsel = d3.select(div);
@@ -53,16 +53,19 @@ class PackageManager {
     // method loaded   : int
     // method total    : int
 
-    onPkgLoadStart(evt) {
+    onBundleStart(bundle_info) {
 
-        var div  = this.bundles[evt.bundle_name].div;
+        var bundle_name = bundle_info.desc;
+
+        var div  = this.bundles[bundle_name].div;
         // var row  = d3.select(this.panel).selectAll('div')
         //     .filter(pkg => pkg.desc === evt.bundle_name);
 
-        // Workaround, this is called at a finer granularity, add the
-        // bar only the first time.
+        // XXX: Workaround, in case this is called multiple times, add
+        // the bar only the first time. We could be smarter.
 
-        if (! this.bundles[evt.bundle_name].bar ) {
+        if (! this.bundles[bundle_name].bar ) {
+
             var row  = d3.select(div);
 
             var bar = row.append('div')
@@ -75,8 +78,8 @@ class PackageManager {
                 .attr('src', this.base_path + 'images/egg.png')
                 .attr('class', 'progress-egg');
 
-            this.bundles[evt.bundle_name].bar = bar;
-            this.bundles[evt.bundle_name].egg = egg;
+            this.bundles[bundle_name].bar = bar;
+            this.bundles[bundle_name].egg = egg;
         }
     }
 
@@ -93,20 +96,16 @@ class PackageManager {
         bar.style('width', progress * 100 + '%');
     }
 
-    onPkgLoad(evt) {
+    onBundleLoad(bundle_info) {
 
-        var info = this.bundles[evt.bundle_name].info;
+        var bundle_name = bundle_info.desc;
+        var info = this.bundles[bundle_name].info;
+        var div  = this.bundles[bundle_name].div;
+        var row  = d3.select(div);
 
-        // Workaround due to bad granularity
-        if (info.loaded === info.total) {
-
-            var div  = this.bundles[evt.bundle_name].div;
-            var row  = d3.select(div);
-
-            row.select('.rel-pos').remove();
+        row.select('.rel-pos').remove();
             row.select('img')
                 .attr('src', this.base_path + 'images/checked.png');
-        }
     }
 }
 

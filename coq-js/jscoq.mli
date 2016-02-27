@@ -28,9 +28,6 @@ class type jsCoq = object
   method init        : ('self t, initInfo t -> Stateid.t) meth_callback writeonly_prop
   method onInit      : ('self t, unit)                    event_listener prop
 
-  (* When a new package is known we push the information to the GUI *)
-  method onNewPkgInfo : ('self t, Jslibmng.bundleInfo t ) event_listener prop
-
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
@@ -47,6 +44,11 @@ class type jsCoq = object
 
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
+
+  (* When a new package is known we push the information to the GUI *)
+  method onBundleInfo  : ('self t, Jslibmng.bundleInfo t ) event_listener prop
+  method onBundleStart : ('self t, Jslibmng.bundleInfo t ) event_listener prop
+  method onBundleLoad  : ('self t, Jslibmng.bundleInfo t ) event_listener prop
 
   (* When package loading starts/progresses/completes  *)
   method onPkgLoadStart : ('self t, Jslibmng.progressInfo t) event_listener prop
