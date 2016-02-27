@@ -8,7 +8,7 @@ var bc_js  = require('../bc-js.json');
 var fs = require('fs');
 
 for(var i = 0; i < bc_md5.length; i++) {
-  fs.writeFile("bcache/" + bc_md5[i], bc_js[i],
+  fs.writeFile("coq-pkgs/bcache/" + bc_md5[i], bc_js[i],
                function(err) { });
 }
 
