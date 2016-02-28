@@ -25,8 +25,9 @@ The current release provides a `coqManager` javascript object, so you can
 embed Coq in your particular javascript application. The basic use is:
 
 ````
+  <script src="js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
-   var coq = new CoqManager (['addnC', 'prime_above']);
+    loadJsCoq('./').then( () => new CoqManager (list_of_ids, [options]) );
   </script>
 ```
 
@@ -39,18 +40,20 @@ your own html pages.
 JsCoq accepts the following options as an optional second parameter to
 the constructor; current options are:
 
-* `prelude: bool`: Whether to load Coq's prelude or not.
-* `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
-* `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 * `base_path: string`: Path where jsCoq is installed.
+* `wrapper_id`: id of the div where the panel will be attached.
+* `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
+* `prelude: bool`: Whether to load Coq's prelude or not.
+* `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 
 ### Serialization
 
 JsCoq supports serialization to Json or Sexps for Coq's internal data
-structures. This is still not implemented in a systematic way, for now
-you can get the current goal using the `goal_sexp` and `goal_json`
-methods. We are working to add a more systematic implementation, as
-well as to provide access to Coq printing facilities from JS.
+structures. This is still not implemented in a systematic way and thus
+remains and experiment, for now you can get the current goal using the
+`goal_sexp` and `goal_json` methods. We are working to add a more
+systematic implementation, as well as to provide access to Coq
+printing facilities from JS.
 
 ### CoqDoc
 
@@ -59,29 +62,44 @@ https://github.com/ejgallego/coq/tree/coqdoc
 
 Just build coqdoc normally and use the option `--backend=jscoq`.
 
-This is good for converting old coqdoc files, but it may produce some artifacts. A
-coqdoc replacement is being developed at
+It works for converting old coqdoc files, but it produces some
+artifacts and omits some declarations.
+
+A replacement tools better suited to jsCoq is being developed at
 https://github.com/ejgallego/udoc
+
+## Mailing List ##
+
+You can subscribe to the jsCoq mailing list at: [soon with all you]
+
+The list archives are also available through Gmane, you can also post
+to the list using nntp.
 
 ## Troubleshooting ##
 
 Clearing the browser cache may solve lots of issues.
+
+## Contributing ##
+
+This is certainly an alpha-status project, but any contribution or
+comment is really welcome! Please submit your pull request for review
+to the mailing list using `git request-pull`. You can also submit a
+github PR, but it is not guaranteed that we'll look into it.
 
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
 browser/OS/user-agent and command line options.
 
-We don't consider the code/architecture stable yet, but any
-contribution or comment is really welcome!
-
 ## What is broken ##
 
-* Loading ML modules may be slow if not using the bytecode cache.
+* Loading ML modules is slow.
+* Loading `.vo` files is slow.
 * `vm_compute` and `native_compute` are not supported.
 * There surely are threading and performance problems.
 
 ## Contact & Sponsorship ##
+
 ![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
 
 jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
@@ -134,7 +152,9 @@ $ make               # use -j N as desired
   the `COQDIR` variable in JsCoq's `Makefile`.
 
 * You may want to select what libraries get
-  included. `coq-tools/dftlibs.ml` allows you to do that.
+  included. `coq-tools/dftlibs.ml` allows you to do that. You should
+  also edit `Makefile.addons` to select the addons you want to
+  ship. [We hope to improve this in the future]
 
 * Finally:
 
@@ -204,4 +224,4 @@ $ make
 
 ## Documents
 
-See the notes directory.
+See the `notes/` directory for some random notes about the project.
