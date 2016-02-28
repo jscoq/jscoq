@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+    <link rel="stylesheet" href="../external/bootstrap.min.css" />
+    <link rel="stylesheet" href="../external/pace/pace.css" />
+    <script src="../external/pace/pace.min.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="dft.css" type="text/css" media="screen">
+
+    <title>Some Exercises on the Mathematics of the DFT</title>
+  </head>
+  <body>
+    <div id="ide-wrapper" class="toggled container-fluid">
+    <div id="code-wrapper">
+    <div id="document">
+      <div class="panel-heading">
+        <h2>Some Exercises on the Mathematics of the DFT</h2>
+        <p>
+          This file develops some basic theory of the DFT formally
+          using the Coq Theorem Prover. We follow a standard
+          reference, whose proofs are quoted here for reference: <a href="https://ccrma.stanford.edu/~jos/mdft/">https://ccrma.stanford.edu/~jos/mdft/
+          </a>
+        </p>
+        <p>
+          We will first define circular signals, and associated
+          operations like <strong>shifting</strong> and <strong>convolution</strong>.
+        </p>
+        <p>
+          Then, we will proceed to define the <strong>Discrete Fourier Transform</strong> in
+          summation form, (pointwise) and prove two of its fundamental
+          theorems.
+        </p>
+        <p>
+          We use the <a href="http://ssr.msr-inria.inria.fr/">Mathematical Components Libraries</a> from
+          INRIA and Microsoft Research. It is remarkable how close we
+          can remain to the source in our theorem proving system.
+        </p>
+      </div> <!-- panel-heading -->
+      <textarea id="dsp-sig-h1" >
+(* Parts taken from classfun.v:                                         *)
+(* (c) Copyright Microsoft Corporation and Inria.                       *)
+(* You may distribute this file under the terms of the CeCILL-B license *)
+
+(* Copyright (c) 2015, CRI, MINES ParisTech, PSL Research University    *)
+(* All rights reserved.                                                 *)
+(* You may distribute this file under the terms of the CeCILL-B license *)
+
+From mathcomp
+Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq div choice.
+From mathcomp
+Require Import fintype tuple finfun bigop ssralg poly finalg.
+From mathcomp
+Require Import matrix ssrnum zmodp algC.
+
+From Dsp
+Require Import dspsupport.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
+Import GRing.Theory Num.Theory.
+Open Scope ring_scope.
+
+(* Theory of periodic, finite signals. *)
+Section Signals.
+
+Variable N' : nat.
+Notation N := N'.+2.
+Variable R : comRingType.
+      </textarea>
+          <div class="panel-heading">
+            <h3>Basic Circular Signal theory</h3>
+            <h4>Definition of Signals</h4>
+          </div> <!-- panel-heading -->
+          <div class="coq-script panel-body">
+            <textarea id="dsp-sig-def" >
+(*******************************************************)
+(* An exploration of basic DFT theory using MathComp.  *)
+(*******************************************************)
+
+(* We represent signals as n x 1 matrices *)
+Notation S := 'cV[R]_N.
+
+Implicit Types x y : S.
+Implicit Types n m : 'I_N.
+            </textarea>
+          </div>
+          <div class="panel-heading">
+            <h4>Shifting of a signal.</h4>
+<div style="display:none">
+\(
+\newcommand{\mathsc}[2]{{\rm #1{\scriptsize #2}}}
+\newcommand{\isdef}{\triangleq}
+\DeclareMathOperator{\conv}{\circledast}
+\DeclareMathOperator{\dft}{\mathsc{D}{FT}}
+\DeclareMathOperator{\shift}{\mathsc{S}{HIFT}}
+\)
+</div>
+            $$ \shift_{d,n} x = x(n-d) $$
+          </div> <!-- panel-heading -->
+          <div class="coq-script panel-body">
+            <textarea id="dsp-sig-shift" >
+Definition shifts d x := \col_n (x (n - d) 0).
+
+Lemma shiftsE d x i j : (shifts d x) i j = x (i - d) 0.
+Proof. by rewrite mxE. Qed.
+
+Lemma shifts_bij d : bijective (shifts d).
+Proof.
+by exists (shifts (-d)); move=> ? /=; apply/matrixP=> ? ?;
+rewrite !mxE opprK ord1 ?(addrK,addrNK).
+Qed.
+
+Lemma shiftsI d : injective (shifts d).
+Proof. exact: (bij_inj (shifts_bij _)). Qed.
+      </textarea>
+      </div>
+      <div class="panel-heading">
+        <h4>Circular Convolution of two Signals</h4>
+        $$ (x \conv y)_n = \sum_{m=0}^{N-1} x(m) y(n-m) $$
+        <div style="text-align: center;">
+          <img src="conv.gif" style="margin: auto; width: 100%;" />
+          <p>Credits: Wikipedia/Brian Amberg</p>
+        </div>
+      </div> <!-- panel-heading -->
+      <div class="coq-script panel-body">
+        <textarea id="dsp-sig-conv" >
+Definition convs x y := \col_n \sum_m x m 0 * y (n-m) 0.
+        </textarea>
+      </div>
+      <div class="panel-heading">
+        <p>
+          Now we can do our first non-trivial proof using Coq! Let's
+          see how the paper proof compares:
+        </p>
+        <div class="step-proof">
+        $$\begin{eqnarray*}
+(x \conv y)_n &=& \cssId{conv-e1}{\sum_{m=0}^{N-1} x(m) y(n-m)} &=& \cssId{conv-e2}{\sum_{l=n}^{n-(N-1)} x(n-l)y(l)} \\
+              &=& \cssId{conv-e3}{\sum_{l=0}^{N-1} y(l) x(n-l)} \\
+              &=& (y \conv x)_n
+          \end{eqnarray*}
+        $$
+        </div>
+        <p>
+          <em>
+            "In the first step we made the change of summation variable
+            $l \equiv n-m$, and in the second step, we made use of
+            the fact that any sum over all $ N$ terms is equivalent to a
+            sum from 0 to $N-1$".
+          </em>
+        </p>
+      </div>
+
+      <div class="coq-script panel-body">
+        <textarea id="dsp-sig-conv-proof" >
+Lemma convsC : commutative convs.
+Proof.
+move=> x y; apply/matrixP=> n k; rewrite !mxE {k}.
+rewrite (reindex_inj (inj_comp (addrI n) oppr_inj)).
+by apply/eq_bigr=> m _; rewrite opprD addNKr opprK mulrC.
+Qed.</textarea>
+      </div> <!-- /#panel-body -->
+      <div class="panel-heading">
+        <h3>The DFT in sum form:</h3>
+        $$ \dft_k x = \sum_{m=0}^{N-1} x_m \omega^{km} $$
+      </div> <!-- panel-heading -->
+      <div class="coq-script panel-body">
+        <textarea id="dsp-dft-h1" >
+End Signals.
+(* DFT properties for the sum form *)
+Section DftSum.
+
+Variable N' : nat.
+Notation N := N'.+2.
+Notation R := algC.
+Notation S := 'cV[R]_N.
+
+Notation "'ω" := (@p_root N').
+Implicit Types x y : S.
+            </textarea>
+            <textarea id="dsp-dft-def" >
+Definition dft x k := \sum_m (x m 0) * 'ω ^+ (k * m).
+
+(* Trivial properties: Linearity & scaling *)
+Lemma dft_sum x y k : dft (x + y) k = dft x k + dft y k.
+Proof.
+by rewrite -big_split /=; apply/eq_bigr=> i _; rewrite -mulrDl mxE.
+Qed.
+
+Lemma dft_scale a x k : a * dft x k = dft (a *: x) k.
+Proof.
+by rewrite mulr_sumr; apply/eq_bigr=> ? _; rewrite mxE mulrA.
+Qed.
+            </textarea>
+      </div>
+      <div class="panel-heading">
+        <h3>The Shift Theorem:</h3>
+        $$ \dft_k[\shift_\Delta(x)] = \omega^{k\Delta} \dft_k x $$
+        <!-- <p>or</p> -->
+        <!-- $$ x(n - \Delta) \longleftrightarrow \omega^{\Delta} X $$ -->
+        <p>
+          Proof: (from <a href="https://ccrma.stanford.edu/~jos/mdft/Shift_Theorem.html">https://ccrma.stanford.edu/~jos/mdft/Shift_Theorem.html</a>)
+        </p>
+$$
+\begin{eqnarray*}
+  \dft_k[\shift_\Delta(x)] &\triangleq& \sum_{n=0}^{N-1} x(n-\Delta) \omega^{nk} \\
+                           &=& \sum_{m=-\Delta}^{N-1-\Delta} x(m) \omega^{(m+\Delta) k} \qquad(m \equiv n-\Delta) \\
+                           &=& \sum_{m=0}^{N-1}x(m) \omega^{mk} \omega^{k\Delta} \\
+                           &=& \omega^{k \Delta} \sum_{m=0}^{N-1} x(m) \omega^{mk} \\
+                           &\triangleq& \omega^{k\Delta} \dft_k x
+\end{eqnarray*}
+$$
+      </div> <!-- panel-heading -->
+      <div class="coq-script panel-body">
+      <textarea id="dsp-dft-shift">
+Lemma dft_shifts d x k : dft (shifts d x) k = 'ω ^+ (k * d) * dft x k.
+Proof.
+rewrite /dft (reindex_inj (addIr d)) mulr_sumr.
+apply/eq_bigr => i _; rewrite shiftsE.
+by rewrite addrK mulrCA mulnC !exprM prim_expr_mod // exprAC addnC exprD.
+Qed.
+      </textarea>
+      </div>
+      <div class="panel-heading">
+        <h3>The (Circular) Convolution Theorem:</h3>
+        $$
+\begin{eqnarray*}
+\dft_k(x \conv y) &\isdef & \sum_{n=0}^{N-1}(x\conv y)_n \omega^{nk} \\
+                  &\isdef & \sum_{n=0}^{N-1}\sum_{m=0}^{N-1}x(m) y(n-m) \omega^{nk} \\
+                  &=      & \sum_{m=0}^{N-1}x(m) \sum_{n=0}^{N-1}\underbrace{y(n-m) \omega^{nk}}_{\omega^{mk}Y(k)} \\
+                  &=      & \left(\sum_{m=0}^{N-1}x(m) \omega^{mk}\right)Y(k)\quad\mbox{(by the Shift Theorem)}\\
+                  &\isdef & X(k)Y(k)
+\end{eqnarray*}
+$$
+      </div> <!-- panel-heading -->
+      <div class="coq-script panel-body">
+      <textarea id="dsp-dft-conv">
+Lemma dft_convs x y k : dft (convs x y) k = dft x k * dft y k.
+Proof.
+rewrite /dft (eq_bigr (fun i => \sum_m x m 0 * y (i - m) 0 * 'ω ^+ (k*i)));
+  last by move=> ? ?; rewrite !mxE mulr_suml.
+rewrite big_distrlr /= exchange_big.
+apply/eq_bigr=> i _ /=.
+rewrite -!mulr_sumr -mulrA -dft_shifts mulr_sumr.
+by apply/eq_bigr => j _; rewrite shiftsE mulrA.
+Qed.
+End DftSum.
+      </textarea>
+      <h3>That's all for this demo my friends!</h3>
+      </div>
+    </div> <!-- /#document -->
+    </div> <!-- /#code-wrapper  -->
+    </div> <!-- /#ide-wrapper -->
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../external/jquery-2.2.0.min.js"></script>
+    <script src="../external/bootstrap.min.js"></script>
+
+    <!-- Mathjax.js -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {
+              inlineMath: [['$','$'], ['\\(','\\)']]
+          }
+      });
+    </script>
+    <script type="text/javascript" src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+
+    <!-- JsCoq -->
+    <script src="../js/jscoq-loader.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+     var coq;
+     var dft_ids = ['dsp-sig-h1',
+                    'dsp-sig-def', 'dsp-sig-shift', 'dsp-sig-conv', 'dsp-sig-conv-proof',
+                    'dsp-dft-h1', 'dsp-dft-def', 'dsp-dft-shift', 'dsp-dft-conv'];
+
+     loadJsCoq('../').then( () => {
+         coq = new CoqManager ( dft_ids,
+                                { base_path: '../', init_pkgs: ['init', 'dsp'],
+                                  all_pkgs: ['init', 'math-comp', 'dsp']
+                                } );
+     });
+
+     $('#dsp-sig-h1').next().hide();
+     $('#dsp-dft-h1').next().hide();
+
+     /* Parent and child elements */
+     var l_elem = ['#conv-e1', '#conv-e2', '#conv-e3'];
+     var step = 0;
+
+     function goNext () {
+         if (step < l_elem.length) {
+             $(l_elem[step]).addClass('p-active');
+         }
+         if (step) {
+             $(l_elem[step-1]).removeClass('p-active');
+         }
+         step++;
+     }
+
+     function goPrev () {
+         step--;
+         if (step < l_elem.length) {
+             $(l_elem[step]).removeClass('p-active');
+         }
+         if (step) {
+             $(l_elem[step-1]).addClass('p-active');
+         }
+     }
+
+     /* Let's use Ctrl-Alt-N/Ctrl-Alt-P */
+     $(document).keydown(evt => {
+         if (!evt.altKey || !evt.ctrlKey) return true;
+         // console.log("key alt-code: " + evt.keyCode);
+         switch (evt.keyCode) {
+             case 78:
+                 goNext();
+                 break;
+             case 80:
+                 goPrev();
+                 break;
+             default:
+                 console.log("Uncapture ctrl-alt command: " + evt.keyCode);
+         }
+     });
+    </script>
+  </body>
+
+</html>

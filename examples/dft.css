@@ -1,0 +1,14 @@
+.step-proof {
+    -webkit-transition: font 1s ease;
+    -moz-transition: font 1s ease;
+    transition: font 1s ease;
+}
+
+span.p-active {
+    /* -webkit-transform: scale(1.2); */
+    /* -moz-transform: scale(1.2); */
+    /* transform: scale(1.2); */
+    /* display: block; */
+    font-weight: 200%;
+    color: #aa3f3f;
+}

@@ -3,7 +3,7 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott
+all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp
 
 # XXX: We should include the common addon makefile thing.
 
@@ -141,6 +141,21 @@ $(TLC_DEST):
 
 tlc: $(TLC_DEST) $(TLC_FILES)
 	$(shell for i in $(TLC_FILES); do cp -a $$i $(TLC_DEST)/`basename $$i`; done)
+
+########################################################################
+# Addons: dsp                                                          #
+########################################################################
+
+# XXX: Must make a generic method for this
+DSP_HOME=~/external/coq/dsp
+DSP_DEST=coq-pkgs/Dsp
+DSP_FILES=$(wildcard $(DSP_HOME)/*.vo)
+
+$(DSP_DEST):
+	mkdir -p $(DSP_DEST)
+
+dsp: $(DSP_DEST) $(DSP_FILES)
+	$(shell for i in $(DSP_FILES); do cp -a $$i $(DSP_DEST)/`basename $$i`; done)
 
 ########################################################################
 # Addons: SF                                                           #

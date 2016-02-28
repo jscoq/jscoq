@@ -170,6 +170,9 @@ let pkgs : (string * string list * string list list) list=
     ; ["CoLoR" ; "MannaNess"]
     ]
 
+  ; "dsp", ["math-comp"],
+    [ ["Dsp"] ]
+
   ; "hott-init", [],
     [ ["Coq"; "syntax"]
     ; ["Coq"; "Init"]
