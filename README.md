@@ -6,14 +6,17 @@ running in the browser! Try it:
 
 <https://x80.org/rhino-coq/>
 
+Note that you need a very recent browser, the current requisites are
+Chrome (>= 48) or Firefox (>= 45). JsCoq also runs in my old Galaxy
+Nexus.
+
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
 Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
-servers or external programs are needed. JsCoq runs fine in Chrome (>=
-49) or Mozilla Firefox. You need a recent browser. It also runs in my old Galaxy Nexus.
+servers or external programs are needed.
 
-* **Important:** Libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
+* **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
 * **Important:** The project is pretty much a pre-alpha technology demo, you are welcome to use it but expect trouble.
 
 ## API / How to use

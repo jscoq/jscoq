@@ -409,7 +409,7 @@ class CoqManager {
         this.panel.coq = this.coq;
 
         document.getElementById('hide-panel')
-            .addEventListener('click', evt => this.panel.toggle());
+            .addEventListener('click', evt => this.panel.toggle() );
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
@@ -504,7 +504,9 @@ class CoqManager {
             // Hide the panel again.
             var pkg_panel = document.getElementById('packages-panel').parentNode;
             pkg_panel.classList.add('collapsed');
-            this.panel.hide();
+
+            // Don't hide for now
+            // this.panel.hide();
 
             // Enable the IDE.
             this.panel.proof.textContent +=

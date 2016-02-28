@@ -34,6 +34,7 @@ class type jsCoq = object
   method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
   method goal_json_  : ('self t, 'a t)                  meth_callback writeonly_prop
 
+  (* STM methods *)
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
@@ -57,6 +58,7 @@ class type jsCoq = object
 
   (* Request to log from Coq *)
   method onLog       : ('self t, js_string t)           event_listener prop
+
   (* Error from Coq *)
   method onError     : ('self t, Stateid.t)             event_listener writeonly_prop
 
