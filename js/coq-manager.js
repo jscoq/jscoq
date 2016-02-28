@@ -144,6 +144,7 @@ class CoqPanel {
 
     show() {
         this.ide.classList.remove('toggled');
+        // XXX: This will fail if coq is not loaded...
         this.adjustWidth();
     }
 
@@ -158,13 +159,11 @@ class CoqPanel {
     toggle() {
 
         if (this.toggled()) {
-            this.ide.classList.remove('toggled');
-            this.adjustWidth();
+            this.show();
         }
         else {
-            this.ide.classList.add('toggled');
+            this.hide();
         }
-        return;
     }
 
 
@@ -386,34 +385,29 @@ class CoqManager {
             }, 100);
         };
 
-        // Coq Setup
-        window.addEventListener('load', evt => { this.loadJsCoq(evt); } );
-        document.addEventListener('keydown', evt => this.keyHandler(evt));
-    }
+        var coq_script = this.options.base_path +
+            (this.options.mock ? 'coq-js/jsmock' : 'coq-js/jscoq');
 
-    loadJsCoq(evt) {
-
-        // Load JsCoq
-        var jscoqscript    = document.createElement('script');
-        jscoqscript.type   = 'text/javascript';
-        jscoqscript.src    = this.options.base_path + (this.options.mock ? 'coq-js/jsmock.js' : 'coq-js/jscoq.js');
-        jscoqscript.onload = evt => { this.setupCoq(evt); };
-        document.head.appendChild(jscoqscript);
+        // Missing Promise.bind from the browsers....
+        loadJs(coq_script)().then(() => this.setupCoq());
     }
 
     setupCoq() {
 
         this.coq      = jsCoq;
 
-        // Panel setup 1: query panel
-        this.panel.coq = this.coq;
-
+        // Keybindings setup
+        document.addEventListener('keydown', evt => this.keyHandler(evt));
         document.getElementById('hide-panel')
             .addEventListener('click', evt => this.panel.toggle() );
 
+        // Panel setup 1: query panel
+        this.panel.coq = this.coq;
+
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(document.getElementById('packages-panel'), this.options.base_path);
+        this.packages =
+            new PackageManager(document.getElementById('packages-panel'), this.options.base_path);
 
         // Bind jsCoq events 1: error
         this.coq.onError = e => {
@@ -501,12 +495,9 @@ class CoqManager {
         // and Coq is ready to be used.
         this.coq.onInit = e => {
 
-            // Hide the panel again.
+            // Hide the packages panel.
             var pkg_panel = document.getElementById('packages-panel').parentNode;
             pkg_panel.classList.add('collapsed');
-
-            // Don't hide for now
-            // this.panel.hide();
 
             // Enable the IDE.
             this.panel.proof.textContent +=
@@ -525,13 +516,12 @@ class CoqManager {
                     console.log("Critical error: loading prelude");
                 }
             }
-
             this.enable();
-
         };
 
         // Initial Coq state.
-        this.panel.proof.textContent = this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
+        this.panel.proof.textContent =
+            this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
 
         this.sid = [];
 
@@ -540,7 +530,7 @@ class CoqManager {
         pkg_panel.classList.remove('collapsed');
         this.panel.show();
 
-        // Initialize Coq! Keep in sync with options!
+        // Initialize Coq! Options must be kept in sync !
         this.sid.push(this.coq.init(this.options));
 
         // This is a sid-based index of processed statements.
@@ -610,6 +600,7 @@ class CoqManager {
     }
 
     raiseButton(btn_name) {
+
         var btns = this.buttons.getElementsByTagName('img');
         var btn  = btns.namedItem(btn_name);
 

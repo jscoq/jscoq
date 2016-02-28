@@ -95,10 +95,10 @@ Qed.
   <script type="text/javascript">
     var coq;
 
-    loadJsCoq('./').then( () => {
-        coq = new CoqManager (['addnC', 'prime_above'],
-                              { prelude: false, mock: false });
-    });
+    loadJsCoq('./')
+        .then( () => new CoqManager (['addnC', 'prime_above'],
+                                     { prelude: false, mock: false }) )
+        .then( cm => { coq = cm; } );
 
   </script>
 </body>
