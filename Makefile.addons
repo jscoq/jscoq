@@ -122,10 +122,10 @@ HOTT_DEST=coq-pkgs/HoTT
 $(HOTT_DEST):
 	mkdir -p $(HOTT_DEST)
 
-HOTT_MODULES=$(addprefix $(HOTT_HOME)/,Algebra Basics Comodalities Modalities Spaces Tactics Types)
+HOTT_MODULES=$(addprefix $(HOTT_HOME)/,Algebra categories Basics Comodalities hit Modalities Spaces Tactics Types)
 hott: $(HOTT_DEST)
-	rsync -avp $(wildcard $(HOTT_HOME)/*.vo) $(HOTT_DEST)/
-	rsync -avp $(HOTT_MODULES) $(HOTT_DEST)
+	rsync -ap $(wildcard $(HOTT_HOME)/*.vo) $(HOTT_DEST)/
+	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(HOTT_MODULES) $(HOTT_DEST)
 
 ########################################################################
 # Addons: tlc                                                        #
