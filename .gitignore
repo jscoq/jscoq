@@ -16,3 +16,5 @@ bcache
 bcache.list
 bcache.stamp
 bc-*
+dist/
+dist-hott/
