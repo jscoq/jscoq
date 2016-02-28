@@ -120,11 +120,6 @@ let pkgs : (string * string list * string list list) list=
   ; "cpdt", ["coq-reals"],
     [ ["Cpdt"] ]
 
-  (* ; "hott", [], *)
-  (*   [ ["HoTT"] *)
-  (*   ; ["HoTT" ; "Basics"] *)
-  (*   ; ["HoTT" ; "Types"] ] *)
-
   ; "color", [ "coq-reals"],
     [ ["CoLoR" ; "Filter"]
     ; ["CoLoR" ; "RPO"]
@@ -175,4 +170,22 @@ let pkgs : (string * string list * string list list) list=
     ; ["CoLoR" ; "MannaNess"]
     ]
 
+  ; "hott-init", [],
+    [ ["Coq"; "syntax"]
+    ; ["Coq"; "Init"]
+    ; ["Coq"; "Bool"]
+    ; ["Coq"; "Program"]
+    ; ["Coq"; "Unicode"]
+    ]
+
+  ; "hott", ["hott-init"],
+
+    [ ["HoTT"]
+    ; ["HoTT" ; "Algebra"]
+    ; ["HoTT" ; "Basics"]
+    ; ["HoTT" ; "Comodalities"]
+    ; ["HoTT" ; "Modalities"]
+    ; ["HoTT" ; "Spaces"]
+    ; ["HoTT" ; "Tactics"] ]
+    ; ["HoTT" ; "Types"] ]
   ]

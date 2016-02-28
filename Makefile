@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache dist dist-upload dist-release
+.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache dist dist-upload dist-release dist-hott
 
 COQDIR=~/external/coq-git/
 
@@ -78,6 +78,23 @@ dist: bcache libs
 	cp -a coq-js/jscoq.js $(BUILDDIR)/coq-js/
         # Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --delete-excluded $(DISTEXT) $(BUILDDIR)/external
+
+BUILDDIR_HOTT=$(BUILDDIR)-hott
+
+HOTT_FILES=bcache bcache.list hott-init.json hott.json HoTT
+HOTT_SRC_FILES=$(addprefix $(BUILDDIR)/coq-pkgs/,$(HOTT_FILES))
+HOTT_COQLIB=/home/egallego/external/HoTT/coq/theories/
+
+dist-hott:
+	rsync -ap $(BUILDDIR)/ $(BUILDDIR_HOTT)
+	rm -rf $(BUILDDIR_HOTT)/coq-pkgs/*
+	rsync -ap $(HOTT_SRC_FILES) $(BUILDDIR_HOTT)/coq-pkgs/
+	rsync -ap $(HOTT_COQLIB) $(BUILDDIR_HOTT)/coq-pkgs/Coq
+	rsync -ap $(BUILDDIR)/coq-pkgs/Coq/syntax $(BUILDDIR_HOTT)/coq-pkgs/Coq/
+	cp -a newhott.html $(BUILDDIR_HOTT)/newide.html
+
+hott-upload: dist-hott
+	rsync -avzp --delete dist-hott/ ~/x80/rhino-hott/
 
 ########################################################################
 # coqDoc Object

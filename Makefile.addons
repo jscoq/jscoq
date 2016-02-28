@@ -3,7 +3,7 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt # hott
+all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott
 
 # XXX: We should include the common addon makefile thing.
 
@@ -122,10 +122,10 @@ HOTT_DEST=coq-pkgs/HoTT
 $(HOTT_DEST):
 	mkdir -p $(HOTT_DEST)
 
+HOTT_MODULES=$(addprefix $(HOTT_HOME)/,Algebra Basics Comodalities Modalities Spaces Tactics Types)
 hott: $(HOTT_DEST)
 	rsync -avp $(wildcard $(HOTT_HOME)/*.vo) $(HOTT_DEST)/
-	rsync -avp $(HOTT_HOME)/Basics $(HOTT_DEST)
-	rsync -avp $(HOTT_HOME)/Types  $(HOTT_DEST)
+	rsync -avp $(HOTT_MODULES) $(HOTT_DEST)
 
 ########################################################################
 # Addons: tlc                                                        #
