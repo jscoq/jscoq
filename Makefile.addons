@@ -211,6 +211,21 @@ color:
 	rm -rf $(JSCOQ_DIR)/CoLoR
 	mv /tmp/home/egallego/external/coq-git/user-contrib/CoLoR/ $(JSCOQ_DIR)/
 
+########################################################################
+# Addons: relalg                                                       #
+########################################################################
+
+relalg:
+RELALG_HOME=~/external/coq/relation-algebra-1.4/
+RELALG_DEST=coq-pkgs/RelationAlgebra
+RELALG_FILES=$(wildcard $(RELALG_HOME)/*.vo)
+
+$(RELALG_DEST):
+	mkdir -p $(RELALG_DEST)
+
+relalg: $(RELALG_DEST) $(RELALG_FILES)
+	$(shell for i in $(RELALG_FILES); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
+
 # XXX: Move to common
 COQDIR=~/external/coq-git/
 JOBS=
@@ -223,6 +238,9 @@ all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make clean
 
 all-build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
@@ -232,4 +250,9 @@ all-build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME)/..;  make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
+
 

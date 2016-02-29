@@ -352,7 +352,7 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
-                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color']
+                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg']
         };
 
         this.options = copyOptions(options, this.options);

@@ -173,6 +173,9 @@ let pkgs : (string * string list * string list list) list=
   ; "dsp", ["math-comp"],
     [ ["Dsp"] ]
 
+  ; "relalg", ["coq-arith"],
+    [ ["RelationAlgebra"] ]
+
   ; "hott-init", [],
     [ ["Coq"; "syntax"]
     ; ["Coq"; "Init"]
