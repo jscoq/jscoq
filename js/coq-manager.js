@@ -238,6 +238,7 @@ class CoqPanel {
 class ProviderContainer {
 
     constructor(elms) {
+
         // Code snippets.
         this.snippets = [];
 
@@ -248,7 +249,7 @@ class ProviderContainer {
         elms.forEach(function (e) {
 
             // Init.
-            var cm = new CmCoqProvider(document.getElementById(e));
+            var cm = new CmCoqProvider(e);
             cm.idx = idx++;
             this.snippets.push(cm);
 

@@ -18,19 +18,23 @@ class CmCoqProvider {
 
     constructor(element) {
 
-        this.editor = CodeMirror.fromTextArea(element,
+        var cmOpts =
+            { mode : { name : "coq",
+                       version: 4,
+                       singleLineStringErrors : false
+                     },
+              lineNumbers   : true,
+              indentUnit    : 4,
+              matchBrackets : true,
+              // theme         : 'blackboard',
+              keyMap        : "emacs"
+            };
 
-           { mode : {name : "coq",
-                     version: 4,
-                     singleLineStringErrors : false
-                    },
-             lineNumbers   : true,
-             indentUnit    : 4,
-             matchBrackets : true,
-             // theme         : 'blackboard',
-             keyMap        : "emacs"
-            }
-        );
+        if (typeof element === 'string' || element instanceof String) {
+            this.editor = CodeMirror.fromTextArea(document.getElementById(element), cmOpts);
+        } else {
+            this.editor = CodeMirror(element, cmOpts);
+        }
 
         this.editor.on('change', evt => this.onCMChange(evt));
     }
