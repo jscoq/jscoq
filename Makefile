@@ -126,6 +126,8 @@ dist-upload: all bcache
 dist-release: all bcache
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
+all-dist: dist hott-upload dist-release dist-upload
+
 upload: all
 	ln -sf newide.html index.html
 	mkdir -p $(WEB_DIR)/coq-js/

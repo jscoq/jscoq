@@ -1,7 +1,13 @@
++ JsCoq 0.7 Hott
+--------------------------------
+
+  - New panel support.
+
 + JsCoq 0.6 "���𐄽𐄺�"
 --------------------------------
 
   - JSON/sexp serialization of Constr_uctions.
+  - Loader.
 
 + JsCoq 0.5 "Alexandria"
 --------------------------------
