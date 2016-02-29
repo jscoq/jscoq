@@ -1,6 +1,6 @@
 .PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache dist dist-upload dist-release dist-hott
 
-COQDIR=~/external/coq-git/
+include config.mk
 
 all:
 
@@ -33,8 +33,6 @@ coq-libs: Makefile.libs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
 # Build extra libraries
-# ADDONS=ssr-libs mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp
-ADDONS=
 coq-addons:
 	make -f Makefile.addons $(ADDONS)
 
@@ -85,7 +83,6 @@ BUILDDIR_HOTT=$(BUILDDIR)-hott
 
 HOTT_FILES=bcache bcache.list hott-init.json hott.json HoTT
 HOTT_SRC_FILES=$(addprefix $(BUILDDIR)/coq-pkgs/,$(HOTT_FILES))
-HOTT_COQLIB=/home/egallego/external/HoTT/coq/theories/
 
 dist-hott:
 	rsync -ap $(BUILDDIR)/ $(BUILDDIR_HOTT)
@@ -96,7 +93,7 @@ dist-hott:
 	cp -a newhott.html $(BUILDDIR_HOTT)/newide.html
 
 hott-upload: dist-hott
-	rsync -avzp --delete dist-hott/ ~/x80/rhino-hott/
+	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
 
 ########################################################################
 # coqDoc Object
@@ -122,16 +119,16 @@ clean:
 ########################################################################
 
 dist-upload: all bcache
-	rsync -avzp --delete dist/ ~/x80/rhino-coq/
+	rsync -avzp --delete dist/ $(WEB_DIR)
 
 dist-release: all bcache
-	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ ~/research/jscoq-builds/
+	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
 upload: all
 	ln -sf newide.html index.html
-	mkdir -p ~/x80/rhino-coq/coq-js/
-	rsync -avzp coq-js/jscoq.js ~/x80/rhino-coq/coq-js/
-	rsync --delete -avzp index.html newide.html ide.html js css images coq-pkgs bcache.list bcache external ~/x80/rhino-coq/
+	mkdir -p $(WEB_DIR)/coq-js/
+	rsync -avzp coq-js/jscoq.js $(WEB_DIR)/coq-js/
+	rsync --delete -avzp index.html newide.html ide.html js css images coq-pkgs bcache.list bcache external $(WEB_DIR)
 # $(shell ./x80-sync.sh)
 
 pau:

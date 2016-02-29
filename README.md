@@ -148,13 +148,18 @@ $ make               # use -j N as desired
   tree with some specific patches at
   https://github.com/ejgallego/coq/tree/jscoq-patchqueue
 
-  If you want to use a different location for the Coq sources, edit
-  the `COQDIR` variable in JsCoq's `Makefile`.
+* You must checkout jsCoq git submodules:
 
-* You may want to select what libraries get
-  included. `coq-tools/dftlibs.ml` allows you to do that. You should
-  also edit `Makefile.addons` to select the addons you want to
-  ship. [We hope to improve this in the future]
+  ````
+$ git submodules update
+  ````
+
+* Adjust build parameters in `config.mk`.
+
+  If you want to use a different location for the Coq sources, edit
+  the `COQDIR` variable, `ADDONS` will select what libraries get
+  included. See the file for more paremeters.
+
 
 * Finally:
 

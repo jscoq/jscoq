@@ -6,6 +6,6 @@ B .
 S /home/egallego/external/coq-git/**
 B /home/egallego/external/coq-git/**
 
-PKG lwt js_of_ocaml js_of_ocaml.syntax sexplib ppx_sexp_conv yojson
+PKG lwt js_of_ocaml js_of_ocaml.syntax sexplib ppx_sexp_conv yojson ppx_deriving_yojson
 EXT lwt js
 
