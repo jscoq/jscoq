@@ -12,8 +12,3 @@ for(var i = 0; i < bc_md5.length; i++) {
                function(err) { });
 }
 
-for(var i = 0; i < bc_md5.length; i++) {
-  process.stdout.write(bc_md5[i]);
-  if (i + 1 < bc_md5.length)
-    process.stdout.write("\n");
-}

@@ -60,6 +60,8 @@ bcache: coq-pkgs bcache.stamp
 bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
 	mkdir -p coq-pkgs/bcache
 	nodejs ./coq-tools/byte_cache.js > coq-pkgs/bcache.list
+	ls coq-pkgs/bcache > coq-pkgs/bcache.list
+	perl -i -pe "chomp if eof" coq-pkgs/bcache.list
 	touch bcache.stamp
 
 BUILDDIR=dist
