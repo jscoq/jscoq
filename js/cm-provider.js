@@ -1,24 +1,29 @@
-var CmCoqProvider;
+"use strict";
 
-(function(){
-    "use strict";
+class CmSentence {
 
-    var CmSentence = function(start, end, text, is_comment) {
+    constructor(start, end, text, is_comment) {
         // start, end: {line: l, ch: c}
         this.start = start;
         this.end   = end;
         this.text  = text;
         this.mark  = undefined;
         this.is_comment = is_comment;
-    };
+    }
 
-    // A CodeMirror-based Provider of coq statements.
-    CmCoqProvider = function(element) {
+}
+
+// A CodeMirror-based Provider of coq statements.
+class CmCoqProvider {
+
+    constructor(element) {
+
         this.editor = CodeMirror.fromTextArea(element,
-            {mode : {name : "coq",
+
+           { mode : {name : "coq",
                      version: 4,
                      singleLineStringErrors : false
-                   },
+                    },
              lineNumbers   : true,
              indentUnit    : 4,
              matchBrackets : true,
@@ -28,14 +33,14 @@ var CmCoqProvider;
         );
 
         this.editor.on('change', evt => this.onCMChange(evt));
-    };
+    }
 
-    CmCoqProvider.prototype.focus = function() {
+    focus() {
         this.editor.focus();
-    };
+    }
 
     // If prev == null then get the first.
-    CmCoqProvider.prototype.getNext = function(prev) {
+    getNext(prev) {
 
         var start = {line : 0, ch : 0};
         var doc = this.editor.getDoc();
@@ -65,10 +70,10 @@ var CmCoqProvider;
                                  token.type === 'comment'
                                 );
         return stm;
-    };
+    }
 
     // Gets sentence at point;
-    CmCoqProvider.prototype.getAtPoint = function() {
+    getAtPoint() {
 
         var doc   = this.editor.getDoc();
         var marks = doc.findMarksAt(doc.getCursor());
@@ -80,10 +85,10 @@ var CmCoqProvider;
             return null
         }
         // } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
-    };
+    }
 
     // Mark a sentence with {clear, processing, error, ok}
-    CmCoqProvider.prototype.mark = function(stm, mark) {
+    mark(stm, mark) {
 
         var doc = this.editor.getDoc();
 
@@ -112,10 +117,10 @@ var CmCoqProvider;
             // doc.setCursor(stm.end);
             break;
         }
-    };
+    }
 
     // If any marks, then call the invalidate callback!
-    CmCoqProvider.prototype.onCMChange = function(evt) {
+    onCMChange(evt) {
 
         var doc   = this.editor.getDoc();
         var marks = doc.findMarksAt(doc.getCursor());
@@ -135,7 +140,7 @@ var CmCoqProvider;
     // Returns the next token after the one seen at position: {line:…, ch:…}
     // type_re: regexp to match token type.
     // The returned object is a CodeMirror token with an additional attribute 'line'.
-    CmCoqProvider.prototype.getNextToken = function(position, type_re) {
+    getNextToken(position, type_re) {
         var cm = this.editor;
         var linecount = cm.getDoc().lineCount();
         var token, next, ch, line;
@@ -154,9 +159,9 @@ var CmCoqProvider;
             position = {line:next.line, ch:next.end};
         } while(type_re && !(type_re.test(next.type)));
         return next;
-    };
+    }
 
-}());
+}
 
 // Local Variables:
 // js-indent-level: 4
