@@ -134,8 +134,9 @@ end = struct
 
   let pw = ["Printing"; "Width"]
 
-  (** [set_int_option opt v] Sets integer optiont [opt] to [v]. *)
-  let set_int_option opt v = Goptions.set_int_option_value opt (Some v)
+  (** [set_int_option opt v] Sets integer optiont [opt] to [v] globally. *)
+  let set_int_option opt v =
+    Goptions.set_int_option_value_gen (Some false) opt (Some v)
 
 end
 
