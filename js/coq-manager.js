@@ -308,6 +308,14 @@ class ProviderContainer {
         stm.sp.mark(stm, mark);
     }
 
+    cursorToStart(stm) {
+        stm.sp.cursorToStart(stm);
+    }
+
+    cursorToEnd(stm) {
+        stm.sp.cursorToEnd(stm);
+    }
+
     focus() {
         if (this.currentFocus)
             this.currentFocus.focus();
@@ -626,6 +634,7 @@ class CoqManager {
 
         var stm = this.sentences.pop()
         this.provider.mark(stm, "clear");
+        this.provider.cursorToStart(stm);
 
         // Tell coq to go back to the old state.
         this.sid.pop();
@@ -681,6 +690,8 @@ class CoqManager {
 
                 // Print goals
                 this.panel.update();
+                this.provider.cursorToEnd(next);
+
                 return true;
             } else
                 // Cleanup was done in the onError handler.

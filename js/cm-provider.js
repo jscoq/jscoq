@@ -123,6 +123,16 @@ class CmCoqProvider {
         }
     }
 
+    cursorToStart(stm) {
+        var doc = this.editor.getDoc();
+        doc.setCursor(stm.start);
+    }
+
+    cursorToEnd(stm) {
+        var doc = this.editor.getDoc();
+        doc.setCursor(stm.end);
+    }
+
     // If any marks, then call the invalidate callback!
     onCMChange(evt) {
 
