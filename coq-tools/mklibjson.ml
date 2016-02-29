@@ -14,7 +14,8 @@ let is_vo s =
   Filename.check_suffix s ".vo"
 
 let is_cma s =
-  Filename.check_suffix s ".cma"
+  Filename.check_suffix s ".cma" ||
+  Filename.check_suffix s ".cmo"
 
 let build_pkg (pid : string list) : Jslib.coq_pkg =
   let dummy_d   = Digest.string ""                 in
