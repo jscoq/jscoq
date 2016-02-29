@@ -70,10 +70,15 @@ https://github.com/ejgallego/udoc
 
 ## Mailing List ##
 
-You can subscribe to the jsCoq mailing list at: [soon with all you]
+You can subscribe to the jsCoq mailing list at:
 
-The list archives are also available through Gmane, you can also post
-to the list using nntp.
+https://x80.org/cgi-bin/mailman/listinfo/jscoq
+
+The list archives should be also available through Gmane at group:
+
+`gmane.science.mathematics.logic.coq.jscoq`
+
+you can post to the list using nntp.
 
 ## Troubleshooting ##
 
