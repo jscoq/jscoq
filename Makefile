@@ -25,7 +25,7 @@ coq-pkgs:
 	mkdir -p coq-pkgs
 
 # It depends on coq-tools, but coq-tools is linked with the 32bit thing...
-Makefile.libs:
+Makefile.libs: coq-tools/dftlibs.ml coq-tools/mklibfs.ml
 	./coq-tools/mklibfs > Makefile.libs
 
 # Build Coq libraries
@@ -33,13 +33,15 @@ coq-libs: Makefile.libs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
 # Build extra libraries
+# ADDONS=ssr-libs mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp
+ADDONS=
 coq-addons:
-	make -f Makefile.addons all-addons
+	make -f Makefile.addons $(ADDONS)
 
 # All the libraries + json generation
 libs: coq-libs coq-addons coq-pkgs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
-	./coq-tools/mklibjson
+	./coq-tools/mklibjson # $(ADDONS)
 
 # CMAS=filesys/Coq_syntax/nat_syntax_plugin.cma	\
 #      filesys/Coq_cc/cc_plugin.cma		\

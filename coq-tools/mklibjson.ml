@@ -17,11 +17,18 @@ let is_cma s =
   Filename.check_suffix s ".cma"
 
 let build_pkg (pid : string list) : Jslib.coq_pkg =
-  let dir       = Dl.prefix ^ "/" ^ Dl.to_dir pid  in
-  let files     = Array.to_list @@ Sys.readdir dir in
-  let vo_files  = List.filter is_vo files          in
-  let cma_files = List.filter is_cma files         in
   let dummy_d   = Digest.string ""                 in
+  let dir       = Dl.prefix ^ "/" ^ Dl.to_dir pid  in
+  let vo_files, cma_files =
+    try
+      let open List                                    in
+      let files     = Array.to_list @@ Sys.readdir dir in
+      filter is_vo files, filter is_cma files
+    with
+    | Sys_error msg ->
+      eprintf "Warning: %s@\n%!" msg;
+      [], []
+  in
   {
     Jslib.pkg_id    = pid;
     vo_files  = List.map (fun s -> (s, dummy_d)) vo_files;
