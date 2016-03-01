@@ -621,6 +621,35 @@ class CoqManager {
         }
     }
 
+    process_special(text) {
+
+        var special;
+
+        if (special = text.match(/Comments \"(.*): (.+)\"./)) {
+            let cmd  = special[1];
+            let args = special[2];
+
+            switch (cmd) {
+
+            case 'pkgs':
+                let pkgs = args.split(' ');
+                console.log('Requested pkgs '); console.log(pkgs);
+
+                let pkg_panel = document.getElementById('packages-panel').parentNode;
+                pkg_panel.classList.remove('collapsed');
+
+                pkgs.forEach(this.coq.add_pkg,this);
+
+                return true;
+
+            default:
+                console.log("Unrecognized jscoq command");
+                return false;
+            }
+        }
+        return false;
+    }
+
     goPrev(inPlace) {
 
         // If we didn't load the prelude, prevent unloading it to
@@ -666,7 +695,11 @@ class CoqManager {
             this.currentFocus = next.sp;
             this.currentFocus.focus();
         }
-        // We should be fully event driven here...
+        // XXXX: We should be fully event driven here...
+
+        // process special jscoq commands, for now:
+        // Comment "pkg: list" will load packages.
+        this.process_special(next.text);
 
         // Two things can happen: a parsing error (thus we will never get a sid),
         // of a succesful parse, we get a sid.
