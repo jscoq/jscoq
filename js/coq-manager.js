@@ -69,17 +69,18 @@ class CoqPanel {
       </div> <!-- /#exits -->
       <span id="buttons">
         <img src="${base_path}/images/up.png" width="21" height="24"
-             alt="Up (Ctrl-P)" title="Up (Ctrl-P)" name="up"/>
+             alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/>
         <img src="${base_path}/images/down.png" width="21" height="25"
-             alt="Down (Ctrl-N)" title="Down (Ctrl-N)" name="down"/>
+             alt="Down (Meta-N)" title="Down (Meta-N)" name="down"/>
         <img src="${base_path}/images/to-cursor.png" width="38" height="24"
-             alt="To cursor (Ctrl-Enter)" title="To cursor (Ctrl-Enter)" name="to-cursor"/>
+             alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
       </span>
     </div> <!-- /#toolbar -->
     <div class="flex-container">
       <div id="goal-panel" class="flex-panel">
         <div class="caption">Goals</div>
-        <div id="goal-text" class="content"></div>
+        <div class="content" id="goal-text" data-lang="coq">
+        </div>
       </div>
       <div class="msg-area flex-panel">
         <div class="caption">
