@@ -1,0 +1,10 @@
+{
+  "undef": true,
+  "unused": true,
+  "predef": [ "$" ],
+  "esnext": true,
+  "predef": [ "jsCoq", "$", "CodeMirror", "d3", "PackagesManager"],
+  "browser": true,
+  "devel":true,
+  "esversion" : 6
+}
