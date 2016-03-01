@@ -390,7 +390,7 @@ class CoqManager {
             setTimeout( () => {
                 this.goCursor();
                 // We must do one more back, as the one in the cursor is the invalid one!
-                this.goPrev();
+                this.goPrev(true);
             }, 100);
         };
 
@@ -599,7 +599,7 @@ class CoqManager {
                 break;
 
             case 'up' :
-                this.goPrev();
+                this.goPrev(false);
                 break;
 
             case 'down' :
@@ -621,7 +621,7 @@ class CoqManager {
         }
     }
 
-    goPrev() {
+    goPrev(inPlace) {
 
         // If we didn't load the prelude, prevent unloading it to
         // workaround a bug in Coq.
@@ -634,7 +634,9 @@ class CoqManager {
 
         var stm = this.sentences.pop()
         this.provider.mark(stm, "clear");
-        this.provider.cursorToStart(stm);
+
+        if(!inPlace)
+            this.provider.cursorToStart(stm);
 
         // Tell coq to go back to the old state.
         this.sid.pop();
@@ -690,12 +692,16 @@ class CoqManager {
 
                 // Print goals
                 this.panel.update();
-                this.provider.cursorToEnd(next);
+
+                if(update_focus)
+                    this.provider.cursorToEnd(next);
 
                 return true;
-            } else
+            } else {
                 // Cleanup was done in the onError handler.
                 return false;
+            }
+
         } else { // Parse/library loading error.
 
             this.provider.mark(next, "clear");
@@ -717,7 +723,7 @@ class CoqManager {
         if (0 <= idx) {
             console.log("Going back to: " + idx + " " + this.sentences[idx].toString());
             while (this.sentences.length > idx + 1) {
-                this.goPrev();
+                this.goPrev(false);
             }
         } else {}
     }
@@ -731,7 +737,7 @@ class CoqManager {
             if (0 <= idx) {
                 console.log("Going back to: " + idx + " " + this.sentences[idx].toString());
                 while (this.sentences.length > idx + 1) {
-                    this.goPrev();
+                    this.goPrev(false);
                 }
                 this.panel.show();
             } else { // We need to go next!
