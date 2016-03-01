@@ -1,0 +1,24 @@
+{
+  "name": "jscoq",
+  "homepage": "https://github.com/ejgallego/jscoq",
+  "authors": [
+    "Emilio Jesús Gallego Arias"
+  ],
+  "description": "JsCoq Interactive Online System",
+  "main": "",
+  "moduleType": [
+    "es6"
+  ],
+  "keywords": [
+    "coq"
+  ],
+  "license": "AGPL",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
