@@ -126,7 +126,7 @@ dist-upload: all bcache
 dist-release: all bcache
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
-all-dist: dist hott-upload dist-release dist-upload
+all-dist: dist dist-hott dist-release dist-upload hott-upload
 
 upload: all
 	ln -sf newide.html index.html
