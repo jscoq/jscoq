@@ -258,11 +258,12 @@ a, a:link, a:visited, a:active {
 
 .jscoq-grid-stack-handle {
   background: #c4c4c4;
-  height: 20px;
+  height: 10px;
   cursor: move;
+  width: 100%;
 }
 
 .grid-stack > .grid-stack-item > .grid-stack-item-content {
-  /*left: 0;
-  right: 0;*/
+  left: 1px;
+  right: 1px;
 }
