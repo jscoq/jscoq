@@ -123,14 +123,27 @@ class CmCoqProvider {
         }
     }
 
+    cursorLess(c1, c2) {
+
+        return (c1.line < c2.line ||
+                (c1.line === c2.line && c1.ch <= c2.ch));
+    }
+
     cursorToStart(stm) {
+
         var doc = this.editor.getDoc();
-        doc.setCursor(stm.start);
+        var csr = doc.getCursor();
+
+        if (this.cursorLess(csr, stm.end))
+            doc.setCursor(stm.start);
     }
 
     cursorToEnd(stm) {
         var doc = this.editor.getDoc();
-        doc.setCursor(stm.end);
+        var csr = doc.getCursor();
+
+        if (this.cursorLess(csr, stm.end))
+            doc.setCursor(stm.end);
     }
 
     // If any marks, then call the invalidate callback!
