@@ -13,8 +13,9 @@ module.exports = function (grunt) {
                 dest: {
                     'js': 'js/_bower.js',
                     'css': 'css/_bower.css'
-                }
+                },
             }
         }
     });
+    grunt.registerTask('default', ['bower_concat']);
 };
