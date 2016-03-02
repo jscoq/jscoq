@@ -210,11 +210,8 @@ a, a:link, a:visited, a:active {
 }
 
 #document {
-  margin: auto;
-  position: relative;
-  padding: auto;
   width: 51em;
-  padding: 15px;
+  margin: auto;
 }
 
 #document code {
@@ -248,4 +245,24 @@ a, a:link, a:visited, a:active {
   position: absolute;
   top: -18px;
   right: 0;
+}
+
+.grid-stack {
+  /*border: 2px solid red;*/
+}
+
+.grid-stack-item-content {
+  /*border: 1px dashed blueviolet;*/
+  background: #fff;
+}
+
+.jscoq-grid-stack-handle {
+  background: #c4c4c4;
+  height: 20px;
+  cursor: move;
+}
+
+.grid-stack > .grid-stack-item > .grid-stack-item-content {
+  /*left: 0;
+  right: 0;*/
 }
