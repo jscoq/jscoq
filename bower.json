@@ -22,6 +22,7 @@
     "tests"
   ],
   "dependencies": {
-    "gridstack": "^0.2.4"
+    "gridstack": "^0.2.4",
+    "font-awesome": "fontawesome#^4.5.0"
   }
 }
