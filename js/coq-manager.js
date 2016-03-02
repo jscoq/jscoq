@@ -590,6 +590,34 @@ class CoqManager {
         this.provider.focus();
     }
 
+    // Drops all the state!
+    reset() {
+
+        // Not yet initialized.
+        if(!this.sid) return;
+
+        var initial_sid;
+
+        if (this.options.prelude) {
+            initial_sid = this.sid[1];
+            this.sid    = [this.sid[0], this.sid[1]];
+        } else {
+            initial_sid = this.sid[0];
+            this.sid    = [this.sid[0]];
+        }
+
+        // Reset Coq.
+        this.coq.edit(initial_sid);
+
+        // Reset out sentences
+        this.sentences.forEach(function(stm) {
+            this.provider.mark(stm, "clear");
+        }, this);
+
+        this.sentences = [];
+
+    }
+
     toolbarClickHandler(evt) {
 
         this.provider.focus();
