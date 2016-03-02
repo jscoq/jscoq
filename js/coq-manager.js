@@ -97,7 +97,7 @@ class CoqPanel {
         <div class="caption">Packages</div>
         <div id="packages-panel" class="content"></div>
       </div>
-    </div>`
+    </div>`;
 
         return html;
     }
@@ -335,7 +335,7 @@ var copyOptions = function(obj, target) {
         }
     }
     return target;
-}
+};
 
 class CoqManager {
 
