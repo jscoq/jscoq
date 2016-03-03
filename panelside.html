@@ -15,7 +15,7 @@
   <div class="grid-stack">
     <div class="grid-stack-item"
         data-gs-x="0" data-gs-y="0"
-        data-gs-width="8" data-gs-height="5">
+        data-gs-width="8" data-gs-height="14">
       <div class="grid-stack-item-content">
         <div class="jscoq-grid-stack-handle"></div>
         <div id="ide-wrapper" class="toggled">
@@ -105,9 +105,25 @@ Qed.
     </div>
     <div class="grid-stack-item"
         data-gs-x="9" data-gs-y="0"
+        data-gs-width="4" data-gs-height="6">
+      <div class="grid-stack-item-content">
+        <div class="jscoq-grid-stack-handle">Goals</div>
+        <div id="goal-text" class="content"></div>
+      </div>
+    </div>
+    <div class="grid-stack-item"
+        data-gs-x="9" data-gs-y="6"
         data-gs-width="4" data-gs-height="5">
       <div class="grid-stack-item-content">
-        <div class="jscoq-grid-stack-handle"></div>
+        <div class="jscoq-grid-stack-handle">Messages</div>
+      </div>
+    </div>
+    <div class="grid-stack-item"
+        data-gs-x="9" data-gs-y="11"
+        data-gs-width="4" data-gs-height="3">
+      <div class="grid-stack-item-content">
+        <div class="jscoq-grid-stack-handle">Packages</div>
+        <div id="packages-panel"></div>
       </div>
     </div>
   </div>
@@ -115,7 +131,13 @@ Qed.
   <script type="text/javascript" src="js/layout.js"></script>
   <script src="js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
-    loadJsCoq('./');
+    var coq;
+
+    loadJsCoq('./')
+        .then( () => new CoqManager (['addnC', 'prime_above'],
+                                     { prelude: false, mock: false }) )
+        .then( cm => { coq = cm; } );
+
   </script>
 
 </body>

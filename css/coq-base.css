@@ -257,10 +257,15 @@ a, a:link, a:visited, a:active {
 }
 
 .jscoq-grid-stack-handle {
-  background: #c4c4c4;
-  height: 10px;
+  color: #341822;
+  background: #d9c4c4;
+  height: 20px;
   cursor: move;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 0.5em;
 }
 
 .grid-stack > .grid-stack-item > .grid-stack-item-content {
