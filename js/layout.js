@@ -6,7 +6,7 @@
             handles: 'e, se, s, sw, w'
         },
         vertical_margin: 2,
-        //handle: '.jscoq-grid-stack-handle',
+        handle: '.jscoq-panel-wrapper .handle',
     };
     var grid = $('.grid-stack').gridstack(options);
 

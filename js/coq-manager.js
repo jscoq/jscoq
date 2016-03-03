@@ -154,7 +154,6 @@ class CoqManager {
         this.options = {
             mock:    false,
             prelude: true,
-            wrapper_id: 'ide-wrapper',
             base_path:  "./",
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
