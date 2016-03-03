@@ -46,12 +46,12 @@ var loadJsCoq;
 
     loadJsCoq = function(base_path) {
 
-        loadCss(base_path + 'css/coq-log');
-        loadCss(base_path + 'external/CodeMirror/lib/codemirror');
-        loadCss(base_path + 'external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'css/coq-base');
-        loadCss(base_path + 'css/coq-light');
+        //loadCss(base_path + 'css/coq-log');
+        //loadCss(base_path + 'external/CodeMirror/lib/codemirror');
+        //loadCss(base_path + 'external/CodeMirror/theme/blackboard');
+        //loadCss(base_path + 'external/CodeMirror/theme/blackboard');
+        //loadCss(base_path + 'css/coq-base');
+        //loadCss(base_path + 'css/coq-light');
 
         var files = ['external/CodeMirror/lib/codemirror',
                      'external/CodeMirror/mode/coq/coq',
@@ -59,6 +59,7 @@ var loadJsCoq;
                      'external/d3.min',
                      'js/cm-provider',
                      'js/coq-packages',
+                     'js/coq-panels',
                      'js/coq-manager'];
 
         var files = files.map(file => base_path + file);
