@@ -42,6 +42,7 @@ class type jsCoq = object
 
   (* Options. XXX must improve thanks to json serialization *)
   method set_printing_width_ : ('self t, int -> unit) meth_callback writeonly_prop
+  method set_type_in_type_   : ('self t, bool -> unit) meth_callback writeonly_prop
 
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
@@ -218,7 +219,12 @@ let _ =
 
   jsCoq##set_printing_width_ <- begin
     let open Icoq.Options in
-    Js.wrap_meth_callback (fun _this -> set_int_option pw)
+    Js.wrap_meth_callback (fun _this -> set_int_option print_width)
+  end;
+
+  jsCoq##set_type_in_type_ <- begin
+    let open Icoq.Options in
+    Js.wrap_meth_callback (fun _this -> set_bool_option type_in_type)
   end;
 
   jsCoq##goal_sexp_ <- Js.wrap_meth_callback (fun _this -> string @@ Jssexp.sexp_of_proof ());

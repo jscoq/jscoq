@@ -41,7 +41,8 @@ class type jsCoq = object
   method query       : ('self t, Stateid.t -> js_string t -> unit) meth_callback writeonly_prop
 
   (* Options. XXX must improve. *)
-  method set_printing_width_ : ('self t, int -> unit) meth_callback writeonly_prop
+  method set_printing_width_ : ('self t, int  -> unit) meth_callback writeonly_prop
+  method set_type_in_type_   : ('self t, bool -> unit) meth_callback writeonly_prop
 
   (* Package management *)
   method add_pkg_    : ('self t, js_string t -> unit) meth_callback writeonly_prop
