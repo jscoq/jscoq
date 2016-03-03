@@ -34,7 +34,12 @@ var COQ_LOG_LEVELS = {
     ERROR : 'error'
 };
 
+// Extra stuff... we better use jQuery.
+
 Array.prototype.last = function() { return this[this.length-1]; };
+String.prototype.trim = function() {
+  return this.replace(/^\s+|\s+$/g, "");
+};
 
 /***********************************************************************/
 /* The CoqPanel class contains the goal and the query buffer           */
@@ -496,7 +501,7 @@ class CoqManager {
             }
 
             if(level != COQ_LOG_LEVELS.DEBUG) {
-                msg = msg.replace(/(?:\r\n|\r|\n)/g, '<br />');
+                msg = msg.trim().replace(/(?:\r\n|\r|\n)/g, '<br />');
                 this.panel.log(msg, level);
             }
         };
