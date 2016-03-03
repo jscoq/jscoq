@@ -232,5 +232,23 @@ let pkgs : (string * string list * string list list) list=
     ; ["HoTT" ; "Spaces"]
     ; ["HoTT" ; "Tactics"]
     ; ["HoTT" ; "Types"] ]
+
+  ; "unimath", [ ],
+
+    [ ["UniMath"]
+    ; ["UniMath" ; "CategoryTheory" ]
+    ; ["UniMath" ; "CategoryTheory" ; "limits" ]
+    ; ["UniMath" ; "CategoryTheory" ; "colimits" ]
+    ; ["UniMath" ; "PAdics" ]
+    ; ["UniMath" ; "Ktheory" ]
+    ; ["UniMath" ; "Tactics" ]
+    ; ["UniMath" ; "SubstitutionSystems" ]
+    ; ["UniMath" ; "Foundations" ]
+    ; ["UniMath" ; "Foundations" ; "Basics" ]
+    ; ["UniMath" ; "Foundations" ; "Combinatorics" ]
+    ; ["UniMath" ; "Foundations" ; "Algebra" ]
+    ; ["UniMath" ; "Foundations" ; "NumberSystems" ]
+    ; ["UniMath" ; "Dedekind" ]
+    ]
   ]
 

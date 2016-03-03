@@ -128,6 +128,21 @@ hott: $(HOTT_DEST)
 	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(HOTT_MODULES) $(HOTT_DEST)
 
 ########################################################################
+# Addons: UniMath                                                      #
+########################################################################
+
+# XXX: Must make a generic method for this
+UNIM_HOME=~/external/coq/UniMath/
+UNIM_DEST=coq-pkgs/UniMath
+
+$(UNIM_DEST):
+	mkdir -p $(UNIM_DEST)
+
+unimath: $(UNIM_DEST)
+	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' \
+		--exclude='.package' --exclude='README.md' $(UNIM_HOME)/UniMath/ $(UNIM_DEST)
+
+########################################################################
 # Addons: tlc                                                        #
 ########################################################################
 
