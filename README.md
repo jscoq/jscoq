@@ -16,15 +16,15 @@ and to improve the acessibility of the platform itself.
 Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
 servers or external programs are needed.
 
-* **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists", etc...
-* **Important:** The project is pretty much a pre-alpha technology demo, you are welcome to use it but expect trouble.
+* **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists`, etc...
+* **Important:** Consider using `--js-flags="--stack-size=65536"` in Chrome if you get StackOverflows.
 
 ## API / How to use
 
 The current release provides a `coqManager` javascript object, so you can
 embed Coq in your particular javascript application. The basic use is:
 
-````
+```javascript
   <script src="js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
     loadJsCoq('./').then( () => new CoqManager (list_of_ids, [options]) );
@@ -137,10 +137,10 @@ instructions to build JsCoq yourself.
   recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then run:
 
-  ````
+  ```
 $ cp -a opam/4.02.3+32bit ~/.opam/compilers/4.02.3/
 $ ./toolchain-setup.sh
-  ````
+  ```
 
   and it should do the trick.
 
@@ -148,7 +148,7 @@ $ ./toolchain-setup.sh
 
 * Second, you need to build Coq v8.5:
 
-  ````
+  ```
 $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
 $ git checkout v8.5
@@ -156,7 +156,7 @@ $ opam switch 4.02.3+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
-  ````
+  ```
 
   jsCoq is compatible with vanilla Coq v8.5. However, we maintain a
   tree with some specific patches at
@@ -164,9 +164,9 @@ $ make               # use -j N as desired
 
 * You must checkout jsCoq git submodules:
 
-  ````
+  ```
 $ git submodules update
-  ````
+  ```
 
 * Adjust build parameters in `config.mk`.
 
@@ -177,18 +177,18 @@ $ git submodules update
 
 * Finally:
 
-  ````
+  ```
 $ ./build.sh
-  ````
+  ```
 
   should build jscoq. The script tries to manage the pain of the 32/64
   bit switch, you can also use make if you want finer control.
 
 * To run jscoq in locally you may need to start your browser as:
 
-  ````
+  ```
 $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
-  ````
+  ```
 
 * _Bytecode cache_:
 
