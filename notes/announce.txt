@@ -1,0 +1,176 @@
+Subject: [ANNOUNCE] jsCoq preview release
+
+Dear Coq Club,
+
+we are happy to announce the first experimental release of jsCoq, a
+port of Coq to HTML5/Javascript ES2015.
+
+jsCoq needs a *pretty recent* browser, either Chrome (>= 48.0) or
+Firefox (>= 45.0) browser. The online demo is at:
+
+https://x80.org/rhino-coq/
+
+The project aims to ease the development of interactive Coq documents
+and teaching material, improve the accessibility of the platform, and
+explore new user interaction possibilities.
+
+This is the first public release; it provides a mostly functional
+basic Coq environment. While basically untested, we feel that the tool
+has reached a point where it could be useful to others.
+
+Some code is hacky and needs to be reworked, there are known pitfalls,
+expect bugs and problems. More info below.
+
+Best regards,
+Emilio
+
+Try & Download:
+---------------
+
+jsCoq is free software, source and build instructions are available
+from:
+
+https://github.com/ejgallego/jscoq/
+
+Building is a bit involved, there are pre-built versions at:
+
+https://github.com/ejgallego/jscoq-builds/
+
+Enabling jsCoq in an existing webpage roughly amounts to adding:
+
+<script src="js/jscoq-loader.js" type="text/javascript"></script>
+<script type="text/javascript">
+   loadJsCoq('./').then( () => new CoqManager (list_of_ids, [options]) );
+</script>
+
+YMMV, we would be very happy to help or hear from your experience!
+
+Current structure is fairly UI independent, so this could be a good
+base to build a different IDE try ideas out!
+
+Libraries available:
+--------------------
+
+jsCoq can build against Coq 8.5 or trunk. Our current build is based
+on 8.5 + several hand-picked fixes, we include the following
+libraries:
+
+CoLoR, cpdt (free parts), coquelicot, flocq, math-comp, mtac,
+relation-algebra, sf, and TLC.
+
+Let us know if you would like to add your own library to our builds.
+
+Colla&Coq
+---------
+
+We provide a pastebin-like service at:
+
+https://x80.org/collacoq/
+
+it allows to paste and share runnable Coq snippets, it's status is
+extremely experimental, so expect you pastes to be gone.
+
+Custom build for HoTT:
+----------------------
+
+We provide an experimental custom build for HoTT:
+
+- using the HoTT library:
+  https://x80.org/rhino-hott/
+
+A very experimental optimized build for the math-comp library is also
+available (contact me in private).
+
+Coqdoc to jsCoq:
+---------------
+
+Experimental support for generating jsCoq webpages from a coqdoc
+document is available; see the README for more details.
+
+Users:
+------
+
+jsCoq was used at the "Advanced Coq Winter School 2016":
+https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+
+Examples:
+---------
+
+The main page includes a proof of the infinitude of primes by
+G. Gonthier. We provide some more examples as a showcase of the tool:
+
++ dft.v: https://x80.org/rhino-coq/examples/dft.html
+
+  A small development of the theory of the Fourier Transform following
+  Julius Orion Smith III's "The Mathematics of the Discrete Fourier
+  Transform"
+
++ Mtac: The Mtac tutorial by Beta Zilliani:
+
+  https://x80.org/rhino-coq/examples/mtac_tutorial.html
+
++ Stlc: The "Simply Typed Lambda Calculus" chapter from Software
+  Foundations by Benjamin Pierce et al:
+
+  https://x80.org/rhino-coq/examples/Stlc.html
+
++ StackMachine: The First chapter of the book "Certified Programming
+  with Dependent Types" by Adam Chlipala:
+
+  https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
+
+Acknowledgments:
+----------------
+
+jsCoq development has been funded by the ANR/FEEVER project.
+
+jsCoq has been written by Emilio Jesús Gallego Arias and Benoît Pin,
+with special thanks to:
+
+Yves Bertot
+Maximé Dènés
+Hugo Heuzard
+Pierre Jouvelot
+Pierre-Marie Pédrot
+Gabriel Scherer
+Arnaud Spiwack
+Enrico Tassi
+Jérome Vouillon
+
+Future plans/TODO:
+------------------
+
+A better panel layout is coming soon. It will allow different
+placement, resizing. Goal history and diffs should also happen soon,
+as well as a much improved search/logging support.
+
+There are potentially many useful things to improve, here's a small
+brainstorming:
+
++ Improve .vo load time: This requires non-trivial, but we could make
+  .vo loading an order of magnitude faster.
+
++ Better CSS/HTML styles: we are lacking in web design manpower so the
+  current style could be easily improved.
+
++ Web editor (CodeMirror) support for Coq still needs a lot of work.
+
++ Better UI: Current UI is a prototype and may not be flexible enough.
+
+  Better proof display, user queries, an improved search command,
+  better display of math would be great.
+
++ More of Coq's API and data structures could be exported to JS (via
+  json_ppx_deriving).
+
++ Extraction to JavaScript.
+
++ Better support for html slides/deck.js.
+
++ Running jsCoq in a separate browser thread (worker).
+
++ Static vs dynamic linking of .cma plugins is to be considered.
+
++ Makefile of addons/package format need work.
+
++ Fixing vm_compute could be done using emscripten.
