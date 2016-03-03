@@ -109,7 +109,6 @@ hott-upload: dist-hott
 clean:
 	$(MAKE) -C coq-js       clean
 	$(MAKE) -C coq-tools    clean
-	$(MAKE) -C coq-toplevel clean
 # $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-pkgs
