@@ -186,9 +186,16 @@ class CoqPanel {
         d3.select(this.query)
             .append('div')
             .attr('class', level)
-            .html(text)
-            .node()
-            .scrollIntoView();
+            .html(text);
+            // .node()
+            // .scrollIntoView();
+
+        if (!this.scrollTimeout) {
+            this.scrollTimeout = setTimeout( () => {
+                this.query.scrollIntoView(false);
+                this.scrollTimeout = null;
+            }, 400 );
+        }
     }
 
     filterLog(level_select) {
