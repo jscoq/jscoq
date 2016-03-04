@@ -117,6 +117,11 @@ let string_of_goals () =
   in
   string_of_ppcmds pp_goals
 
+(** [set_debug t] enables/disables debug mode  *)
+let set_debug debug =
+  Backtrace.record_backtrace debug;
+  Flags.debug := debug
+
 module Options : sig
   type 'a t
 

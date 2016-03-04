@@ -57,6 +57,9 @@ val query : Stateid.t -> string -> unit
 (** [string_or_goals ()] returns a string representing the current goals  *)
 val string_of_goals : unit -> string
 
+(** [set_debug t] enables/disables debug mode  *)
+val set_debug : bool -> unit
+
 module Options : sig
   type 'a t
 
