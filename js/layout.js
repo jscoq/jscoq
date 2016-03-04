@@ -15,6 +15,12 @@ class GridLayout {
         $(selector).on('change', (evt, items) => this.save(evt, items));
         this.grid = $(selector).data('gridstack');
 
+        var saved_layout = GridLayout.getCookie('jscoq_grid_state');
+        if(saved_layout) {
+            this.load(JSON.parse(saved_layout));
+        }
+        this.skip_save_events = false;
+
         this.presets = {
             Default: {
                 "proof": {"x":8,"y":0,"width":4,"height":6},
@@ -30,6 +36,9 @@ class GridLayout {
     }
 
     save(evt, items) {
+        if (this.skip_save_events)
+            return;
+
         var state = {};
         items.map((item) =>
             {
@@ -40,6 +49,8 @@ class GridLayout {
                               height: item.height};
             }
         )
+        document.cookie = 'jscoq_grid_state=' + JSON.stringify(state);
+        console.info('layout saved');
     }
 
     loadPreset(name) {
@@ -49,6 +60,7 @@ class GridLayout {
     }
 
     load(layout) {
+        this.skip_save_events = true;
         var engine = this.grid.grid;
         engine.nodes.forEach(
             item => {
@@ -58,5 +70,20 @@ class GridLayout {
                 this.grid.resize(item.el, layout[name].width, layout[name].height);
             }
         )
+        this.skip_save_events = false;
+        this.save(null, engine.nodes);
+    }
+
+    static getCookie(name) {
+        // from w3schools.com
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        var i;
+        for(i=0 ; i < ca.length ; i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' '){c = c.substring(1);}
+            if (c.indexOf(nameEQ) != -1){return c.substring(nameEQ.length,c.length);}
+        }
+        return null;
     }
 }
