@@ -26,3 +26,37 @@ class QueryPanel extends Panel {
             .scrollIntoView();
     }
 }
+
+class NavbarPanel extends Panel {
+
+    constructor(panel_elt, coq_manager) {
+        super(panel_elt);
+        this.coq_manager = coq_manager;
+        window.addEventListener('load', evt => this._initListeners());
+    }
+
+    _initListeners() {
+        var coq_exec_btns = document.getElementsByClassName('coq-exec-btns')[0];
+        coq_exec_btns.addEventListener('click', evt => this.toolbarClickHandler(evt));
+    }
+
+    toolbarClickHandler(evt) {
+        var target = evt.target;
+        target.blur();
+
+        switch (target.name) {
+            case 'to-cursor' :
+                this.coq_manager.goCursor();
+                break;
+
+            case 'up' :
+                this.coq_manager.goPrev();
+                break;
+
+            case 'down' :
+                this.coq_manager.goNext(true);
+                break;
+        }
+    }
+
+}

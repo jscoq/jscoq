@@ -164,6 +164,9 @@ class CoqManager {
         this.options = copyOptions(options, this.options);
 
         this.panels = {
+            navbar: new NavbarPanel(
+                document.getElementById('top-navbar'),
+                this),
             proof: new ProofPanel(
                 document.getElementById('goal-text')),
             query: new QueryPanel(
@@ -207,7 +210,7 @@ class CoqManager {
     }
 
     setupCoq() {
-        this.coq      = jsCoq;
+        this.coq = jsCoq;
 
         // Bind jsCoq events 1: error
         this.coq.onError = e => {

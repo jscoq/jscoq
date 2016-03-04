@@ -16,15 +16,18 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <span class="btn-group">
-        <button type="button"
+    <nav id="top-navbar" class="navbar navbar-inverse navbar-fixed-top">
+      <span class="btn-group coq-exec-btns" >
+        <button name="down"
+                type="button"
                 class="btn navbar-btn btn-primary fa fa-arrow-down fa-2x"
                 title="Down (Meta-N)"></button>
-        <button type="button"
+        <button name="up"
+                type="button"
                 class="btn navbar-btn btn-primary fa fa-arrow-up fa-2x"
                 title="Up (Meta-P)"></button>
-        <button type="button"
+        <button name="to-cursor"
+                type="button"
                 class="btn navbar-btn btn-primary fa fa-i-cursor fa-2x"
                 title="To cursor (Meta-Enter)"></button>
       </span>
@@ -177,7 +180,7 @@ Qed.
 
       loadJsCoq('./')
           .then( () => new CoqManager (['addnC', 'prime_above'],
-                                       { prelude: false, mock: true }) )
+                                       { prelude: false, mock: false }) )
           .then( cm => { coq = cm; } );
 
     </script>
