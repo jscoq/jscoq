@@ -2,7 +2,8 @@
   "name": "jscoq",
   "homepage": "https://github.com/ejgallego/jscoq",
   "authors": [
-    "Emilio Jesús Gallego Arias"
+    "Emilio Jesús Gallego Arias <e@x80.org>",
+    "Benoît Pin <benoit.pin@mines-paristech.fr>"
   ],
   "description": "JsCoq Interactive Online System",
   "main": "",

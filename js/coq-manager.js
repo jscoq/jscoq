@@ -162,7 +162,7 @@ class CoqManager {
         };
 
         this.options = copyOptions(options, this.options);
-
+        this.layout = new GridLayout('.grid-stack');
         this.panels = {
             navbar: new NavbarPanel(
                 document.getElementById('top-navbar'),

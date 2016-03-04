@@ -60,6 +60,7 @@ var loadJsCoq;
                      'js/cm-provider',
                      'js/coq-packages',
                      'js/coq-panels',
+                     'js/layout',
                      'js/coq-manager'];
 
         var files = files.map(file => base_path + file);
