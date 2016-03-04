@@ -161,4 +161,9 @@ a, a:link, a:visited, a:active {
 .jscoq-panel-wrapper .content {
   height: calc(100% - 20px);
   overflow: scroll;
+  padding: 4px;
+}
+
+.jscoq-panel-wrapper .content.document {
+  padding: 0 2em;
 }
