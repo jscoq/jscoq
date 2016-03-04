@@ -22,6 +22,17 @@ a, a:link, a:visited, a:active {
   text-decoration: none;
 }
 
+#main-grid {
+  position: absolute;
+  /*border: 2px dashed orange;*/
+  top: 62px;
+  left: 0;
+  right:0;
+  bottom: 0;
+  overflow: scroll;
+  /*border: 3px dashed green;*/
+}
+
 #goal-text {
   border: 0;
   padding: 0;

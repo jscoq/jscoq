@@ -1,7 +1,8 @@
 (function () {
     var options = {
         //height: 10,
-        cell_height: Math.floor(document.documentElement.clientHeight / 15),
+        cell_height: Math.floor((document.documentElement.clientHeight - 83) / 14),
+        //height: 14,
         resizable: {
             handles: 'e, se, s, sw, w'
         },
