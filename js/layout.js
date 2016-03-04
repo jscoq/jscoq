@@ -50,7 +50,6 @@ class GridLayout {
             }
         )
         document.cookie = 'jscoq_grid_state=' + JSON.stringify(state);
-        console.info('layout saved');
     }
 
     loadPreset(name) {
