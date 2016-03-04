@@ -38,6 +38,9 @@ class NavbarPanel extends Panel {
     _initListeners() {
         var coq_exec_btns = document.getElementsByClassName('coq-exec-btns')[0];
         coq_exec_btns.addEventListener('click', evt => this.toolbarClickHandler(evt));
+        var layout_switch = document.getElementsByClassName('layout-switch')[0];
+        layout_switch.addEventListener('click', evt => this.layoutSwitchClickHandler(evt));
+
     }
 
     toolbarClickHandler(evt) {
@@ -68,5 +71,10 @@ class NavbarPanel extends Panel {
                                              {'view'       : window,
                                               'bubbles'    : true,
                                               'cancelable' : true}));
+    }
+
+    layoutSwitchClickHandler(evt) {
+        var target = evt.target;
+        this.coq_manager.layout.loadPreset(target.innerText);
     }
 }
