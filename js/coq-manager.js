@@ -176,9 +176,6 @@ class CoqManager {
                 this.options.base_path)
         };
 
-        // UI setup.
-        this.buttons = document.getElementById('buttons');
-
         // Setup our providers of Coq statements.
         this.provider = new ProviderContainer(elems);
 
@@ -357,47 +354,7 @@ class CoqManager {
 
     // Enable the IDE.
     enable() {
-
-        // Set Printing Width
-        window.addEventListener('resize', evt => { this.panel.adjustWidth(); } );
-
-        // Enable the buttons.
-        this.buttons.addEventListener('click', evt => { this.toolbarClickHandler(evt); } );
-        this.buttons.style.display = 'inline-block';
-        this.buttons.style.opacity = 1;
         this.provider.focus();
-    }
-
-    toolbarClickHandler(evt) {
-
-        this.provider.focus();
-
-        switch (evt.target.name) {
-            case 'to-cursor' :
-                this.goCursor();
-                break;
-
-            case 'up' :
-                this.goPrev();
-                break;
-
-            case 'down' :
-                this.goNext(true);
-                break;
-        }
-    }
-
-    raiseButton(btn_name) {
-
-        var btns = this.buttons.getElementsByTagName('img');
-        var btn  = btns.namedItem(btn_name);
-
-        if (btn) {
-            btn.dispatchEvent(new MouseEvent('click',
-                                             {'view'       : window,
-                                              'bubbles'    : true,
-                                              'cancelable' : true}));
-        }
     }
 
     goPrev() {
@@ -417,7 +374,7 @@ class CoqManager {
         // Tell coq to go back to the old state.
         this.sid.pop();
         this.coq.edit(this.sid.last());
-        this.panel.update();
+        this.panels.proof.display(this.coq.goals());
 
     }
 
@@ -467,7 +424,7 @@ class CoqManager {
                 this.provider.mark(next, "ok");
 
                 // Print goals
-                this.panel.update();
+                this.panels.proof.display(this.coq.goals());
                 return true;
             } else
                 // Cleanup was done in the onError handler.
@@ -509,7 +466,6 @@ class CoqManager {
                 while (this.sentences.length > idx + 1) {
                     this.goPrev();
                 }
-                this.panel.show();
             } else { // We need to go next!
                 console.log("Schedule goNext!");
                 if (this.goNext(false)) {
