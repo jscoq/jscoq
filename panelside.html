@@ -200,7 +200,7 @@ Qed.
       var coq;
       loadJsCoq('./')
           .then( () => new CoqManager (['addnC', 'prime_above'],
-                                       { prelude: false, mock: true }) )
+                                       { prelude: false, mock: false }) )
           .then( cm => { coq = cm; } );
 
     </script>

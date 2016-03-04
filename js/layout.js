@@ -38,9 +38,9 @@ class GridLayout {
     save(evt, items) {
         if (this.skip_save_events)
             return;
-
+        var engine = this.grid.grid;
         var state = {};
-        items.map((item) =>
+        engine.nodes.map((item) =>
             {
                 var name = item.el[0].getAttribute('data-jscoq-name');
                 state[name] = {x: item.x,
@@ -71,7 +71,7 @@ class GridLayout {
             }
         )
         this.skip_save_events = false;
-        this.save(null, engine.nodes);
+        this.save();
     }
 
     static getCookie(name) {
