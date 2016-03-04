@@ -212,6 +212,8 @@ class CoqManager {
     setupCoq() {
         this.coq = jsCoq;
 
+        document.addEventListener('keydown', evt => this.keyHandler(evt));
+
         // Bind jsCoq events 1: error
         this.coq.onError = e => {
             var stm = this.sentences.pop()
@@ -329,12 +331,8 @@ class CoqManager {
 
     // Keyboard handling
     keyHandler(e) {
-
-        // All our keybindings are prefixed by alt.
-        if (e.keyCode === 119) // F8
-            this.panel.toggle();
-
         if (!e.altKey && !e.metaKey) return true;
+
         var btn_name;
         switch (e.keyCode) {
             case 13: // ENTER
@@ -352,7 +350,7 @@ class CoqManager {
 
         if(btn_name) {
             this.provider.focus();
-            this.raiseButton(btn_name);
+            this.panels.navbar.raiseButton(btn_name);
             e.preventDefault();
         }
     }

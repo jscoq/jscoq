@@ -59,4 +59,14 @@ class NavbarPanel extends Panel {
         }
     }
 
+    raiseButton(btn_name) {
+        var btn = d3.select(this.panel_elt)
+            .select(`.coq-exec-btns button[name=${btn_name}]`)
+            .node();
+        if (btn)
+            btn.dispatchEvent(new MouseEvent('click',
+                                             {'view'       : window,
+                                              'bubbles'    : true,
+                                              'cancelable' : true}));
+    }
 }
