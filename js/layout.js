@@ -40,7 +40,6 @@ class GridLayout {
                               height: item.height};
             }
         )
-        console.log(JSON.stringify(state));
     }
 
     loadPreset(name) {
@@ -54,7 +53,6 @@ class GridLayout {
         engine.nodes.forEach(
             item => {
                 var name = item.el[0].getAttribute('data-jscoq-name');
-                console.log(name, item);
                 this.grid.resize(item.el, 1, 1);
                 this.grid.move(item.el, layout[name].x, layout[name].y);
                 this.grid.resize(item.el, layout[name].width, layout[name].height);
