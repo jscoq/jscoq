@@ -19,3 +19,4 @@ bc-*
 dist/
 dist-hott/
 node_modules
+bower_components
