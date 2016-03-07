@@ -113,7 +113,7 @@ clean:
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-pkgs
 	rm -rf bcache.stamp bc-md5.json bc-js.json
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) $(BUILDDIR_HOTT)
 
 ########################################################################
 # Local stuff
