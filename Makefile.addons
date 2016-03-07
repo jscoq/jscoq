@@ -267,6 +267,7 @@ all-build-ssr:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make -j $(JOBS)          || true
 
 all-build-std:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make -j $(JOBS)          || true
@@ -276,7 +277,6 @@ all-build-std:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make -j $(JOBS) proof_vo || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
 
 
