@@ -1,3 +1,4 @@
 [submodule "js/CodeMirror"]
 	path = external/CodeMirror
         url = git@github.com:ejgallego/CodeMirror.git
+        branch = jscoq

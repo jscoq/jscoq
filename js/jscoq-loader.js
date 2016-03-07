@@ -50,12 +50,15 @@ var loadJsCoq;
         loadCss(base_path + 'external/CodeMirror/lib/codemirror');
         loadCss(base_path + 'external/CodeMirror/theme/blackboard');
         loadCss(base_path + 'external/CodeMirror/theme/blackboard');
+        loadCss(base_path + 'external/CodeMirror/addon/hint/show-hint');
         loadCss(base_path + 'css/coq-base');
         loadCss(base_path + 'css/coq-light');
 
         var files = ['external/CodeMirror/lib/codemirror',
                      'external/CodeMirror/mode/coq/coq',
                      'external/CodeMirror/keymap/emacs',
+                     'external/CodeMirror/addon/hint/show-hint',
+                     'external/CodeMirror/addon/hint/tex-input-hint',
                      'external/d3.min',
                      'js/cm-provider',
                      'js/coq-packages',
