@@ -100,6 +100,13 @@ comment is really welcome! Please submit your pull request for review
 to the mailing list using `git request-pull`. You can also submit a
 github PR, but it is not guaranteed that we'll look into it.
 
+## CodeMirror ##
+
+[CodeMirror](https://codemirror.net/) has played a crucial role in the
+project, we are very happy with it, thanks a lot!
+
+Please consider supporting the development of CodeMirror with a donation.
+
 ## Reporting Bugs ##
 
 Feel free to use the issue tracker. Please include your
