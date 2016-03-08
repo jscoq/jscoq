@@ -58,7 +58,7 @@ var loadJsCoq;
                      'external/CodeMirror/mode/coq/coq',
                      'external/CodeMirror/keymap/emacs',
                      'external/CodeMirror/addon/hint/show-hint',
-                     'external/CodeMirror/addon/hint/tex-input-hint',
+                     'external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
                      'external/d3.min',
                      'js/cm-provider',
                      'js/coq-packages',
