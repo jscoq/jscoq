@@ -46,6 +46,31 @@ the constructor; current options are:
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 
+### Examples
+
+The main page includes a proof of the infinitude of primes by
+G. Gonthier. We provide some more examples as a showcase of the tool:
+
+- dft.v: https://x80.org/rhino-coq/examples/dft.html
+
+  A small development of the theory of the Fourier Transform following
+  Julius Orion Smith III's "The Mathematics of the Discrete Fourier
+  Transform"
+
+- Mtac: The Mtac tutorial by Beta Zilliani:
+
+  https://x80.org/rhino-coq/examples/mtac_tutorial.html
+
+- Stlc: The "Simply Typed Lambda Calculus" chapter from Software
+  Foundations by Benjamin Pierce et al:
+
+  https://x80.org/rhino-coq/examples/Stlc.html
+
+- StackMachine: The First chapter of the book "Certified Programming
+  with Dependent Types" by Adam Chlipala:
+
+  https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
+
 ### Serialization
 
 JsCoq supports serialization to Json or Sexps for Coq's internal data
@@ -101,17 +126,17 @@ comment is really welcome! Please submit your pull request for review
 to the mailing list using `git request-pull`. You can also submit a
 github PR, but it is not guaranteed that we'll look into it.
 
+## Reporting Bugs ##
+
+Feel free to use the issue tracker. Please include your
+browser/OS/user-agent and command line options.
+
 ## CodeMirror ##
 
 [CodeMirror](https://codemirror.net/) has played a crucial role in the
 project, we are very happy with it, thanks a lot!
 
 Please consider supporting the development of CodeMirror with a donation.
-
-## Reporting Bugs ##
-
-Feel free to use the issue tracker. Please include your
-browser/OS/user-agent and command line options.
 
 ## What is broken ##
 
