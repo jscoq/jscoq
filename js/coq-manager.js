@@ -715,6 +715,10 @@ class CoqManager {
 
                 return true;
 
+            case 'dump':
+                window.dumpCache();
+                return true;
+
             default:
                 console.log("Unrecognized jscoq command");
                 return false;
