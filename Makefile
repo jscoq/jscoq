@@ -68,7 +68,7 @@ BUILDDIR=dist
 
 DISTHTML=newide.html #mtac_tutorial.html
 BUILDOBJ=index.html $(DISTHTML) js css images examples coq-pkgs
-DISTEXT=external/CodeMirror external/pace external/d3.min.js external/bootstrap.min.css
+DISTEXT=external/CodeMirror external/CodeMirror-TeX-input external/pace external/d3.min.js external/bootstrap.min.css
 
 dist: bcache libs
 	ln -sf newide.html index.html
