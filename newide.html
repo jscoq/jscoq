@@ -93,15 +93,21 @@ Qed.
   </div> <!-- /#ide-wrapper -->
 
   <script src="js/jscoq-loader.js" type="text/javascript"></script>
-
   <script type="text/javascript">
+
+    var jscoq_ids  = ['addnC', 'prime_above'];
+    var jscoq_opts = {
+        prelude:   false,
+        mock:      false,
+        base_path: './',
+        init_pkgs: ['init']
+    };
+
+    /* Global reference */
     var coq;
 
-    loadJsCoq('./')
-        .then( () => new CoqManager (['addnC', 'prime_above'],
-                                     { prelude: false, mock: false,
-                                       init_pkgs: ['init'] }) )
-        .then( cm => { coq = cm; } );
+    loadJsCoq(jscoq_opts.base_path)
+        .then( () => coq = new CoqManager(jscoq_ids, jscoq_opts) );
   </script>
 </body>
 </html>
