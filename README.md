@@ -57,16 +57,17 @@ printing facilities from JS.
 
 ### CoqDoc
 
-An experimental version of coqdoc outputting jsCoq can be found at
-https://github.com/ejgallego/coq/tree/coqdoc
+A coqdoc replacement that is better suited to produce jsCoq output
+while (mostly) remaining compatible is being developed at
+https://github.com/ejgallego/udoc
 
-Just build coqdoc normally and use the option `--backend=jscoq`.
-
-It works for converting old coqdoc files, but it produces some
+It works kind of OK for converting coqdoc files, but it produces some
 artifacts and omits some declarations.
 
-A replacement tools better suited to jsCoq is being developed at
-https://github.com/ejgallego/udoc
+There is also a superseded experimental version of coqdoc outputting
+jsCoq at https://github.com/ejgallego/coq/tree/coqdoc
+
+Just build coqdoc normally and use the option `--backend=jscoq`.
 
 ### Collacoq
 
@@ -172,7 +173,7 @@ $ make               # use -j N as desired
 * You must checkout jsCoq git submodules:
 
   ```
-$ git submodules update
+$ git submodules update --remote
   ```
 
 * Adjust build parameters in `config.mk`.
