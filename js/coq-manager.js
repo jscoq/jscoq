@@ -122,7 +122,8 @@ class CoqPanel {
         this.proof = document.getElementById("goal-text");
         this.query = document.getElementById("query-panel");
 
-        this.log_css_rules = document.styleSheets[0].cssRules;
+        // XXXXX This must be fixed.
+        this.log_css_rules = document.styleSheets[1].cssRules;
 
         var flex_container = document.getElementById('panel-wrapper').getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
