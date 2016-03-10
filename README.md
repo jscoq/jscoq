@@ -71,6 +71,11 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
   https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
 
+### Homotopy Type Theory
+
+jsCoq supports the HoTT library which requires a special build of Coq,
+an online version is at: https://x80.org/rhino-hott/
+
 ### Serialization
 
 JsCoq supports serialization to Json or Sexps for Coq's internal data
