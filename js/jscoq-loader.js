@@ -62,6 +62,7 @@ var loadJsCoq;
                      'external/d3.min',
                      'js/cm-provider',
                      'js/coq-packages',
+                     'js/coq-layout-classic',
                      'js/coq-manager'];
 
         var files = files.map(file => base_path + file);
