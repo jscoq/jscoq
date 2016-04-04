@@ -277,13 +277,13 @@ class CoqManager {
             this.packages.onPkgProgress(progress);
         };
 
-        // Not used fro now.
+        // Not used for now.
         this.coq.onPkgLoadStart = progress => {
             //
         };
 
         this.coq.onPkgLoad = progress => {
-            // 
+            //
         };
 
         // XXX: Use a proper object...
@@ -420,9 +420,9 @@ class CoqManager {
     // Disable the IDE.
     disable() {
         // Disable the buttons.
-        this.buttons.removeEventListener('click', this.btnEventHandler);
-        this.buttons.style.display = 'none';
-        this.buttons.style.opacity = 0;
+        this.layout.buttons.removeEventListener('click', this.btnEventHandler);
+        this.layout.buttons.style.display = 'none';
+        this.layout.buttons.style.opacity = 0;
         this.layout.proof.textContent +=
                 "\n===> Waiting for Package load!\n";
 
@@ -488,7 +488,8 @@ class CoqManager {
             btn.dispatchEvent(new MouseEvent('click',
                                              {'view'       : window,
                                               'bubbles'    : true,
-                                              'cancelable' : true}));
+                                              'cancelable' : true
+                                             }));
         }
     }
 
