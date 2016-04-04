@@ -7,8 +7,9 @@ running in the browser! Try it:
 <https://x80.org/rhino-coq/>
 
 Note that you need a very recent browser, the current requisites are
-Chrome (>= 48) or Firefox (>= 45). JsCoq also runs in my old Galaxy
-Nexus.
+Chrome (>= 48) or Firefox (>= 45), jsCoq is written in ES2015, so in
+principle a transpiler could be used to make it run in older browsers
+if needed. JsCoq also runs in my old Galaxy Nexus.
 
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
@@ -163,6 +164,10 @@ Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 Incomplete list of places where jsCoq has been used:
 
 * https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+
+### jsCoq in the press
+
+- http://www.mines-paristech.fr/Actualites/jsCoq-ou-Coq-dans-un-navigateur/2118
 
 ## How to Install/Build ##
 
