@@ -338,7 +338,9 @@ Print test_table.
      loadJsCoq('../').then( () => {
          coq = new CoqManager ( dft_ids,
                                 { base_path: '../',
-                                  init_pkgs: ['init', 'mirrorcore']
+                                  init_pkgs: ['init', 'mirrorcore'],
+                                  all_pkgs:  ['init', 'coq-base', 'coq-arith', 'coq-reals',
+                                              'plugin-utils', 'extlib', 'mirrorcore', 'math-comp']
                                 } );
      });
 
