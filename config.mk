@@ -3,7 +3,7 @@ COQDIR=~/external/coq-git/
 
 # Addons to build
 ADDONS =
-# ADDONS += ssr-libs mtac coquelicot flocq tlc color sf cpdt hott dsp relalg unimath
+# ADDONS += ssr-libs mtac coquelicot flocq tlc color sf cpdt hott dsp relalg unimath plugin-utils cel mirror-core
 
 ADDONS_PATH=/home/egallego/external/coq
 

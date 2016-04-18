@@ -1,11 +1,59 @@
+
 # Makefile for addons
 
 # XXX: Move to a common makefile
 all:
 
-all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp
+all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils cel mirror-core
 
 # XXX: We should include the common addon makefile thing.
+
+########################################################################
+# Addons: coq-plugins-utils                                            #
+########################################################################
+PU_HOME=~/external/coq/coq-plugin-utils
+PU_DEST=coq-pkgs/PluginUtils
+
+$(PU_DEST):
+	mkdir -p $(PU_DEST)
+
+PU_PLUG=$(PU_HOME)/src/plugin_utils.cmo
+
+plugin-utils: $(PU_DEST)
+	$(shell cp -a $(PU_PLUG) $(PU_DEST))
+	rsync -ap $(wildcard $(PU_HOME)/theories/*.vo) $(PU_DEST)/
+
+########################################################################
+# Addons: coq-ext-lib                                                  #
+########################################################################
+CEL_HOME=~/external/coq/coq-ext-lib/
+CEL_DEST=coq-pkgs/ExtLib
+
+$(CEL_DEST):
+	mkdir -p $(CEL_DEST)
+
+CEL_MODULES=$(addprefix $(CEL_HOME)/theories/,Core Data Generic Programming Recur Relations Structures Tactics)
+# CEL_MODULES=$(addprefix $(CEL_HOME)/theories/,Core Data Data/Eq Data/Monads Data/Graph Data/Map Data/Monads Data/Set Generic Programming Recur Relations Structures Tactics)
+cel: $(CEL_DEST)
+	rsync -ap $(wildcard $(CEL_HOME)/theories/*.vo) $(CEL_DEST)/
+	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(CEL_MODULES) $(CEL_DEST)
+
+########################################################################
+# Addons: mirror-core                                                  #
+########################################################################
+MC_HOME=~/external/coq/mirror-core/
+MC_DEST=coq-pkgs/MirrorCore
+
+$(MC_DEST):
+	mkdir -p $(MC_DEST)
+
+MC_PLUG=$(MC_HOME)/src/reify_Lambda_plugin.cma
+MC_MODULES=$(addprefix $(MC_HOME)/theories/,Lambda MTypes Reify RTac Subst syms Util Views)
+
+mirror-core: $(MC_DEST)
+	$(shell cp -a $(MC_PLUG) $(MC_DEST))
+	rsync -ap $(wildcard $(MC_HOME)/theories/*.vo) $(MC_DEST)/
+	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(MC_MODULES) $(MC_DEST)
 
 ########################################################################
 # Addons: mtac                                                         #
@@ -260,6 +308,7 @@ all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CEL_HOME);      make clean
 
 all-build: all-build-ssr all-build-std
 
@@ -278,5 +327,6 @@ all-build-std:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(CEL_HOME);      make || true
 
 

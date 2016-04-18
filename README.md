@@ -72,6 +72,10 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
   https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
 
+- MirrorCore: A very simple example:
+
+  https://x80.org/rhino-coq/examples/mirrorcore.html
+
 ### Homotopy Type Theory
 
 jsCoq supports the HoTT library which requires a special build of Coq,
@@ -168,6 +172,7 @@ Incomplete list of places where jsCoq has been used:
 ### jsCoq in the press
 
 - http://www.mines-paristech.fr/Actualites/jsCoq-ou-Coq-dans-un-navigateur/2118
+- https://news.ycombinator.com/item?id=9836900
 
 ## How to Install/Build ##
 

@@ -47,6 +47,7 @@ let coq_theory_list =
   ; ["Coq"; "Numbers"]
   ; ["Coq"; "Numbers"; "NatInt"]
   ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+  ; ["Coq"; "Numbers"; "Natural"; "Peano"]
   ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
   ]
 
@@ -98,6 +99,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Numbers"]
     ; ["Coq"; "Numbers"; "NatInt"]
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+    ; ["Coq"; "Numbers"; "Natural"; "Peano"]
     ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
     ]
   ; "mtac", ["coq-arith"],
@@ -249,6 +251,38 @@ let pkgs : (string * string list * string list list) list=
     ; ["UniMath" ; "Foundations" ; "Algebra" ]
     ; ["UniMath" ; "Foundations" ; "NumberSystems" ]
     ; ["UniMath" ; "Dedekind" ]
+    ]
+
+  ; "extlib", [ "coq-reals" ],
+    [ ["ExtLib"]
+    ; ["ExtLib" ; "Core" ]
+    ; ["ExtLib" ; "Data" ]
+    ; ["ExtLib" ; "Data"; "Eq" ]
+    ; ["ExtLib" ; "Data"; "Graph" ]
+    ; ["ExtLib" ; "Data"; "Map" ]
+    ; ["ExtLib" ; "Data"; "Monads" ]
+    ; ["ExtLib" ; "Data"; "Set" ]
+    ; ["ExtLib" ; "Generic" ]
+    ; ["ExtLib" ; "Programming" ]
+    ; ["ExtLib" ; "Recur" ]
+    ; ["ExtLib" ; "Relations" ]
+    ; ["ExtLib" ; "Structures" ]
+    ; ["ExtLib" ; "Tactics" ]
+    ]
+
+  ; "plugin-utils", [ ],
+    [ ["PluginUtils"] ]
+
+  ; "mirrorcore", [ "plugin-utils"; "extlib" ],
+    [ ["MirrorCore"]
+    ; ["MirrorCore" ; "Lambda" ]
+    ; ["MirrorCore" ; "MTypes" ]
+    ; ["MirrorCore" ; "Reify" ]
+    ; ["MirrorCore" ; "RTac" ]
+    ; ["MirrorCore" ; "Subst" ]
+    ; ["MirrorCore" ; "syms" ]
+    ; ["MirrorCore" ; "Util" ]
+    ; ["MirrorCore" ; "Views" ]
     ]
   ]
 

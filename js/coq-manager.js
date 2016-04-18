@@ -172,7 +172,8 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
-                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath']
+                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
+                        'plugin-utils', 'extlib', 'mirrorcore']
         };
 
         this.options = copyOptions(options, this.options);
@@ -357,8 +358,8 @@ class CoqManager {
 
         // Initial Coq state.
         this.layout.proof.textContent =
-            this.coq.version() + "\nPlease wait for the libraries to load, thanks!";
-
+            this.coq.version() + "\nPlease wait for the libraries to load, thanks!"
+                               + "\nIf you find trouble with libraries try clean your browser's cache.";
         this.sid = [];
 
         // Display packages panel:

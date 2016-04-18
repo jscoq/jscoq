@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+    <link rel="stylesheet" href="../external/bootstrap.min.css" />
+    <link rel="stylesheet" href="../external/pace/pace.css" />
+    <script src="../external/pace/pace.min.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="dft.css" type="text/css" media="screen">
+
+    <title>Mirror Core Demo</title>
+  </head>
+  <body>
+    <div id="ide-wrapper" class="toggled container-fluid">
+    <div id="code-wrapper">
+    <div id="document">
+      <div class="panel-heading">
+        <h2>MirrorCore Example</h2>
+        <p>
+          MirrorCore demo (C) MirrorCore developers.
+        </p>
+      </div> <!-- panel-heading -->
+      <textarea id="mc1" >
+(** This is a very simple arithmetic and boolean language that
+ ** can be useful for testing.
+ **)
+Require Import ExtLib.Core.RelDec.
+Require Import ExtLib.Data.Fun.
+Require Import ExtLib.Data.Nat.
+Require Import ExtLib.Tactics.
+Require Import MirrorCore.ExprI.
+Require Import MirrorCore.TypesI.
+Require Import MirrorCore.SymI.
+Require Import MirrorCore.Lambda.ExprCore.
+Require Import MirrorCore.Reify.Reify.
+Require Import Coq.Lists.List.
+Require Coq.Numbers.BinNums.
+
+Set Implicit Arguments.
+Set Strict Implicit.
+
+Inductive typ :=
+| tyArr : typ -> typ -> typ
+| tyNat | tyBool
+| tyProp.
+
+Fixpoint typD (t : typ) : Type :=
+  match t with
+    | tyNat => nat
+    | tyBool => bool
+    | tyProp => Prop
+    | tyArr a b => typD a -> typD b
+  end.
+
+Definition typ_eq_dec : forall a b : typ, {a = b} + {a <> b}.
+  decide equality.
+Defined.
+
+Instance RelDec_eq_typ : RelDec (@eq typ) := {
+  rel_dec := fun a b =>
+               match typ_eq_dec a b with
+                 | left _ => true
+                 | right _ => false
+               end }.
+
+Instance RelDec_Correct_eq_typ : RelDec_Correct RelDec_eq_typ.
+Proof.
+  constructor.
+  intros.
+  unfold rel_dec; simpl.
+  destruct (typ_eq_dec x y); intuition.
+Qed.
+
+Inductive tyAcc' : typ -> typ -> Prop :=
+| tyArrL : forall a b, tyAcc' a (tyArr a b)
+| tyArrR : forall a b, tyAcc' b (tyArr a b).
+
+Instance RType_typ : RType typ := {
+  typD := typD
+; tyAcc := tyAcc'
+; type_cast := fun a b => match typ_eq_dec a b with
+                            | left pf => Some pf
+                            | _ => None
+                          end }.
+
+Instance RTypeOk_typ : @RTypeOk typ _.
+Proof.
+  eapply makeRTypeOk.
+  + red.
+    induction a; constructor; inversion 1.
+    subst; auto.
+    subst; auto.
+  + unfold type_cast; simpl.
+    intros. destruct (typ_eq_dec x x).
+    f_equal. compute.
+    uip_all. reflexivity. congruence.
+  + unfold type_cast; simpl.
+    intros. destruct (typ_eq_dec x y); try congruence.
+Qed.
+
+Instance Typ2_tyArr : Typ2 _ Fun := {
+  typ2 := tyArr
+; typ2_cast := fun _ _ => eq_refl
+; typ2_match :=
+    fun T t tr =>
+      match t as t return T (TypesI.typD t) -> T (TypesI.typD t) with
+        | tyArr a b => fun _ => tr a b
+        | _ => fun fa => fa
+      end }.
+
+Instance Typ2Ok_tyArr : Typ2Ok Typ2_tyArr.
+Proof.
+  constructor.
+  + reflexivity.
+  + apply tyArrL.
+  + intros; apply tyArrR.
+  + inversion 1; subst; unfold Rty; auto.
+  + destruct x; simpl; eauto.
+    left; do 2 eexists; exists eq_refl. reflexivity.
+  + destruct pf. reflexivity.
+Qed.
+
+Instance Typ0_Prop : Typ0 _ Prop := {|
+   typ0 := tyProp
+ ; typ0_cast := eq_refl
+ ; typ0_match := fun T t =>
+                   match t as t
+                         return T Prop -> T (TypesI.typD t) -> T (TypesI.typD t)
+                   with
+                     | tyProp => fun tr _ => tr
+                     | _ => fun _ fa => fa
+                   end
+ |}.
+
+Inductive func :=
+| Lt | Plus | N : nat -> func | Eq : typ -> func
+| Ex : typ -> func | All : typ -> func
+| And | Or | Impl.
+
+Definition typeof_func (f : func) : option typ :=
+  Some match f with
+         | Lt => tyArr tyNat (tyArr tyNat tyBool)
+         | Plus => tyArr tyNat (tyArr tyNat tyNat)
+         | N _ => tyNat
+         | Eq t => tyArr t (tyArr t tyProp)
+         | And | Or | Impl => tyArr tyProp (tyArr tyProp tyProp)
+         | Ex t | All t => tyArr (tyArr t tyProp) tyProp
+       end.
+
+Definition funcD (f : func)
+: match typeof_func f with
+    | None => unit
+    | Some t => typD t
+  end :=
+  match f as f return match typeof_func f with
+                        | None => unit
+                        | Some t => typD t
+                      end
+  with
+    | Lt => NPeano.Nat.ltb
+    | Plus => plus
+    | N n => n
+    | Eq t => @eq _
+    | And => and
+    | Or => or
+    | Impl => fun (P Q : Prop) => P -> Q
+    | All t => fun P => forall x : typD t, P x
+    | Ex t => fun P => exists x : typD t, P x
+  end.
+
+Instance RelDec_eq_func : RelDec (@eq func) := {
+ rel_dec := fun (a b : func) =>
+               match a , b with
+                 | Plus , Plus => true
+                 | Lt , Lt => true
+                 | N a , N b => a ?[ eq ] b
+                 | Eq a , Eq b => a ?[ eq ] b
+                 | And , And
+                 | Impl , Impl
+                 | Or , Or => true
+                 | All a , All b
+                 | Ex a , Ex b => a ?[ eq ] b
+                 | _ , _ => false
+               end }.
+
+Instance RelDecCorrect_eq_func : RelDec_Correct RelDec_eq_func.
+Proof.
+  constructor.
+  destruct x; destruct y; simpl;
+  try solve [ tauto
+            | split; congruence
+            | rewrite rel_dec_correct; split; congruence
+            ].
+Qed.
+
+Instance RSym_func : RSym func := {
+  typeof_sym := typeof_func
+; symD := funcD
+; sym_eqb := fun a b => Some (a ?[ eq ] b) }.
+
+Instance RSymOk_func : RSymOk RSym_func.
+constructor.
+intros. simpl. consider (a ?[ eq ] b); auto.
+Qed.
+(** Declare patterns **)
+Reify Declare Patterns patterns_simple_typ : typ.
+Reify Declare Patterns patterns_simple : (expr typ func).
+
+Reify Declare Syntax reify_simple_typ :=
+  (Patterns.CFirst (Patterns.CPatterns patterns_simple_typ :: nil)).
+
+Axiom otherFunc : BinNums.positive -> expr typ func.
+
+Reify Declare Typed Table table_terms : BinNums.positive => typ.
+
+(** Declare syntax **)
+Reify Declare Syntax reify_simple :=
+  (@Patterns.CFirst _ ((Patterns.CPatterns patterns_simple) ::
+                       (Patterns.CApp (@ExprCore.App typ func)) ::
+                       (Patterns.CAbs reify_simple_typ (@ExprCore.Abs typ func)) ::
+                       (Patterns.CVar (@ExprCore.Var typ func)) ::
+                       (Patterns.CMap otherFunc (Patterns.CTypedTable reify_simple_typ table_terms)) :: nil)).
+
+Local Notation "x @ y" := (@RApp x y) (only parsing, at level 30).
+Local Notation "'!!' x" := (@RExact _ x) (only parsing, at level 25).
+Local Notation "'?' n" := (@RGet n RIgnore) (only parsing, at level 25).
+Local Notation "'?!' n" := (@RGet n RConst) (only parsing, at level 25).
+Local Notation "'#'" := RIgnore (only parsing, at level 0).
+
+Reify Pattern patterns_simple_typ += (!! nat)  => tyNat.
+Reify Pattern patterns_simple_typ += (!! bool) => tyBool.
+Reify Pattern patterns_simple_typ += (!! Prop) => tyProp.
+Reify Pattern patterns_simple_typ += (@RImpl (@RGet 0 RIgnore) (@RGet 1 RIgnore)) => (fun (a b : function reify_simple_typ) => tyArr a b).
+
+Reify Pattern patterns_simple += (@RGet 0 RConst) => (fun (n : @id nat) => @Inj typ func (N n)).
+Reify Pattern patterns_simple += (!! plus) => (Inj (typ:=typ) Plus).
+Reify Pattern patterns_simple += (!! NPeano.Nat.ltb) => (Inj (typ:=typ) Lt).
+Reify Pattern patterns_simple += (!! @eq @ ?0) =>
+(fun (t : function reify_simple_typ) => Inj (typ:=typ) (Eq t)).
+Reify Pattern patterns_simple += (RPi (?0) (?1)) => (fun (t : function reify_simple_typ) (b : function reify_simple) => (App (Inj (All t)) (Abs t b))).
+Reify Pattern patterns_simple += (!! @ex @ ?0) => (fun (t : function reify_simple_typ) => Inj (typ:=typ) (Ex t)).
+Reify Pattern patterns_simple += (!! and) => (Inj (typ:=typ) And).
+Reify Pattern patterns_simple += (!! or) => (Inj (typ:=typ) Or).
+
+Ltac reify_typ trm :=
+  let k e :=
+      refine e
+  in
+  reify_expr reify_simple_typ k [[ True ]] [[ trm ]].
+
+Ltac reify trm :=
+  let k e :=
+      refine e
+  in
+  reify_expr reify_simple k [[ True ]] [[ trm ]].
+
+Ltac reify_simple trm k :=
+  reify_expr reify_simple k [[ True ]] [[ trm ]].
+
+
+Definition test_typ : typ.
+  reify_typ (nat -> nat).
+Defined.
+
+Print test_typ.
+
+Definition test_typ_2 : typ.
+  reify_typ ((nat -> nat) -> nat -> (nat -> nat -> nat -> nat)).
+Defined.
+Print test_typ_2.
+
+Definition test_1 : expr typ func.
+  reify (0 = 0).
+Defined.
+Print test_1.
+
+Definition test_2 : expr typ func.
+  reify ((NPeano.Nat.ltb 0 1) = (NPeano.Nat.ltb 0 0)).
+Defined.
+Print test_2.
+
+Definition test_3 : expr typ func.
+  reify ((fun x => x) 1).
+Defined.
+Print test_3.
+
+Definition test_4 : expr typ func.
+  reify ((fun x => x) 1).
+Defined.
+Print test_4.
+
+Definition test_5 : expr typ func.
+  reify ((fun x y => x) 1 3).
+Defined.
+Print test_5.
+
+Definition test_6 : expr typ func.
+  reify ((fun x : nat => x) = (fun y : nat => y)).
+Defined.
+Print test_6.
+
+Definition test_7 : expr typ func.
+  reify (forall x : nat, 1 = 1 -> (x + 1) = 1).
+Defined.
+Print test_7.
+
+(** Something that doesn't fit **)
+Definition id T (x : T) : T := x.
+
+Definition test_fail : expr typ func.
+  reify (id 0).
+Defined.
+Print test_fail.
+
+Definition foo : nat := 6.
+Reify Seed Typed Table table_terms += 1 => [[ tyNat , foo ]].
+
+Definition test_table : expr typ func.
+  reify (foo).
+Defined.
+Print test_table.
+      </textarea>
+      <h3>That's all for this demo my friends!</h3>
+      </div>
+    </div> <!-- /#document -->
+    </div> <!-- /#code-wrapper  -->
+    </div> <!-- /#ide-wrapper -->
+
+    <!-- JsCoq -->
+    <script src="../js/jscoq-loader.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+     var coq;
+     var dft_ids = ['mc1'];
+
+     loadJsCoq('../').then( () => {
+         coq = new CoqManager ( dft_ids,
+                                { base_path: '../',
+                                  init_pkgs: ['init', 'mirrorcore']
+                                } );
+     });
+
+    </script>
+  </body>
+
+</html>
