@@ -57,6 +57,8 @@ Definition typ_eq_dec : forall a b : typ, {a = b} + {a <> b}.
   decide equality.
 Defined.
 
+(* Unfortunately there's a bug with jsCoq Coq Codemirror mode that makes
+   lines starting with { to fail, so we reformat here :S *)
 Instance RelDec_eq_typ : RelDec (@eq typ) := {
   rel_dec := fun a b =>
                match typ_eq_dec a b with
