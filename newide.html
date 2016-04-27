@@ -59,26 +59,34 @@ Unset Printing Implicit Defensive. </textarea>
     </p>
   </div> <!-- panel-heading -->
   <div>
-    <textarea id="prime_above" >
+    <textarea id="prime_above1" >
 (* A nice proof of the infinitude of primes, by Georges Gonthier *)
-Lemma prime_above m : {p | m < p & prime p}.
+Lemma prime_above m : {p | m < p & prime p}. </textarea>
+      <p>
+        The lemma states that given a number m, there is a primer number
+        larger than m.
+      </p>
+      <textarea id="prime_above2" >
 Proof.
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
-exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
+have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textarea>
+      <p>
+        Which is this prime number? A suitable candidate is provided
+        by the first prime divisor of !m + 1. The lemma
+        `pdivP` states that every number is divided by a
+        prime, so we use it go the number we want.
+      </p>
+    <textarea id="prime_above3" >
+exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
+    <p>
+      Now we need to prove that such prime divisor p is indeed greater
+      than m. Using contraposition, we can instead prove that p <= m
+      implies that p is not a primer divisor of !m + 1.
+    </p>
+    <textarea id="prime_above4" >
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
-Qed.
-    </textarea>
+Qed.</textarea>
   <p>
-    The lemma states that given a number m, there is a primer number
-    larger than m. We rely on the `pdivP`, which asserts that every
-    number is divided by a prime, to find a primer divisor of !m + 1,
-    which is the primer number that we want.
-  </p>
-  <p>
-    Now, we need to prove that p being a primer divisor of !m + 1
-    implies that m < p. Using contraposition, we can instead prove
-    that p <= m implies that p is not a primer divisor of !m + 1,
-    which follows from the fact that p, with p < m, divides !m,
+    This follows from the fact that p, with p < m, divides !m,
     but a prime number cannot divide 1.
   </p>
   <p>
@@ -99,7 +107,7 @@ Qed.
   <script src="js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
-    var jscoq_ids  = ['addnC', 'prime_above'];
+    var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {
         prelude:   false,
         mock:      false,
