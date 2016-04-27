@@ -15,27 +15,30 @@
   <div id="document">
   <div>
     <h3>Welcome to the JsCoq Interactive Online System!</h3>
-    <h4>[Go to <a href="https://x80.org/collacoq/">CollaCoq</a> for a page with Save/Load capabilities]</h4>
     <p>
-      Welcome to the JsCoq technology demo! This page requires Chrome
-      >= 48 or Firefox >= 45.  You should be already be a bit familiar
-      with Coq, as this site doesn't contain (yet) a tutorial.
+      Welcome to the JsCoq technology demo! JsCoq is an interactive,
+      web-based environment for the Coq Theorem prover, developed at
+      the <a href="https://www.cri.ensmp.fr/">Centre de Recherche en Informatique</a> of <a href="http://www.mines-paristech.fr/">MINES ParisTech</a> (former École de Mines de Paris).
     </p>
+    <h4>
+      [Go to <a href="https://x80.org/collacoq/">CollaCoq</a> for a page with Save/Load capabilities]
+    </h4>
     <h4>Instructions:</h4>
     <p>
+      The current version requires Chrome >= 48 or Firefox >= 45.
       <strong>Alt-Enter</strong> (Cmd should work in Macs too) goes to
       the current point; <strong>Alt-N/P</strong> or <strong>Alt-Down/Up</strong> will
       move through the proof; <strong>F8</strong> or the power icon toogles
       the goal panel.
     </p>
-    <h4>Setting up the environment:</h4>
+    <h4>A First Example: The Infinitude of Primes</h4>
     <p>
-      Doing proofs from scratch can be interesting, but we will first
-      load some libraries and tweak some Coq defaults to make our life
-      inside Coq a bit more comfortable. Our particular choice of
-      framework is the Mathematical Components library by the
-      <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led by
-      Georges Gonthier.
+      We don't provide a Coq tutorial (yet), but as a showcase, we
+      display a proof of the infinitude of primes in Coq.  The proof relies
+      in the Mathematical Components library by the
+      <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
+      by Georges Gonthier, so our first step will be to load it and
+      set a few Coq options:
     </p>
   </div>
   <div>
@@ -49,13 +52,10 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive. </textarea>
   </div>
   <div>
-    <h4>Cool! </h4>
+    <h4>Ready to do Proofs!</h4>
     <p>
-      Once the basic enviroment has been setup, we can write, share,
-      and run Coq programs and proofs.
-
-      As an example, a proof of the infinitude of primes is showcased
-      below, have fun!
+      Once the basic enviroment has been setup, we can proceed to
+      do the proof:
     </p>
   </div> <!-- panel-heading -->
   <div>
@@ -69,20 +69,23 @@ by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
     </textarea>
   <p>
-    The main proof relies in the `pdivP` lemma, that asserts that
-    every number is divided by a prime (it actually picks the first
-    prime divisor).
+    The lemma states that given a number m, there is a primer number
+    larger than m. We rely on the `pdivP`, which asserts that every
+    number is divided by a prime, to find a primer divisor of !m + 1,
+    which is the primer number that we want.
   </p>
   <p>
-    Now, we need to prove that for any n, the first prime divisor p of
-    !m + 1 is greater than m. By contraposition, we can prove that p
-    being less or equal than m contradicts p being a divisor of !m +
-    1, as such p divides !m, but a prime number cannot divide 1.
+    Now, we need to prove that p being a primer divisor of !m + 1
+    implies that m < p. Using contraposition, we can instead prove
+    that p <= m implies that p is not a primer divisor of !m + 1,
+    which follows from the fact that p, with p < m, divides !m,
+    but a prime number cannot divide 1.
   </p>
   <p>
-    Quite a few Coq packages are availabe in JsCoq, including part of the
-    standard library and most of the mathematical components, feel
-    free to experiment, and bear with the alpha status of this demo.
+    jsCoq provides many other packages, including most of Coq's
+    standard library and the full mathematical components
+    library. Feel free to experiment, and bear with the alpha status
+    of this demo.
   </p>
   <p>
     JsCoq's homepage is at github <a href="https://github.com/ejgallego/jscoq">
