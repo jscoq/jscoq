@@ -2,6 +2,8 @@
 *.byte
 *.cmi
 *.cmo
+*.cmt
+*.cmti
 .AppleDouble
 coq-js/jscoq.js
 coq-tools/mklibfs
