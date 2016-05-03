@@ -203,6 +203,7 @@ let jscoq_json_of_proof () =
   let json = Jssexp.yojson_of_proof () in
   Js._JSON##parse(string (Yojson.Safe.to_string json))
 
+
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
@@ -210,6 +211,9 @@ let jsCoq : jsCoq t =
   global##jsCoq
 
 let _ =
+  (* XXX: This is a long time workaround *)
+  Sys.interactive := false;
+
   jsCoq##init     <- Js.wrap_meth_callback jscoq_init;
   jsCoq##version  <- Js.wrap_meth_callback jscoq_version;
   jsCoq##add      <- Js.wrap_meth_callback jscoq_add;

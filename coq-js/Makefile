@@ -1,6 +1,6 @@
 .PHONY: clean all jscoq32 jscoq64
 
-COQDIR=~/external/coq-git
+include ../config.mk
 
 all:
 
@@ -17,15 +17,17 @@ INCLUDETOP=-I $(COQDIR)/library/   \
            -I $(COQDIR)/toplevel   \
            -I $(COQDIR)/config
 
-# CAMLDEBUG=-g
 CAMLDEBUG=
+# CAMLDEBUG=-g
 CAMLWARN=-w @a-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
-JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,ppx_deriving_yojson
-
+# JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,ppx_deriving_yojson
+JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,compiler-libs
 SEXPFLAGS=-package sexplib,ppx_sexp_conv
-YOJSONFLAGS=-package yojson,ppx_deriving_yojson
+
+# YOJSONFLAGS=-package yojson,ppx_deriving_yojson
+YOJSONFLAGS=
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -70,6 +72,7 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
 	$(COQDIR)/parsing/highparsing.cma	\
 	$(COQDIR)/tactics/hightactics.cma
+	# For 8.6
 	# $(COQDIR)/engine/engine.cma		\
 
 # Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
@@ -84,22 +87,23 @@ JSOO_DL=jsoo_cache.cmo
 endif
 
 ifeq "${JSOO_DL}" "jsoo_dl.cmo"
-JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
+# JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
+JSOOFLAGS += -package js_of_ocaml.compiler,compiler-libs.bytecomp
 endif
+# -package compiler-libs.common,compiler-libs.bytecomp,compiler-libs.toplevel
 
 # We need to override due to
 # "/home/egallego/external/coq-git/lib/lib.cma(Errors) and
 #  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
 WOVR=-w -31
 
-# Ocaml libs that we need.
-JSCAMLNK=dynlink.cma nums.cma str.cma gramlib.cma
-
-# -linkall seems necessary, otherwise some internal Coq tables are dropped.
+# -linkall is necessary, otherwise internal Coq tables are dropped.
+# XXX: Why do we need to include compiler-libs.toplevel?...
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
-	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose \
-	   $(JSOOFLAGS) -package camlp5 -package sexplib                 \
-	   $(JSCAMLNK) $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
+	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
+	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   # $(JSCAMLNK) $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
@@ -113,13 +117,16 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/byte_cach
 # JSLIBFILES=nsp.js
 # jscoq.js: jscoq.byte $(JSFILES) $(JSLIBFILES)
 
-# JSOO_OPTS=--pretty --noinline --disable shortvar --debug-info
-# JSOO_OPTS=-opt 3
-JSOO_OPTS=
+JSOO_OPT_OPTS=
+# JSOO_OPT_OPTS=--pretty --noinline --disable shortvar --debug-info
+# JSOO_OPT_OPTS=-opt 3
 
-# --toplevel includes the linking information.
+# the --toplevel option is crutial to include the linking information
+# and avoid "bytecode corrupted" messages from dynlink
+JSOO_OPTS=--toplevel --nocmis $(JSOO_OPT_OPTS)
+
 jscoq.js: jscoq.byte $(JSFILES)
-	js_of_ocaml $(JSOO_OPTS) --toplevel --nocmis +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
+	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
 
 # For when we remove dyncomp
 # js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte

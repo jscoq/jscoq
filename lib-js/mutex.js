@@ -56,36 +56,6 @@ function caml_thread_yield() {
   return 0;
 }
 
-//Provides: caml_gc_counters
-function caml_gc_counters() {
-  // ll("***caml_gc_counters");
-  return 0;
-}
-
-//Provides: caml_gc_stat
-function caml_gc_stat() {
-  // ll("***caml_gc_stat");
-  return 0;
-}
-
-//Provides: caml_gc_get
-function caml_gc_get() {
-  // ll("***caml_gc_get");
-  return 0;
-}
-
-//Provides: caml_gc_set
-function caml_gc_set() {
-  // ll("***caml_gc_set");
-  return 0;
-}
-
-//Provides: caml_gc_quick_stat
-function caml_gc_quick_stat() {
-  // ll("***caml_gc_quick_stat");
-  return 0;
-}
-
 //Provides: caml_mutex_lock
 function caml_mutex_lock() {
   // ll("***caml_mutex_lock");
