@@ -149,13 +149,11 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
        let bl    = raw_array##byteLength                              in
        let u8arr = jsnew Typed_array.uint8Array_fromBuffer(raw_array) in
        (* Add to file cache, pity of all the unneeded marshalling *)
-       let s = Bytes.create bl in
-       for i = 0 to bl - 1 do
-         Bytes.set s i @@ Char.chr @@ Typed_array.unsafe_get u8arr i
-       done;
+       let get_char i = Char.chr @@ Typed_array.unsafe_get u8arr i    in
+       let s          = String.init bl get_char                       in
        let cache_entry = {
-         vo_content = Js.bytestring (Bytes.to_string s);
-         md5        = Digest.bytes s;
+         vo_content = Js.bytestring s;
+         md5        = Digest.string s;
          (* XXX: We'd like to avoid the expensive md5 here but, misteries of javascript!
             if we don't do the md5, we'll eat memory too fast and the browser will crash!
          *)
