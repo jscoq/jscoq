@@ -34,9 +34,11 @@ module N = Names
 
 open Sexplib.Std
 
-type coq_name = NS of string | Anonymous [@@deriving sexp, yojson]
+type coq_name = NS of string | Anonymous [@@deriving sexp]
+(* type coq_name = NS of string | Anonymous [@@deriving sexp, yojson] *)
 
-type coq_sort = Prop | Type (* of universe Sorts.t *) [@@deriving sexp, yojson]
+type coq_sort = Prop | Type (* of universe Sorts.t *) [@@deriving sexp]
+(* type coq_sort = Prop | Type (\* of universe Sorts.t *\) [@@deriving sexp, yojson] *)
 
 type coq_constr =
   | Rel       of int
@@ -56,7 +58,8 @@ type coq_constr =
   | Fix       of string        (* XXX: I'm lazy *)
   | CoFix     of string        (* XXX: I'm lazy *)
   | Proj      of string * coq_constr
-and coq_types = coq_constr [@@deriving sexp, yojson]
+(* and coq_types = coq_constr [@@deriving sexp, yojson] *)
+and coq_types = coq_constr [@@deriving sexp]
 
 let name_reify (n : N.Name.t) : coq_name =
   match n with
@@ -110,9 +113,10 @@ let sexp_of_proof () =
   Option.cata (fun p -> p |> constr_reify |> sexp_of_coq_constr |> Sexplib.Sexp.to_string)
     "" (the_proof ())
 
-let yojson_of_proof () =
-  Option.cata (fun p -> p |> constr_reify |> coq_constr_to_yojson)
-      (`Assoc []) (the_proof ())
+let yojson_of_proof () = `Assoc []
+(* Disabled for 4.03 *)
+  (* Option.cata (fun p -> p |> constr_reify |> coq_constr_to_yojson) *)
+  (*     (`Assoc []) (the_proof ()) *)
 
 (* let json_of_proof () = *)
 (*   Option.cata (fun p -> p |> constr_reify |> coq_constr_to_yojson) *)

@@ -22,12 +22,12 @@ CAMLDEBUG=
 CAMLWARN=-w @a-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
-# JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,ppx_deriving_yojson
-JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,yojson,compiler-libs
-SEXPFLAGS=-package sexplib,ppx_sexp_conv
+JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,compiler-libs,yojson
 
-# YOJSONFLAGS=-package yojson,ppx_deriving_yojson
+SEXPFLAGS=-package sexplib,ppx_sexp_conv
 YOJSONFLAGS=
+# Disabled for 4.03
+# YOJSONFLAGS=-package yojson,ppx_deriving_yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -102,8 +102,7 @@ WOVR=-w -31
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
 	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
-	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
-	   # $(JSCAMLNK) $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
