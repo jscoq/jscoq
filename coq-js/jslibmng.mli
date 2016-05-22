@@ -55,7 +55,7 @@ val init : (unit -> unit) -> pkg_callbacks ->
 val load_pkg : string -> unit
 
 (** [coq_resource_req url] query the manager's cache for object [url] *)
-val coq_vo_req  : js_string t -> js_string t option
+val coq_vo_req  : js_string t -> string option
 
 (** [coq_cma_req cma] load the [cma] file or else do nothing *)
 val coq_cma_req : string -> unit

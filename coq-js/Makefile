@@ -39,10 +39,14 @@ YOJSONFLAGS=
 ########################################################################
 # Main jscoq files
 icoq.cmo: icoq.cmi
-
 jslib.cmo: jslib.cmi
 
-jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
+# jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
+
+libmngstub.o: libmngstub.c
+	gcc -m32 -c -o libmngstub.o libmngstub.c
+
+jslibmng.cmo: icoq.cmo jslib.cmo libmngstub.o jslibmng.cmi
 
 # Due to ppx auto-generated code.
 JSWOVR=-4-39
@@ -102,6 +106,8 @@ WOVR=-w -31
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
 	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
+	   -custom -cclib libmngstub.o                                                    \
+	   -cclib $(COQDIR)/kernel/byterun/dllcoqrun.so                                   \
 	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
@@ -134,4 +140,4 @@ jscoq.js: jscoq.byte $(JSFILES)
 jscoq64: jscoq.js
 
 clean:
-	rm -f *.cmi *.cmo *.ml.d *.mli.d jscoq.byte jscoq.js
+	rm -f *.cmi *.cmo *.cma *.cmt *.cmti *.o *.ml.d *.mli.d jscoq.byte jscoq.js

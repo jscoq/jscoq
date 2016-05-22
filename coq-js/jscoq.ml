@@ -69,8 +69,25 @@ class type jsCoq = object
 
 end
 
+(* Improvement suggested by hhugo *)
+external register_file             : string -> string -> unit = "caml_fs_register";;
+external caml_fs_register_autoload : string -> (Js.js_string Js.t Js.js_array Js.t -> int -> bool Js.t) Js.callback -> unit
+  = "caml_fs_register_autoload"
+
+let jscoq_register_autoload ~path f =
+  let f' path pos =
+    let prefix = path##slice(0,pos)##join(Js.string"/") in
+    let suffix = path##slice_end(pos)##join(Js.string"/") in
+    match f (prefix, suffix) with
+    | None -> Js._false
+    | Some c ->
+      let filename = prefix##concat(Js.string "/")##concat(suffix) in
+      register_file (Js.to_string filename) c;
+      Js._true in
+  caml_fs_register_autoload path (Js.wrap_callback f')
+
 let setup_pseudo_fs () =
-  Sys_js.register_autoload' ~path:"/" (fun (_,s) -> Jslibmng.coq_vo_req s)
+  jscoq_register_autoload ~path:"/" (fun (_,s) -> Jslibmng.coq_vo_req s)
 
 (* type feedback = { *)
 (*   id : edit_or_state_id;        (\* The document part concerned *\) *)

@@ -22,7 +22,8 @@ let byte_cache : (Digest.t, js_string t) Hashtbl.t = Hashtbl.create 200
 
 (* Main file_cache, indexed by url*)
 type cache_entry = {
-  vo_content : js_string t;
+  (* Backed by a TypedArray *)
+  vo_content : string;
   md5        : Digest.t;
 }
 
@@ -60,6 +61,7 @@ let mk_pkgInfo pkg : pkgInfo t =
   pi##desc      <- string @@ to_desc pkg;
   pi##no_files_ <- no_files pkg;
   pi
+
 
 let build_bundle_info bundle : bundleInfo t =
   let bi      = Js.Unsafe.obj [||]   in
@@ -129,6 +131,10 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
+(* Efficiency improvements by hhugo *)
+external string_of_uint8Array : Typed_array.uint8Array Js.t -> string
+  =  "caml_string_of_array";;
+
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
@@ -146,18 +152,16 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
       frame.content
       (fun ()        -> ())
       (fun raw_array ->
-       let bl    = raw_array##byteLength                              in
        let u8arr = jsnew Typed_array.uint8Array_fromBuffer(raw_array) in
-       (* Add to file cache, pity of all the unneeded marshalling *)
-       let get_char i = Char.chr @@ Typed_array.unsafe_get u8arr i    in
-       let s          = String.init bl get_char                       in
+       let s     = string_of_uint8Array u8arr                         in
        let cache_entry = {
-         vo_content = Js.bytestring s;
-         md5        = Digest.string s;
-         (* XXX: We'd like to avoid the expensive md5 here but, misteries of javascript!
-            if we don't do the md5, we'll eat memory too fast and the browser will crash!
-         *)
-         (* md5        = Digest.string ""; *)
+         vo_content = s;
+         md5        = Digest.string "";
+         (* Sometimes we need to do the md5, or we'll eat memory too
+          * fast, the GC won't fire up, and the browser will crash!
+          * Misteries of JavaScript!
+          *)
+         (* md5        = Digest.string s; *)
        } in
        Hashtbl.add file_cache (Js.string full_url) cache_entry;
        ()
