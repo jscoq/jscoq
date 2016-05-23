@@ -2,6 +2,7 @@
 
 include ../config.mk
 
+# Empty default auction
 all:
 
 # Include coq files
@@ -25,7 +26,9 @@ BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,compiler-libs,yojson
 
 SEXPFLAGS=-package sexplib,ppx_sexp_conv
+
 YOJSONFLAGS=
+
 # Disabled for 4.03
 # YOJSONFLAGS=-package yojson,ppx_deriving_yojson
 
@@ -38,20 +41,19 @@ YOJSONFLAGS=
 
 ########################################################################
 # Main jscoq files
-icoq.cmo: icoq.cmi
 jslib.cmo: jslib.cmi
+icoq.cmo: icoq.cmi
 
-# jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
-
+# 32-bit build
 libmngstub.o: libmngstub.c
 	gcc -m32 -c -o libmngstub.o libmngstub.c
 
 jslibmng.cmo: icoq.cmo jslib.cmo libmngstub.o jslibmng.cmi
 
 # Due to ppx auto-generated code.
-JSWOVR=-4-39
+JSWOVR=-w -4-39
 jssexp.cmo: jssexp.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) -w $(JSWOVR) $<
+	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) $(JSWOVR) $<
 
 # PPXJSOO=-package ppx_deriving,js_of_ocaml.ppx
 # jsjson.cmo: jsjson.ml
@@ -94,6 +96,7 @@ ifeq "${JSOO_DL}" "jsoo_dl.cmo"
 # JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
 JSOOFLAGS += -package js_of_ocaml.compiler,compiler-libs.bytecomp
 endif
+# XXX: Why do we need to include compiler-libs.toplevel?...
 # -package compiler-libs.common,compiler-libs.bytecomp,compiler-libs.toplevel
 
 # We need to override due to
@@ -101,13 +104,12 @@ endif
 #  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
 WOVR=-w -31
 
-# -linkall is necessary, otherwise internal Coq tables are dropped.
-# XXX: Why do we need to include compiler-libs.toplevel?...
+# -linkall is necessary, otherwise internal Coq tables are dropped:
+#  Syntax error: entry [vernac:Vernac.vernac] is empty.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
 	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
-	   -custom -cclib libmngstub.o                                                    \
-	   -cclib $(COQDIR)/kernel/byterun/dllcoqrun.so                                   \
+	   -custom -cclib libmngstub.o -cclib $(COQDIR)/kernel/byterun/dllcoqrun.so       \
 	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte

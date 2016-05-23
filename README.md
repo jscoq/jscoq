@@ -113,6 +113,8 @@ Note that this is totally experimental, data loss is guaranteed.
 
 See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
 
+Help with Collacoq is very welcome!
+
 ## Mailing List ##
 
 You can subscribe to the jsCoq mailing list at:
