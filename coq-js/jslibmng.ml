@@ -131,10 +131,6 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
-(* Efficiency improvements by hhugo *)
-external string_of_uint8Array : Typed_array.uint8Array Js.t -> string
-  =  "caml_string_of_array";;
-
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
@@ -152,9 +148,7 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
       frame.content
       (fun ()        -> ())
       (fun raw_array ->
-         (* let vo_s = Typed_array.String.of_arrayBuffer raw_array in *)
-         let u8arr = jsnew Typed_array.uint8Array_fromBuffer(raw_array) in
-         let vo_s  = string_of_uint8Array u8arr                         in
+         let vo_s = Typed_array.String.of_arrayBuffer raw_array in
          let cache_entry = {
            (* Thanks to hhugo *)
            vo_content = vo_s;
@@ -162,7 +156,7 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
            (* md5        = Digest.string vo_s; *)
            (* Sometimes we need to do the md5, or we'll eat memory too
             * fast, the GC won't fire up, and the browser will crash!
-            * Misteries of JavaScript!
+            * Misteries of JavaScript! Anyways, md5 is useful to debug downloads.
            *)
          } in
          (* Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5); *)
