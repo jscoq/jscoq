@@ -131,10 +131,6 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
-(* Efficiency improvements by hhugo *)
-external string_of_uint8Array : Typed_array.uint8Array Js.t -> string
-  =  "caml_string_of_array";;
-
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
@@ -152,20 +148,19 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
       frame.content
       (fun ()        -> ())
       (fun raw_array ->
-       let u8arr = jsnew Typed_array.uint8Array_fromBuffer(raw_array) in
-       let s     = string_of_uint8Array u8arr                         in
-       let cache_entry = {
-         vo_content = s;
-         md5        = Digest.string "";
-         (* Sometimes we need to do the md5, or we'll eat memory too
-          * fast, the GC won't fire up, and the browser will crash!
-          * Misteries of JavaScript!
-          *)
-         (* md5        = Digest.string s; *)
-       } in
-       Hashtbl.add file_cache (Js.string full_url) cache_entry;
-       ()
-       (* Jslog.printf Jslog.jscoq_log "Cached %s [%d]\n%!" full_url bl *)
+         let cache_entry = {
+           (* Thanks to hhugo *)
+           vo_content = Typed_array.String.of_arrayBuffer raw_array;
+           md5        = Digest.string "";
+           (* Sometimes we need to do the md5, or we'll eat memory too
+            * fast, the GC won't fire up, and the browser will crash!
+            * Misteries of JavaScript!
+           *)
+           (* md5        = Digest.string s; *)
+         } in
+         Hashtbl.add file_cache (Js.string full_url) cache_entry;
+         ()
+         (* Jslog.printf Jslog.jscoq_log "Cached %s [%d]\n%!" full_url bl *)
        (*
        Jslog.printf Jslog.jscoq_log
          "Cached %s [%d/%d/%d/%s]\n%!"
