@@ -44,11 +44,7 @@ YOJSONFLAGS=
 jslib.cmo: jslib.cmi
 icoq.cmo: icoq.cmi
 
-# 32-bit build
-libmngstub.o: libmngstub.c
-	gcc -m32 -c -o libmngstub.o libmngstub.c
-
-jslibmng.cmo: icoq.cmo jslib.cmo libmngstub.o jslibmng.cmi
+jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
 # Due to ppx auto-generated code.
 JSWOVR=-w -4-39
@@ -115,7 +111,6 @@ WOVR=-w -31
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
 	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
-	   -custom -cclib libmngstub.o -cclib $(COQDIR)/kernel/byterun/dllcoqrun.so       \
 	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte

@@ -28,7 +28,7 @@ type cache_entry = {
 }
 
 (* We'll likely want these to be Hashtbls of js typed arrays. *)
-let file_cache : (js_string t, cache_entry) Hashtbl.t = Hashtbl.create 100
+let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 100
 
 (* The special cma cache has been disabled, for now we have a bytecode
    cache. *)
@@ -131,12 +131,16 @@ let request_byte_cache (md5sum : Digest.t) =
   try Some (Hashtbl.find byte_cache md5sum)
   with | Not_found -> None
 
+(* Efficiency improvements by hhugo *)
+external string_of_uint8Array : Typed_array.uint8Array Js.t -> string
+  =  "caml_string_of_array";;
+
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
-  let full_url    = base_url  ^ "/" ^ file in
-  let request_url = !pkg_prefix ^ full_url  in
-  let cached      = Hashtbl.mem file_cache (Js.string full_url) in
+  let full_url    = base_url  ^ "/" ^ file          in
+  let request_url = !pkg_prefix ^ full_url          in
+  let cached      = Hashtbl.mem file_cache full_url in
 
   (* Only reload if not cached or a refresh is requested *)
   if not cached || refresh then begin
@@ -148,19 +152,22 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
       frame.content
       (fun ()        -> ())
       (fun raw_array ->
+         (* let vo_s = Typed_array.String.of_arrayBuffer raw_array in *)
+         let u8arr = jsnew Typed_array.uint8Array_fromBuffer(raw_array) in
+         let vo_s  = string_of_uint8Array u8arr                         in
          let cache_entry = {
            (* Thanks to hhugo *)
-           vo_content = Typed_array.String.of_arrayBuffer raw_array;
-           md5        = Digest.string "";
+           vo_content = vo_s;
+           md5        = Digest.string vo_s;
            (* Sometimes we need to do the md5, or we'll eat memory too
             * fast, the GC won't fire up, and the browser will crash!
             * Misteries of JavaScript!
            *)
            (* md5        = Digest.string s; *)
          } in
-         Hashtbl.add file_cache (Js.string full_url) cache_entry;
+         Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5);
+         Hashtbl.add file_cache full_url cache_entry;
          ()
-         (* Jslog.printf Jslog.jscoq_log "Cached %s [%d]\n%!" full_url bl *)
        (*
        Jslog.printf Jslog.jscoq_log
          "Cached %s [%d/%d/%d/%s]\n%!"
