@@ -17,6 +17,9 @@ and to improve the acessibility of the platform itself.
 Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
 servers or external programs are needed.
 
+We want to **strongly thank* the `js_of_ocaml` developers. Without
+their great and quick support jsCoq wouldn't have been possible.
+
 * **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists`, etc...
 * **Important:** Consider using `--js-flags="--stack-size=65536"` in Chrome if you get StackOverflows.
 
