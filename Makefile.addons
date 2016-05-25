@@ -43,17 +43,24 @@ cel: $(CEL_DEST)
 ########################################################################
 MC_HOME=~/external/coq/mirror-core/
 MC_DEST=coq-pkgs/MirrorCore
+MCEX_DEST=coq-pkgs/McExamples
 
 $(MC_DEST):
 	mkdir -p $(MC_DEST)
 
+$(MCEX_DEST):
+	mkdir -p $(MCEX_DEST)
+
 MC_PLUG=$(MC_HOME)/src/reify_Lambda_plugin.cma
 MC_MODULES=$(addprefix $(MC_HOME)/theories/,Lambda MTypes Reify RTac Subst syms Util Views)
 
-mirror-core: $(MC_DEST)
+mirror-core: $(MC_DEST) $(MCEX_DEST)
 	$(shell cp -a $(MC_PLUG) $(MC_DEST))
 	rsync -ap $(wildcard $(MC_HOME)/theories/*.vo) $(MC_DEST)/
 	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(MC_MODULES) $(MC_DEST)
+	rsync -ap --exclude='*.v' --exclude='*.aux'	    	        \
+	  --exclude='*.glob' --exclude='*.d' --exclude='*.timing'	\
+	  $(MC_HOME)/examples/ $(MCEX_DEST)/
 
 ########################################################################
 # Addons: mtac                                                         #
@@ -257,7 +264,7 @@ cpdt: $(CPDT_DEST) $(CPDT_FILES)
 
 # XXX: Move to common
 COQDIR=~/external/coq-git/
-JOBS=
+JOBS=8
 
 ########################################################################
 # Addons: ColoR                                                        #

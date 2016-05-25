@@ -75,9 +75,12 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
   https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
 
-- MirrorCore: A very simple example:
-
-  https://x80.org/rhino-coq/examples/mirrorcore.html
+- MirrorCore:
+  - A simple demo:
+    https://x80.org/rhino-coq/examples/mirrorcore.html
+  - A demo of developing a cancellation algorithm for commutative
+    monoids:
+    https://x80.org/rhino-coq/examples/mirror-core-rtac-demo.html
 
 ### Homotopy Type Theory
 

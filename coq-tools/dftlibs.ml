@@ -276,6 +276,7 @@ let pkgs : (string * string list * string list list) list=
   ; "mirrorcore", [ "plugin-utils"; "extlib" ],
     [ ["MirrorCore"]
     ; ["MirrorCore" ; "Lambda" ]
+    ; ["MirrorCore" ; "Lambda"; "Rewrite" ]
     ; ["MirrorCore" ; "MTypes" ]
     ; ["MirrorCore" ; "Reify" ]
     ; ["MirrorCore" ; "RTac" ]
@@ -283,6 +284,8 @@ let pkgs : (string * string list * string list list) list=
     ; ["MirrorCore" ; "syms" ]
     ; ["MirrorCore" ; "Util" ]
     ; ["MirrorCore" ; "Views" ]
+
+    ; ["McExamples" ; "Cancel" ]
     ]
   ]
 
