@@ -359,7 +359,7 @@ class CoqManager {
         // Initial Coq state.
         this.layout.proof.textContent =
             this.coq.version() + "\nPlease wait for the libraries to load, thanks!"
-                               + "\nIf you find trouble with libraries try cleaning your browser's cache.";
+                               + "\nIf you have trouble try cleaning your browser's cache.";
         this.sid = [];
 
         // Display packages panel:
