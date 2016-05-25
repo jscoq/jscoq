@@ -158,14 +158,14 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
          let cache_entry = {
            (* Thanks to hhugo *)
            vo_content = vo_s;
-           md5        = Digest.string vo_s;
+           md5        = Digest.string "";
+           (* md5        = Digest.string vo_s; *)
            (* Sometimes we need to do the md5, or we'll eat memory too
             * fast, the GC won't fire up, and the browser will crash!
             * Misteries of JavaScript!
            *)
-           (* md5        = Digest.string s; *)
          } in
-         Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5);
+         (* Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5); *)
          Hashtbl.add file_cache full_url cache_entry;
          ()
        (*

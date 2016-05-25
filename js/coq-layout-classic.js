@@ -177,7 +177,7 @@ class CoqLayoutClassic {
 
     filterLog(level_select) {
 
-        debugger;
+        // debugger;
         var length = level_select.getElementsByTagName('option').length;
         var min_log_level = parseInt(level_select.value, 10);
         var i;
