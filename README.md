@@ -1,8 +1,8 @@
-Run Coq in your browser!
+Run the Coq Proof Assistant in your browser!
 ------------------------
 
-A [Coq](https://coq.inria.fr) Online Integrated Development Environment
-running in the browser! Try it:
+jsCoq is an Online Integrated Development Environment
+for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Try it:
 
 <https://x80.org/rhino-coq/>
 
