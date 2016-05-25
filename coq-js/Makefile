@@ -92,9 +92,15 @@ ifeq "${DL_HACK}" "no"
 JSOO_DL=jsoo_cache.cmo
 endif
 
+# If we don't include compiler-libs.{bytecomp,toplevel}? we get an
+# error at dynlink time:
+#
+# "Anomaly: "Assert_failure parse_bytecode.ml:619:2". Please report."
+#
+# We need to investigate more.
 ifeq "${JSOO_DL}" "jsoo_dl.cmo"
 # JSOOFLAGS += -package js_of_ocaml.compiler,js_of_ocaml.toplevel
-JSOOFLAGS += -package js_of_ocaml.compiler,compiler-libs.bytecomp
+JSOOFLAGS += -package js_of_ocaml.compiler,compiler-libs.common,compiler-libs.bytecomp,compiler-libs.toplevel
 endif
 # XXX: Why do we need to include compiler-libs.toplevel?...
 # -package compiler-libs.common,compiler-libs.bytecomp,compiler-libs.toplevel
