@@ -194,7 +194,7 @@ instructions to build JsCoq yourself.
   Debian/Ubuntu), then run:
 
   ```
-$ cp -a opam/4.02.3+32bit ~/.opam/compilers/4.02.3/
+$ cp -a opam/4.03.0+32bit ~/.opam/compilers/4.03.0/
 $ ./toolchain-setup.sh
   ```
 
@@ -208,7 +208,7 @@ $ ./toolchain-setup.sh
 $ git clone https://github.com/coq/coq.git ~/external/coq-git
 $ cd ~/external/coq-git
 $ git checkout v8.5
-$ opam switch 4.02.3+32bit
+$ opam switch 4.03.0+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
@@ -265,24 +265,34 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
 
      This requires node.
 
+  A set of loaders are provided in the `loaders/` folder.
+
+  This step will go away soon as `js_of_ocaml` support offline compilation and loading of cma files.
+
 * Profit!
-* Packages: ssreflect/mathcomp.
+* Addon Packages: ssreflect/mathcomp + lots more.
 
-  JsCoq supports extra addons, including ssreflect. In order to build
-  it with JsCoq, download the ssreflect distribution from
-  `https://github.com/math-comp/math-comp`
+  JsCoq supports extra addons, including ssreflect. Package download
+  and building is still not very streamlined. External packages are
+  built into jscoq in two steps:
 
-  Go to the main directory and then build with:
+  - Building the package itself with the Coq version linked to jsCoq.
+  - Generating the package files for jsCoq.
+
+  The first step can be taken care of by the `Makefile.addons` makefile.
 
   ```
-$ opam switch 4.02.3+32bit
+$ opam switch 4.03.0+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git/bin:$PATH
-$ make
+$ make -f Makefile.addons
   ```
 
-  You need to specify in the jsCoq makefile the place where math-comp
-  has been downloaded, `~/external/coq/math-comp` is the default.
+  You will need to adjust the makefile to point out the location of
+  the packages, most of them are assumed to live in `~/external/coq/$package`.
+
+  For the second step, edit the `config.mk` file to select the
+  packages you want to install, and call `./build.sh` again.
 
   A patch optimizing mathcomp loading times can be found in the patch
   folder, highly recommended.
