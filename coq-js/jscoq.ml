@@ -103,7 +103,7 @@ let string_of_feedback fb : string =
     (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
     (* Old generic messages *)
-    | Message m -> "Msg: " ^ m.message_content
+    | Message(_l, m) -> "Msg: " ^ Richpp.raw_print m
     (* Richer printing needed in trunk. *)
     (* | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content) *)
 

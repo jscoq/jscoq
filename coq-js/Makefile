@@ -2,14 +2,27 @@
 
 include ../config.mk
 
+########################################################################
+# jsCoq specific options                                               #
+########################################################################
+
+# Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
+JSCOQ_DL_HACK=yes
+
+# Enable/disable debug compilation
+JSCOQ_DEBUG=no
+
 # Empty default auction
 all:
 
 # Include coq files
 INCLUDETOP=-I $(COQDIR)/library/   \
            -I $(COQDIR)/stm/       \
+           -I $(COQDIR)/engine/    \
+           -I $(COQDIR)/pretying/  \
            -I $(COQDIR)/lib/       \
            -I $(COQDIR)/parsing/   \
+           -I $(COQDIR)/grammar/   \
            -I $(COQDIR)/printing/  \
            -I $(COQDIR)/kernel/    \
            -I $(COQDIR)/intf/      \
@@ -19,14 +32,17 @@ INCLUDETOP=-I $(COQDIR)/library/   \
            -I $(COQDIR)/config
 
 CAMLDEBUG=
-# CAMLDEBUG=-g
+
+ifeq "${JSCOQ_DEBUG}" "yes"
+CAMLDEBUG+=-g
+endif
+
 CAMLWARN=-w @a-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,compiler-libs,yojson
 
-SEXPFLAGS=-package sexplib,ppx_sexp_conv
-
+SEXPFLAGS  = -package sexplib,ppx_sexp_conv
 YOJSONFLAGS=
 
 # Disabled for 4.03
@@ -64,27 +80,24 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/kernel/byterun/dllcoqrun.so	\
 	$(COQDIR)/kernel/kernel.cma		\
 	$(COQDIR)/library/library.cma		\
+	$(COQDIR)/engine/engine.cma	        \
 	$(COQDIR)/pretyping/pretyping.cma	\
 	$(COQDIR)/interp/interp.cma		\
-	$(COQDIR)/proofs/proofs.cma		\
 	$(COQDIR)/parsing/parsing.cma		\
+	$(COQDIR)/grammar/grammar.cma		\
+	$(COQDIR)/proofs/proofs.cma		\
 	$(COQDIR)/printing/printing.cma		\
 	$(COQDIR)/tactics/tactics.cma		\
 	$(COQDIR)/stm/stm.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
-	$(COQDIR)/parsing/highparsing.cma	\
-	$(COQDIR)/tactics/hightactics.cma
-	# For 8.6
-	# $(COQDIR)/engine/engine.cma		\
+	$(COQDIR)/parsing/highparsing.cma       \
+	$(COQDIR)/ltac/ltac.cma                 \
 
-# Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
-DL_HACK=yes
-
-ifeq "${DL_HACK}" "yes"
+ifeq "${JSCOQ_DL_HACK}" "yes"
 JSOO_DL=jsoo_dl.cmo
 endif
 
-ifeq "${DL_HACK}" "no"
+ifeq "${JSCOQ_DL_HACK}" "no"
 JSOO_DL=jsoo_cache.cmo
 endif
 
@@ -106,11 +119,15 @@ endif
 #  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
 WOVR=-w -31
 
+CAMLPD= $(shell ocamlfind query camlp5)/odyl.cma \
+	$(shell ocamlfind query camlp5)/camlp5.cma
+
 # -linkall is necessary, otherwise internal Coq tables are dropped:
 #  Syntax error: entry [vernac:Vernac.vernac] is empty.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
 	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
+	   $(CAMLPD) \
 	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
@@ -125,13 +142,15 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/byte_cach
 # JSLIBFILES=nsp.js
 # jscoq.js: jscoq.byte $(JSFILES) $(JSLIBFILES)
 
-JSOO_OPT_OPTS=
-# JSOO_OPT_OPTS=--pretty --noinline --disable shortvar --debug-info
-# JSOO_OPT_OPTS=-opt 3
-
 # the --toplevel option is crutial to include the linking information
 # and avoid "bytecode corrupted" messages from dynlink
-JSOO_OPTS=--toplevel --nocmis $(JSOO_OPT_OPTS)
+JSOO_OPTS =--toplevel --nocmis
+
+ifeq "${JSCOQ_DEBUG}" "yes"
+JSOO_OPTS+= --pretty --noinline --disable shortvar --debug-info
+endif
+# JSOO_OPT_OPTS=--pretty --noinline --disable shortvar --debug-info
+# JSOO_OPT_OPTS=-opt 3
 
 jscoq.js: jscoq.byte $(JSFILES)
 	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
@@ -143,4 +162,4 @@ jscoq.js: jscoq.byte $(JSFILES)
 jscoq64: jscoq.js
 
 clean:
-	rm -f *.cmi *.cmo *.cma *.cmt *.cmti *.o *.ml.d *.mli.d jscoq.byte jscoq.js
+	$(RM) *.cmi *.cmo *.cma *.cmt *.cmti *.o *.ml.d *.mli.d jscoq.byte jscoq.js

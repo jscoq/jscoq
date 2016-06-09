@@ -76,8 +76,8 @@ let init opts =
   (* Initialize logging. *)
   (* This is for Coq trunk *)
   (* Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg)); *)
-  Pp.log_via_feedback ();
-  Pp.set_feeder opts.fb_handler;
+  Feedback.set_logger Feedback.feedback_logger;
+  Feedback.set_feeder opts.fb_handler;
 
   (* Misc tweaks *)
   (* Vernacentries.enable_goal_printing := false; *)
