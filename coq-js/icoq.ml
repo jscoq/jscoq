@@ -55,6 +55,11 @@ let init opts =
   (* Internal Coq initialization *)
   Lib.init();
 
+  (* Mltop.init_known_plugins (); *)
+  Goptions.set_string_option_value ["Default";"Proof";"Mode"] "Classic";
+
+  Global.set_engagement (Declarations.PredicativeSet, Declarations.StratifiedType);
+
   (* Local libraries:
    *
    * XXX: Check what is going on here...

@@ -21,7 +21,7 @@ let output_librule fmt bpath path =
   let coqdir  = Dl.to_dir ("$(COQDIR)" :: bpath :: dir)        in
   let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
-  let cma_pat = Dl.to_dir [coqdir; "*.cma"]                    in
+  let cma_pat = Dl.to_dir [coqdir; "*_plugin.cmo"]             in
   (* Rule for the dir *)
   fprintf fmt "%s_dir:\n\tmkdir -p %s\n" name outdir;
   (* Pattern expansion *)

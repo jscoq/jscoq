@@ -91,7 +91,7 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/stm/stm.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
 	$(COQDIR)/parsing/highparsing.cma       \
-	$(COQDIR)/ltac/ltac.cma                 \
+	$(COQDIR)/ltac/ltac.cma
 
 ifeq "${JSCOQ_DL_HACK}" "yes"
 JSOO_DL=jsoo_dl.cmo
