@@ -78,24 +78,31 @@ Lemma prime_above m : {p | m < p & prime p}. </textarea>
 Proof.
 have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textarea>
       <p>
-        Which is this prime number? A suitable candidate is provided
-        by the first prime divisor of !m + 1. The lemma
-        `pdivP` states that every number is divided by a
-        prime, so we use it go the number we want.
+        As we are working in constructive mathematics, we will
+        actually construct the actual prime number p greater than m.
+        Which would be a suitable p? As we will shortly see, the first
+        prime divisor of !m + 1 will fit the bill.
+      </p>
+
+      <p>
+        We first use the lemma `pdivP`, that states that every number
+        is divided by a prime. We obtain hypotheses `pr_p : prime p`
+        and `p_dv_m1` "p divides m! + 1".
       </p>
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
     <p>
-      Now we need to prove that such prime divisor p is indeed greater
-      than m. Using contraposition, we can instead prove that p <= m
-      implies that p is not a primer divisor of !m + 1.
+      The last step is to prov that p is indeed greater than m. We use
+      contraposition with the divisor hypothesis, proving that if p <=
+      m, then p cannot be a prime divisor of !m + 1.
     </p>
     <textarea id="prime_above4" >
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.</textarea>
   <p>
-    This follows from the fact that p, with p < m, divides !m,
-    but a prime number cannot divide 1.
+    This follows from basic properties of divisibilty, plus the fact
+    that p < m, divides !m, but p prime cannot divide 1, a necessary
+    condition for p to divide !m + 1.
   </p>
   <p>
     jsCoq provides many other packages, including most of Coq's
