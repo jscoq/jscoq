@@ -87,7 +87,7 @@ have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textar
       <p>
         We first use the lemma `pdivP`, that states that every number
         is divided by a prime. We obtain hypotheses `pr_p : prime p`
-        and `p_dv_m1` "p divides m! + 1".
+        and `p_dv_m1` "p divides !m + 1".
       </p>
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
