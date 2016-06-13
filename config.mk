@@ -13,5 +13,5 @@ ADDONS_PATH=/home/egallego/external/coq
 HOTT_COQLIB=/home/egallego/external/HoTT/coq/theories/
 
 RELEASE_DIR=~/research/jscoq-builds/
-WEB_DIR=~/x80/rhino-coq/
+WEB_DIR=~/x80/rhino-trunk/
 HOTT_RELEASE=~/x80/rhino-hott/

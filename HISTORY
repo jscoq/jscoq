@@ -1,12 +1,19 @@
 + JsCoq 0.9 "The idea kills the idea"
---------------------------------
+-------------------------------------
+
+  - Work on UI layout.
+  - Support for Coq 8.6.
+  - Static compilation of cma/cmo. (thanks @hhugo)
+
+  Released on: 
 
 + JsCoq 0.8 "The most inefficient programming language ever designed"
 --------------------------------
 
+  - Port to Ocaml 4.03.0.
+  - Port to Ocaml 4.03.0
   - Fast package loading using TypedArrays. (thanks @gasche @hhugo)
   - Many small fixes.
-  - Port to Ocaml 4.03.0.
 
   Released on: 13/06/2016
 
@@ -20,7 +27,7 @@
 --------------------------------
 
   - JSON/sexp serialization of Constr_uctions.
-  - Loader.
+  - Add jscoq loader.
 
 + JsCoq 0.5 "Alexandria"
 --------------------------------

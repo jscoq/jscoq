@@ -6,6 +6,8 @@ for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Tr
 
 <https://x80.org/rhino-coq/>
 
+[_See below for different versions, including Coq 8.6 and a HoTT-enabled jsCoq._]
+
 Note that you need a very recent browser, the current requisites are
 Chrome (>= 48) or Firefox (>= 45), jsCoq is written in ES2015, so in
 principle a transpiler could be used to make it run in older browsers
@@ -22,6 +24,12 @@ their great and quick support jsCoq wouldn't have been possible.
 
 * **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists`, etc...
 * **Important:** Consider using `--js-flags="--stack-size=65536"` in Chrome if you get StackOverflows.
+
+### Coq 8.6
+
+A preview release of jsCoq 0.9 with Coq 8.6 is available at:
+
+<https://x80.org/rhino-trunk/>
 
 ## API / How to use
 
@@ -89,12 +97,10 @@ an online version is at: https://x80.org/rhino-hott/
 
 ### Serialization
 
-JsCoq supports serialization to Json or Sexps for Coq's internal data
-structures. This is still not implemented in a systematic way and thus
-remains and experiment, for now you can get the current goal using the
-`goal_sexp` and `goal_json` methods. We are working to add a more
-systematic implementation, as well as to provide access to Coq
-printing facilities from JS.
+JsCoq will support serialization to Json or Sexps for Coq's internal
+data structures, but this effort has been split to an independent
+development. See https://github.com/ejgallego/coq-serapi for more
+information.
 
 ### CoqDoc
 
@@ -305,7 +311,7 @@ $ make -f Makefile.addons
 - [libs]: Coq Library support and format.
 - [doc]: Documentation.
 - [addons]: Addons support.
-- [makefile]: Build system.
+- [build]: Build system.
 
 ## Documents
 

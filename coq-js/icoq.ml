@@ -55,6 +55,11 @@ let init opts =
   (* Internal Coq initialization *)
   Lib.init();
 
+  (* Mltop.init_known_plugins (); *)
+  Goptions.set_string_option_value ["Default";"Proof";"Mode"] "Classic";
+
+  Global.set_engagement (Declarations.PredicativeSet, Declarations.StratifiedType);
+
   (* Local libraries:
    *
    * XXX: Check what is going on here...
@@ -76,8 +81,8 @@ let init opts =
   (* Initialize logging. *)
   (* This is for Coq trunk *)
   (* Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg)); *)
-  Pp.log_via_feedback ();
-  Pp.set_feeder opts.fb_handler;
+  Feedback.set_logger Feedback.feedback_logger;
+  Feedback.set_feeder opts.fb_handler;
 
   (* Misc tweaks *)
   (* Vernacentries.enable_goal_printing := false; *)

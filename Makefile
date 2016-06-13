@@ -94,9 +94,6 @@ dist-hott:
 	rsync -ap $(BUILDDIR)/coq-pkgs/Coq/syntax $(BUILDDIR_HOTT)/coq-pkgs/Coq/
 	cp -a newhott.html $(BUILDDIR_HOTT)/newide.html
 
-hott-upload: dist-hott
-	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
-
 ########################################################################
 # coqDoc Object
 ########################################################################
@@ -116,8 +113,11 @@ clean:
 	rm -rf $(BUILDDIR) $(BUILDDIR_HOTT)
 
 ########################################################################
-# Local stuff
+# Local stuff and distributions
 ########################################################################
+
+hott-upload: dist-hott
+	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
 
 dist-upload: all bcache
 	rsync -avzp --delete dist/ $(WEB_DIR)
@@ -125,14 +125,8 @@ dist-upload: all bcache
 dist-release: all bcache
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
-all-dist: dist dist-hott dist-release dist-upload hott-upload
-
-upload: all
-	ln -sf newide.html index.html
-	mkdir -p $(WEB_DIR)/coq-js/
-	rsync -avzp coq-js/jscoq.js $(WEB_DIR)/coq-js/
-	rsync --delete -avzp index.html newide.html ide.html js css images coq-pkgs bcache.list bcache external $(WEB_DIR)
-# $(shell ./x80-sync.sh)
+# all-dist: dist dist-hott dist-release dist-upload hott-upload
+all-dist: dist dist-release dist-upload
 
 pau:
 	rsync -avpz ~/research/jscoq pau:~/
