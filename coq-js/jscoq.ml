@@ -31,9 +31,6 @@ class type jsCoq = object
   method version     : ('self t, js_string t)           meth_callback writeonly_prop
   method goals       : ('self t, js_string t)           meth_callback writeonly_prop
 
-  method goal_sexp_  : ('self t, js_string t)           meth_callback writeonly_prop
-  method goal_json_  : ('self t, 'a t)                  meth_callback writeonly_prop
-
   method add         : ('self t, Stateid.t -> int -> js_string t -> Stateid.t) meth_callback writeonly_prop
   method edit        : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
   method commit      : ('self t, Stateid.t -> unit)     meth_callback writeonly_prop
@@ -199,11 +196,6 @@ let jscoq_query _this sid cmd : unit =
 let jscoq_add_pkg _this pkg : unit =
   Jslibmng.load_pkg (to_string pkg)
 
-let jscoq_json_of_proof () =
-  let json = Jssexp.yojson_of_proof () in
-  Js._JSON##parse(string (Yojson.Safe.to_string json))
-
-
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
@@ -236,10 +228,6 @@ let _ =
     Js.wrap_meth_callback (fun _this -> Icoq.set_debug)
   end;
 
-  jsCoq##goal_sexp_ <- Js.wrap_meth_callback (fun _this -> string @@ Jssexp.sexp_of_proof ());
-
-  jsCoq##goal_json_ <- Js.wrap_meth_callback (fun _this -> jscoq_json_of_proof ());
-
   jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
 
   (* Empty handlers *)
@@ -253,54 +241,3 @@ let _ =
   jsCoq##onLog          <- no_handler;
   jsCoq##onError        <- no_handler;
   ()
-
-(*
-class type coqLogMsg = object
-  inherit [jsCoq] event
-
-  method msg : js_string t readonly_prop
-end
-
-and addCodeEvent = object
-  inherit [jsCoq] event
-
-  method code : js_string t readonly_prop
-  method eid  : int         readonly_prop
-end
-
-and assignStateEvent = object
-  inherit [jsCoq] event
-
-  method eid  : int   readonly_prop
-  method sid  : int   readonly_prop
-end
-
-and coqErrorEvent = object
-  inherit [jsCoq] event
-
-  method eid  : int         readonly_prop
-  method msg  : js_string t readonly_prop
-
-end
-
-and jsCoq = object
-
-  method onLog       : ('self t, coqLogEvent      t) event_listener writeonly_prop
-  method addCode     : ('self t, addCodeEvent     t) event_listener writeonly_prop
-  method assignState : ('self t, assignStateEvent t) event_listener writeonly_prop
-  method coqError    : ('self t, coqErrorEvent    t) event_listener writeonly_prop
-
-  inherit eventTarget
-end
-
-let addCodeHandler = handler (fun e ->
-                              Js._true)
-
-let jsCoq_methods (j : #jsCoq t) : unit =
-  (* addEventListener *)
-  let _ = addEventListener j addCodeEvent addCodeHandler false in
-  ()
-  (* (#eventTarget t as 'a) -> 'b Event.typ -> *)
-  (* ('a, 'b) event_listener -> bool t -> event_listener_id *)
-  (* j##addCode <- addCodeHandler *)
-*)

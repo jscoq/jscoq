@@ -95,12 +95,10 @@ an online version is at: https://x80.org/rhino-hott/
 
 ### Serialization
 
-JsCoq supports serialization to Json or Sexps for Coq's internal data
-structures. This is still not implemented in a systematic way and thus
-remains and experiment, for now you can get the current goal using the
-`goal_sexp` and `goal_json` methods. We are working to add a more
-systematic implementation, as well as to provide access to Coq
-printing facilities from JS.
+JsCoq will support serialization to Json or Sexps for Coq's internal
+data structures, but this effort has been split to an independent
+development. See https://github.com/ejgallego/coq-serapi for more
+information.
 
 ### CoqDoc
 

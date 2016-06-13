@@ -42,12 +42,6 @@ BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
 JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,compiler-libs,yojson
 
-SEXPFLAGS  = -package sexplib,ppx_sexp_conv
-YOJSONFLAGS=
-
-# Disabled for 4.03
-# YOJSONFLAGS=-package yojson,ppx_deriving_yojson
-
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
 	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(JSOOFLAGS) $<
@@ -62,18 +56,9 @@ icoq.cmo: icoq.cmi
 
 jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
 
-# Due to ppx auto-generated code.
-JSWOVR=-w -4-39
-jssexp.cmo: jssexp.ml
-	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(SEXPFLAGS) $(YOJSONFLAGS) $(JSWOVR) $<
-
-# PPXJSOO=-package ppx_deriving,js_of_ocaml.ppx
-# jsjson.cmo: jsjson.ml
-# 	ocamlfind ocamlc -c $(BYTEFLAGS) $(INCLUDETOP) $(PPXJSON) $<
-
 # Main file
 jscoq.cmi: jslibmng.cmi
-jscoq.cmo: icoq.cmo jslibmng.cmo jssexp.cmo jscoq.cmi
+jscoq.cmo: icoq.cmo jslibmng.cmo jscoq.cmi
 
 COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
@@ -125,10 +110,10 @@ CAMLPD= $(shell ocamlfind query camlp5)/odyl.cma \
 # -linkall is necessary, otherwise internal Coq tables are dropped:
 #  Syntax error: entry [vernac:Vernac.vernac] is empty.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
-	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose          \
-	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,sexplib,str                \
+	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
+	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,str                \
 	   $(CAMLPD) \
-	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo jssexp.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
