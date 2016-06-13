@@ -6,6 +6,8 @@ for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Tr
 
 <https://x80.org/rhino-coq/>
 
+[_See below for different versions, including Coq 8.6 and a HoTT-enabled jsCoq._]
+
 Note that you need a very recent browser, the current requisites are
 Chrome (>= 48) or Firefox (>= 45), jsCoq is written in ES2015, so in
 principle a transpiler could be used to make it run in older browsers
