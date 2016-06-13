@@ -1,13 +1,20 @@
-+ JsCoq 1.0 "The most inefficient programming language ever designed"
++ JsCoq 0.9 "The idea kills the idea"
 --------------------------------
 
-+ JsCoq 0.8 "The idea kills the idea"
++ JsCoq 0.8 "The most inefficient programming language ever designed"
 --------------------------------
+
+  - Fast package loading using TypedArrays. (thanks @gasche @hhugo)
+  - Many small fixes.
+  - Port to Ocaml 4.03.0.
+
+  Released on: 13/06/2016
 
 + JsCoq 0.7 "Hott"
 --------------------------------
 
   - New panel support.
+  - Support many more addons.
 
 + JsCoq 0.6 "���𐄽𐄺�"
 --------------------------------
