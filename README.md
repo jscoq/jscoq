@@ -23,6 +23,12 @@ their great and quick support jsCoq wouldn't have been possible.
 * **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists`, etc...
 * **Important:** Consider using `--js-flags="--stack-size=65536"` in Chrome if you get StackOverflows.
 
+### Coq 8.6
+
+A preview release of jsCoq 0.9 with Coq 8.6 is available at:
+
+<https://x80.org/rhino-trunk/>
+
 ## API / How to use
 
 The current release provides a `coqManager` javascript object, so you can
@@ -305,7 +311,7 @@ $ make -f Makefile.addons
 - [libs]: Coq Library support and format.
 - [doc]: Documentation.
 - [addons]: Addons support.
-- [makefile]: Build system.
+- [build]: Build system.
 
 ## Documents
 
