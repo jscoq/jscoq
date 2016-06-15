@@ -181,7 +181,10 @@ Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 Incomplete list of places where jsCoq has been used:
 
-* https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+* Coq Winter School 2016: “Advanced Software Verification And Computer Proof”. _Sophia Antipolis_
+  https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+* Mathematical Components, an Introduction, _Satellite workshop of the ITP 2016 conference_, August 27th, Nancy, France
+  https://github.com/math-comp/wiki/wiki/tutorial-itp2016
 
 ### jsCoq in the press
 
