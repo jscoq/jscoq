@@ -263,7 +263,7 @@ cpdt: $(CPDT_DEST) $(CPDT_FILES)
 	$(shell for i in $(CPDT_FILES); do cp -a $$i $(CPDT_DEST)/`basename $$i`; done)
 
 # XXX: Move to common
-COQDIR=~/external/coq-git/
+COQDIR=~/external/coq-git-32/
 JOBS=8
 
 ########################################################################
@@ -299,7 +299,7 @@ relalg: $(RELALG_DEST) $(RELALG_FILES)
 	$(shell for i in $(RELALG_CMA); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
 
 # XXX: Move to common
-COQDIR=~/external/coq-git/
+COQDIR=~/external/coq-git-32/
 JOBS=
 
 all-build-clean:
