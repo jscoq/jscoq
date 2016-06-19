@@ -58,7 +58,7 @@ let init opts =
   (* Mltop.init_known_plugins (); *)
   Goptions.set_string_option_value ["Default";"Proof";"Mode"] "Classic";
 
-  Global.set_engagement (Declarations.PredicativeSet, Declarations.StratifiedType);
+  Global.set_engagement Declarations.PredicativeSet;
 
   (* Local libraries:
    *
@@ -132,7 +132,6 @@ module Options : sig
 
   (* Printing depth *)
   val print_width  : int  t
-  val type_in_type : bool t
 
   (** [set_bool_option opt val] Sets bool option to val. *)
   val set_bool_option : bool t -> bool -> unit
@@ -147,18 +146,10 @@ end = struct
   type 'a t = option_name
 
   let print_width  = ["Printing"; "Width"]
-  let type_in_type = ["TypeInType"]
 
   (** [set_bool_option opt v] Sets bool option [opt] to [v] globally. *)
   let set_bool_option opt v =
     match opt with
-    | ["TypeInType"] ->
-      if v then
-        Global.set_engagement (Declarations.PredicativeSet,
-                               Declarations.TypeInType)
-      else
-        Global.set_engagement (Declarations.PredicativeSet,
-                               Declarations.StratifiedType)
     | _ ->
       Goptions.set_bool_option_value_gen (Some false) opt v
 

@@ -219,11 +219,6 @@ let _ =
     Js.wrap_meth_callback (fun _this -> set_int_option print_width)
   end;
 
-  jsCoq##set_type_in_type_ <- begin
-    let open Icoq.Options in
-    Js.wrap_meth_callback (fun _this -> set_bool_option type_in_type)
-  end;
-
   jsCoq##set_debug_mode_ <- begin
     Js.wrap_meth_callback (fun _this -> Icoq.set_debug)
   end;

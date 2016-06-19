@@ -65,7 +65,6 @@ module Options : sig
 
   (* Printing depth *)
   val print_width  : int  t
-  val type_in_type : bool t
 
   (** [set_bool_option opt val] Sets bool option to val. *)
   val set_bool_option : bool t -> bool -> unit
