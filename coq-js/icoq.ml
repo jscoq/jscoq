@@ -23,7 +23,7 @@ open Util
 (* Init options for coq *)
 type init_opts = {
 
-  (* callback to load cma files *)
+  (* callback to load cma/cmo files *)
   ml_load    : string -> unit;
 
   (* callback to handle async feedback *)
@@ -31,8 +31,8 @@ type init_opts = {
 
 }
 
-(* Enable dynamic compilation for now *)
-let dyn_comp = true
+(* Require offline compilation *)
+let dyn_comp = false
 
 (* The order of some of the steps is not 100% guaranteed to be correct
    for now... *)
@@ -46,7 +46,8 @@ let init opts =
     load_obj = opts.ml_load;
     (* We ignore all the other operations for now *)
     use_file = (fun s  -> Printf.eprintf "[jstop] use_file \"%s\" called\n%!" s);
-    add_dir  = (fun s  -> Printf.eprintf "[jstop] add_dir \"%s\" called\n%!" s);
+    add_dir  = (fun _s -> ());
+               (* Printf.eprintf "[jstop] add_dir \"%s\" called\n%!" s); *)
     ml_loop  = (fun () -> Printf.eprintf "[jstop] ml_loop not supported\n%!");
   } in
 

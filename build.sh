@@ -20,3 +20,5 @@ opam switch $OCAML_VER+32bit
 eval `opam config env`
 make coq-tools
 make libs
+
+./cma_comp.sh

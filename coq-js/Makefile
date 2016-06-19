@@ -7,7 +7,7 @@ include ../config.mk
 ########################################################################
 
 # Enable/disable the dynlink hack (this bundles the whole jsoo compiler so it is heavy)
-JSCOQ_DL_HACK=yes
+JSCOQ_DL_HACK=no
 
 # Enable/disable debug compilation
 JSCOQ_DEBUG=no
@@ -68,9 +68,8 @@ COQDEPS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/engine/engine.cma	        \
 	$(COQDIR)/pretyping/pretyping.cma	\
 	$(COQDIR)/interp/interp.cma		\
-	$(COQDIR)/parsing/parsing.cma		\
-	$(COQDIR)/grammar/grammar.cma		\
 	$(COQDIR)/proofs/proofs.cma		\
+	$(COQDIR)/parsing/parsing.cma		\
 	$(COQDIR)/printing/printing.cma		\
 	$(COQDIR)/tactics/tactics.cma		\
 	$(COQDIR)/stm/stm.cma			\
@@ -83,7 +82,7 @@ JSOO_DL=jsoo_dl.cmo
 endif
 
 ifeq "${JSCOQ_DL_HACK}" "no"
-JSOO_DL=jsoo_cache.cmo
+JSOO_DL=
 endif
 
 # If we don't include compiler-libs.{bytecomp,toplevel}? we get an
@@ -104,16 +103,13 @@ endif
 #  /home/egallego/.opam/4.02.3+32bit/lib/ocaml/compiler-libs/ocamlbytecomp.cma(Errors)"
 WOVR=-w -31
 
-CAMLPD= $(shell ocamlfind query camlp5)/odyl.cma \
-	$(shell ocamlfind query camlp5)/camlp5.cma
-
 # -linkall is necessary, otherwise internal Coq tables are dropped:
 #  Syntax error: entry [vernac:Vernac.vernac] is empty.
 jscoq.byte: $(COQDEPS) jscoq.cmo $(JSOO_DL)
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
-	   $(JSOOFLAGS) -package camlp5,camlp5.gramlib,dynlink,str                \
-	   $(CAMLPD) \
-	   $(COQDEPS) jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
+	   -package str,dynlink,threads,camlp5,camlp5.gramlib                     \
+	   $(JSOOFLAGS) $(COQDEPS)                                                \
+           jslib.cmo icoq.cmo jslibmng.cmo $(JSOO_DL) jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
@@ -129,13 +125,14 @@ JSFILES=$(JSDIR)/mutex.js $(JSDIR)/unix.js $(JSDIR)/coq_vm.js $(JSDIR)/byte_cach
 
 # the --toplevel option is crutial to include the linking information
 # and avoid "bytecode corrupted" messages from dynlink
-JSOO_OPTS =--toplevel --nocmis
+# XXX Should we drop --toplevel for offline cma compilation?
+JSOO_OPTS = --toplevel --nocmis # --dynlink == included in --toplevel
 
 ifeq "${JSCOQ_DEBUG}" "yes"
 JSOO_OPTS+= --pretty --noinline --disable shortvar --debug-info
 endif
-# JSOO_OPT_OPTS=--pretty --noinline --disable shortvar --debug-info
-# JSOO_OPT_OPTS=-opt 3
+# No significant effect appreciated
+# JSOO_OPTS+=-opt 3
 
 jscoq.js: jscoq.byte $(JSFILES)
 	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte

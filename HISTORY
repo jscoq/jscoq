@@ -1,14 +1,22 @@
++ JsCoq 1.0 ((())((()()(()))((()()))))
+--------------------------------------
+
+  - [ ] Move to sertop.
+  - [ ] Worker support.
+
+  Released on: 
+
 + JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - Work on UI layout.
-  - Support for Coq 8.6.
-  - Static compilation of cma/cmo. (thanks @hhugo)
+  - [ ] Work on UI layout.
+  - [x] Static compilation of cma/cmo. (thanks @hhugo)
+  - [x] Support for Coq 8.6.
 
   Released on: 
 
 + JsCoq 0.8 "The most inefficient programming language ever designed"
---------------------------------
+-------------------------------------
 
   - Port to Ocaml 4.03.0.
   - Port to Ocaml 4.03.0

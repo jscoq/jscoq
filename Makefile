@@ -70,7 +70,8 @@ DISTHTML=newide.html #mtac_tutorial.html
 BUILDOBJ=index.html $(DISTHTML) js css images examples coq-pkgs
 DISTEXT=external/CodeMirror external/CodeMirror-TeX-input external/pace external/d3.min.js external/bootstrap.min.css
 
-dist: bcache libs
+# dist: bcache libs
+dist: libs
 	ln -sf newide.html index.html
 	mkdir -p $(BUILDDIR)
         # Copy static files, XXX: minimize
@@ -119,10 +120,10 @@ clean:
 hott-upload: dist-hott
 	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
 
-dist-upload: all bcache
+dist-upload: all #bcache
 	rsync -avzp --delete dist/ $(WEB_DIR)
 
-dist-release: all bcache
+dist-release: all #bcache
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
 # all-dist: dist dist-hott dist-release dist-upload hott-upload
