@@ -214,8 +214,8 @@ $ ./toolchain-setup.sh
 * Second, you need to build Coq v8.5:
 
   ```
-$ git clone https://github.com/coq/coq.git ~/external/coq-git
-$ cd ~/external/coq-git
+$ git clone https://github.com/coq/coq.git ~/external/coq-git-32
+$ cd ~/external/coq-git-32
 $ git checkout v8.5
 $ opam switch 4.03.0+32bit
 $ eval `opam config env`
@@ -293,7 +293,7 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
   ```
 $ opam switch 4.03.0+32bit
 $ eval `opam config env`
-$ export PATH=~/external/coq-git/bin:$PATH
+$ export PATH=~/external/coq-git-32/bin:$PATH
 $ make -f Makefile.addons
   ```
 
