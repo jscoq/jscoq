@@ -279,7 +279,7 @@ JSCOQ_DIR=~/research/jscoq/coq-pkgs/
 color:
 	cd $(COLOR_HOME); make install DSTROOT=$(TMPDIR)
 	rm -rf $(JSCOQ_DIR)/CoLoR
-	mv /tmp/home/egallego/external/coq-git/user-contrib/CoLoR/ $(JSCOQ_DIR)/
+	mv /tmp/home/egallego/external/coq-git-32/user-contrib/CoLoR/ $(JSCOQ_DIR)/
 
 ########################################################################
 # Addons: relalg                                                       #
