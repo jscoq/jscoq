@@ -6,32 +6,40 @@ for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Tr
 
 <https://x80.org/rhino-coq/>
 
-[_See below for different versions, including Coq 8.6 and a HoTT-enabled jsCoq._]
-
-Note that you need a very recent browser, the current requisites are
-Chrome (>= 48) or Firefox (>= 45), jsCoq is written in ES2015, so in
-principle a transpiler could be used to make it run in older browsers
-if needed. JsCoq also runs in my old Galaxy Nexus.
-
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-Coq 8.5 is compiled to javascript using `js_of_ocaml` compiler, no
+Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
 
-We want to **strongly thank* the `js_of_ocaml` developers. Without
+We support Chrome (>= 48) and Firefox (>= 45). JsCoq is written in
+ES2015, thus any standard-compliant browser should work.
+JsCoq also runs in my 4-years old Galaxy Nexus.
+
+We want to **strongly thank** the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
 
-* **Important:** Coq libraries are fully qualified, so you need to do `Require Import Coq.List.Lists`, etc...
-* **Important:** Consider using `--js-flags="--stack-size=65536"` in Chrome if you get StackOverflows.
+**Important:** Coq libraries are fully qualified in jsCoq, so you need to add
+a library prefix to Coq standard libraries. For example:
 
-### Coq 8.6
+```coq
+Require Import Lists.
+```
+becomes
+```
+From Coq Require Import List.Lists.
+```
+etc...
 
-A preview release of jsCoq 0.9 with Coq 8.6 is available at:
+#### Development version
+
+The preview release of jsCoq 0.9 for Coq 8.6 is available at:
 
 <https://x80.org/rhino-trunk/>
 
-## API / How to use
+See below for different versions, including a HoTT-enabled one.
+
+## API / How to embed in your own webpage
 
 The current release provides a `coqManager` javascript object, so you can
 embed Coq in your particular javascript application. The basic use is:
@@ -141,7 +149,8 @@ you can post to the list using nntp.
 
 ## Troubleshooting ##
 
-Clearing the browser cache may solve lots of issues.
+* Clearing the browser cache may solve lots of issues.
+* Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
 
 ## Contributing ##
 
