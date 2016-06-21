@@ -197,7 +197,7 @@ You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
 instructions to build JsCoq yourself.
 
-* _warning_: The build process takes *more* than 8GiB of RAM.
+* _warning_: The build process may take *more* than 8GiB of RAM.
 * First, you need a dual 32/64 bits Ocaml toolchain. Get a
   recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then run:
@@ -211,19 +211,19 @@ $ ./toolchain-setup.sh
 
   You can tweak some variables in the `build-common.sh` file.
 
-* Second, you need to build Coq v8.5:
+* Second, you need to build Coq v8.6:
 
   ```
 $ git clone https://github.com/coq/coq.git ~/external/coq-git-32
 $ cd ~/external/coq-git-32
-$ git checkout v8.5
+$ git checkout v8.6 # Or trunk at this moment.
 $ opam switch 4.03.0+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ```
 
-  jsCoq is compatible with vanilla Coq v8.5. However, we maintain a
+  jsCoq is compatible with vanilla Coq v8.6. However, we maintain a
   tree with some specific patches at
   https://github.com/ejgallego/coq/tree/jscoq-patchqueue
 
@@ -255,35 +255,13 @@ $ ./build.sh
 $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
   ```
 
-* _Bytecode cache_:
-
-  By default JsCoq must compile ocaml's bytecode to javascript on the
-  fly to load cma plugins.  However, we can cache the process of
-  compilation by creating a bcache. The process is a bit involved:
-
-  1) Load all the .cma files you want to be cached from a regular web
-     browser, they will get compiled and cached.
-
-  2) Call the `dumpCache()` function from the JS console; this should
-     download the cache.
-
-  3) Place the files in the `jscoq` directory, and do `make
-     bcache`. The cache will be then processed using the
-     `coq-tools/byte_cache.js` program to generate a `/bcache.list`
-     file and a `/bcache` directory.
-
-     This requires node.
-
-  A set of loaders are provided in the `loaders/` folder.
-
-  This step will go away soon as `js_of_ocaml` support offline compilation and loading of cma files.
-
 * Profit!
-* Addon Packages: ssreflect/mathcomp + lots more.
 
-  JsCoq supports extra addons, including ssreflect. Package download
-  and building is still not very streamlined. External packages are
-  built into jscoq in two steps:
+### Building Addon Packages:
+
+  JsCoq supports many extra addons, including ssreflect. Package
+  download and building is still not very streamlined. External
+  packages are built into jscoq in two steps:
 
   - Building the package itself with the Coq version linked to jsCoq.
   - Generating the package files for jsCoq.
@@ -294,7 +272,7 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
 $ opam switch 4.03.0+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git-32/bin:$PATH
-$ make -f Makefile.addons
+$ make -f Makefile.addons $TARGET
   ```
 
   You will need to adjust the makefile to point out the location of
