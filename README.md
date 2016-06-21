@@ -9,27 +9,25 @@ for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Tr
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-Coq is compiled to javascript using the `js_of_ocaml` compiler. No
-servers or external programs are needed.
-
 We support Chrome (>= 48) and Firefox (>= 45). JsCoq is written in
 ES2015, thus any standard-compliant browser should work.
 JsCoq also runs in my 4-years old Galaxy Nexus.
 
+Coq is compiled to javascript using the `js_of_ocaml` compiler. No
+servers or external programs are needed.
 We want to **strongly thank** the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
 
-**Important:** Coq libraries are fully qualified in jsCoq, so you need to add
-a library prefix to Coq standard libraries. For example:
+**Important:** The Coq standard libraries are qualified in jsCoq, thus
+you need to prefix your imports:
 
 ```coq
 Require Import Lists.
 ```
 becomes
-```
+```coq
 From Coq Require Import List.Lists.
 ```
-etc...
 
 #### Development version
 
@@ -39,29 +37,43 @@ The preview release of jsCoq 0.9 for Coq 8.6 is available at:
 
 See below for different versions, including a HoTT-enabled one.
 
+### Collacoq
+
+A small pastebin-like server based on haste is available at
+https://x80.org/collacoq
+
+Note that this is totally experimental, data loss is guaranteed.
+
+See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
+
+Help with Collacoq is very welcome!
+
 ## API / How to embed in your own webpage
 
-The current release provides a `coqManager` javascript object, so you can
-embed Coq in your particular javascript application. The basic use is:
+JsCoq provides a `coqManager` javascript object for embedding Coq in
+your particular application, blog, or webpage. The basic pattern to
+add jsCoq to webpage with Coq code is:
 
 ```javascript
-  <script src="js/jscoq-loader.js" type="text/javascript"></script>
+  <script src="$path/js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
-    loadJsCoq('./').then( () => new CoqManager (list_of_ids, [options]) );
+    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, [$options]) );
   </script>
 ```
 
-But it requires some particular UI classes present in the document for
-now. Look at `newide.html` to get more an idea on how to use jsCoq in
-your own html pages.
+where `$path` is the path the jsCoq distribution, `$list_of_ids` is
+the list of textareas that will form the Coq document. See below for
+available `$options`.
+
+The jsCoq (landing webpage)[newide.html] is a good actually running example.
 
 ### Options
 
 JsCoq accepts the following options as an optional second parameter to
-the constructor; current options are:
+the constructor:
 
-* `base_path: string`: Path where jsCoq is installed.
-* `wrapper_id`: id of the div where the panel will be attached.
+* `base_path`: Path where jsCoq is installed.
+* `wrapper_id`: id of the div where to attach the panel.
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
@@ -123,17 +135,6 @@ There is also a superseded experimental version of coqdoc outputting
 jsCoq at https://github.com/ejgallego/coq/tree/coqdoc
 
 Just build coqdoc normally and use the option `--backend=jscoq`.
-
-### Collacoq
-
-A small pastebin-like server based on haste is available at
-https://x80.org/collacoq
-
-Note that this is totally experimental, data loss is guaranteed.
-
-See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
-
-Help with Collacoq is very welcome!
 
 ## Mailing List ##
 
