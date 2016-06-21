@@ -18,6 +18,20 @@ coq-tools:
 	$(MAKE) -C coq-tools
 
 ########################################################################
+# CMA building                                                         #
+########################################################################
+
+%.cma.js: %.cma
+	js_of_ocaml --wrap-with-fun $< -o $<.js
+
+%.cmo.js: %.cmo
+	js_of_ocaml --wrap-with-fun $< -o $<.js
+
+# XXX FIXME
+# Compile all cmo/cma in coq-pkgs
+plugin-comp: $(addsuffix .js,$(shell find coq-pkgs \( -name *.cma -or -name *.cmo \)))
+
+########################################################################
 # Library building                                                     #
 ########################################################################
 
@@ -29,27 +43,18 @@ Makefile.libs: coq-tools/dftlibs.ml coq-tools/mklibfs.ml
 	./coq-tools/mklibfs > Makefile.libs
 
 # Build Coq libraries
-coq-libs: Makefile.libs
+coq-libs: Makefile.libs coq-pkgs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
 # Build extra libraries
-coq-addons:
-	make -f Makefile.addons $(ADDONS)
+coq-addons: coq-pkgs
+	COQDIR=$(COQDIR) make -f Makefile.addons $(ADDONS)
+
+coq-all-libs: coq-libs coq-addons
 
 # All the libraries + json generation
-libs: coq-libs coq-addons coq-pkgs
-	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
+libs: coq-all-libs
 	./coq-tools/mklibjson # $(ADDONS)
-
-# CMAS=filesys/Coq_syntax/nat_syntax_plugin.cma	\
-#      filesys/Coq_cc/cc_plugin.cma		\
-#      filesys/Coq_firstorder/ground_plugin.cma	\
-#      filesys/Coq_decl_mode/decl_mode_plugin.cma
-
-# %.cma.js: %.cma
-# 	js_of_ocaml --toplevel --nocmis +nat.js +weak.js +dynlink.js	\
-# 	+toplevel.js js/mutex.js js/unix.js js/coq_vm.js		\
-# 	js/byte_cache.js jscoqtop.js $< -o filesys/cmas/$<.js
 
 ########################################################################
 # bcache building                                                      #

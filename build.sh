@@ -19,6 +19,10 @@ make -j $NJOBS jscoq64
 opam switch $OCAML_VER+32bit
 eval `opam config env`
 make coq-tools
-make libs
 
-./cma_comp.sh
+# Switch to same js_oo for plugin building
+opam switch $OCAML_VER
+eval `opam config env`
+make libs
+make plugin-comp
+

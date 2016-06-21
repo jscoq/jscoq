@@ -23,13 +23,13 @@ let output_librule fmt bpath path =
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
   let cma_pat = Dl.to_dir [coqdir; "*_plugin.cmo"]             in
   (* Rule for the dir *)
-  fprintf fmt "%s_dir:\n\tmkdir -p %s\n" name outdir;
+  fprintf fmt "%s:\n\tmkdir -p %s\n" outdir outdir;
   (* Pattern expansion *)
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;
   (* Copy rule *)
-  fprintf fmt "%s: %s_dir $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
-    name name name name name outdir name outdir
+  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
+    name outdir name name name outdir name outdir
 (*
   COQ_SETOIDS=$(COQTDIR)/Setoids/*.vo
   COQ_SETOIDS_DEST=filesys/coq_setoids

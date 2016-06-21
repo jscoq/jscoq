@@ -4,7 +4,7 @@
 # XXX: Move to a common makefile
 all:
 
-all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils cel mirror-core
+all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
 
 # XXX: We should include the common addon makefile thing.
 
@@ -26,17 +26,17 @@ plugin-utils: $(PU_DEST)
 ########################################################################
 # Addons: coq-ext-lib                                                  #
 ########################################################################
-CEL_HOME=~/external/coq/coq-ext-lib/
-CEL_DEST=coq-pkgs/ExtLib
+EXTLIB_HOME=~/external/coq/coq-ext-lib/
+EXTLIB_DEST=coq-pkgs/ExtLib
 
-$(CEL_DEST):
-	mkdir -p $(CEL_DEST)
+$(EXTLIB_DEST):
+	mkdir -p $(EXTLIB_DEST)
 
-CEL_MODULES=$(addprefix $(CEL_HOME)/theories/,Core Data Generic Programming Recur Relations Structures Tactics)
-# CEL_MODULES=$(addprefix $(CEL_HOME)/theories/,Core Data Data/Eq Data/Monads Data/Graph Data/Map Data/Monads Data/Set Generic Programming Recur Relations Structures Tactics)
-cel: $(CEL_DEST)
-	rsync -ap $(wildcard $(CEL_HOME)/theories/*.vo) $(CEL_DEST)/
-	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(CEL_MODULES) $(CEL_DEST)
+EXTLIB_MODULES=$(addprefix $(EXTLIB_HOME)/theories/,Core Data Generic Programming Recur Relations Structures Tactics)
+# EXTLIB_MODULES=$(addprefix $(EXTLIB_HOME)/theories/,Core Data Data/Eq Data/Monads Data/Graph Data/Map Data/Monads Data/Set Generic Programming Recur Relations Structures Tactics)
+extlib: $(EXTLIB_DEST)
+	rsync -ap $(wildcard $(EXTLIB_HOME)/theories/*.vo) $(EXTLIB_DEST)/
+	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(EXTLIB_MODULES) $(EXTLIB_DEST)
 
 ########################################################################
 # Addons: mirror-core                                                  #
@@ -262,10 +262,6 @@ $(CPDT_DEST):
 cpdt: $(CPDT_DEST) $(CPDT_FILES)
 	$(shell for i in $(CPDT_FILES); do cp -a $$i $(CPDT_DEST)/`basename $$i`; done)
 
-# XXX: Move to common
-COQDIR=~/external/coq-git-32/
-JOBS=8
-
 ########################################################################
 # Addons: ColoR                                                        #
 ########################################################################
@@ -298,9 +294,7 @@ relalg: $(RELALG_DEST) $(RELALG_FILES)
 	$(shell for i in $(RELALG_FILES); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
 	$(shell for i in $(RELALG_CMA); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
 
-# XXX: Move to common
-COQDIR=~/external/coq-git-32/
-JOBS=
+JOBS=8
 
 all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true
@@ -315,7 +309,7 @@ all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(CEL_HOME);      make clean
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make clean
 
 all-build: all-build-ssr all-build-std
 
@@ -334,6 +328,6 @@ all-build-std:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(CEL_HOME);      make || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make || true
 
 

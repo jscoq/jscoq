@@ -9,6 +9,8 @@ open Yojson.Basic
 
 module Dl = Dftlibs
 
+let n_warn = ref 0
+
 (* Make the json file for the installed libraries *)
 let is_vo s =
   Filename.check_suffix s ".vo"
@@ -26,8 +28,9 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
       let files     = Array.to_list @@ Sys.readdir dir in
       filter is_vo files, filter is_cma files
     with
-    | Sys_error msg ->
-      eprintf "Warning: %s@\n%!" msg;
+    | Sys_error _msg ->
+      (* eprintf "Warning: %s@\n%!" msg; *)
+      incr n_warn;
       [], []
   in
   {
@@ -53,4 +56,6 @@ let build_pkg (pkg, deps, p_mod) =
   close_out out
 
 let _ =
-  List.iter build_pkg Dl.pkgs
+  List.iter build_pkg Dl.pkgs;
+  if !n_warn > 0 then
+    eprintf "Addons not found: %d@\n%!" !n_warn

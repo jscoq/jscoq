@@ -294,22 +294,18 @@ let coq_cma_req cma =
   if cma_verb then Format.eprintf "bytecode file %s requested\n%!" cma;
   try
     let cma_path = Hashtbl.find cma_cache cma  in
-    (* Now the js file should be in the file cache *)
+    (* Now, the js file should be in the file cache *)
     let js_file = cma_path ^ "/" ^ cma ^ ".js" in
     if cma_verb then Format.eprintf "requesting load of %s\n%!" js_file;
     try
       let js_code = (Hashtbl.find file_cache js_file).file_content in
-      (Js.Unsafe.eval_string js_code : < .. > Js.t -> unit) (Js.Unsafe.global)
-      (* Js.Unsafe.eval_string js_code *)
+      (* When eval'ed, the js_code will return a closure waiting for the
+         jsoo global object to link the plugin.
+      *)
+      Js.Unsafe.((eval_string js_code : < .. > Js.t -> unit) global)
     with
     | Not_found ->
       Format.eprintf "cache inconsistecy for %s !! \n%!" cma;
   with
   | Not_found ->
     Format.eprintf "!! bytecode file %s not found in path\n%!" cma
-
-(* Which of these ?
-   - Js.Unsafe.global##load_script_(str)
-   - Js.Unsafe.eval_string js_code
-   - Js.Unsafe.global##eval js_code.js_content
-*)
