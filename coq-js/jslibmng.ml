@@ -58,9 +58,9 @@ end
 
 let mk_pkgInfo pkg : pkgInfo t =
   let pi      = Js.Unsafe.obj [||]   in
-  pi##name      <- string @@ to_dir  pkg;
-  pi##desc      <- string @@ to_desc pkg;
-  pi##no_files_ <- no_files pkg;
+  pi##.name      := string @@ to_dir  pkg;
+  pi##.desc      := string @@ to_desc pkg;
+  pi##.no_files_ := no_files pkg;
   pi
 
 
@@ -68,17 +68,17 @@ let build_bundle_info bundle : bundleInfo t =
   let bi      = Js.Unsafe.obj [||]   in
   let bi_deps = Js.array @@ Array.of_list @@ List.map Js.string  bundle.deps in
   let bi_pkgs = Js.array @@ Array.of_list @@ List.map mk_pkgInfo bundle.pkgs in
-  bi##desc <- string bundle.desc;
-  bi##deps <- bi_deps;
-  bi##pkgs <- bi_pkgs;
+  bi##.desc := string bundle.desc;
+  bi##.deps := bi_deps;
+  bi##.pkgs := bi_pkgs;
   bi
 
 let mk_progressInfo bundle pkg number =
   let pi           = Js.Unsafe.obj [||]   in
-  pi##bundle_name_ <- string bundle;
-  pi##pkg_name_    <- string @@ to_dir pkg;
-  pi##total        <- no_files pkg;
-  pi##loaded       <- number;
+  pi##.bundle_name_ := string bundle;
+  pi##.pkg_name_    := string @@ to_dir pkg;
+  pi##.total        := no_files pkg;
+  pi##.loaded       := number;
   pi
 
 (* Global Callbacks *)
@@ -116,8 +116,8 @@ let preload_byte_cache () =
   catch (fun () ->
       XmlHttpRequest.get (!pkg_prefix ^ bcache_file) >>= fun res ->
       let m_list = Regexp.split (Regexp.regexp "\n") res.content in
-      Firebug.console##log_2(string "Got binary js cache: ",
-                             string (string_of_int (List.length m_list)));
+      Firebug.console##(log_2 (string "Got binary js cache: ")
+                              (string (string_of_int (List.length m_list))));
       Lwt_list.iter_s preload_js_code m_list)
   (* try *)
     (fun _exn ->
@@ -228,7 +228,7 @@ let rec preload_from_file ?(verb=false) file =
 
 let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
   let f_js = wrap_callback (fun p x _ _ -> f x >>= (fun () -> p)) in
-  l##reduce_init(f_js, return_unit)
+  l##(reduce_init f_js return_unit)
 
 let info_from_file file =
   let file_url = !pkg_prefix ^ file ^ ".json" in

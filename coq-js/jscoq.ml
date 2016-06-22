@@ -111,7 +111,7 @@ let string_of_eosid esid =
   | State sid -> "sid: " ^ (Stateid.to_string sid)
 
 let internal_log (this : jsCoq t) (str : js_string t) =
-  let _    = invoke_handler this##onLog this str  in
+  let _    = invoke_handler this##.onLog this str  in
   ()
 
 let jscoq_feedback_handler this (fb : Feedback.feedback) =
@@ -142,23 +142,23 @@ let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
                         Icoq.fb_handler = (jscoq_feedback_handler this);
                       } in
 
-  let init_callback () = ignore (invoke_handler this##onInit this ()) in
+  let init_callback () = ignore (invoke_handler this##.onInit this ()) in
   let open Jslibmng in
   let pkg_callbacks = {
-    bundle_info  = (fun pi -> ignore (invoke_handler this##onBundleInfo   this pi));
-    bundle_start = (fun pi -> ignore (invoke_handler this##onBundleStart  this pi));
-    bundle_load  = (fun pi -> ignore (invoke_handler this##onBundleLoad   this pi));
-    pkg_start    = (fun pi -> ignore (invoke_handler this##onPkgLoadStart this pi));
-    pkg_progress = (fun pi -> ignore (invoke_handler this##onPkgProgress  this pi));
-    pkg_load     = (fun pi -> ignore (invoke_handler this##onPkgLoad      this pi));
+    bundle_info  = (fun pi -> ignore (invoke_handler this##.onBundleInfo   this pi));
+    bundle_start = (fun pi -> ignore (invoke_handler this##.onBundleStart  this pi));
+    bundle_load  = (fun pi -> ignore (invoke_handler this##.onBundleLoad   this pi));
+    pkg_start    = (fun pi -> ignore (invoke_handler this##.onPkgLoadStart this pi));
+    pkg_progress = (fun pi -> ignore (invoke_handler this##.onPkgProgress  this pi));
+    pkg_load     = (fun pi -> ignore (invoke_handler this##.onPkgLoad      this pi));
   } in
-  Jslibmng.init init_callback pkg_callbacks init_info##base_path_ init_info##all_pkgs_ init_info##init_pkgs_;
+  Jslibmng.init init_callback pkg_callbacks init_info##.base_path_ init_info##.all_pkgs_ init_info##.init_pkgs_;
   sid
 
 let jscoq_version _this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
   let header1 = Printf.sprintf
-      " JsCoq alpha, Coq %s (%s),\n   compiled on %s\n Ocaml %s"
+      " JsCoq beta, Coq %s (%s),\n   compiled on %s\n Ocaml %s"
       coqv coqd ccd ccv                                       in
   let header2 = Printf.sprintf
       " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
@@ -199,40 +199,40 @@ let jscoq_add_pkg _this pkg : unit =
 (* see: https://github.com/ocsigen/js_of_ocaml/issues/248 *)
 let jsCoq : jsCoq t =
   let open Js.Unsafe in
-  global##jsCoq <- obj [||];
-  global##jsCoq
+  global##.jsCoq := obj [||];
+  global##.jsCoq
 
 let _ =
   (* XXX: This is a long time workaround *)
   Sys.interactive := false;
 
-  jsCoq##init     <- Js.wrap_meth_callback jscoq_init;
-  jsCoq##version  <- Js.wrap_meth_callback jscoq_version;
-  jsCoq##add      <- Js.wrap_meth_callback jscoq_add;
-  jsCoq##edit     <- Js.wrap_meth_callback jscoq_edit;
-  jsCoq##commit   <- Js.wrap_meth_callback jscoq_commit;
-  jsCoq##query    <- Js.wrap_meth_callback jscoq_query;
-  jsCoq##goals    <- Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
+  jsCoq##.init     := Js.wrap_meth_callback jscoq_init;
+  jsCoq##.version  := Js.wrap_meth_callback jscoq_version;
+  jsCoq##.add      := Js.wrap_meth_callback jscoq_add;
+  jsCoq##.edit     := Js.wrap_meth_callback jscoq_edit;
+  jsCoq##.commit   := Js.wrap_meth_callback jscoq_commit;
+  jsCoq##.query    := Js.wrap_meth_callback jscoq_query;
+  jsCoq##.goals    := Js.wrap_meth_callback (fun _this -> string @@ Icoq.string_of_goals ());
 
-  jsCoq##set_printing_width_ <- begin
+  jsCoq##.set_printing_width_ := begin
     let open Icoq.Options in
     Js.wrap_meth_callback (fun _this -> set_int_option print_width)
   end;
 
-  jsCoq##set_debug_mode_ <- begin
+  jsCoq##.set_debug_mode_ := begin
     Js.wrap_meth_callback (fun _this -> Icoq.set_debug)
   end;
 
-  jsCoq##add_pkg_       <- Js.wrap_meth_callback jscoq_add_pkg;
+  jsCoq##.add_pkg_       := Js.wrap_meth_callback jscoq_add_pkg;
 
   (* Empty handlers *)
-  jsCoq##onInit         <- no_handler;
-  jsCoq##onBundleInfo   <- no_handler;
-  jsCoq##onBundleLoad   <- no_handler;
-  jsCoq##onBundleStart  <- no_handler;
-  jsCoq##onPkgLoadStart <- no_handler;
-  jsCoq##onPkgLoad      <- no_handler;
-  jsCoq##onPkgProgress  <- no_handler;
-  jsCoq##onLog          <- no_handler;
-  jsCoq##onError        <- no_handler;
+  jsCoq##.onInit         := no_handler;
+  jsCoq##.onBundleInfo   := no_handler;
+  jsCoq##.onBundleLoad   := no_handler;
+  jsCoq##.onBundleStart  := no_handler;
+  jsCoq##.onPkgLoadStart := no_handler;
+  jsCoq##.onPkgLoad      := no_handler;
+  jsCoq##.onPkgProgress  := no_handler;
+  jsCoq##.onLog          := no_handler;
+  jsCoq##.onError        := no_handler;
   ()

@@ -40,7 +40,7 @@ endif
 CAMLWARN=-w @a-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
-JSOOFLAGS=-syntax camlp4o -package js_of_ocaml.syntax,js_of_ocaml.tyxml,compiler-libs,yojson
+JSOOFLAGS=-package js_of_ocaml.ppx,js_of_ocaml.tyxml,compiler-libs,yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli

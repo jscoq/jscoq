@@ -4,7 +4,7 @@
 
 JS_OF_OCAML_DIR=~/external/js_of_ocaml
 
-JSCOQ_DEPS="ocamlfind camlp4 camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData yojson \
+JSCOQ_DEPS="ocamlfind camlp5 base64 cppo ppx_tools higlo ocp-indent tyxml js_of_ocaml reactiveData yojson \
             ppx_deriving_yojson sexplib ppx_sexp_conv"
 
 VERB=

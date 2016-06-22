@@ -12,6 +12,7 @@
   - [ ] Work on UI layout.
   - [x] Static compilation of cma/cmo. (thanks @hhugo)
   - [x] Support for Coq 8.6.
+  - [x] Migrated to ppx for jsoo syntax.
 
   Released on: 
 
