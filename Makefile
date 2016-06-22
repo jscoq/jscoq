@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jsoo-util jscoq32 jscoq64 bcache dist dist-upload dist-release dist-hott
+.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott
 
 include config.mk
 
@@ -9,10 +9,6 @@ jscoq32:
 
 jscoq64:
 	$(MAKE) -C coq-js jscoq64
-
-# Disabled for now
-# jsoo-util:
-# 	$(MAKE) -C jsoo-util
 
 coq-tools:
 	$(MAKE) -C coq-tools
@@ -57,17 +53,8 @@ libs: coq-all-libs
 	./coq-tools/mklibjson # $(ADDONS)
 
 ########################################################################
-# bcache building                                                      #
+# Dists                                                                #
 ########################################################################
-
-bcache: coq-pkgs bcache.stamp
-
-bcache.stamp: bc-md5.json bc-js.json # $(wildcard coq-fs/*/*.cma)
-	mkdir -p coq-pkgs/bcache
-	nodejs ./coq-tools/byte_cache.js > coq-pkgs/bcache.list
-	ls coq-pkgs/bcache > coq-pkgs/bcache.list
-	perl -i -pe "chomp if eof" coq-pkgs/bcache.list
-	touch bcache.stamp
 
 BUILDDIR=dist
 
@@ -75,7 +62,6 @@ DISTHTML=newide.html #mtac_tutorial.html
 BUILDOBJ=index.html $(DISTHTML) js css images examples coq-pkgs
 DISTEXT=external/CodeMirror external/CodeMirror-TeX-input external/pace external/d3.min.js external/bootstrap.min.css
 
-# dist: bcache libs
 dist: libs
 	ln -sf newide.html index.html
 	mkdir -p $(BUILDDIR)
@@ -89,7 +75,7 @@ dist: libs
 
 BUILDDIR_HOTT=$(BUILDDIR)-hott
 
-HOTT_FILES=bcache bcache.list hott-init.json hott.json HoTT
+HOTT_FILES=hott-init.json hott.json HoTT
 HOTT_SRC_FILES=$(addprefix $(BUILDDIR)/coq-pkgs/,$(HOTT_FILES))
 
 dist-hott:
@@ -112,10 +98,8 @@ dist-hott:
 clean:
 	$(MAKE) -C coq-js       clean
 	$(MAKE) -C coq-tools    clean
-# $(MAKE) -C jsoo-util clean
 	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
 	rm -rf coq-pkgs
-	rm -rf bcache.stamp bc-md5.json bc-js.json
 	rm -rf $(BUILDDIR) $(BUILDDIR_HOTT)
 
 ########################################################################
@@ -125,10 +109,10 @@ clean:
 hott-upload: dist-hott
 	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
 
-dist-upload: all #bcache
+dist-upload: all
 	rsync -avzp --delete dist/ $(WEB_DIR)
 
-dist-release: all #bcache
+dist-release: all
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
 # all-dist: dist dist-hott dist-release dist-upload hott-upload

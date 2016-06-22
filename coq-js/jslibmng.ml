@@ -16,11 +16,6 @@ open Js
 let cma_verb    = false
 
 let pkg_prefix  = ref ""
-let bcache_dir  = "bcache/"
-let bcache_file = "bcache.list"
-
-(* Main byte_cache *)
-let byte_cache : (Digest.t, js_string t) Hashtbl.t = Hashtbl.create 200
 
 (* Main file_cache, indexed by url*)
 type cache_entry = {
@@ -100,38 +95,6 @@ let cb : pkg_callbacks ref = ref {
   pkg_load     = (fun _ -> ());
   }
 
-(* Preload some code based on its md5 *)
-let preload_js_code msum =
-  let open Lwt                           in
-  let open XmlHttpRequest                in
-  let js_url = !pkg_prefix ^ bcache_dir ^ msum in
-  perform_raw ~response_type:Text js_url >>= fun frame      ->
-  Hashtbl.add byte_cache (Digest.from_hex msum) frame.content;
-  return_unit
-
-let preload_byte_cache () =
-  let open Lwt            in
-  let open XmlHttpRequest in
-  (* Don't fail if bcache.list doesn't exist *)
-  catch (fun () ->
-      XmlHttpRequest.get (!pkg_prefix ^ bcache_file) >>= fun res ->
-      let m_list = Regexp.split (Regexp.regexp "\n") res.content in
-      Firebug.console##(log_2 (string "Got binary js cache: ")
-                              (string (string_of_int (List.length m_list))));
-      Lwt_list.iter_s preload_js_code m_list)
-  (* try *)
-    (fun _exn ->
-       Firebug.console##log(string @@ "Downloading " ^ bcache_file ^ " failed");
-       return_unit
-    )
-  (* Firebug.console##log_2(string "bcache file: ", string res.content); *)
-  (* Firebug.console##log_2(string "number of files", List.length m_list); *)
-
-(* Query the ocaml bytecode cache *)
-let request_byte_cache (md5sum : Digest.t) =
-  try Some (Hashtbl.find byte_cache md5sum)
-  with | Not_found -> None
-
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
@@ -164,11 +127,8 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
           Hashtbl.add file_cache full_url cache_entry;
          ()
        (*
-       Jslog.printf Jslog.jscoq_log
-         "Cached %s [%d/%d/%d/%s]\n%!"
-          full_url bl (u8arr##length)
-          (cache_entry.vo_content##length)
-          (Digest.to_hex cache_entry.md5)
+       Jslog.printf Jslog.jscoq_log "Cached %s [%d/%d/%d/%s]\n%!" full_url bl (u8arr##length)
+                    (cache_entry.vo_content##length) (Digest.to_hex cache_entry.md5)
         *)
       );
   Lwt.return_unit
@@ -198,11 +158,7 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
     !cb.pkg_progress (mk_progressInfo bundle pkg (i+nc+1));
     Lwt.return_unit
   in
-  (if Icoq.dyn_comp then
-    Lwt_list.iteri_s (preload_vo_and_log 0) pkg.cma_files
-  else
-    Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files
-  ) >>= fun () ->
+  Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files    >>= fun () ->
   Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
   Icoq.add_load_path pkg.pkg_id pkg_dir (ncma > 0);
   !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
@@ -244,7 +200,6 @@ let init init_callback pkg_cb base_path all_pkgs init_pkgs =
   cb         := pkg_cb;
   pkg_prefix := to_string base_path ^ "/coq-pkgs/";
   Lwt.async (fun () ->
-    (if Icoq.dyn_comp then preload_byte_cache () else return_unit)             >>= fun () ->
     iter_arr (fun x -> to_string x |> info_from_file)                all_pkgs  >>= fun () ->
     iter_arr (fun x -> to_string x |> preload_from_file ~verb:false) init_pkgs >>= fun () ->
     init_callback ();

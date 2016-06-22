@@ -10,22 +10,6 @@
 // XXX: use RequireJS or something like that.
 "use strict";
 
-function dumpCache () {
-
-    var download = function (text,filename) {
-        var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', filename);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    };
-
-    download(JSON.stringify(dumpJsCacheA), "bc-md5.json");
-    download(JSON.stringify(dumpJsCacheB), "bc-js.json");
-}
-
 var COQ_LOG_LEVELS = {
     DEBUG : 'debug',
     INFO  : 'info',

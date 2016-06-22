@@ -31,9 +31,6 @@ val init : init_opts -> Stateid.t
 (** [version] returns miscellaneous version information *)
 val version : string * string * string * string
 
-(** [dyn_comp] true if dynamic compilation is enabled *)
-val dyn_comp : bool
-
 (** [add_load_path qid path has_ml] associate a coq package namespace
     [qid] to a [path], register for ml searching *)
 val add_load_path : string list -> string -> bool -> unit

@@ -31,9 +31,6 @@ type init_opts = {
 
 }
 
-(* Require offline compilation *)
-let dyn_comp = false
-
 (* The order of some of the steps is not 100% guaranteed to be correct
    for now... *)
 let init opts =
@@ -51,7 +48,7 @@ let init opts =
     ml_loop  = (fun () -> Printf.eprintf "[jstop] ml_loop not supported\n%!");
   } in
 
-  if not dyn_comp then Mltop.set_top jstop;
+  Mltop.set_top jstop;
 
   (* Internal Coq initialization *)
   Lib.init();

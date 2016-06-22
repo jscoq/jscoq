@@ -59,7 +59,3 @@ val coq_vo_req  : string -> string option
 
 (** [coq_cma_req cma] load the [cma] file or else do nothing *)
 val coq_cma_req : string -> unit
-
-(** [request_byte_cache md5] return [Some js] if bytecode with with
-    digest [md5] is in the cache, None otherwise *)
-val request_byte_cache : Digest.t -> js_string t option
