@@ -92,7 +92,7 @@ jscoq32: jscoq.byte
 ########################################################################
 # Compilation to JS
 
-JSDIR=../lib-js/
+JSDIR=../coq-libjs/
 JSFILES=$(addprefix $(JSDIR),mutex.js unix.js coq_vm.js)
 
 # the --toplevel was previously used, but --dynlink option seems to
