@@ -1,0 +1,16 @@
+/* do not modify order */
+#query-panel .debug {
+  display: none;
+}
+
+#query-panel .info {
+  background: url('../ui-images/log-info.png') no-repeat;
+}
+
+#query-panel .warn {
+  background: url('../ui-images/log-warn.png') no-repeat;
+}
+
+#query-panel .error {
+  background: url('../ui-images/log-error.png') no-repeat;
+}

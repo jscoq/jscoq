@@ -1,9 +1,9 @@
 [submodule "CodeMirror"]
-	path = external/CodeMirror
+	path = ui-external/CodeMirror
         url = https://github.com/ejgallego/CodeMirror.git
         branch = jscoq
 
 [submodule "CodeMirror-TeX-input"]
-	path = external/CodeMirror-TeX-input
+	path = ui-external/CodeMirror-TeX-input
 	url = https://github.com/ejgallego/CodeMirror-TeX-input.git
 	branch = master

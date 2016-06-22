@@ -46,24 +46,24 @@ var loadJsCoq;
 
     loadJsCoq = function(base_path) {
 
-        loadCss(base_path + 'css/coq-log');
-        loadCss(base_path + 'external/CodeMirror/lib/codemirror');
-        loadCss(base_path + 'external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'external/CodeMirror/addon/hint/show-hint');
-        loadCss(base_path + 'css/coq-base');
-        loadCss(base_path + 'css/coq-light');
+        loadCss(base_path + 'ui-css/coq-log');
+        loadCss(base_path + 'ui-external/CodeMirror/lib/codemirror');
+        loadCss(base_path + 'ui-external/CodeMirror/theme/blackboard');
+        loadCss(base_path + 'ui-external/CodeMirror/theme/blackboard');
+        loadCss(base_path + 'ui-external/CodeMirror/addon/hint/show-hint');
+        loadCss(base_path + 'ui-css/coq-base');
+        loadCss(base_path + 'ui-css/coq-light');
 
-        var files = ['external/CodeMirror/lib/codemirror',
-                     'external/CodeMirror/mode/coq/coq',
-                     'external/CodeMirror/keymap/emacs',
-                     'external/CodeMirror/addon/hint/show-hint',
-                     'external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
-                     'external/d3.min',
-                     'js/cm-provider',
-                     'js/coq-packages',
-                     'js/coq-layout-classic',
-                     'js/coq-manager'];
+        var files = ['ui-external/CodeMirror/lib/codemirror',
+                     'ui-external/CodeMirror/mode/coq/coq',
+                     'ui-external/CodeMirror/keymap/emacs',
+                     'ui-external/CodeMirror/addon/hint/show-hint',
+                     'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
+                     'ui-external/d3.min',
+                     'ui-js/cm-provider',
+                     'ui-js/coq-packages',
+                     'ui-js/coq-layout-classic',
+                     'ui-js/coq-manager'];
 
         var files = files.map(file => base_path + file);
 

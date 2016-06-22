@@ -16,7 +16,7 @@ class PackageManager {
         dsel.data([pkg_info]);
 
         dsel.append('img')
-            .attr('src', this.base_path + 'images/dl.png')
+            .attr('src', this.base_path + 'ui-images/dl.png')
             .on('click', () => { this.startPackageDownload(); });
 
         dsel.append('span')
@@ -75,7 +75,7 @@ class PackageManager {
 
             var egg = bar
                 .append('img')
-                .attr('src', this.base_path + 'images/egg.png')
+                .attr('src', this.base_path + 'ui-images/egg.png')
                 .attr('class', 'progress-egg');
 
             this.bundles[bundle_name].bar = bar;
@@ -105,7 +105,7 @@ class PackageManager {
 
         row.select('.rel-pos').remove();
             row.select('img')
-                .attr('src', this.base_path + 'images/checked.png');
+                .attr('src', this.base_path + 'ui-images/checked.png');
     }
 }
 
@@ -136,7 +136,7 @@ class PackageDowloader {
 
         this.egg = this.bar
             .append('img')
-            .attr('src', 'images/egg.png')
+            .attr('src', 'ui-images/egg.png')
             .attr('class', 'progress-egg');
 
         var files_total_length = 0;
@@ -171,7 +171,7 @@ class PackageDowloader {
     finishDownload() {
         this.row.select('.rel-pos').remove();
         this.row.select('img')
-            .attr('src', 'images/checked.png');
+            .attr('src', 'ui-images/checked.png');
     }
 }
 

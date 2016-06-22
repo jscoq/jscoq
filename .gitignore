@@ -8,15 +8,9 @@
 coq-js/jscoq.js
 coq-tools/mklibfs
 coq-tools/mklibjson
-jsoo-util/jsoo_dl.js
-coq-toplevel/jscoqtop.js
-Makefile.libs
-coq-fs/
 coq-pkgs/
 local/
-bcache
-bcache.list
-bcache.stamp
-bc-*
 dist/
 dist-hott/
+index.html
+Makefile.libs

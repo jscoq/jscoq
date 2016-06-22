@@ -11,29 +11,24 @@ Authors: Emilio J. Gallego Arias
 Files: notes/*
 License: AGPL-3+ / CC-BY-SA 3.0 / LGPL-2.1+
 
-Files: jsoo_util/jsoo_dl.ml
-Files: coq-toplevel/jscoqtop.ml
-Comment: These files derive from js_of_ocaml, and are under the LGPL 2.1 or later
-License: LGPL-2.1+
-
-Files: images/checked.png
+Files: ui-images/checked.png
 License: CC-BY 3.0
 Comment:
   - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
 
-Files: images/dl.png
+Files: ui-images/dl.png
 License: CC-BY 3.0
 Comment: Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
 
-Files: images/power-button-512-black.png
+Files: ui-images/power-button-512-black.png
 License: CC-BY 3.0
 Comment: Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
 
-Files: images/log-*
+Files: ui-images/log-*
 License: BSD
 Comment: Log levels icons are from the firebug project, getfirebug.com, licensed under BSD License
 
-Files: images/*
+Files: ui-images/*
 License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.
 
@@ -41,18 +36,17 @@ Files: examples/Stlc.html
 LICENSE: BSD
 Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
 
-Files: external/*
+Files: ui-external/*
 Comment: The frameworks in external, pace, codemirror, etc... are under their
          own licence, see the directories for more details.
-
 
 # Regarding Coq and derivatives:
 
 We currently have no "direct derivative" from Coq, which is under the
 LGPL 2.1, however:
 
-  - js_jcoq.ml was based on Coq's source at some point.
+  - jscoq.ml was based on Coq's source at some point.
 
-  - quite a bit of the Ocaml code is tightly integrated with Coq so it
-    could be considered to derive from it.
+  - the Ocaml code in icoq.ml is tightly integrated with Coq, it could
+    be considered to derive from it.
 

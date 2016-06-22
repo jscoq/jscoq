@@ -39,17 +39,17 @@ class CoqLayoutClassic {
       </div>
       <div class="exits">
         <a href="http://feever.fr/" target="_blank">
-          <img src="${base_path}/images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
+          <img src="${base_path}/ui-images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
                style="vertical-align: middle"/>
         </a>
         <a href="https://github.com/ejgallego/jscoq">Readme @ GitHub</a>
       </div> <!-- /#exits -->
       <span id="buttons">
-        <img src="${base_path}/images/up.png" width="21" height="24"
+        <img src="${base_path}/ui-images/up.png" width="21" height="24"
              alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/>
-        <img src="${base_path}/images/down.png" width="21" height="25"
+        <img src="${base_path}/ui-images/down.png" width="21" height="25"
              alt="Down (Meta-N)" title="Down (Meta-N)" name="down"/>
-        <img src="${base_path}/images/to-cursor.png" width="38" height="24"
+        <img src="${base_path}/ui-images/to-cursor.png" width="38" height="24"
              alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
       </span>
     </div> <!-- /#toolbar -->
