@@ -213,7 +213,7 @@ instructions to build JsCoq yourself.
   Debian/Ubuntu), then run:
 
   ```
-$ cp -a opam/4.03.0+32bit ~/.opam/compilers/4.03.0/
+$ cp -a etc/opam/4.03.0+32bit ~/.opam/compilers/4.03.0/
 $ ./toolchain-setup.sh
   ```
 
@@ -291,8 +291,8 @@ $ make -f Makefile.addons $TARGET
   For the second step, edit the `config.mk` file to select the
   packages you want to install, and call `./build.sh` again.
 
-  A patch optimizing mathcomp loading times can be found in the patch
-  folder, highly recommended.
+  A patch optimizing mathcomp loading times can be found in the `etc/patch`
+  folder, it is highly recommended.
 
 ## Commit tag conventions [work in progress]:
 
@@ -306,4 +306,4 @@ $ make -f Makefile.addons $TARGET
 
 ## Documents
 
-See the `notes/` directory for some random notes about the project.
+See the `etc/notes/` directory for some random notes about the project.
