@@ -69,7 +69,3 @@ module Options : sig
   (** [set_int_option opt val] Sets integer option to val. *)
   val set_int_option : int t -> int -> unit
 end
-
-
-
-

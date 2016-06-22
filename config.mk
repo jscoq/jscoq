@@ -3,6 +3,9 @@ COQDIR=~/external/coq-git-32/
 
 # Addons to build
 ADDONS =
+# Woking on coq-8.6:
+# ADDONS += ssr-libs dsp sf cpdt
+# Woking on coq-8.5:
 # ADDONS += ssr-libs mtac coquelicot flocq tlc color sf cpdt hott dsp relalg unimath plugin-utils cel mirror-core
 
 # Have in every add-on a make jscoq target? We could certainly

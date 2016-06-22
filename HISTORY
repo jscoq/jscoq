@@ -9,8 +9,8 @@
 + JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - [ ] Work on UI layout.
-  - [x] Static compilation of cma/cmo. (thanks @hhugo)
+  - [ ] UI layout.
+  - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6.
   - [x] Migrated to ppx for jsoo syntax.
 
@@ -20,8 +20,7 @@
 -------------------------------------
 
   - Port to Ocaml 4.03.0.
-  - Port to Ocaml 4.03.0
-  - Fast package loading using TypedArrays. (thanks @gasche @hhugo)
+  - Fast package loading using TypedArrays. (thanks @gasche @hhugo).
   - Many small fixes.
 
   Released on: 13/06/2016

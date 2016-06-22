@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott
+.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force
 
 include config.mk
 
@@ -25,6 +25,11 @@ coq-tools:
 
 # XXX FIXME
 # Compile all cmo/cma in coq-pkgs
+plugin-list: force
+	find coq-pkgs \( -name *.cma -or -name *.cmo \) -fprintf plugin-list "%p.js:\n"
+
+# | cmp -s - $@ || tee plugin-list
+
 plugin-comp: $(addsuffix .js,$(shell find coq-pkgs \( -name *.cma -or -name *.cmo \)))
 
 ########################################################################
@@ -35,7 +40,7 @@ coq-pkgs:
 	mkdir -p coq-pkgs
 
 # It depends on coq-tools, but coq-tools is linked with the 32bit thing...
-Makefile.libs: coq-tools/dftlibs.ml coq-tools/mklibfs.ml
+Makefile.libs: coq-tools/mklibfs
 	./coq-tools/mklibfs > Makefile.libs
 
 # Build Coq libraries
