@@ -36,7 +36,12 @@ class CmCoqProvider {
             this.editor = CodeMirror(element, cmOpts);
         }
 
-        this.editor.on('change', evt => this.onCMChange(evt));
+        this.editor.on('change', evt => this.onCMChange(evt) );
+        // From XQuery-CM
+        CodeMirror.on(this.editor.getWrapperElement(), "mouseenter",
+                      evt => this.onCMMouseEnter(this.editor, evt));
+        CodeMirror.on(this.editor.getWrapperElement(), "mouseleave",
+                      evt => this.onCMMouseLeave(this.editor, evt));
     }
 
     focus() {
@@ -161,6 +166,39 @@ class CmCoqProvider {
             this.onInvalidate(marks[0].stm);
         }
     }
+
+    // If a mark is present, request contextual information.
+    onCMMouseEnter(editor,evt) {
+
+        var doc   = editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+
+        // We assume that the cursor is positioned in the change.
+        if (marks.length === 1) {
+            // XXX: Notify of the latest mark.
+            this.onMouseEnter(marks[0].stm);
+        } else if (marks.length > 1) {
+            console.log("Trying the first mark of", marks.length);
+            this.onMouseEnter(marks[0].stm);
+        }
+    }
+
+    // Notification of leaving the mark.
+    onCMMouseLeave(editor,evt) {
+
+        var doc   = editor.getDoc();
+        var marks = doc.findMarksAt(doc.getCursor());
+
+        // We assume that the cursor is positioned in the change.
+        if (marks.length === 1) {
+            // XXX: Notify of the latest mark.
+            this.onMouseLeave(marks[0].stm);
+        } else if (marks.length > 1) {
+            console.log("Trying the first mark of", marks.length);
+            this.onMouseLeave(marks[0].stm);
+        }
+    }
+
 
     // CM specific functions.
 

@@ -53,6 +53,8 @@ class ProviderContainer {
 
             // Track invalidate
             cm.onInvalidate = smt => { this.onInvalidate(smt); };
+            cm.onMouseEnter = smt => { this.onMouseEnter(smt); };
+            cm.onMouseLeave = smt => { this.onMouseLeave(smt); };
 
             // XXX: We use a strong assumption for now: the cursor is
             // at the invalid region, so we just do goCursor().
@@ -188,6 +190,18 @@ class CoqManager {
             }, 100);
         };
 
+        this.provider.onMouseEnter = stm => {
+            if (stm.coq_sid) {
+                console.log("Requested goals info:", this.goals[stm.coq_sid]);
+            } else {
+                console.log("Weird, info for stm but not coq_sid", stm);
+            }
+        };
+
+        this.provider.onMouseLeave = stm => {
+            console.log("leave");
+        };
+
         this.waitForPkgs = [];
 
         var coq_script = this.options.base_path +
@@ -200,6 +214,8 @@ class CoqManager {
     setupCoq() {
 
         this.coq      = jsCoq;
+
+        this.goals    = [];
 
         // Keybindings setup
         document.addEventListener('keydown', evt => this.keyHandler(evt));
@@ -532,9 +548,15 @@ class CoqManager {
             this.provider.cursorToStart(stm);
 
         // Tell coq to go back to the old state.
-        this.sid.pop();
-        this.coq.edit(this.sid.last());
-        this.layout.update_goals(this.coq.goals());
+        let sid_old  = this.sid.pop();
+        let sid_last = this.sid.last();
+
+        stm.coq_sid = null;
+        this.coq.edit(sid_last);
+
+        this.goals[sid_old]  = null;
+        this.goals[sid_last] = this.coq.goals();
+        this.layout.update_goals(this.goals[sid_last]);
 
     }
 
@@ -587,8 +609,12 @@ class CoqManager {
                 this.provider.mark(next, "clear");
                 this.provider.mark(next, "ok");
 
+                // We store the coq_sid in the sentence.
+                next.coq_sid = nsid;
+
                 // Print goals
-                this.layout.update_goals(this.coq.goals());
+                this.goals[nsid] = this.coq.goals();
+                this.layout.update_goals(this.goals[nsid]);
 
                 if(update_focus)
                     this.provider.cursorToEnd(next);
