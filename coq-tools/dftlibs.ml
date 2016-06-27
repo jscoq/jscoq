@@ -17,6 +17,7 @@ let plugin_list =
   ; ["Coq"; "omega"]
   ; ["Coq"; "micromega"]
   ; ["Coq"; "romega"]
+  ; ["Coq"; "ssrmatching"]
   ]
 
 let coq_theory_list =
@@ -65,6 +66,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Init"]
     ; ["Coq"; "Bool"]
     ; ["Coq"; "Unicode"]
+    ; ["Coq"; "ssrmatching"]
     ; ["mathcomp"; "ssreflect"]
     ]
   ; "math-comp", [],

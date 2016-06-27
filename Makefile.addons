@@ -86,7 +86,7 @@ mtac: $(MTAC_DEST) $(MTAC_PLUG) $(MTAC_FILES)
 ########################################################################
 
 SSR_HOME=~/external/coq/math-comp/mathcomp/
-SSR_PLUG=$(SSR_HOME)/ssreflect.cma
+SSR_PLUG=$(SSR_HOME)/ssreflect_plugin.cmo
 
 SSR_DEST=coq-pkgs/mathcomp/ssreflect
 SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
@@ -96,7 +96,7 @@ $(SSR_DEST):
 	mkdir -p $(SSR_DEST)
 
 ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
-	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect.cma)
+	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect_plugin.cmo)
 	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
 
 SSR_ALG_DEST=coq-pkgs/mathcomp/algebra
