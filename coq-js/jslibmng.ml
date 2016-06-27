@@ -25,10 +25,10 @@ type cache_entry = {
 }
 
 (* Number of actual files ~ 2000 *)
-let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 500
+let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
 
 (* The cma resolving cache maps a cma module to its actual path. *)
-let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 100
+let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 103
 
 (* XXX This should be the serialization of the jslib.ml:coq_pkg, but
    waiting for JSON support *)
