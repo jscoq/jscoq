@@ -293,9 +293,9 @@ class CoqManager {
             var level = COQ_LOG_LEVELS.DEBUG;
             var msg = e.toString();
 
-            if(msg.indexOf('ErrorMsg:') != -1) {
+            if(msg.indexOf('Msg[Error]:') != -1) {
                 level = COQ_LOG_LEVELS.ERROR;
-                msg = msg.replace(/^.*ErrorMsg:/, '');
+                msg = msg.replace(/^.*Msg\[Error\]:/, '');
             }
             // XXX: This should go away.
             else if (msg.indexOf("pre-loading") != -1) {
@@ -310,9 +310,9 @@ class CoqManager {
                 level = COQ_LOG_LEVELS.INFO;
                 msg = msg.toString().replace(/^.*stdout:/, '');
             }
-            else if(msg.indexOf("Msg:") != -1) {
+            else if(msg.indexOf("Msg[") != -1) {
                 level = COQ_LOG_LEVELS.INFO;
-                msg = msg.toString().replace(/^.*Msg:/, '');
+                msg = msg.toString().replace(/^.*Msg\[.*\]:/, '');
             }
 
             else if(msg.indexOf("FileLoaded:") != -1) {

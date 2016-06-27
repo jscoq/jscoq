@@ -75,6 +75,14 @@ let setup_pseudo_fs () =
 (*   route : route_id;             (\* Extra routing info *\) *)
 (* } *)
 
+let string_of_lvl (lvl : Feedback.level) : string =
+  match lvl with
+  | Feedback.Debug   -> "Debug"
+  | Feedback.Info    -> "Info"
+  | Feedback.Notice  -> "Notice"
+  | Feedback.Warning -> "Warning"
+  | Feedback.Error   -> "Error"
+
 let string_of_feedback fb : string =
   let open Feedback in
   match fb with
@@ -82,7 +90,6 @@ let string_of_feedback fb : string =
     | Processed       -> "Processed."
     | Incomplete      -> "Incomplete."
     | Complete        -> "Complete."
-    | ErrorMsg(_l, s) -> "ErrorMsg: " ^ s
 
   (* STM optional data *)
     | ProcessingIn s       -> "ProcessingIn: " ^ s
@@ -100,7 +107,7 @@ let string_of_feedback fb : string =
     (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
     (* Old generic messages *)
-    | Message(_l, m) -> "Msg: " ^ Richpp.raw_print m
+    | Message(lvl, _loc, m) -> "Msg["^ (string_of_lvl lvl) ^"]: " ^ Richpp.raw_print m
     (* Richer printing needed in trunk. *)
     (* | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content) *)
 
