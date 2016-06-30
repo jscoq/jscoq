@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
+
+    <link rel="stylesheet" href="ui-external/bootstrap.min.css" />
+
+    <title>Use Coq in Your Browser: The Js Coq Theorem Prover Online IDE!</title>
+  </head>
+
+<body>
+  <div id="ide-wrapper" class="toggled">
+  <div id="code-wrapper">
+  <div id="document">
+  <div>
+    <h3>Welcome to the JsCoq Interactive Online System, worker version!</h3>
+    <p>
+      Go to the console to use the worker with the Coq object.
+    </p>
+  </div>
+  </div> <!-- /#document -->
+  </div> <!-- /#code-wrapper -->
+  </div> <!-- /#ide-wrapper -->
+
+  <script type="text/javascript">
+
+    /* Global reference */
+    var coq;
+
+    coq = new Worker('coq-js/jscoq_worker.js');
+    coq.onmessage = function(obj) { console.log("Received, ", obj.data); };
+
+  </script>
+</body>
+</html>

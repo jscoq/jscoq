@@ -2,13 +2,14 @@
 
 class PackageManager {
 
-    constructor(panel, base_path) {
+    constructor(panel, base_path, coq) {
         this.base_path = base_path;
         this.panel   = panel;
         this.bundles = {};
+        this.coq     = coq;
     }
 
-    addBundleInfo(pkg_info) {
+    addBundleInfo(bname, pkg_info) {
 
         var div  = document.createElement('div');
         var dsel = d3.select(div);
@@ -29,12 +30,13 @@ class PackageManager {
         var no_files = 0;
 
         for(var i = 0; i < pkgs.length; i++)
-            no_files += pkgs[i].no_files;
+            // pkgs[i].cma_files.length XXX
+            no_files += pkgs[i].vo_files.length;
 
         pkg_info.loaded = 0;
         pkg_info.total  = no_files;
 
-        this.bundles[desc] = { div: div, info: pkg_info };
+        this.bundles[bname] = { div: div, info: pkg_info };
 
     }
 
@@ -43,28 +45,28 @@ class PackageManager {
     startPackageDownload() {
 
         var row = d3.select(d3.event.target.parentNode);
-        jsCoq.add_pkg(row.datum().desc);
+
+        let bp = this.base_path + "../coq-pkgs/";
+        this.coq.sendCommand(["LoadPkg", bp, row.datum().desc]);
 
     }
 
     // In all the three cases below, evt = progressInfo
-    // bundle_name_    : string
-    // method pkg_name : string
-    // method loaded   : int
-    // method total    : int
+    // bundle : string
+    // pkg    : string
+    // loaded : int
+    // total  : int
 
-    onBundleStart(bundle_info) {
+    onBundleStart(bname) {
 
-        var bundle_name = bundle_info.desc;
-
-        var div  = this.bundles[bundle_name].div;
+        var div  = this.bundles[bname].div;
         // var row  = d3.select(this.panel).selectAll('div')
         //     .filter(pkg => pkg.desc === evt.bundle_name);
 
         // XXX: Workaround, in case this is called multiple times, add
         // the bar only the first time. We could be smarter.
 
-        if (! this.bundles[bundle_name].bar ) {
+        if (! this.bundles[bname].bar ) {
 
             var row  = d3.select(div);
 
@@ -78,17 +80,21 @@ class PackageManager {
                 .attr('src', this.base_path + 'ui-images/egg.png')
                 .attr('class', 'progress-egg');
 
-            this.bundles[bundle_name].bar = bar;
-            this.bundles[bundle_name].egg = egg;
+            this.bundles[bname].bar = bar;
+            this.bundles[bname].egg = egg;
         }
     }
 
 
     onPkgProgress(evt) {
 
-        var info = this.bundles[evt.bundle_name].info;
-        var bar  = this.bundles[evt.bundle_name].bar;
-        var egg  = this.bundles[evt.bundle_name].egg;
+        // We get rid of the start notification.
+        if(!this.bundles[evt.bundle].bar)
+            this.onBundleStart(evt.bundle);
+
+        var info = this.bundles[evt.bundle].info;
+        var bar  = this.bundles[evt.bundle].bar;
+        var egg  = this.bundles[evt.bundle].egg;
 
         var progress = ++info.loaded / info.total;
         var angle    = (progress * 360 * 15) % 360;
@@ -96,11 +102,10 @@ class PackageManager {
         bar.style('width', progress * 100 + '%');
     }
 
-    onBundleLoad(bundle_info) {
+    onBundleLoad(bundle) {
 
-        var bundle_name = bundle_info.desc;
-        var info = this.bundles[bundle_name].info;
-        var div  = this.bundles[bundle_name].div;
+        var info = this.bundles[bundle].info;
+        var div  = this.bundles[bundle].div;
         var row  = d3.select(div);
 
         row.select('.rel-pos').remove();

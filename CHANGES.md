@@ -1,12 +1,23 @@
-# JsCoq 0.9 "The idea kills the idea"
++ JsCoq 1.0 ((())((()()(()))((()()))))
+--------------------------------------
+
+  - [ ] Move to sertop.
+  - [ ] UI layout.
+  - [x] Worker support.
+
+  Released on: 
+
++ JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
   - [x] Use Dune as build system
-  - [x] Support for Coq 8.9
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
-  - [x] Support for Coq 8.6.
+  - [x] Support for Coq 8.6/8.7/8.8/8.9.
   - [x] Migrated to ppx for jsoo syntax.
-  - [x] Port to Ocaml 4.04.0.
+  - [x] Port to Ocaml 4.06.1
+  - [x] Port to JSOO 3.1.0
+  - [x] Full support for SF.
+  - [x] Many small fixes.
 
   Released on: 
 

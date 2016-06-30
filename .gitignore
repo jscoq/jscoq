@@ -5,7 +5,7 @@
 *.cmt
 *.cmti
 .AppleDouble
-coq-js/jscoq.js
+coq-js/jscoq_worker.js
 coq-tools/mklibfs
 coq-tools/mklibjson
 coq-pkgs/

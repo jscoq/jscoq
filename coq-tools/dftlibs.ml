@@ -6,7 +6,6 @@ let prefix  = "coq-pkgs"
 let plugin_list =
   [ ["Coq"; "ltac"]
   ; ["Coq"; "syntax"]
-  ; ["Coq"; "decl_mode"]
   ; ["Coq"; "cc"]
   ; ["Coq"; "firstorder"]
   ; ["Coq"; "setoid_ring"]
@@ -61,7 +60,6 @@ let pkgs : (string * string list * string list list) list=
   [ "init", [],
     [ ["Coq"; "ltac"]
     ; ["Coq"; "syntax"]
-    ; ["Coq"; "decl_mode"]
     ; ["Coq"; "cc"]
     ; ["Coq"; "firstorder"]
     ; ["Coq"; "extraction"]
