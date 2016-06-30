@@ -93,7 +93,7 @@ jscoq32: jscoq.byte
 # Compilation to JS
 
 JSDIR=../coq-libjs/
-JSFILES=$(addprefix $(JSDIR),mutex.js unix.js coq_vm.js)
+JSFILES=$(addprefix $(JSDIR),mutex.js unix.js str.js coq_vm.js)
 
 # the --toplevel was previously used, but --dynlink option seems to
 # work equally fine, which one should we use? What about --nocmis,
