@@ -9,63 +9,48 @@
 (* Coq Interface to be used by JavaScript Ocaml code. Parts based in
    the coq source code.
 
-   By Emilio J. Gallego Arias, Mines ParisTech, Paris.
+   Copyright (C) 2016-2017 Emilio J. Gallego Arias, Mines ParisTech, Paris.
 *)
 
-open Feedback
-
 (* Init options for coq *)
-type init_opts = {
+type async_flags = {
+  enable_async : string option;
+  async_full   : bool;
+  deep_edits   : bool;
+}
 
-  (* callback to load cma files *)
-  ml_load    : string -> unit;
+type coq_opts = {
 
   (* callback to handle async feedback *)
-  fb_handler : feedback -> unit;
+  fb_handler : Feedback.feedback -> unit;
 
+  (* Initial LoadPath XXX: Use the coq_pkg record? *)
+  iload_path   : Mltop.coq_path list;
+
+  (* Libs to require prior to STM init *)
+  require_libs : (string * string option * bool option) list;
+
+  (* Async flags *)
+  aopts        : async_flags;
+
+  (* name of the top-level module *)
+  top_name     : string;
+
+  (* callback to load cma/cmo files *)
+  ml_load    : string -> unit;
+
+  (* Enable debug mode *)
+  debug    : bool;
 }
 
 (** [init opts] Initialize the Coq engine *)
-val init : init_opts -> Stateid.t
+val coq_init : coq_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)
-val version : string * string * string * string
+val version : string * string * string * string * int
 
-(** [add_load_path qid path has_ml] associate a coq package namespace
-    [qid] to a [path], register for ml searching *)
-val add_load_path : string list -> string -> bool -> unit
-
-(** [add_to_doc sid eid cmd] Add [cmd] to the doc [sid] with edit_id
-    [eid] and returns the new doc's stateid. Note that [add_to_doc] doesn't
-    force Coq to process the new parts of the document, see [commit] *)
-val add_to_doc : Stateid.t -> string -> Stateid.t
-
-(** [edit_doc sid] moves the tip of the document to [sid], discarding
-    all edits added after [sid] *)
-val edit_doc : Stateid.t -> unit
-
-(** [commit sid] commit the changes to the current document. It will
-    produce an exception in case of error. *)
-val commit_doc : Stateid.t -> unit
-
-(** [query sid cmd] Executes a command without changing the state. *)
-val query : Stateid.t -> string -> unit
-
-(** [string_or_goals ()] returns a string representing the current goals  *)
-val string_of_goals : unit -> string
+(** [richpp_of_goals ()] returns a pp representing the current goals  *)
+val pp_of_goals : unit -> Pp.t (* Proof.pre_goals *)
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit
-
-module Options : sig
-  type 'a t
-
-  (* Printing depth *)
-  val print_width  : int  t
-
-  (** [set_bool_option opt val] Sets bool option to val. *)
-  val set_bool_option : bool t -> bool -> unit
-
-  (** [set_int_option opt val] Sets integer option to val. *)
-  val set_int_option : int t -> int -> unit
-end

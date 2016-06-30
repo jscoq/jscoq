@@ -91,7 +91,7 @@ class CmCoqProvider {
         if (marks.length) {
             return marks[0].stm;
         } else {
-            return null
+            return null;
         }
         // } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
     }

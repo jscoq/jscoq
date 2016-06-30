@@ -6,6 +6,6 @@ B .
 S ../coq-external/coq-v8.8+32bit/**
 B ../coq-external/coq-v8.8+32bit/**
 
-PKG lwt js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson
+PKG lwt js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson ppx_import ppx_deriving_yojson
 EXT lwt
 

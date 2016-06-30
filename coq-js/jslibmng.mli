@@ -1,5 +1,5 @@
 (* JsCoq
- * Copyright (C) 2015 Emilio Gallego / Mines ParisTech
+ * Copyright (C) 2016 Emilio Gallego / Mines ParisTech
  *
  * LICENSE: GPLv3+
  *)
@@ -10,52 +10,31 @@
  * loading in the browser.
 *)
 
-open Js
-
-(* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)
-class type pkgInfo = object
-  method name        : js_string t writeonly_prop
-  method desc        : js_string t writeonly_prop
-  method no_files_   : int         writeonly_prop
-end
-
-class type bundleInfo = object
-  method desc        : js_string t            writeonly_prop
-  method deps        : js_string t js_array t writeonly_prop
-  method pkgs        : pkgInfo   t js_array t writeonly_prop
-end
-
-class type progressInfo = object
-  method bundle_name_ : js_string t writeonly_prop
-  method pkg_name_    : js_string t writeonly_prop
-  method loaded       : int         writeonly_prop
-  method total        : int         writeonly_prop
-end
-
-(* Global Callbacks *)
-type pkg_callbacks = {
-  bundle_info     : bundleInfo t -> unit;
-  bundle_start    : bundleInfo t -> unit;
-  bundle_load     : bundleInfo t -> unit;
-  pkg_start    : progressInfo t -> unit;
-  pkg_progress : progressInfo t -> unit;
-  pkg_load     : progressInfo t -> unit;
+type progress_info = {
+  bundle : string;
+  pkg    : string;
+  loaded : int;
+  total  : int;
 }
 
-(** [init callback lib_path pkg_callbacks available_pkg init_pkgs]
-    gather package list [available_pkg] and start preloading
-    [init_pkgs] from directory [lib_path], calls [callback] when
-    done. *)
-val init : (unit -> unit) -> pkg_callbacks ->
-  js_string t ->
-  js_string t js_array t -> js_string t js_array t -> unit
+type lib_event =
+  | LibInfo     of string * Jslib.coq_bundle (* Information about the bundle, we could well put the json here *)
+  | LibProgress of progress_info             (* Information about loading progress *)
+  | LibLoaded   of string                    (* Bundle [pkg] is loaded *)
 
-(** [load_pkg pkg_file] load package [file], returns the total number
-    of packages *)
-val load_pkg : string -> unit
+type out_fn = lib_event -> unit
+
+(** [info_pkg out_fn base_path lib_path pkgs] gathers package list [pkgs] from
+    directory [lib_path], emits events using [out_fn].  *)
+val info_pkg : out_fn -> string -> string list -> unit Lwt.t
+
+(** [load_pkg base_path pkg_file] loads package [pkg_file] *)
+val load_pkg : out_fn -> string -> string -> Jslib.coq_bundle Lwt.t
+(** [info_pkg lib_path available_pkg ] gather package list
+    [available_pkg] from directory [lib_path] *)
 
 (** [coq_resource_req url] query the manager's cache for object [url] *)
 val coq_vo_req  : string -> string option
 
-(** [coq_cma_req cma] load the [cma] file or else do nothing *)
-val coq_cma_req : string -> unit
+(** [coq_cma_link cma] dynlinks the bytecode plugin [cma] *)
+val coq_cma_link : string -> unit

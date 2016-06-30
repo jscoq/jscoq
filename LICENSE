@@ -3,7 +3,7 @@ Upstream-Name: jsCoq
 Upstream-Contact: Emilio J. Gallego Arias <e+jscoq@x80.org>
 Source: https://github.com/ejgallego/jscoq
 License: AGPL-3+
-Copyright: 2015, MINES ParisTech
+Copyright: 2015--2016, MINES ParisTech
 
 Authors: Emilio J. Gallego Arias
          Benoît Pin

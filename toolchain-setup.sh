@@ -4,7 +4,7 @@
 
 JS_OF_OCAML_DIR=~/external/js_of_ocaml
 
-JSCOQ_DEPS="num ocamlfind camlp5 js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson ppx_deriving_yojson ppx_tools_versioned ppx_deriving"
+JSCOQ_DEPS="num ocamlfind camlp5 js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson ppx_deriving_yojson ppx_import"
 
 VERB=
 # VERB=-vv

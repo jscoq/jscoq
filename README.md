@@ -1,7 +1,7 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.8)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=js-worker)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
@@ -164,6 +164,7 @@ the constructor:
 * `wrapper_id`: id of the div where to attach the panel.
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `prelude: bool`: Whether to load Coq's prelude or not.
+* `implicit_libs`: Whether to make the initial libraries path implicit (that is to say, no `From Coq` etc... required)
 
 ## Homotopy Type Theory
 

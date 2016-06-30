@@ -1,16 +1,21 @@
-/* do not modify order */
-#query-panel .debug {
-  display: none;
+/* FIXME: do not modify order */
+#query-panel .Error {
+  background: url('../ui-images/log-error.png') no-repeat;
 }
 
-#query-panel .info {
-  background: url('../ui-images/log-info.png') no-repeat;
-}
-
-#query-panel .warn {
+#query-panel .Warning {
   background: url('../ui-images/log-warn.png') no-repeat;
 }
 
-#query-panel .error {
-  background: url('../ui-images/log-error.png') no-repeat;
+#query-panel .Notice {
+  background: url('../ui-images/log-info.png') no-repeat;
 }
+
+#query-panel .Info {
+  background: url('../ui-images/log-info.png') no-repeat;
+}
+
+#query-panel .Debug {
+  display: none;
+}
+

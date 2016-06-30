@@ -6,104 +6,56 @@
  * LICENSE: GPLv3+
  *)
 
-(* Library management for JsCoq
+(* Library management for Sertop_js/jsCoq
 
    Due to the large size of Coq libraries, we wnat to perform caching
    and lazy loading in the browser.
 *)
 open Jslib
 open Lwt
-open Js
 
-let cma_verb     = false
-let pkg_prefix   = ref ""
-let coq_pkgs_dir = "coq-pkgs/"
+let verb = false
 
-(* Main file_cache, indexed by url*)
+(* Main file_cache, indexed by url *)
 type cache_entry = {
-  (* vo_content is backed by a TypedArray now *)
-  file_content : string;
-  md5        : Digest.t;
+  file_content : string  ; (* file_content is backed by a TypedArray, thanks to @hhugo *)
+  md5          : Digest.t;
 }
 
-(* Number of actual files ~ 2000 *)
+(* Number of actual files in a full distribution ~ 2000 *)
 let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
 
-(* The cma resolving cache maps a cma module to its actual path. *)
+(* The cma resolver cache maps a cma module to its actual path. *)
 let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 103
 
-(* XXX This should be the serialization of the jslib.ml:coq_pkg, but
-   waiting for JSON support *)
-class type pkgInfo = object
-  method name        : js_string t writeonly_prop
-  method desc        : js_string t writeonly_prop
-  method no_files_   : int         writeonly_prop
-end
-
-class type bundleInfo = object
-  method desc        : js_string t            writeonly_prop
-  method deps        : js_string t js_array t writeonly_prop
-  method pkgs        : pkgInfo   t js_array t writeonly_prop
-end
-
-class type progressInfo = object
-  method bundle_name_ : js_string t writeonly_prop
-  method pkg_name_    : js_string t writeonly_prop
-  method loaded       : int         writeonly_prop
-  method total        : int         writeonly_prop
-end
-
-let mk_pkgInfo pkg : pkgInfo t =
-  let pi      = Js.Unsafe.obj [||]   in
-  pi##.name      := string @@ to_dir  pkg;
-  pi##.desc      := string @@ to_desc pkg;
-  pi##.no_files_ := no_files pkg;
-  pi
-
-
-let build_bundle_info bundle : bundleInfo t =
-  let bi      = Js.Unsafe.obj [||]   in
-  let bi_deps = Js.array @@ Array.of_list @@ List.map Js.string  bundle.deps in
-  let bi_pkgs = Js.array @@ Array.of_list @@ List.map mk_pkgInfo bundle.pkgs in
-  bi##.desc := string bundle.desc;
-  bi##.deps := bi_deps;
-  bi##.pkgs := bi_pkgs;
-  bi
-
-let mk_progressInfo bundle pkg number =
-  let pi           = Js.Unsafe.obj [||]   in
-  pi##.bundle_name_ := string bundle;
-  pi##.pkg_name_    := string @@ to_dir pkg;
-  pi##.total        := no_files pkg;
-  pi##.loaded       := number;
-  pi
-
-(* Global Callbacks *)
-type pkg_callbacks = {
-  bundle_info     : bundleInfo t -> unit;
-  bundle_start    : bundleInfo t -> unit;
-  bundle_load     : bundleInfo t -> unit;
-  pkg_start    : progressInfo t -> unit;
-  pkg_progress : progressInfo t -> unit;
-  pkg_load     : progressInfo t -> unit;
+type progress_info = {
+  bundle : string;
+  pkg    : string;
+  loaded : int;
+  total  : int;
 }
 
-let cb : pkg_callbacks ref = ref {
-  bundle_info  = (fun _ -> ());
-  bundle_start = (fun _ -> ());
-  bundle_load  = (fun _ -> ());
-  pkg_start    = (fun _ -> ());
-  pkg_progress = (fun _ -> ());
-  pkg_load     = (fun _ -> ());
-  }
+type lib_event =
+  | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
+  | LibProgress of progress_info        (* Information about loading progress *)
+  | LibLoaded   of string               (* Bundle [pkg] is loaded *)
 
-let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
+type out_fn = lib_event -> unit
+
+let is_bytecode file = Filename.(check_suffix file "cma" || check_suffix file "cmo")
+
+let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t =
   let open XmlHttpRequest                           in
   let open Lwt_xmlHttpRequest                       in
-  (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
-  let full_url    = base_url  ^ "/" ^ file          in
-  let request_url = !pkg_prefix ^ full_url          in
-  let cached      = Hashtbl.mem file_cache full_url in
+  if verb then Format.eprintf "preload_request: %s / %s\n%!" base_path base_url;
+
+  (* Cache the directory to workaround deficient Coq code *)
+  if is_bytecode file then Hashtbl.add cma_cache file base_url;
+  (* Load a js file for bytecode requests                           *)
+  let req_file    = file ^ (if is_bytecode file then ".js" else "") in
+  let full_url    = base_url  ^ "/" ^ file                          in
+  let request_url = base_path ^ "/" ^ base_url ^ "/" ^ req_file     in
+  let cached      = Hashtbl.mem file_cache full_url                 in
 
   (* Only reload if not cached or a refresh is requested *)
   if not cached || refresh then begin
@@ -115,162 +67,113 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
       frame.content
       (fun ()        -> ())
       (fun raw_array ->
-         (* Thanks to @hhugo *)
-         let vo_s = Typed_array.String.of_arrayBuffer raw_array in
          let cache_entry = {
-           file_content = vo_s;
+           file_content = Typed_array.String.of_arrayBuffer raw_array;
            md5          = Digest.string "";
-           (* md5        = Digest.string vo_s; *)
-           (* We used to do the md5 in the past, or we would eat memory too
-            * fast, the GC won't fire up, and the browser would crash!
-            * Misteries of JavaScript! Anyways, md5 is useful to debug
-            * downloads.
-            *)
          } in
-         if cma_verb then Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5);
+         if verb then Format.eprintf "cache_add_entry: %s\n%!" full_url;
          Hashtbl.add file_cache full_url cache_entry;
-         ()
-         (* Jslog.printf Jslog.jscoq_log "Cached %s [%d/%d/%d/%s]\n%!" full_url bl (u8arr##length)
-          *         (cache_entry.vo_content##length) (Digest.to_hex cache_entry.md5)
-          *)
+         (* Warm the file cache to workaround a deficient jsoo is_directory implementation *)
+         ignore(Sys.file_exists full_url);
       );
   Lwt.return_unit
   end
   else Lwt.return_unit
 
-(* We grab the `cma/cmo`.js version of the module, we also add it
-   to the path resolution cache: *)
-let preload_cma_file base_url (file, _hash) : unit Lwt.t =
-  let js_file = file ^ ".js"                in
-  preload_vo_file base_url (js_file, _hash) >>= fun () ->
-  if cma_verb then Format.eprintf "pre-loading cma file (%s, %s)\n%!" base_url js_file;
-  Hashtbl.add cma_cache file base_url;
-  Lwt.return_unit
-
-let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
+let preload_pkg ?(verb=false) out_fn base_path bundle pkg : unit Lwt.t =
   let pkg_dir = to_dir pkg                                           in
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = no_files pkg                                         in
   if verb then
     Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
-  !cb.pkg_start (mk_progressInfo bundle pkg 0);
-  let preload_vo_and_log nc i f =
-    preload_vo_file pkg_dir f >>= fun () ->
+  (* XXX: pkg_start, we don't emit an event here *)
+  let preload_and_log nc i f =
+    preload_file base_path pkg_dir f >>= fun () ->
     if verb then
       Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
-    !cb.pkg_progress (mk_progressInfo bundle pkg (i+nc+1));
+    out_fn (LibProgress { bundle; pkg = pkg_dir; loaded = i+nc+1; total = nfiles });
     Lwt.return_unit
   in
-  Lwt_list.iter_s (preload_cma_file pkg_dir) pkg.cma_files    >>= fun () ->
-  Lwt_list.iteri_s (preload_vo_and_log ncma) pkg.vo_files     >>= fun () ->
-  Icoq.add_load_path pkg.pkg_id pkg_dir (ncma > 0);
-  !cb.pkg_load (mk_progressInfo bundle pkg nfiles);
+  Lwt_list.iteri_s (preload_and_log 0   ) pkg.cma_files <&>
+  Lwt_list.iteri_s (preload_and_log ncma) pkg.vo_files  >>= fun () ->
+  (* We don't emit a package loaded event for now *)
+  (* out_fn (LibLoadedPkg bundle pkg); *)
   Lwt.return_unit
 
-(* Load a bundle *)
-let rec preload_from_file ?(verb=false) file =
+let parse_bundle base_path file : coq_bundle Lwt.t =
   let open Lwt_xmlHttpRequest in
-  let file_url = !pkg_prefix ^ file ^ ".json" in
+  let file_url = base_path ^ file ^ ".json" in
   get file_url >>= (fun res ->
-  (* XXX: Use _JSON.json??????? *)
-  let bundle = (match Jslib.coq_bundle_of_yojson
-                     (Yojson.Safe.from_string res.content)
-                with
-                | Result.Ok bundle -> bundle
-                | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
-                                      raise (Failure "JSON")))
-  in
-  let bundle_info = build_bundle_info bundle in
-  !cb.bundle_start bundle_info;
-  (* Load deps *)
-  Lwt_list.iter_p (preload_from_file ~verb:verb) bundle.deps <&>
-  Lwt_list.iter_p (preload_pkg  ~verb:verb file) bundle.pkgs     >>= fun () ->
-  !cb.bundle_load  bundle_info;
-  return_unit)
+      match Jslib.coq_bundle_of_yojson
+              (Yojson.Safe.from_string res.content) with
+      | Result.Ok bundle -> return bundle
+      | Result.Error s   -> Format.eprintf "JSON error in preload_from_file\n%!";
+                            Lwt.fail (Failure s)
+    )
 
-let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
-  let f_js = wrap_callback (fun p x _ _ -> f x >>= (fun () -> p)) in
-  l##(reduce_init f_js return_unit)
+(* Load a bundle *)
+let rec preload_from_file ?(verb=false) out_fn base_path file =
+  parse_bundle base_path file >>= (fun bundle ->
+  (* Load deps in paralell *)
+  Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps           <&>
+  Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path file) bundle.pkgs  >>= fun () ->
+  return @@ out_fn (LibLoaded file))
 
-let info_from_file file =
-  let open Lwt_xmlHttpRequest in
-  let file_url = !pkg_prefix ^ file ^ ".json" in
-  get file_url >>= fun res ->
-  let bundle = (match Jslib.coq_bundle_of_yojson
-                     (Yojson.Safe.from_string res.content)
-                with
-                | Result.Ok bundle -> bundle
-                | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
-                                       raise (Failure "JSON")))
-  in
-  return @@ !cb.bundle_info (build_bundle_info bundle)
+let info_from_file out_fn base_path file =
+  parse_bundle base_path file >>= (fun bundle ->
+  return @@ out_fn (LibInfo (file, bundle)))
 
-let init init_callback pkg_cb base_path all_pkgs init_pkgs =
-  cb         := pkg_cb;
-  pkg_prefix := to_string base_path ^ "/" ^ coq_pkgs_dir;
-  Lwt.async (fun () ->
-    iter_arr (fun x -> to_string x |> info_from_file)                all_pkgs  >>= fun () ->
-    iter_arr (fun x -> to_string x |> preload_from_file ~verb:false) init_pkgs >>= fun () ->
-    init_callback ();
-    return_unit
-  )
+let info_pkg out_fn base_path pkgs =
+  Lwt_list.iter_p (info_from_file out_fn base_path) pkgs
 
-let load_pkg pkg_file = Lwt.async (fun () ->
-    preload_from_file pkg_file >>= fun () ->
-    (* XXX: No notification for bundle loading *)
-    (* !cb.bundle_load pkg_file; *)
-    return_unit
-  )
+(* Hack *)
+let load_pkg out_fn base_path pkg_file =
+  preload_from_file out_fn base_path pkg_file >>= fun () ->
+  parse_bundle base_path pkg_file
 
 (* let _is_bad_url _ = false *)
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
-  if cma_verb then Format.eprintf "file %s requested\n%!" url; (* with category info *)
   (* if not @@ is_bad_url url then *)
-  try let c_entry = Hashtbl.find file_cache url in
-    (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
+  try
+    let c_entry = Hashtbl.find file_cache url in
     Some c_entry.file_content
   with
-    (* coq_vo_reg is also invoked throught the Sys.file_exists call
-     * in mltop:file_of_name function, a good example on how to be
-     * too smart for your own good $:-)
-     *
-     * Sadly coq only uses this information to determine if it will
-     * load a cmo/cma file, not to guess the path...
-     *)
-  | Not_found ->
-    (* We check vs the true filesystem, even if unfortunately the
-       cache has to be used in coq_cma_req below :(
+  | Not_found -> None
 
-       Maybe we can fix this pitfall for 8.7 :/
-    *)
-    (* Format.eprintf "check path %s\n%!" url; *)
-    if Filename.(check_suffix url "cma" || check_suffix url "cmo") then
-      let js_file = (url ^ ".js")    in
-      (* Format.eprintf "trying %s\n%!" js_file; *)
-      try let c_entry = Hashtbl.find file_cache js_file in
-        Some c_entry.file_content
-      with Not_found -> None
-    else None
+(* coq_vo_reg is also invoked throught the Sys.file_exists call
+ * in mltop:file_of_name function, a good example on how to be
+ * too smart for your own good $:-)
+ *
+ * Sadly coq only uses this information to determine if it will
+ * load a cmo/cma file, not to guess the path...
+ *)
 
-let coq_cma_req cma =
+let coq_vo_req url =
+  if verb then Format.eprintf "url %s requested\n%!" url; (* with category info *)
+  match coq_vo_req url with
+  | Some file -> Some file
+  | None ->
+    if verb then Format.eprintf "url request for %s FAILED\n%!" url; (* with category info *)
+    None
+
+let coq_cma_link cmo_file =
   let open Format in
-  if cma_verb then eprintf "bytecode file %s requested\n%!" cma;
-  try
-    let cma_path = Hashtbl.find cma_cache cma  in
-    (* Now, the js file should be in the file cache *)
-    let js_file = cma_path ^ "/" ^ cma ^ ".js" in
-    if cma_verb then eprintf "requesting load of %s\n%!" js_file;
-    try
-      let js_code = Hashtbl.(find file_cache js_file).file_content in
-      (* When eval'ed, the js_code will return a closure waiting for the
-         jsoo global object to link the plugin.
-      *)
-      Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global)
+  if verb then eprintf "bytecode file %s requested\n%!" cmo_file;
+  let cmo_file =
+    try Hashtbl.find cma_cache cmo_file ^ "/" ^ cmo_file
     with
     | Not_found ->
-      eprintf "cache inconsistecy for %s !! \n%!" cma;
+      eprintf "!! cache inconsistency for file %s\n%!" cmo_file;
+      cmo_file
+  in
+  try
+    let js_code = (Hashtbl.find file_cache cmo_file).file_content in
+    (* When eval'ed, the js_code will return a closure waiting for the
+       jsoo global object to link the plugin.
+    *)
+    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global)
   with
   | Not_found ->
-    eprintf "!! bytecode file %s not found in path\n%!" cma
+    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file

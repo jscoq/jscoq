@@ -17,7 +17,7 @@ env:
   global:
   - NJOBS=2
   # system is == 4.02.3
-  - COMPILER="4.06.0+32bit"
+  - COMPILER="4.06.1+32bit"
 
 install:
 - "[ -e .opam ] || opam init -j ${NJOBS} --compiler=${COMPILER} -n -y"
