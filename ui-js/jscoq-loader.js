@@ -19,7 +19,7 @@ var loadJs = function(js) {
             script.onload = resolve;
             document.head.appendChild(script);
         });
-    }
+    };
 };
 
 var loadJsCoq;
@@ -65,12 +65,11 @@ var loadJsCoq;
                      'ui-js/coq-layout-classic',
                      'ui-js/coq-manager'];
 
-        var files = files.map(file => base_path + file);
+        files = files.map(file => base_path + file);
 
         return files.reduce(function(prom, file) {
-            return prom.then(loadJs(file))
+            return prom.then(loadJs(file));
         }, Promise.resolve());
-
     };
 
 })();
