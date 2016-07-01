@@ -211,28 +211,26 @@ Incomplete list of places where jsCoq has been used:
 
 You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
-instructions to build JsCoq yourself.
+instructions to build JsCoq yourself, it is reasonably easy these days.
 
-* _warning_: The build process may take *more* than 8GiB of RAM.
-* First, you need a dual 32/64 bits Ocaml toolchain. Get a
-  recent opam and a multiarch gcc (`gcc-multilib` package in
-  Debian/Ubuntu), then run:
+* First, you need OPAM and a dual 32/64 bits Ocaml toolchain. Install
+  a recent opam and a multiarch gcc (`gcc-multilib` package in
+  Debian/Ubuntu), then running:
 
   ```
-$ cp -a etc/opam/4.03.0+32bit ~/.opam/compilers/4.03.0/
 $ ./toolchain-setup.sh
   ```
 
-  and it should do the trick.
+  should do the trick.
 
-  You can tweak some variables in the `build-common.sh` file.
+  You should tweak some variables in the `build-common.sh` file before proceeding.
 
 * Second, you need to build Coq v8.6:
 
   ```
 $ git clone https://github.com/coq/coq.git ~/external/coq-git-32
 $ cd ~/external/coq-git-32
-$ git checkout v8.6 # Or trunk at this moment.
+$ git checkout v8.6         # Or trunk at this moment.
 $ opam switch 4.03.0+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
