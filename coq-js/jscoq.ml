@@ -189,10 +189,10 @@ let jscoq_commit this sid =
     (* XXX: Careful with the difference between Stm.observe and Stm.finish XXX *)
     Icoq.commit_doc sid
   with
-    | Errors.UserError(_msg, _pp) ->
+    | CErrors.UserError(_msg, _pp) ->
        (* console.log *)
        ee ()
-    | Errors.AlreadyDeclared _pp ->
+    | CErrors.AlreadyDeclared _pp ->
        ee ()
     | _ ->
        ee ()
