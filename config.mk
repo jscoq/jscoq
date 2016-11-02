@@ -1,5 +1,5 @@
 # Directory where the coq sources are
-COQDIR=~/external/coq-git-32/
+COQDIR=~/external/coq-v8.6+32bit/
 
 # Addons to build
 ADDONS =

@@ -85,7 +85,7 @@ mtac: $(MTAC_DEST) $(MTAC_PLUG) $(MTAC_FILES)
 # Addons: ssreflect                                                    #
 ########################################################################
 
-SSR_HOME=~/external/coq/math-comp/mathcomp/
+SSR_HOME=~/external/coq/math-comp-32/mathcomp/
 SSR_PLUG=$(SSR_HOME)/ssreflect_plugin.cmo
 
 SSR_DEST=coq-pkgs/mathcomp/ssreflect
