@@ -9,9 +9,14 @@ for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Tr
 The goal of this project is to open new UI/interaction possibilites,
 and to improve the acessibility of the platform itself.
 
-We support Chrome (>= 48) and Firefox (>= 45). JsCoq is written in
-ES2015, thus any standard-compliant browser should work.
+JsCoq is written in ES2015, thus any standard-compliant browser should
+work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
 JsCoq also runs in my 4-years old Galaxy Nexus.
+
+However `StackOverflow` exceptions are sometimes a problem, the **recommended
+platform** is Chrome Beta with the
+[chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
+flag enabled; this setup greatly alleviates the problem.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
@@ -31,11 +36,12 @@ From Coq Require Import List.Lists.
 
 #### Development version
 
-The preview release of jsCoq 0.9 for Coq 8.6 is available at:
+A preview release of jsCoq 0.9 for Coq 8.6 is available at:
 
 <https://x80.org/rhino-trunk/>
 
-See below for different versions, including a HoTT-enabled one.
+Note this link is not stable. See below for different versions,
+including a HoTT-enabled one.
 
 ### Collacoq
 
