@@ -85,7 +85,7 @@ jscoq.byte: $(COQDEPS) jscoq.cmo
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
 	   -package str,dynlink,threads,camlp5,camlp5.gramlib                     \
 	   $(JSOOFLAGS) $(COQOBJS)                                                \
-           jslib.cmo icoq.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
+           +nums.cma jslib.cmo icoq.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
 
