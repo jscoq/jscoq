@@ -158,8 +158,10 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp', 'mtac',
                         'coq-base', 'coq-arith', 'coq-reals',
-                        'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
-                        'plugin-utils', 'extlib', 'mirrorcore']
+                        'coquelicot', 'flocq', 'sf', 'cpdt' ]
+            // Disabled on 8.6
+            // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
+            // 'plugin-utils', 'extlib', 'mirrorcore']
         };
 
         this.options = copyOptions(options, this.options);

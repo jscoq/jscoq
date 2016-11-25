@@ -30,12 +30,12 @@ val to_desc : coq_pkg -> string
 val no_files : coq_pkg -> int
 
 (* JSON handling *)
-open Yojson.Basic
+open Yojson.Safe
 
 (* XXX Use PPX *)
-val pkg_to_json : coq_pkg -> json
-val json_to_pkg : json -> coq_pkg
+val coq_pkg_to_yojson : coq_pkg -> json
+val coq_pkg_of_yojson : json -> (coq_pkg, string) Result.result
 
-val bundle_to_json : coq_bundle -> json
-val json_to_bundle : json -> coq_bundle
+val coq_bundle_to_yojson : coq_bundle -> json
+val coq_bundle_of_yojson : json -> (coq_bundle, string) Result.result
 

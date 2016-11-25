@@ -51,10 +51,10 @@ ifeq "${JSCOQ_DEBUG}" "yes"
 CAMLDEBUG+=-g
 endif
 
-CAMLWARN=-w @a-44-45
+CAMLWARN=-w @a-39-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
-JSOOFLAGS=-package js_of_ocaml.ppx,yojson
+JSOOFLAGS=-package js_of_ocaml.ppx,yojson,ppx_deriving_yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli

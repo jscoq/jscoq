@@ -17,6 +17,7 @@ let plugin_list =
   ; ["Coq"; "omega"]
   ; ["Coq"; "micromega"]
   ; ["Coq"; "romega"]
+  ; ["Coq"; "nsatz"]
   ; ["Coq"; "ssrmatching"]
   ]
 
@@ -107,16 +108,25 @@ let pkgs : (string * string list * string list list) list=
   ; "mtac", ["coq-arith"],
     [ ["Mtac"]
     ]
+
   ; "coq-reals", ["coq-arith"],
     [ ["Coq"; "fourier"]
     ; ["Coq"; "omega"]
     ; ["Coq"; "micromega"]
+    ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"] ]
+
   ; "coquelicot", ["coq-reals"],
     [ [ "Coquelicot" ] ]
+
   ; "flocq", ["coq-reals"],
-    [ ["Coq"; "romega"]
-    ; [ "Flocq" ; "Core" ] ]
+    [ [ "Coq"   ; "romega"]
+    ; [ "Flocq" ; "Core" ]
+    ; [ "Flocq" ; "Appli" ]
+    ; [ "Flocq" ; "Calc" ]
+    ; [ "Flocq" ; "Translate" ]
+    ; [ "Flocq" ; "Prop" ] ]
+
   ; "tlc", ["coq-reals"],
     [ ["TLC"] ]
   ; "sf", ["coq-reals"],
@@ -254,6 +264,9 @@ let pkgs : (string * string list * string list list) list=
     ; ["UniMath" ; "Foundations" ; "NumberSystems" ]
     ; ["UniMath" ; "Dedekind" ]
     ]
+
+  ; "peacoq", [ "init" ],
+    [ ["PeaCoq"] ]
 
   ; "extlib", [ "coq-reals" ],
     [ ["ExtLib"]

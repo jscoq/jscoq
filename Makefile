@@ -84,11 +84,11 @@ HOTT_FILES=hott-init.json hott.json HoTT
 HOTT_SRC_FILES=$(addprefix $(BUILDDIR)/coq-pkgs/,$(HOTT_FILES))
 
 dist-hott:
-	rsync -ap $(BUILDDIR)/ $(BUILDDIR_HOTT)
+	rsync -av $(BUILDDIR)/ $(BUILDDIR_HOTT)
 	rm -rf $(BUILDDIR_HOTT)/coq-pkgs/*
-	rsync -ap $(HOTT_SRC_FILES) $(BUILDDIR_HOTT)/coq-pkgs/
-	rsync -ap $(HOTT_COQLIB) $(BUILDDIR_HOTT)/coq-pkgs/Coq
-	rsync -ap $(BUILDDIR)/coq-pkgs/Coq/syntax $(BUILDDIR_HOTT)/coq-pkgs/Coq/
+	rsync -av $(HOTT_SRC_FILES) $(BUILDDIR_HOTT)/coq-pkgs/
+	rsync -av $(HOTT_COQLIB) $(BUILDDIR_HOTT)/coq-pkgs/Coq
+	rsync -av $(BUILDDIR)/coq-pkgs/Coq/syntax $(BUILDDIR_HOTT)/coq-pkgs/Coq/
 	cp -a newhott.html $(BUILDDIR_HOTT)/newide.html
 
 ########################################################################

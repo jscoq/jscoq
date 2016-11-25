@@ -1,47 +1,54 @@
+.PHONY: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
 
 # Makefile for addons
+include config.mk
 
 # XXX: Move to a common makefile
 all:
 
-all-addons: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
+all-addons: ssr-libs coquelicot flocq mtac tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
 
-# XXX: We should include the common addon makefile thing.
+ifndef VERBOSE
+.SILENT:
+endif
+
+# Sync Commands
+
+# SYNC=rsync -av --filter='+ **.vo' --filter='+ **.cmo' --filter='+ **.cma' --filter='- **'
+SYNC=rsync -avq
+SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
 
 ########################################################################
 # Addons: coq-plugins-utils                                            #
 ########################################################################
-PU_HOME=~/external/coq/coq-plugin-utils
+PU_HOME=$(ADDONS_PATH)/coq-plugin-utils
 PU_DEST=coq-pkgs/PluginUtils
+
+PU_PLUG=$(PU_HOME)/src/plugin_utils.cmo
 
 $(PU_DEST):
 	mkdir -p $(PU_DEST)
 
-PU_PLUG=$(PU_HOME)/src/plugin_utils.cmo
-
 plugin-utils: $(PU_DEST)
-	$(shell cp -a $(PU_PLUG) $(PU_DEST))
-	rsync -ap $(wildcard $(PU_HOME)/theories/*.vo) $(PU_DEST)/
+	$(SYNC)   $(PU_PLUG) $(PU_DEST)
+	$(SYNCVO) $(PU_HOME)/theories/ $(PU_DEST)
 
 ########################################################################
 # Addons: coq-ext-lib                                                  #
 ########################################################################
-EXTLIB_HOME=~/external/coq/coq-ext-lib/
+EXTLIB_HOME=$(ADDONS_PATH)/coq-ext-lib/
 EXTLIB_DEST=coq-pkgs/ExtLib
 
 $(EXTLIB_DEST):
 	mkdir -p $(EXTLIB_DEST)
 
-EXTLIB_MODULES=$(addprefix $(EXTLIB_HOME)/theories/,Core Data Generic Programming Recur Relations Structures Tactics)
-# EXTLIB_MODULES=$(addprefix $(EXTLIB_HOME)/theories/,Core Data Data/Eq Data/Monads Data/Graph Data/Map Data/Monads Data/Set Generic Programming Recur Relations Structures Tactics)
 extlib: $(EXTLIB_DEST)
-	rsync -ap $(wildcard $(EXTLIB_HOME)/theories/*.vo) $(EXTLIB_DEST)/
-	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(EXTLIB_MODULES) $(EXTLIB_DEST)
+	$(SYNCVO) $(EXTLIB_HOME)/theories/ $(EXTLIB_DEST)
 
 ########################################################################
 # Addons: mirror-core                                                  #
 ########################################################################
-MC_HOME=~/external/coq/mirror-core/
+MC_HOME=$(ADDONS_PATH)/mirror-core
 MC_DEST=coq-pkgs/MirrorCore
 MCEX_DEST=coq-pkgs/McExamples
 
@@ -52,204 +59,148 @@ $(MCEX_DEST):
 	mkdir -p $(MCEX_DEST)
 
 MC_PLUG=$(MC_HOME)/src/reify_Lambda_plugin.cma
-MC_MODULES=$(addprefix $(MC_HOME)/theories/,Lambda MTypes Reify RTac Subst syms Util Views)
 
 mirror-core: $(MC_DEST) $(MCEX_DEST)
-	$(shell cp -a $(MC_PLUG) $(MC_DEST))
-	rsync -ap $(wildcard $(MC_HOME)/theories/*.vo) $(MC_DEST)/
-	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(MC_MODULES) $(MC_DEST)
-	rsync -ap --exclude='*.v' --exclude='*.aux'	    	        \
-	  --exclude='*.glob' --exclude='*.d' --exclude='*.timing'	\
-	  $(MC_HOME)/examples/ $(MCEX_DEST)/
+	$(SYNC) $(MC_PLUG) $(MC_DEST)
+	$(SYNCVO) $(MC_HOME)/theories/ $(MC_DEST)
+	$(SYNCVO) $(MC_HOME)/examples/ $(MCEX_DEST)
 
 ########################################################################
 # Addons: mtac                                                         #
 ########################################################################
 
-MTAC_HOME=~/external/coq/mtac-plugin/
-MTAC_PLUG=$(MTAC_HOME)/src/mtac.cma
-
+MTAC_HOME=$(ADDONS_PATH)/mtac-plugin
 MTAC_DEST=coq-pkgs/Mtac
-MTAC_FILES=$(wildcard $(MTAC_HOME)/theories/*.vo)
+
+MTAC_PLUG=$(MTAC_HOME)/src/mtac.cma
 
 # XXX: Use a pattern rule!
 $(MTAC_DEST):
 	mkdir -p $(MTAC_DEST)
 
-mtac: $(MTAC_DEST) $(MTAC_PLUG) $(MTAC_FILES)
-	$(shell cp -a $(MTAC_PLUG) $(MTAC_DEST)/mtac.cma)
-	$(shell for i in $(MTAC_FILES); do cp -a $$i $(MTAC_DEST)/`basename $$i`; done)
-
+mtac: $(MTAC_DEST)
+	-$(SYNC) $(MTAC_PLUG) $(MTAC_DEST)/mtac.cma
+	$(SYNCVO) $(MTAC_HOME)/ $(MTAC_DEST)
 
 ########################################################################
 # Addons: ssreflect                                                    #
 ########################################################################
 
-SSR_HOME=~/external/coq/math-comp-32/mathcomp/
+SSR_HOME=$(ADDONS_PATH)/math-comp-32/mathcomp
 SSR_PLUG=$(SSR_HOME)/ssreflect_plugin.cmo
 
 SSR_DEST=coq-pkgs/mathcomp/ssreflect
-SSR_FILES=$(wildcard $(SSR_HOME)/ssreflect/*.vo)
+MATHCOMP_DEST=coq-pkgs/mathcomp/
 
 # XXX: Use a pattern rule!
 $(SSR_DEST):
 	mkdir -p $(SSR_DEST)
 
-ssr: $(SSR_DEST) $(SSR_PLUG) $(SSR_FILES)
-	$(shell cp -a $(SSR_PLUG) $(SSR_DEST)/ssreflect_plugin.cmo)
-	$(shell for i in $(SSR_FILES); do cp -a $$i $(SSR_DEST)/`basename $$i`; done)
-
-SSR_ALG_DEST=coq-pkgs/mathcomp/algebra
-SSR_ALG_FILES=$(wildcard $(SSR_HOME)/algebra/*.vo)
-
-$(SSR_ALG_DEST):
-	mkdir -p $(SSR_ALG_DEST)
-
-ssr-alg: $(SSR_ALG_DEST) $(SSR_ALG_FILES)
-	$(shell for i in $(SSR_ALG_FILES); do cp -a $$i $(SSR_ALG_DEST)/`basename $$i`; done)
-
-SSR_FIN_DEST=coq-pkgs/mathcomp/fingroup
-SSR_FIN_FILES=$(wildcard $(SSR_HOME)/fingroup/*.vo)
-
-$(SSR_FIN_DEST):
-	mkdir -p $(SSR_FIN_DEST)
-
-ssr-fin: $(SSR_FIN_DEST) $(SSR_FIN_FILES)
-	$(shell for i in $(SSR_FIN_FILES); do cp -a $$i $(SSR_FIN_DEST)/`basename $$i`; done)
-
-SSR_SOL_DEST=coq-pkgs/mathcomp/solvable
-SSR_SOL_FILES=$(wildcard $(SSR_HOME)/solvable/*.vo)
-
-$(SSR_SOL_DEST):
-	mkdir -p $(SSR_SOL_DEST)
-
-ssr-sol: $(SSR_SOL_DEST) $(SSR_SOL_FILES)
-	$(shell for i in $(SSR_SOL_FILES); do cp -a $$i $(SSR_SOL_DEST)/`basename $$i`; done)
-
-SSR_FLD_DEST=coq-pkgs/mathcomp/field
-SSR_FLD_FILES=$(wildcard $(SSR_HOME)/field/*.vo)
-
-$(SSR_FLD_DEST):
-	mkdir -p $(SSR_FLD_DEST)
-
-ssr-fld: $(SSR_FLD_DEST) $(SSR_FLD_FILES)
-	$(shell for i in $(SSR_FLD_FILES); do cp -a $$i $(SSR_FLD_DEST)/`basename $$i`; done)
-
-ssr-libs: ssr ssr-alg ssr-fin ssr-sol ssr-fld
+ssr-libs: $(SSR_DEST)
+	$(SYNC) $(SSR_PLUG) $(SSR_DEST)
+	$(SYNCVO) $(SSR_HOME)/ $(MATHCOMP_DEST)
 
 ########################################################################
 # Addons: coquelicot                                                   #
 ########################################################################
 
-COQCOT_HOME=~/external/coq/coquelicot
+COQCOT_HOME=$(ADDONS_PATH)/coquelicot
 COQCOT_DEST=coq-pkgs/Coquelicot
-COQCOT_FILES=$(wildcard $(COQCOT_HOME)/theories/*.vo)
 
 $(COQCOT_DEST):
 	mkdir -p $(COQCOT_DEST)
 
-coquelicot: $(COQCOT_DEST) $(COQCOT_FILES)
-	$(shell for i in $(COQCOT_FILES); do cp -a $$i $(COQCOT_DEST)/`basename $$i`; done)
+coquelicot: $(COQCOT_DEST)
+	$(SYNCVO) $(COQCOT_HOME)/theories/ $(COQCOT_DEST)
 
 ########################################################################
 # Addons: flocq                                                        #
 ########################################################################
 
-# XXX: Must make a generic method for this
-FLOCQ_HOME=~/external/coq/flocq/
-FLOCQ_DEST=coq-pkgs/Flocq/Core
-FLOCQ_FILES=$(wildcard $(FLOCQ_HOME)/src/Core/*.vo)
+FLOCQ_HOME=$(ADDONS_PATH)/flocq/src
+FLOCQ_DEST=coq-pkgs/Flocq/
 
 $(FLOCQ_DEST):
 	mkdir -p $(FLOCQ_DEST)
 
-flocq: $(FLOCQ_DEST) $(FLOCQ_FILES)
-	$(shell for i in $(FLOCQ_FILES); do cp -a $$i $(FLOCQ_DEST)/`basename $$i`; done)
+flocq: $(FLOCQ_DEST)
+	$(SYNCVO) $(FLOCQ_HOME)/ $(FLOCQ_DEST)
 
 ########################################################################
 # Addons: HoTT                                                        #
 ########################################################################
 
 # XXX: Must make a generic method for this
-HOTT_HOME=~/external/HoTT/
+HOTT_HOME=$(ADDONS_PATH)/HoTT
 HOTT_DEST=coq-pkgs/HoTT
 
 $(HOTT_DEST):
 	mkdir -p $(HOTT_DEST)
 
-HOTT_MODULES=$(addprefix $(HOTT_HOME)/theories/,Algebra categories Basics Comodalities hit Modalities Spaces Tactics Types)
 hott: $(HOTT_DEST)
-	rsync -ap $(wildcard $(HOTT_HOME)/theories/*.vo) $(HOTT_DEST)/
-	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' $(HOTT_MODULES) $(HOTT_DEST)
+	$(SYNCVO) $(HOTT_HOME)/ $(HOTT_DEST)
 
 ########################################################################
 # Addons: UniMath                                                      #
 ########################################################################
 
-# XXX: Must make a generic method for this
-UNIM_HOME=~/external/coq/UniMath/
+UNIM_HOME=$(ADDONS_PATH)/UniMath/
 UNIM_DEST=coq-pkgs/UniMath
 
 $(UNIM_DEST):
 	mkdir -p $(UNIM_DEST)
 
 unimath: $(UNIM_DEST)
-	rsync -ap --exclude='*.v' --exclude='*.aux' --exclude='*.glob' --exclude='*.d' --exclude='*.timing' \
-		--exclude='.package' --exclude='README.md' $(UNIM_HOME)/UniMath/ $(UNIM_DEST)
+	$(SYNCVO) $(UNIM_HOME)/ $(UNIM_DEST)
 
 ########################################################################
 # Addons: tlc                                                        #
 ########################################################################
 
 # XXX: Must make a generic method for this
-TLC_HOME=~/external/coq/tlc/src
+TLC_HOME=$(ADDONS_PATH)/tlc/src
 TLC_DEST=coq-pkgs/TLC
-TLC_FILES=$(wildcard $(TLC_HOME)/*.vo)
 
 $(TLC_DEST):
 	mkdir -p $(TLC_DEST)
 
-tlc: $(TLC_DEST) $(TLC_FILES)
-	$(shell for i in $(TLC_FILES); do cp -a $$i $(TLC_DEST)/`basename $$i`; done)
+tlc: $(TLC_DEST)
+	$(SYNCVO) $(TLC_HOME)/ $(TLC_DEST)
 
 ########################################################################
 # Addons: dsp                                                          #
 ########################################################################
 
 # XXX: Must make a generic method for this
-DSP_HOME=~/external/coq/dsp
+DSP_HOME=$(ADDONS_PATH)/dsp
 DSP_DEST=coq-pkgs/Dsp
-DSP_FILES=$(wildcard $(DSP_HOME)/*.vo)
 
 $(DSP_DEST):
 	mkdir -p $(DSP_DEST)
 
-dsp: $(DSP_DEST) $(DSP_FILES)
-	$(shell for i in $(DSP_FILES); do cp -a $$i $(DSP_DEST)/`basename $$i`; done)
+dsp: $(DSP_DEST)
+	$(SYNCVO) $(DSP_HOME)/ $(DSP_DEST)
 
 ########################################################################
 # Addons: SF                                                           #
 ########################################################################
 
 # XXX: Must make a generic method for this
-SF_HOME=~/external/coq/sf/
+SF_HOME=$(ADDONS_PATH)/sf/
 SF_DEST=coq-pkgs/SF
-SF_FILES=$(wildcard $(SF_HOME)/*.vo)
 
 $(SF_DEST):
 	mkdir -p $(SF_DEST)
 
-sf: $(SF_DEST) $(SF_FILES)
-	$(shell for i in $(SF_FILES); do cp -a $$i $(SF_DEST)/`basename $$i`; done)
+sf: $(SF_DEST)
+	$(SYNCVO) $(SF_HOME)/ $(SF_DEST)
 
 ########################################################################
 # Addons: Cpdt                                                         #
 ########################################################################
 
 # Warning NON-FREE
-
-# XXX: Must make a generic method for this
-CPDT_HOME=~/external/coq/cpdt/
+CPDT_HOME=$(ADDONS_PATH)/cpdt/
 CPDT_DEST=coq-pkgs/Cpdt
 # CPDT_FILES=$(wildcard $(CPDT_HOME)/src/*.vo)
 
@@ -260,41 +211,38 @@ $(CPDT_DEST):
 	mkdir -p $(CPDT_DEST)
 
 cpdt: $(CPDT_DEST) $(CPDT_FILES)
-	$(shell for i in $(CPDT_FILES); do cp -a $$i $(CPDT_DEST)/`basename $$i`; done)
+	echo "Updating $<"
+	$(SYNC) $(CPDT_FILES) $(CPDT_DEST)
 
 ########################################################################
 # Addons: ColoR                                                        #
 ########################################################################
 
 # XXX: Must make a generic method for this
-COLOR_HOME=~/external/coq/CoLoR-8.5/color/
-COLOR_DEST=coq-pkgs/
-TMPDIR=/tmp/
-JSCOQ_DIR=~/research/jscoq/coq-pkgs/
+COLOR_HOME=$(ADDONS_PATH)/CoLoR-8.5/color/
+COLOR_DEST=coq-pkgs/CoLoR
 
-color:
-	cd $(COLOR_HOME); make install DSTROOT=$(TMPDIR)
-	rm -rf $(JSCOQ_DIR)/CoLoR
-	mv /tmp/home/egallego/external/coq-git-32/user-contrib/CoLoR/ $(JSCOQ_DIR)/
+color: $(COLOR_DEST)
+	$(SYNCVO) $(COLOR_HOME) $(COLOR_DEST)
 
 ########################################################################
 # Addons: relalg                                                       #
 ########################################################################
 
-relalg:
-RELALG_HOME=~/external/coq/relation-algebra-1.4/
+RELALG_HOME=$(ADDONS_PATH)/relation-algebra-1.4/
 RELALG_DEST=coq-pkgs/RelationAlgebra
-RELALG_FILES=$(wildcard $(RELALG_HOME)/*.vo)
 RELALG_CMA=$(addprefix $(RELALG_HOME), ra_common.cmo kat_reification.cma ra_fold.cmo mrewrite.cmo ra_reification.cmo)
 
 $(RELALG_DEST):
 	mkdir -p $(RELALG_DEST)
 
 relalg: $(RELALG_DEST) $(RELALG_FILES)
-	$(shell for i in $(RELALG_FILES); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
-	$(shell for i in $(RELALG_CMA); do cp -a $$i $(RELALG_DEST)/`basename $$i`; done)
+	$(SYNC) $(RELALG_CMA) $(RELALG_DEST)
+	$(SYNCVO) $(RELALG_HOME) $(RELALG_DEST)
 
-JOBS=8
+########################################################################
+# Build helpers                                                        #
+########################################################################
 
 all-build-clean:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true

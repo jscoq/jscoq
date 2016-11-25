@@ -169,10 +169,12 @@ let rec preload_from_file ?(verb=false) file =
   let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= (fun res ->
   (* XXX: Use _JSON.json??????? *)
-  let bundle = try Jslib.json_to_bundle
-                     (Yojson.Basic.from_string res.XmlHttpRequest.content)
-               with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
-                            raise (Failure "JSON"))
+  let bundle = (match Jslib.coq_bundle_of_yojson
+                     (Yojson.Safe.from_string res.XmlHttpRequest.content)
+                with
+                | Result.Ok bundle -> bundle
+                | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
+                                      raise (Failure "JSON")))
   in
   let bundle_info = build_bundle_info bundle in
   !cb.bundle_start bundle_info;
@@ -189,10 +191,12 @@ let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
 let info_from_file file =
   let file_url = !pkg_prefix ^ file ^ ".json" in
   XmlHttpRequest.get file_url >>= fun res ->
-  let bundle = try Jslib.json_to_bundle
-                     (Yojson.Basic.from_string res.XmlHttpRequest.content)
-               with | _ -> (Format.eprintf "JSON error in preload_from_file\n%!";
-                            raise (Failure "JSON"))
+  let bundle = (match Jslib.coq_bundle_of_yojson
+                     (Yojson.Safe.from_string res.XmlHttpRequest.content)
+                with
+                | Result.Ok bundle -> bundle
+                | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
+                                       raise (Failure "JSON")))
   in
   return @@ !cb.bundle_info (build_bundle_info bundle)
 

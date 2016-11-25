@@ -5,7 +5,7 @@
  *)
 
 open Format
-open Yojson.Basic
+open Yojson.Safe
 
 module Dl = Dftlibs
 
@@ -51,7 +51,8 @@ let build_pkg (pkg, deps, p_mod) =
                  deps = deps;
                  pkgs = p_mod;
                } in
-  let json   = bundle_to_json bundle               in
+  let json   = coq_bundle_to_yojson bundle         in
+
   fprintf ofmt "%s\n" @@ pretty_to_string json;
   close_out out
 
