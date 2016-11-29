@@ -241,7 +241,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["HoTT" ; "categories"; "SetCategory"; "Functors"]
     ; ["HoTT" ; "categories"; "Structure"]
     ; ["HoTT" ; "Comodalities"]
-    ; ["HoTT" ; "hit"]
+    ; ["HoTT" ; "HIT"]
     ; ["HoTT" ; "Modalities"]
     ; ["HoTT" ; "Spaces"]
     ; ["HoTT" ; "Tactics"]

@@ -138,7 +138,7 @@ $(HOTT_DEST):
 	mkdir -p $(HOTT_DEST)
 
 hott: $(HOTT_DEST)
-	$(SYNCVO) $(HOTT_HOME)/ $(HOTT_DEST)
+	$(SYNCVO) $(HOTT_HOME)/theories/ $(HOTT_DEST)
 
 ########################################################################
 # Addons: UniMath                                                      #
