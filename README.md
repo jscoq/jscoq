@@ -13,7 +13,7 @@ JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
 JsCoq also runs in my 4-years old Galaxy Nexus.
 
-However `StackOverflow` exceptions are sometimes a problem, the **recommended
+`StackOverflow` exceptions are sometimes a problem, the **recommended
 platform** is Chrome Beta with the
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
 flag enabled; this setup greatly alleviates the problem.
@@ -40,8 +40,14 @@ A preview release of jsCoq 0.9 for Coq 8.6 is available at:
 
 <https://x80.org/rhino-trunk/>
 
-Note this link is not stable. See below for different versions,
-including a HoTT-enabled one.
+Note that the version in this link is usually not stable.
+
+Previous Coq versions such as 8.5 can be accessed as:
+
+<https://x80.org/rhino-coq/v8.5/>
+
+etc... In the future we may provide builds corresponding to particular hashes.
+See below for more jsCoq versions, including one adapted to HoTT.
 
 ### Collacoq
 
@@ -84,6 +90,11 @@ the constructor:
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 
+### Homotopy Type Theory
+
+jsCoq supports the HoTT library which requires a special build of Coq,
+an online version is at: https://x80.org/rhino-hott/
+
 ### Examples
 
 The main page includes a proof of the infinitude of primes by
@@ -97,7 +108,7 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 - Mtac: The Mtac tutorial by Beta Zilliani:
 
-  https://x80.org/rhino-coq/examples/mtac_tutorial.html
+  https://x80.org/rhino-coq/v8.5/examples/mtac_tutorial.html
 
 - Stlc: The "Simply Typed Lambda Calculus" chapter from Software
   Foundations by Benjamin Pierce et al:
@@ -111,22 +122,17 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 - MirrorCore:
   - A simple demo:
-    https://x80.org/rhino-coq/examples/mirrorcore.html
+    https://x80.org/rhino-coq/examples/v8.5/mirrorcore.html
   - A demo of developing a cancellation algorithm for commutative
     monoids:
-    https://x80.org/rhino-coq/examples/mirror-core-rtac-demo.html
-
-### Homotopy Type Theory
-
-jsCoq supports the HoTT library which requires a special build of Coq,
-an online version is at: https://x80.org/rhino-hott/
+    https://x80.org/rhino-coq/examples/v8.5/mirror-core-rtac-demo.html
 
 ### Serialization
 
-JsCoq will support serialization to Json or Sexps for Coq's internal
-data structures, but this effort has been split to an independent
-development. See https://github.com/ejgallego/coq-serapi for more
-information.
+JsCoq used to support serialization to Json or Sexps for Coq's
+internal data structures, but this effort has been split to an
+independent development. See https://github.com/ejgallego/coq-serapi
+for more information.
 
 ### CoqDoc
 
@@ -158,6 +164,7 @@ you can post to the list using nntp.
 
 * Clearing the browser cache may solve lots of issues.
 * Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
+* Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
 
 ## Contributing ##
 
@@ -199,8 +206,13 @@ Incomplete list of places where jsCoq has been used:
 
 * Coq Winter School 2016: “Advanced Software Verification And Computer Proof”. _Sophia Antipolis_
   https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+* Coq Winter School 2016-2017 (SSReflect & MathComp) “Advanced
+  Software Verification And Computer Proof”. _Sophia Antipolis_
+  https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016-2017/
 * Mathematical Components, an Introduction, _Satellite workshop of the ITP 2016 conference_, August 27th, Nancy, France
   https://github.com/math-comp/wiki/wiki/tutorial-itp2016
+* Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
+* School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
 
 ### jsCoq in the press
 
