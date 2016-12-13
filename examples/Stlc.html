@@ -222,6 +222,8 @@ THE SOFTWARE.
 </h2>
 </div>
 <div><textarea id='coq-ta-5'>
+Require Import SF.Maps.
+Require Import SF.Smallstep.
 Require Import SF.Types.
 
 Module STLC.
@@ -250,11 +252,6 @@ Inductive tm : Type :=
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm.
 
-Tactic Notation "t_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "tvar" | Case_aux c "tapp"
-  | Case_aux c "tabs" | Case_aux c "ttrue"
-  | Case_aux c "tfalse" | Case_aux c "tif" ].
 </textarea></div>
 <div><p>
 Note that an abstraction <tt>λ x:T.t</tt> (formally, <tt>tabs</tt> <tt>x</tt> <tt>T</tt> <tt>t</tt>) is
@@ -451,9 +448,9 @@ Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x' =>
-      if eq_id_dec x x' then s else t
+      if beq_id x x' then s else t
   | tabs x' T t1 =>
-      tabs x' T (if eq_id_dec x x' then t1 else ([x:=s] t1))
+      tabs x' T (if beq_id x x' then t1 else ([x:=s] t1))
   | tapp t1 t2 =>
       tapp ([x:=s] t1) ([x:=s] t2)
   | ttrue =>
@@ -572,12 +569,6 @@ Inductive step : tm -> tm -> Prop :=
       (tif t1 t2 t3) ==> (tif t1' t2 t3)
 
 where "t1 '==>' t2" := (step t1 t2).
-
-Tactic Notation "step_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "ST_AppAbs" | Case_aux c "ST_App1"
-  | Case_aux c "ST_App2" | Case_aux c "ST_IfTrue"
-  | Case_aux c "ST_IfFalse" | Case_aux c "ST_If" ].
 
 Hint Constructors step.
 
@@ -733,36 +724,11 @@ Proof.
     <quote>typing context</quote> -- a mapping from variables to their types. <p>
  We hide the definition of partial maps in a module since it is
     actually defined in <tt>SfLib</tt>. </div>
-<div><textarea id='coq-ta-30'>
-Module PartialMap.
-
-Definition partial_map (A:Type) := id -> option A.
-
-Definition empty {A:Type} : partial_map A := (fun _ => None).
-</textarea></div>
 <div><p>
 Informally, we'll write <tt>Gamma,</tt> <tt>x:T</tt> for <quote>extend the partial
     function <tt>Gamma</tt> to also map <tt>x</tt> to <tt>T</tt>.</quote>  Formally, we use the
     function <tt>extend</tt> to add a binding to a partial map. </div>
 <div><textarea id='coq-ta-31'>
-Definition extend {A:Type} (Gamma : partial_map A) (x:id) (T : A) :=
-  fun x' => if eq_id_dec x x' then Some T else Gamma x'.
-
-Lemma extend_eq : forall A (ctxt: partial_map A) x T,
-  (extend ctxt x T) x = Some T.
-Proof.
-  intros. unfold extend. rewrite eq_id. auto.
-Qed.
-
-Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
-  x2 <> x1 ->
-  (extend ctxt x2 T) x1 = ctxt x1.
-Proof.
-  intros. unfold extend. rewrite neq_id; auto.
-Qed.
-
-End PartialMap.
-
 Definition context := partial_map ty.
 </textarea></div>
 <div><p>
@@ -809,7 +775,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma x = Some T ->
       Gamma ⊢ tvar x \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      extend Gamma x T11 ⊢ t12 \in T12 ->
+      update Gamma x T11 ⊢ t12 \in T12 ->
       Gamma ⊢ tabs x T11 t12 \in TArrow T11 T12
   | T_App : forall T11 T12 Gamma t1 t2,
       Gamma ⊢ t1 \in TArrow T11 T12 ->
@@ -829,11 +795,6 @@ where "Gamma '⊢' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
-Tactic Notation "has_type_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "T_Var" | Case_aux c "T_Abs"
-  | Case_aux c "T_App" | Case_aux c "T_True"
-  | Case_aux c "T_False" | Case_aux c "T_If" ].
 </textarea></div>
 <div><p>
 <h3>
@@ -969,7 +930,7 @@ End STLC.
                   'coq-ta-17',  'coq-ta-18',  'coq-ta-20',
                   'coq-ta-21',  'coq-ta-22',  'coq-ta-23',  'coq-ta-24',
                   'coq-ta-25',  'coq-ta-26',  'coq-ta-27',
-                  'coq-ta-30',  'coq-ta-31',  'coq-ta-32',
+                  'coq-ta-31',  'coq-ta-32',
                   'coq-ta-33',  'coq-ta-34',  'coq-ta-35',  'coq-ta-36',
                   'coq-ta-37',  'coq-ta-38',  'coq-ta-39'];
 </script>

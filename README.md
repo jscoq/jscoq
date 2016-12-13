@@ -122,10 +122,10 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 - MirrorCore:
   - A simple demo:
-    https://x80.org/rhino-coq/examples/v8.5/mirrorcore.html
+    https://x80.org/rhino-coq/v8.5/examples/mirrorcore.html
   - A demo of developing a cancellation algorithm for commutative
     monoids:
-    https://x80.org/rhino-coq/examples/v8.5/mirror-core-rtac-demo.html
+    https://x80.org/rhino-coq/v8.5/examples/mirror-core-rtac-demo.html
 
 ### Serialization
 
@@ -194,7 +194,7 @@ Please consider supporting the development of CodeMirror with a donation.
 
 ## Contact & Sponsorship ##
 
-![FEEVER Logo](/images/feever-logo.png?raw=true "Feever Logo")
+![FEEVER Logo](/ui-images/feever-logo.png?raw=true "Feever Logo")
 
 jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
 
