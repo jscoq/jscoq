@@ -22,13 +22,13 @@
     </p>
     <h4>Instructions:</h4>
     <p>
-      jsCoq is open source. If you find any problem or want to make
+      JsCoq is open source. If you find any problem or want to make
       any contribution you are extremely welcome! We await your
       feedback at <a href="https://github.com/ejgallego/jscoq">github</a>.
     </p>
     <p>
       The current version requires Chrome >= 48 or Firefox >=
-      45. Below, we provide an example of jsCoq, go to <a href="https://x80.org/collacoq/">CollaCoq</a> if
+      45. Below, we provide an example of JsCoq, go to <a href="https://x80.org/collacoq/">CollaCoq</a> if
       you want a page with Save/Load capabilities.
     </h4>
 
@@ -36,7 +36,7 @@
     <p>
       <strong>Alt-Enter</strong> (Cmd should work in Macs too) goes to
       the current point; <strong>Alt-N/P</strong> or <strong>Alt-Down/Up</strong> will
-      move through the proof; <strong>F8</strong> or the power icon toogles
+      move through the proof; <strong>F8</strong> or the power icon toggles
       the goal panel.
     </p>
     <h4>A First Example: The Infinitude of Primes</h4>
@@ -62,7 +62,7 @@ Unset Printing Implicit Defensive. </textarea>
   <div>
     <h4>Ready to do Proofs!</h4>
     <p>
-      Once the basic enviroment has been setup, we can proceed to
+      Once the basic environment has been setup, we can proceed to
       do the proof:
     </p>
   </div> <!-- panel-heading -->
@@ -78,31 +78,32 @@ Lemma prime_above m : {p | m < p & prime p}. </textarea>
 Proof.
 have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textarea>
       <p>
-        As we are working in constructive mathematics, we will
-        actually construct the actual prime number p greater than m.
-        Which would be a suitable p? As we will shortly see, the first
-        prime divisor of m! + 1 will fit the bill.
+        In constructive mathematics, to show existence of an object we
+        need to acutally construct it, thus we will provide an actual
+        prime number `p` greater than `m`. What would be a suitable p?
+        The first prime divisor of m! + 1 will work in this case.
       </p>
 
       <p>
-        We first use the lemma `pdivP`, that states that every number
-        is divided by a prime. We obtain hypotheses `pr_p : prime p`
-        and `p_dv_m1` "p divides m! + 1".
+        First, we use the library-provided lemma `pdivP`, stating that
+        every number is divided by a prime. Thus, we obtain a number
+        `p` and the corresponding hypotheses `pr_p : prime p` and
+        `p_dv_m1` "p divides m! + 1".
       </p>
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
     <p>
-      The last step is to prov that p is indeed greater than m. We use
-      contraposition with the divisor hypothesis, proving that if p <=
-      m, then p cannot be a prime divisor of m! + 1.
+      To conclude, we to prove that `p` is greater than `m`. We reason
+      by contraposition of the divisor hypothesis. This gives us the
+      goal if `p <= m` then `p` is not a prime divisor of `m! + 1`.
     </p>
     <textarea id="prime_above4" >
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.</textarea>
   <p>
-    This follows from basic properties of divisibilty, plus the fact
-    that p < m, divides m!, but p prime cannot divide 1, a necessary
-    condition for p to divide m! + 1.
+    The result follows from basic properties of divisibility, plus the
+    fact that if `p < m`, then `p` divides `m!`, but `p` prime cannot
+    divide 1, a necessary condition for `p` to divide `m! + 1`.
   </p>
   <p>
     jsCoq provides many other packages, including most of Coq's
