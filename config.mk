@@ -7,7 +7,7 @@ COQDIR=~/external/coq-v8.6+32bit/
 # Addons to build
 ADDONS =
 # Woking on coq-8.6:
-# ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott
+# ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott color
 # Woking on coq-8.5:
 # ADDONS += ssr-libs mtac coquelicot flocq tlc color sf cpdt hott dsp relalg unimath plugin-utils cel mirror-core
 

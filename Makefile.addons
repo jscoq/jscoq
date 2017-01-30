@@ -219,8 +219,11 @@ cpdt: $(CPDT_DEST) $(CPDT_FILES)
 ########################################################################
 
 # XXX: Must make a generic method for this
-COLOR_HOME=$(ADDONS_PATH)/CoLoR-8.5/color/
+COLOR_HOME=$(ADDONS_PATH)/CoLoR-8.6/color/
 COLOR_DEST=coq-pkgs/CoLoR
+
+$(COLOR_DEST):
+	mkdir -p $(COLOR_DEST)
 
 color: $(COLOR_DEST)
 	$(SYNCVO) $(COLOR_HOME) $(COLOR_DEST)
@@ -245,37 +248,37 @@ relalg: $(RELALG_DEST) $(RELALG_FILES)
 ########################################################################
 
 all-build-clean:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake clean
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake clean || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make clean || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make clean
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make clean || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make clean
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make clean
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make clean
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make clean
 
 all-build: all-build-ssr all-build-std
 
 all-build-ssr:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make -j $(JOBS)          || true
 
 all-build-std:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make -j $(JOBS)          || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make -j $(JOBS) proof_vo || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make -j $(JOBS)          || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make || true
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make -j $(JOBS) proof_vo || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
+	# export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make || true
 
 
