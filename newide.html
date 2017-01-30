@@ -62,54 +62,62 @@ Unset Printing Implicit Defensive. </textarea>
   <div>
     <h4>Ready to do Proofs!</h4>
     <p>
-      Once the basic environment has been setup, we can proceed to
-      do the proof:
+      Once the basic environment has been set up, we can proceed to
+      the proof:
     </p>
   </div> <!-- panel-heading -->
   <div>
     <textarea id="prime_above1" >
 (* A nice proof of the infinitude of primes, by Georges Gonthier *)
-Lemma prime_above m : {p | m < p & prime p}. </textarea>
-      <p>
-        The lemma states that given a number m, there is a primer number
-        larger than m.
+Lemma prime_above m : {p | m < p & prime p}.
+Proof. </textarea>
+    <p>
+      The lemma states that given a number m, there is a primer number
+      larger than m.
+
+      Coq is a <em>constructive system</em>, which among other things
+      implies that to show the existence of an object, we need to
+      actually provide an algorithm that will construct it.
+
+      In this case, we need to find a prime number `p` greater than
+      `m`. What would be a suitable `p`?
+
+      Choosing as `p` the first prime divisor of `m! + 1` works.  As
+      we will shortly see, properties of divisibility will imply that
+      `p` is greater than `m`.
       </p>
       <textarea id="prime_above2" >
-Proof.
 have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textarea>
       <p>
-        In constructive mathematics, to show existence of an object we
-        need to acutally construct it, thus we will provide an actual
-        prime number `p` greater than `m`. What would be a suitable p?
-        The first prime divisor of m! + 1 will work in this case.
-      </p>
-
-      <p>
-        First, we use the library-provided lemma `pdivP`, stating that
-        every number is divided by a prime. Thus, we obtain a number
-        `p` and the corresponding hypotheses `pr_p : prime p` and
-        `p_dv_m1` "p divides m! + 1".
+        Our first step is thus to use the library-provided lemma
+        `pdivP`, which states that every number is divided by a
+        prime. Thus, we obtain a number `p` and the corresponding
+        hypotheses `pr_p : prime p` and `p_dv_m1` "p divides m! +
+        1". The ssreflect tactic `have` provides a convenient way to
+        instantiate this lemma and discard the side proof obligation
+        `1 < m! + 1`.
       </p>
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
     <p>
-      To conclude, we to prove that `p` is greater than `m`. We reason
-      by contraposition of the divisor hypothesis. This gives us the
-      goal if `p <= m` then `p` is not a prime divisor of `m! + 1`.
+      It remains to prove that `p` is greater than `m`. We reason by
+      contraposition with the divisibility hypothesis, which gives us
+      the goal "if `p <= m` then `p` is not a prime divisor of `m! +
+      1`".
     </p>
     <textarea id="prime_above4" >
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.</textarea>
-  <p>
-    The result follows from basic properties of divisibility, plus the
-    fact that if `p < m`, then `p` divides `m!`, but `p` prime cannot
-    divide 1, a necessary condition for `p` to divide `m! + 1`.
+    <p>
+      The goal follows from basic properties of divisibility, plus
+      from the fact that if `p < m`, then `p` divides `m!`, but `p`
+      prime cannot divide 1, a necessary condition for `p` to divide
+      `m! + 1`.
   </p>
   <p>
-    jsCoq provides many other packages, including most of Coq's
-    standard library and the full mathematical components
-    library. Feel free to experiment, and bear with the alpha status
-    of this demo.
+    jsCoq provides many other packages, including Coq's standard
+    library and the mathematical components library. Feel free to
+    experiment, and bear with the alpha status of this demo.
   </p>
   <p>
     JsCoq's homepage is at github <a href="https://github.com/ejgallego/jscoq">
@@ -128,7 +136,9 @@ Qed.</textarea>
         prelude:   false,
         mock:      false,
         base_path: './',
-        init_pkgs: ['init']
+        init_pkgs: ['init'],
+        all_pkgs:  ['init', 'math-comp', 'coq-base', 'coq-arith', 'coq-reals',
+                    'coquelicot', 'flocq', 'sf', 'cpdt', 'color']
     };
 
     /* Global reference */
