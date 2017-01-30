@@ -1,20 +1,21 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-jsCoq is an Online Integrated Development Environment
-for the [Coq](https://coq.inria.fr) proof assistant and runs in your browser! Try it:
+jsCoq is an Online Integrated Development Environment for the
+[Coq](https://coq.inria.fr) proof assistant and runs in your browser!
+Current stable version is jsCoq 0.8 supporting Coq 8.6, try it:
 
 <https://x80.org/rhino-coq/>
 
-The goal of this project is to open new UI/interaction possibilites,
-and to improve the acessibility of the platform itself.
+We aim to enable new UI/interaction possibilities and to improve the
+accessibility of the Coq platform itself.
 
 JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
-JsCoq also runs in my 4-years old Galaxy Nexus.
+jsCoq also runs in my 4-years old Galaxy Nexus.
 
-`StackOverflow` exceptions are sometimes a problem, the **recommended
-platform** is Chrome Beta with the
+**Are you getting a `StackOverflow` exception?** We **recommend**
+using Google Chrome Beta with the
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
 flag enabled; this setup greatly alleviates the problem.
 
@@ -34,13 +35,16 @@ becomes
 From Coq Require Import List.Lists.
 ```
 
-#### Development version
+#### Development Version
 
-A preview release of jsCoq 0.9 for Coq 8.6 is available at:
+Development for 0.9 takes place in the `js-worker` branch. A preview
+release of jsCoq 0.9 is available at:
 
 <https://x80.org/rhino-trunk/>
 
-Note that the version in this link is usually not stable.
+Note that the version in this link is very unstable. Big structural
+changes are happening in 0.9, please drop a mail to the mailing list
+if you plan to contribute.
 
 Previous Coq versions such as 8.5 can be accessed as:
 
@@ -48,6 +52,36 @@ Previous Coq versions such as 8.5 can be accessed as:
 
 etc... In the future we may provide builds corresponding to particular hashes.
 See below for more jsCoq versions, including one adapted to HoTT.
+
+### Publications
+
+A paper describing the ideas behind jsCoq 0.9 has been published in
+the proceeding of the
+[UITP 2016 workshop](http://www.informatik.uni-bremen.de/uitp/current/). The
+paper is available from the open access
+[EPTCS](http://eptcs.web.cse.unsw.edu.au/paper.cgi?UITP2016.2)
+proceedings. The recommended citation is:
+
+```bibtex
+@Inproceedings{gallego:uitp2016,
+  author    = {Gallego Arias, Emilio Jes\'us and Pin, Beno\^it and Jouvelot, Pierre},
+  year      = {2017},
+  title     = {{jsCoq}: Towards Hybrid Theorem Proving Interfaces},
+  editor    = {Autexier, Serge and Quaresma, Pedro},
+  booktitle = {{\rmfamily Proceedings of the 12th Workshop on}
+               User Interfaces for Theorem Provers,
+               {\rmfamily Coimbra, Portugal, 2nd July 2016}},
+  series    = {Electronic Proceedings in Theoretical Computer Science},
+  volume    = {239},
+  publisher = {Open Publishing Association},
+  pages     = {15-27},
+  doi       = {10.4204/EPTCS.239.2},
+  issn      = {2075-2180}
+}
+```
+
+Some further ideas behind jsCoq are also discussed in
+[SerAPI: Machine-Friendly, Data-Centric Serialization for COQ. Technical Report](https://hal-mines-paristech.archives-ouvertes.fr/hal-01384408)
 
 ### Collacoq
 
