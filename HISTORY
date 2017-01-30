@@ -13,6 +13,7 @@
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6.
   - [x] Migrated to ppx for jsoo syntax.
+  - [x] Port to Ocaml 4.04.0.
 
   Released on: 
 

@@ -277,7 +277,7 @@ $ ./toolchain-setup.sh
 $ git clone https://github.com/coq/coq.git ~/external/coq-git-32
 $ cd ~/external/coq-git-32
 $ git checkout v8.6         # Or trunk at this moment.
-$ opam switch 4.03.0+32bit
+$ opam switch 4.04.0+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
@@ -329,7 +329,7 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
   The first step can be taken care of by the `Makefile.addons` makefile.
 
   ```
-$ opam switch 4.03.0+32bit
+$ opam switch 4.04.0+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-git-32/bin:$PATH
 $ make -f Makefile.addons $TARGET
