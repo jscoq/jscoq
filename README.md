@@ -19,6 +19,9 @@ using Google Chrome Beta with the
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
 flag enabled; this setup greatly alleviates the problem.
 
+**Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
+[bug page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430) . We recommend Chrome just for jsCoq, _not for other uses_.
+
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
 We want to **strongly thank** the `js_of_ocaml` developers. Without
