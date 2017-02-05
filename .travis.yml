@@ -1,0 +1,42 @@
+dist: trusty
+sudo: required
+language: ocaml
+cache:
+  apt: true
+  directories:
+  - $HOME/.opam
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - opam
+    - aspcud
+    - gcc-multilib
+env:
+  global:
+  - NJOBS=2
+  # system is == 4.02.3
+  - COMPILER="4.04.0+32bit"
+  # Main test suites
+  # matrix:
+  # - TEST_TARGET="x86_32-linux"
+  # - TEST_TARGET="x86_64-linux"
+
+install:
+- "[ -e .opam ] || opam init -j ${NJOBS} --compiler=${COMPILER} -n -y"
+- eval $(opam config env)
+- opam config var root
+- opam install -j ${NJOBS} -y camlp5 yojson ppx_deriving_yojson js_of_ocaml ${EXTRA_OPAM}
+- opam list
+- mkdir -p ${HOME}/external && pushd ${HOME}/external
+- git clone --depth=3 -b v8.6 git://scm.gforge.inria.fr/coq/coq.git coq-v8.6+32bit
+- cd coq-v8.6+32bit
+- ./configure -local -native-compiler no -coqide no
+- make -j ${NJOBS}
+- popd
+
+script:
+- echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
+- ./build.sh
+- echo -en 'travis_fold:end:jscoq.build\\r'
