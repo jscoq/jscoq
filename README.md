@@ -1,6 +1,8 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=master)](https://travis-ci.org/ejgallego/jscoq)
+
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 Current stable version is jsCoq 0.8 supporting Coq 8.6, try it:
