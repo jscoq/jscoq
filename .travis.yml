@@ -39,4 +39,6 @@ install:
 script:
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
 - ./build.sh
+- git submodule update --remote
+- cd ui-external/CodeMirror && npm install
 - echo -en 'travis_fold:end:jscoq.build\\r'

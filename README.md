@@ -298,6 +298,12 @@ $ make               # use -j N as desired
 $ git submodules update --remote
   ```
 
+  and build CodeMirror:
+
+  ```
+$ cd ui-external/CodeMirror && npm install
+  ```
+
 * Adjust build parameters in `config.mk`.
 
   If you want to use a different location for the Coq sources, edit

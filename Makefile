@@ -76,7 +76,7 @@ dist: libs
 	mkdir -p $(BUILDDIR)/coq-js/
 	cp -a coq-js/jscoq.js $(BUILDDIR)/coq-js/
         # Externals
-	rsync -avp --delete --exclude='*~' --exclude='.git' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
+	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
 
 BUILDDIR_HOTT=$(BUILDDIR)-hott
 
