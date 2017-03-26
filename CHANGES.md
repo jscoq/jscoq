@@ -1,6 +1,8 @@
 # JsCoq 1.0 ((())((()()(()))((()()))))
 --------------------------------------
 
+  - [ ] Automatic parsing mode.
+  - [ ] Execution gutters.
   - [ ] Move to sertop.
   - [ ] UI layout.
   - [x] Worker support.
