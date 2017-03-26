@@ -9,11 +9,20 @@
 --------------------------------------
 
   - [ ] UI layout.
+  - [ ] Automatic parsing mode.
+  - [ ] Execution gutters.
 
   Released on: 
 
 + JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
+
+Pending:
+
++ Race: we cancel, then add before the cancelled arrives. Review and
+  factorize code.
++ Better printing.
++ Library tweaks.
 
   - [x] Worker support.
   - [x] Static compilation of cma/cmo. (thanks @hhugo).

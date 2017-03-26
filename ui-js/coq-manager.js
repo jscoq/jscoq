@@ -219,6 +219,8 @@ class CoqManager {
             goals:             []
         };
 
+        this.error = [];
+
         // XXX: Initial sentence == hack
         let  dummyProvider = { mark : function() {},
                                getNext: function() { return null; },
@@ -243,16 +245,12 @@ class CoqManager {
         provider.onInvalidate = stm => {
 
             // If we have an error mark we need to clear it.
-            if (this.error && this.error == stm) {
-                provider.mark(this.error, "clear");
-                this.error = null;
-                // Go back as the sentence is already cancelled. In
-                // the future we will just cancel the sentence twice,
-                // but careful here.
+            let stm_err_idx = this.error.indexOf(stm);
+
+            if (stm_err_idx >= 0) {
+                provider.mark(stm, "clear");
+                this.error.splice(stm_err_idx, 1);
                 return;
-            } else if (this.error) {
-                provider.mark(this.error, "clear");
-                this.error = null;
             }
 
             this.goCursor();
@@ -422,16 +420,40 @@ class CoqManager {
     }
 
     // Error handler.
-    handleError(sid) {
+    handleError(sid, loc, msg) {
 
         let err_stm;
 
         err_stm = this.doc.stm_id[sid];
 
+        // The sentence has already vanished! This can happen for
+        // instance if the execution of an erroneous sentence is
+        // queued twice, which is hard to avoid due to STM exec
+        // forcing on parsing.
+
+        if(!err_stm) return;
+
+        this.layout.log(msg, 'Error');
+
         // this.error will make the cancel handler to mark the stm red
         // instead of just clearing the mark.
-        this.error = err_stm;
-        this.coq.sendCommand(['Cancel', sid]);
+        this.error.push(err_stm);
+
+        let stm_idx       = this.doc.sentences.indexOf(err_stm);
+
+        // The stm was not deleted!
+        if (stm_idx >= 0) {
+            this.doc.sentences.splice(stm_idx, 1);
+
+            this.doc.stm_id[sid] = null;
+            this.doc.goals[sid]  = null;
+            err_stm.coq_sid = null;
+
+            this.provider.mark(err_stm, "clear");
+            this.provider.mark(err_stm, "error");
+
+            this.coq.sendCommand(['Cancel', sid]);
+        }
     }
 
     feedMessage(sid, lvl, loc, msg) {
@@ -446,11 +468,11 @@ class CoqManager {
         if(this.options.debug)
             console.log('Message', sid, lvl, fmsg);
 
-        this.layout.log(fmsg, lvl);
-
         // XXX: highlight error location.
         if (lvl === 'Error') {
-            this.handleError(sid, loc, msg);
+            this.handleError(sid, loc, fmsg);
+        } else {
+            this.layout.log(fmsg, lvl);
         }
     }
 
@@ -504,19 +526,24 @@ class CoqManager {
         sids.forEach(function (sid) {
 
             let stm_to_cancel = this.doc.stm_id[sid];
-            let stm_idx       = this.doc.sentences.indexOf(stm_to_cancel);
+            let stm_err_idx   = this.error.indexOf(stm_to_cancel);
 
-            this.doc.stm_id[sid] = null;
-            this.doc.goals[sid]  = null;
-            stm_to_cancel.coq_sid = null;
+            if (stm_err_idx >= 0) {
 
-            this.doc.sentences.splice(stm_idx, 1);
-
-            if (this.error && this.error == stm_to_cancel) {
-                this.provider.mark(stm_to_cancel, "clear");
-                this.provider.mark(stm_to_cancel, "error");
             } else {
-                this.provider.mark(stm_to_cancel, "clear");
+                let stm_idx = this.doc.sentences.indexOf(stm_to_cancel);
+
+                // Not already cancelled.
+                if (stm_idx >= 0) {
+
+                    this.doc.stm_id[sid] = null;
+                    this.doc.goals[sid]  = null;
+                    stm_to_cancel.coq_sid = null;
+
+                    this.doc.sentences.splice(stm_idx, 1);
+
+                    this.provider.mark(stm_to_cancel, "clear");
+                }
             }
 
         }, this);
@@ -612,7 +639,6 @@ class CoqManager {
         var pkg_panel = document.getElementById('packages-panel').parentNode;
         pkg_panel.classList.add('collapsed');
 
-        // Enable the IDE.
         this.layout.proof.textContent +=
             "\n===> JsCoq filesystem initalized with success!\n" +
             "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n";
@@ -660,10 +686,11 @@ class CoqManager {
         // workaround a bug in Coq.
         if (this.doc.sentences.length <= 1) return;
 
-        // XXX: Optimization, in case of error.
-        if (this.error) {
-            this.provider.mark(this.error, "clear");
-            this.error = null;
+        debugger;
+        // XXX: Optimization, in case of error, but incorrect in the
+        // new general framework.
+        if (this.error.length > 0) {
+            this.provider.mark(this.error.pop(), "clear");
             return;
         }
 
@@ -678,7 +705,14 @@ class CoqManager {
         }
 
         // Cancel the sentence
+        let stm_idx       = this.doc.sentences.indexOf(cur_stm);
+        this.doc.sentences.splice(stm_idx, 1);
+
+        this.doc.stm_id[cur_stm.coq_sid] = null;
+        this.doc.goals[cur_stm.coq_sid]  = null;
+        this.provider.mark(cur_stm, "clear");
         this.coq.sendCommand(['Cancel', cur_stm.coq_sid]);
+        cur_stm.coq_sid = null;
     }
 
     // Return if we had success.
