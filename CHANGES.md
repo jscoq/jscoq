@@ -1,9 +1,18 @@
 + JsCoq 1.0 ((())((()()(()))((()()))))
 --------------------------------------
 
+  - [ ] Automatic parsing mode.
+  - [ ] Execution gutters.
   - [ ] Move to sertop.
   - [ ] UI layout.
   - [x] Worker support.
+
+Pending:
+
++ Race: we cancel, then add before the cancelled arrives. Review and
+  factorize code.
++ Better printing.
++ Library tweaks.
 
   Released on: 
 

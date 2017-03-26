@@ -56,8 +56,10 @@ let create doc = doc, [Stateid.initial]
 exception NoSuchState of Stateid.t
 
 let _ = CErrors.register_handler (function
-    | NoSuchState sid -> Pp.str ("Trying to add on top of state: " ^ Stateid.to_string sid)
-    | _ -> raise CErrors.Unhandled)
+    | NoSuchState sid ->
+      Pp.str ("Trying to add on top of non-existent span: " ^ Stateid.to_string sid)
+    | _ ->
+      raise CErrors.Unhandled)
 
 (* Main add logic; we check that the ontop state is present in the
  * document, as it could well happen that the user request to add
