@@ -11,8 +11,12 @@ Pending:
 
 + Race: we cancel, then add before the cancelled arrives. Review and
   factorize code.
++ don't reexec states, as this brings back the parser to an improper
+  state.
 + Better printing.
 + Library tweaks.
++ quick prev/next creates problems in long commands.
++ we are reusing span_ids and this is not ok for the STM.
 
   Released on: 
 
@@ -27,6 +31,7 @@ Pending:
   - [x] Port to JSOO 3.1.0
   - [x] Full support for SF.
   - [x] Many small fixes.
+  - [x] Goal display on hover.
 
   Released on: 
 
