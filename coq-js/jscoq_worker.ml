@@ -247,11 +247,13 @@ let jscoq_protect f =
 
 (* Message from the main thread *)
 let on_msg doc obj =
-  (* XXX: Cal the GC, setTimeout to avoid stack overflows ?? *)
-  let json_obj = Yojson.Safe.from_string (Js.to_string (Json.output obj)) in
+  (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
+  let json_string = Js.to_string (Json.output obj) in
+  let json_obj = Yojson.Safe.from_string json_string in
 
   match jscoq_cmd_of_yojson json_obj with
-  | Result.Ok cmd  -> jscoq_protect (fun () -> jscoq_execute doc cmd)
+  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Info, str json_string)) ;
+                                      jscoq_execute doc cmd)
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output obj)))
 

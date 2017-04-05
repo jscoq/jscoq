@@ -305,13 +305,14 @@ class CoqManager {
         // The new approach avoids this, but we ignore such feedback
         // just in case.
 
-        if (! this.doc.stm_id[nsid] ) {
-            console.log('ready but not added?', nsid);
+        var stm = this.doc.stm_id[nsid];
+
+        if (!stm) {
+            console.log('ready but cancelled user side?', nsid);
             return;
         }
 
-        var stm = this.doc.stm_id[nsid];
-
+        stm.executed = true;
         this.provider.mark(stm, "clear");
         this.provider.mark(stm, "ok");
 
@@ -505,15 +506,21 @@ class CoqManager {
             // [Modulo the same old bugs, we need a position comparison op]
             if (this.provider.getAtPoint() || this.provider.afterPoint(cur_stm) ) {
             // if (this.provider.getAtPoint()) {
+
                 // We have reached the destination...
-                this.coq.sendCommand(['Exec', nsid]);
+                if(!cur_stm.executed) {
+                    this.coq.sendCommand(['Exec', nsid]);
+                }
+
                 this.goTarget = false;
             } else {
                 // We have not reached the destination, continue forward.
                 this.goNext(false);
             }
         } else {
-            this.coq.sendCommand(['Exec', nsid]);
+            if(!cur_stm.executed) {
+                this.coq.sendCommand(['Exec', nsid]);
+            }
         }
     }
 
@@ -728,6 +735,8 @@ class CoqManager {
 
         let next_sid = cur_sid+1;
         next_stm.coq_sid = next_sid;
+        next_stm.executed = false;
+
         this.doc.sentences.push(next_stm);
         this.doc.stm_id[next_sid] = next_stm;
 
@@ -752,7 +761,7 @@ class CoqManager {
         this.coq.sendCommand(["Add", cur_sid, next_sid, next_stm.text]);
 
         // Avoid stack overflows by doing a commit every 24
-        // sentences, due to the STM co-tail recursive traversal bug.
+        // sentences, due to the STM co-tail recursive traversal bug?
         let so_threshold = 24;
         if( (this.doc.number_adds++ % so_threshold) === 0 )
             this.coq.sendCommand(['Exec', next_sid]);
