@@ -81,6 +81,12 @@ function unix_execvpe() {
   return 0;
 }
 
+//Provides: unix_getcwd
+function unix_getcwd() {
+  // ll("unix_getcwd");
+  return 0;
+}
+
 //Provides: unix_fork
 function unix_fork() {
   // ll("unix_fork");
