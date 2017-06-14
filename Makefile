@@ -68,7 +68,7 @@ BUILDOBJ=index.html $(DISTHTML) coq-pkgs ui-js ui-css ui-images examples
 DISTEXT=$(addprefix ui-external/,CodeMirror CodeMirror-TeX-input pace d3.min.js bootstrap.min.css)
 
 dist: libs
-	ln -sf newide.html index.html
+	ln -sf $(DISTHTML) index.html
 	mkdir -p $(BUILDDIR)
         # Copy static files, XXX: minimize
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
