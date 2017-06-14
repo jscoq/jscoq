@@ -252,6 +252,7 @@ Incomplete list of places where jsCoq has been used:
   https://github.com/math-comp/wiki/wiki/tutorial-itp2016
 * Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
 * School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
+* Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
 
 ### jsCoq in the press
 
