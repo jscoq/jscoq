@@ -17,12 +17,17 @@ work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
 jsCoq also runs in my 4-years old Galaxy Nexus.
 
 **Are you getting a `StackOverflow` exception?** We **recommend**
-using Google Chrome Beta with the
+using the `--js-flags="--harmony-tailcalls"` command line flag in
+newer Google Chrome that use the Ignition engine; this setup greatly
+alleviates the problem.
+
+Older Google Chrome required the
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
-flag enabled; this setup greatly alleviates the problem.
 
 **Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
-[bug page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430) . We recommend Chrome just for jsCoq, _not for other uses_.
+[bug
+page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
+. We recommend Chrome just for jsCoq, _not for other uses_.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
