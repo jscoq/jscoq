@@ -75,6 +75,8 @@ let pkgs : (string * string list * string list list) list=
     ; ["mathcomp"; "fingroup"]
     ; ["mathcomp"; "solvable"]
     ; ["mathcomp"; "field"]
+    ; ["mathcomp"; "character"]
+    ; ["mathcomp"; "odd_order"]
     ]
   ; "coq-base", [],
     [ ["Coq"; "Logic"]
