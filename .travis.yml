@@ -16,10 +16,13 @@ addons:
 env:
   global:
   - NJOBS=2
+  # - COQ_REPOS=git://scm.gforge.inria.fr/coq/coq.git
+  - COQ_REPOS="https://github.com/coq/coq.git"
   # system is == 4.02.3
   - COMPILER="4.04.1+32bit"
-  - COQ_BRANCH=trunk
-  - COQ_VERSION=v8.7
+  - COQ_BRANCH="trunk"
+  - COQ_VERSION="v8.7"
+  - BASE_OPAM="camlp5 yojson ppx_import ppx_deriving_yojson js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt"
   # Main test suites
   # matrix:
   # - TEST_TARGET="x86_32-linux"
@@ -30,10 +33,10 @@ install:
 - eval $(opam config env)
 - opam update
 - opam config var root
-- opam install -j ${NJOBS} -y camlp5 yojson ppx_deriving_yojson js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt ${EXTRA_OPAM}
+- opam install -j ${NJOBS} -y ${BASE_OPAM} ${EXTRA_OPAM}
 - opam list
 - mkdir -p ${HOME}/external && pushd ${HOME}/external
-- git clone --depth=3 -b ${COQ_BRANCH} git://scm.gforge.inria.fr/coq/coq.git coq-${COQ_VERSION}+32bit
+- git clone --depth=3 -b ${COQ_BRANCH} ${COQ_REPOS} coq-${COQ_VERSION}+32bit
 - cd coq-${COQ_VERSION}+32bit
 - ./configure -local -native-compiler no -coqide no
 - make -j ${NJOBS}
