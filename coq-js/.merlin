@@ -3,9 +3,9 @@ FLG -rectypes -thread
 S .
 B .
 
-S /home/egallego/external/coq-git/**
-B /home/egallego/external/coq-git/**
+S /home/egallego/external/coq-v8.7+32bit/**
+B /home/egallego/external/coq-v8.7+32bit/**
 
-PKG lwt js_of_ocaml js_of_ocaml.ppx yojson
+PKG lwt js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson
 EXT lwt
 

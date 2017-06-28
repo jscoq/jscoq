@@ -4,7 +4,8 @@ let prefix  = "coq-pkgs"
 
 (* Default FS list *)
 let plugin_list =
-  [ ["Coq"; "syntax"]
+  [ ["Coq"; "ltac"]
+  ; ["Coq"; "syntax"]
   ; ["Coq"; "decl_mode"]
   ; ["Coq"; "cc"]
   ; ["Coq"; "firstorder"]
@@ -19,6 +20,7 @@ let plugin_list =
   ; ["Coq"; "romega"]
   ; ["Coq"; "nsatz"]
   ; ["Coq"; "ssrmatching"]
+  ; ["Coq"; "ssr"]
   ]
 
 let coq_theory_list =
@@ -57,7 +59,8 @@ let coq_theory_list =
 
 let pkgs : (string * string list * string list list) list=
   [ "init", [],
-    [ ["Coq"; "syntax"]
+    [ ["Coq"; "ltac"]
+    ; ["Coq"; "syntax"]
     ; ["Coq"; "decl_mode"]
     ; ["Coq"; "cc"]
     ; ["Coq"; "firstorder"]
@@ -68,6 +71,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Bool"]
     ; ["Coq"; "Unicode"]
     ; ["Coq"; "ssrmatching"]
+    ; ["Coq"; "ssr"]
     ; ["mathcomp"; "ssreflect"]
     ]
   ; "math-comp", [],

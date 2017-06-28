@@ -67,7 +67,9 @@ class type jsCoq = object
 end
 
 let setup_pseudo_fs () =
-  Sys_js.register_autoload ~path:"/" (fun (_,s) -> Jslibmng.coq_vo_req s)
+  Sys_js.unmount ~path:"/static/";
+  Sys_js.mount ~path:"/static/" (fun ~prefix ~path ->
+      ignore(prefix); Jslibmng.coq_vo_req path)
 
 (* type feedback = { *)
 (*   id : edit_or_state_id;        (\* The document part concerned *\) *)
@@ -97,7 +99,6 @@ let string_of_feedback fb : string =
     | WorkerStatus(w1, w2) -> "WorkerStatus: " ^ w1 ^ ", " ^ w2
 
   (* Generally useful metadata *)
-    | Goals(_loc, g) -> "goals: " ^ g
     | AddedAxiom -> "AddedAxiom."
     | GlobRef (_loc, s1, s2, s3, s4) -> "GlobRef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3 ^ ", " ^ s4
     | GlobDef (_loc, s1, s2, s3) -> "GlobDef: " ^ s1 ^ ", " ^ s2 ^ ", " ^ s3
@@ -107,15 +108,11 @@ let string_of_feedback fb : string =
     (* Extra metadata *)
     | Custom(_loc, msg, _xml) -> "Custom: " ^ msg
     (* Old generic messages *)
-    | Message(lvl, _loc, m) -> "Msg["^ (string_of_lvl lvl) ^"]: " ^ Richpp.raw_print m
+    | Message(lvl, _loc, m) -> "Msg["^ (string_of_lvl lvl) ^"]: " ^ Pp.string_of_ppcmds m
     (* Richer printing needed in trunk. *)
     (* | Message m -> "Msg: " ^ (Xml_printer.to_string m.message_content) *)
 
-let string_of_eosid esid =
-  let open Feedback in
-  match esid with
-  | Edit  eid -> "eid: " ^ string_of_int eid
-  | State sid -> "sid: " ^ (Stateid.to_string sid)
+let string_of_sid sid = "sid: " ^ (Stateid.to_string sid)
 
 let internal_log (this : jsCoq t) (str : js_string t) =
   let _    = invoke_handler this##.onLog this str  in
@@ -124,7 +121,7 @@ let internal_log (this : jsCoq t) (str : js_string t) =
 let jscoq_feedback_handler this (fb : Feedback.feedback) =
   let open Feedback in
   let fb_s = Printf.sprintf "feedback for [%s]: %s\n%!"
-                            (string_of_eosid fb.id)
+                            (string_of_sid fb.id)
                             (string_of_feedback fb.contents)  in
 
   internal_log this (string fb_s)
@@ -143,8 +140,8 @@ let setup_printers (this : jsCoq t) =
   with Not_found -> ()
 
 let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
-  setup_pseudo_fs ();
   setup_printers this;
+  setup_pseudo_fs ();
   let sid = Icoq.init { Icoq.ml_load    = Jslibmng.coq_cma_req;
                         Icoq.fb_handler = (jscoq_feedback_handler this);
                       } in
@@ -172,11 +169,11 @@ let jscoq_version _this =
   string @@ header1 ^ header2
 
 (* let jscoq_add this (cmd : js_string t) : Stateid.t = *)
-let jscoq_add _this sid eid cmd  =
+let jscoq_add _this sid _eid cmd  =
   (* Printf.eprintf "adding command %s\n%!" (to_string cmd); *)
   (* Catch parsing errors. *)
   try
-    Icoq.add_to_doc sid eid (to_string cmd)
+    Icoq.add_to_doc sid (to_string cmd)
   with
   (* Hackkk *)
   | _ -> Obj.magic 0

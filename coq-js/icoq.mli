@@ -38,7 +38,7 @@ val add_load_path : string list -> string -> bool -> unit
 (** [add_to_doc sid eid cmd] Add [cmd] to the doc [sid] with edit_id
     [eid] and returns the new doc's stateid. Note that [add_to_doc] doesn't
     force Coq to process the new parts of the document, see [commit] *)
-val add_to_doc : Stateid.t -> edit_id -> string -> Stateid.t
+val add_to_doc : Stateid.t -> string -> Stateid.t
 
 (** [edit_doc sid] moves the tip of the document to [sid], discarding
     all edits added after [sid] *)

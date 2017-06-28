@@ -53,9 +53,6 @@ let init opts =
   (* Internal Coq initialization *)
   Lib.init();
 
-  (* Mltop.init_known_plugins (); *)
-  Goptions.set_string_option_value ["Default";"Proof";"Mode"] "Classic";
-
   Global.set_engagement Declarations.PredicativeSet;
 
   (* Local libraries:
@@ -79,12 +76,7 @@ let init opts =
   (* Initialize logging. *)
   (* This is for Coq trunk *)
   (* Pp.log_via_feedback (fun msg -> Richpp.repr (Richpp.richpp_of_pp msg)); *)
-  Feedback.set_logger Feedback.feedback_logger;
-  Feedback.add_feeder opts.fb_handler;
-
-  (* Misc tweaks *)
-  (* Vernacentries.enable_goal_printing := false; *)
-  Vernacentries.qed_display_script   := false;
+  ignore(Feedback.add_feeder opts.fb_handler);
 
   (* Return the initial state of the STM *)
   Stm.get_current_state ()
@@ -98,13 +90,18 @@ let add_load_path pkg pkg_path has_ml =
   Loadpath.add_load_path ("./" ^ pkg_path) coq_path ~implicit:false;
   if has_ml then Mltop.add_ml_dir pkg_path
 
-let add_to_doc sid eid s = fst @@ Stm.add ~ontop:sid false eid s
+let add_to_doc sid s = fst @@
+  let pa = Pcoq.Gram.parsable (Stream.of_string s) in
+  let ast = Stm.parse_sentence sid pa in
+  Stm.add ~ontop:sid false ast
 
-let edit_doc   sid       = let _ = Stm.edit_at sid in ()
+let edit_doc   sid   = let _ = Stm.edit_at sid in ()
 
 let commit_doc = Stm.observe
 
-let query st cmd = Stm.query ~at:st cmd
+let query sid cmd =
+  let pa = Pcoq.Gram.parsable (Stream.of_string cmd) in
+  Stm.query ~route:0 ~at:sid pa
 
 (* XXX: We want to implement our custom proof printer (from
  * printing/printer.ml

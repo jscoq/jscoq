@@ -97,7 +97,7 @@ $(SSR_DEST):
 	mkdir -p $(SSR_DEST)
 
 ssr-libs: $(SSR_DEST)
-	$(SYNC) $(SSR_PLUG) $(SSR_DEST)
+#	$(SYNC) $(SSR_PLUG) $(SSR_DEST)
 	$(SYNCVO) $(SSR_HOME)/ $(MATHCOMP_DEST)
 
 ########################################################################

@@ -13,24 +13,25 @@ JSCOQ_DEBUG=no
 all:
 
 # Include coq files
-COQINCLUDE=-I $(COQDIR)/library/   \
-           -I $(COQDIR)/stm/       \
+COQINCLUDE=-I $(COQDIR)/config     \
+	   -I $(COQDIR)/lib/       \
+           -I $(COQDIR)/kernel/    \
+           -I $(COQDIR)/library/   \
            -I $(COQDIR)/engine/    \
            -I $(COQDIR)/pretying/  \
-           -I $(COQDIR)/lib/       \
+           -I $(COQDIR)/interp/    \
            -I $(COQDIR)/parsing/   \
            -I $(COQDIR)/grammar/   \
            -I $(COQDIR)/printing/  \
-           -I $(COQDIR)/kernel/    \
            -I $(COQDIR)/intf/      \
-           -I $(COQDIR)/interp/    \
            -I $(COQDIR)/proofs/    \
-           -I $(COQDIR)/toplevel   \
-           -I $(COQDIR)/config
+           -I $(COQDIR)/vernac/    \
+           -I $(COQDIR)/stm/       \
+           -I $(COQDIR)/toplevel
 
 COQOBJS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
-	$(COQDIR)/kernel/byterun/dllcoqrun.so	\
+	$(COQDIR)/intf/intf.cma			\
 	$(COQDIR)/kernel/kernel.cma		\
 	$(COQDIR)/library/library.cma		\
 	$(COQDIR)/engine/engine.cma	        \
@@ -40,10 +41,11 @@ COQOBJS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/parsing/parsing.cma		\
 	$(COQDIR)/printing/printing.cma		\
 	$(COQDIR)/tactics/tactics.cma		\
+	$(COQDIR)/vernac/vernac.cma		\
 	$(COQDIR)/stm/stm.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
 	$(COQDIR)/parsing/highparsing.cma       \
-	$(COQDIR)/ltac/ltac.cma
+	$(COQDIR)/API/API.cma
 
 CAMLDEBUG=
 
@@ -54,7 +56,7 @@ endif
 CAMLWARN=-w @a-39-44-45
 BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
-JSOOFLAGS=-package js_of_ocaml.ppx,yojson,ppx_deriving_yojson
+JSOOFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_deriving_yojson
 
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
@@ -81,7 +83,9 @@ WOVR=-w -31
 
 # -linkall is necessary, otherwise internal Coq tables are dropped:
 #  Syntax error: entry [vernac:Vernac.vernac] is empty.
+# having to set CAML_LD_LIBRARY_PATH here is strange...
 jscoq.byte: $(COQDEPS) jscoq.cmo
+	CAML_LD_LIBRARY_PATH=$(COQDIR)/kernel/byterun:$(CAML_LD_LIBRARY_PATH) \
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
 	   -package str,dynlink,threads,camlp5,camlp5.gramlib                     \
 	   $(JSOOFLAGS) $(COQOBJS)                                                \

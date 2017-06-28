@@ -96,7 +96,8 @@ let cb : pkg_callbacks ref = ref {
   }
 
 let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
-  let open XmlHttpRequest                       in
+  let open XmlHttpRequest                           in
+  let open Lwt_xmlHttpRequest                       in
   (* Jslog.printf Jslog.jscoq_log "Start preload file %s\n%!" name; *)
   let full_url    = base_url  ^ "/" ^ file          in
   let request_url = !pkg_prefix ^ full_url          in
@@ -166,11 +167,12 @@ let preload_pkg ?(verb=false) bundle pkg : unit Lwt.t =
 
 (* Load a bundle *)
 let rec preload_from_file ?(verb=false) file =
+  let open Lwt_xmlHttpRequest in
   let file_url = !pkg_prefix ^ file ^ ".json" in
-  XmlHttpRequest.get file_url >>= (fun res ->
+  get file_url >>= (fun res ->
   (* XXX: Use _JSON.json??????? *)
   let bundle = (match Jslib.coq_bundle_of_yojson
-                     (Yojson.Safe.from_string res.XmlHttpRequest.content)
+                     (Yojson.Safe.from_string res.content)
                 with
                 | Result.Ok bundle -> bundle
                 | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
@@ -189,10 +191,11 @@ let iter_arr (f : 'a -> unit Lwt.t) (l : 'a js_array t) : unit Lwt.t =
   l##(reduce_init f_js return_unit)
 
 let info_from_file file =
+  let open Lwt_xmlHttpRequest in
   let file_url = !pkg_prefix ^ file ^ ".json" in
-  XmlHttpRequest.get file_url >>= fun res ->
+  get file_url >>= fun res ->
   let bundle = (match Jslib.coq_bundle_of_yojson
-                     (Yojson.Safe.from_string res.XmlHttpRequest.content)
+                     (Yojson.Safe.from_string res.content)
                 with
                 | Result.Ok bundle -> bundle
                 | Result.Error s   -> (Format.eprintf "JSON error in preload_from_file: %s\n%!" s;
@@ -221,7 +224,7 @@ let load_pkg pkg_file = Lwt.async (fun () ->
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
-  (* Format.eprintf "file %s requested\n%!" (to_string url); (\* with category info *\) *)
+  (* Format.eprintf "file %s requested\n%!" url; (\* with category info *\) *)
   (* if not @@ is_bad_url url then *)
   try let c_entry = Hashtbl.find file_cache url in
     (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
