@@ -5,7 +5,7 @@ Run the Coq Proof Assistant in your browser!
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
-Current stable version is jsCoq 0.8 supporting Coq 8.6, try it:
+Current stable version is jsCoq 0.8b supporting Coq 8.7, try it:
 
 <https://x80.org/rhino-coq/>
 
@@ -14,20 +14,10 @@ accessibility of the Coq platform itself.
 
 JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
-jsCoq also runs in my 4-years old Galaxy Nexus.
-
-**Are you getting a `StackOverflow` exception?** We **recommend**
-using the `--js-flags="--harmony-tailcalls"` command line flag in
-newer Google Chrome that use the Ignition engine; this setup greatly
-alleviates the problem.
-
-Older Google Chrome required the
-[chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
-
-**Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
-[bug
-page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
-. We recommend Chrome just for jsCoq, _not for other uses_.
+jsCoq also runs in my 4-years old Galaxy Nexus.  Browser performance
+is greatly variable these days, see the [Browser
+Optimization](Browser-Tips-and-Tricks] section if you have browser
+problems.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
@@ -42,8 +32,30 @@ Require Import Lists.
 ```
 becomes
 ```coq
-From Coq Require Import List.Lists.
+From Coq Require Import Lists.
 ```
+
+#### Browser Tips and Tricks
+
+Browser performance is very variable these days, it is the case that
+some jsCoq workloads work better in Firefox, some work better
+Chrome. However, performance seems to get better at every realease so
+we are hopeful.
+
+**Are you getting a `StackOverflow` exception?** We **recommend**
+using the `--js-flags="--harmony-tailcalls"` command line flag in
+newer Google Chrome that use the Ignition engine; this setup greatly
+alleviates the problem. Also Firefox may work better in this
+regard. Fiferox also seems to do better when loading a lot of
+libraries is involved.
+
+Older Google Chrome versions required the
+[chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
+
+**Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
+[bug
+page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
+. We recommend Chrome just for jsCoq, _not for other uses_.
 
 #### Development Version
 
@@ -56,9 +68,10 @@ Note that the version in this link is very unstable. Big structural
 changes are happening in 0.9, please drop a mail to the mailing list
 if you plan to contribute.
 
-Previous Coq versions such as 8.5 can be accessed as:
+Previous Coq versions such as 8.5 and 8.6 can be accessed as:
 
-<https://x80.org/rhino-coq/v8.5/>
+- <https://x80.org/rhino-coq/v8.5/>
+- <https://x80.org/rhino-coq/v8.6/>
 
 etc... In the future we may provide builds corresponding to particular hashes.
 See below for more jsCoq versions, including one adapted to HoTT.
@@ -270,7 +283,7 @@ You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
 instructions to build JsCoq yourself, it is reasonably easy these days.
 
-* First, you need OPAM and a dual 32/64 bits Ocaml toolchain. Install
+* First, you need OPAM and a 32 bit Ocaml toolchain. Install
   a recent opam and a multiarch gcc (`gcc-multilib` package in
   Debian/Ubuntu), then running:
 
@@ -282,19 +295,18 @@ $ ./toolchain-setup.sh
 
   You should tweak some variables in the `build-common.sh` file before proceeding.
 
-* Second, you need to build Coq v8.6:
+* Second, you need to build Coq v8.7:
 
   ```
-$ git clone https://github.com/coq/coq.git ~/external/coq-git-32
-$ cd ~/external/coq-git-32
-$ git checkout v8.6         # Or trunk at this moment.
-$ opam switch 4.04.0+32bit
+$ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
+$ cd ~/external/coq-v8.7+32bit
+$ opam switch 4.04.1+32bit
 $ eval `opam config env`
 $ ./configure -local -coqide no -native-compiler no
 $ make               # use -j N as desired
   ```
 
-  jsCoq is compatible with vanilla Coq v8.6. However, we maintain a
+  jsCoq is compatible with vanilla Coq v8.7. However, we maintain a
   tree with some specific patches at
   https://github.com/ejgallego/coq/tree/jscoq-patchqueue
 
@@ -329,7 +341,7 @@ $ ./build.sh
 * To run jscoq in locally you may need to start your browser as:
 
   ```
-$ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=65536" index.html
+$ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
   ```
 
 * Profit!
@@ -346,9 +358,9 @@ $ google-chrome-beta --allow-file-access-from-files --js-flags="--stack-size=655
   The first step can be taken care of by the `Makefile.addons` makefile.
 
   ```
-$ opam switch 4.04.0+32bit
+$ opam switch 4.04.1+32bit
 $ eval `opam config env`
-$ export PATH=~/external/coq-git-32/bin:$PATH
+$ export PATH=~/external/coq-v8.7+32bit/bin:$PATH
 $ make -f Makefile.addons $TARGET
   ```
 
