@@ -288,7 +288,7 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   Debian/Ubuntu), then running:
 
   ```
-$ ./toolchain-setup.sh
+  $ ./toolchain-setup.sh
   ```
 
   should do the trick.
@@ -298,12 +298,12 @@ $ ./toolchain-setup.sh
 * Second, you need to build Coq v8.7:
 
   ```
-$ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
-$ cd ~/external/coq-v8.7+32bit
-$ opam switch 4.04.1+32bit
-$ eval `opam config env`
-$ ./configure -local -coqide no -native-compiler no
-$ make               # use -j N as desired
+  $ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
+  $ cd ~/external/coq-v8.7+32bit
+  $ opam switch 4.04.1+32bit
+  $ eval `opam config env`
+  $ ./configure -local -coqide no -native-compiler no
+  $ make               # use -j N as desired
   ```
 
   jsCoq is compatible with vanilla Coq v8.7. However, we maintain a
@@ -313,13 +313,13 @@ $ make               # use -j N as desired
 * You must checkout jsCoq git submodules:
 
   ```
-$ git submodules update --remote
+  $ git submodules update --remote
   ```
 
   and build CodeMirror:
 
   ```
-$ cd ui-external/CodeMirror && npm install
+  $ cd ui-external/CodeMirror && npm install
   ```
 
 * Adjust build parameters in `config.mk`.
@@ -332,7 +332,7 @@ $ cd ui-external/CodeMirror && npm install
 * Finally:
 
   ```
-$ ./build.sh
+  $ ./build.sh
   ```
 
   should build jscoq. The script tries to manage the pain of the 32/64
@@ -341,7 +341,7 @@ $ ./build.sh
 * To run jscoq in locally you may need to start your browser as:
 
   ```
-$ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
+  $ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
   ```
 
 * Profit!
