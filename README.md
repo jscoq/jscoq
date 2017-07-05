@@ -5,52 +5,53 @@ Run the Coq Proof Assistant in your browser!
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
-Current stable version is jsCoq 0.8b supporting Coq 8.7, try it:
+We aim to enable new UI/interaction possibilities and to improve the
+accessibility of the Coq platform itself. Current stable version is jsCoq 0.8b supporting Coq 8.7, try it:
 
 <https://x80.org/rhino-coq/>
-
-We aim to enable new UI/interaction possibilities and to improve the
-accessibility of the Coq platform itself.
 
 JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
 jsCoq also runs in my 4-years old Galaxy Nexus.  Browser performance
 is greatly variable these days, see the [Browser
-Optimization](Browser-Tips-and-Tricks] section if you have browser
+Optimization](Browser-Tips-and-Tricks) section if you have browser
 problems.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
-We want to **strongly thank** the `js_of_ocaml` developers. Without
+We want to _strongly thank_ the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
 
-**Important:** The Coq standard libraries are qualified in jsCoq, thus
+**Note:** By default, the Coq standard libraries are qualified in jsCoq, thus
 you need to prefix your imports:
 
 ```coq
 Require Import Lists.
-```
-becomes
-```coq
+(* becomes *)
 From Coq Require Import Lists.
 ```
+
+You should be able to tweak this behavior using an option, however,
+due to the large number of packages bundled we recommend you write
+qualified Coq imports.
 
 #### Browser Tips and Tricks
 
 Browser performance is very variable these days, it is the case that
-some jsCoq workloads work better in Firefox, some work better
-Chrome. However, performance seems to get better at every realease so
-we are hopeful.
+some jsCoq workloads work better in Firefox and some others work
+better in Chrome. Browser performance seems to get better at every
+iteration so we are hopeful about the future.
 
 **Are you getting a `StackOverflow` exception?** We **recommend**
 using the `--js-flags="--harmony-tailcalls"` command line flag in
-newer Google Chrome that use the Ignition engine; this setup greatly
-alleviates the problem. Also Firefox may work better in this
-regard. Fiferox also seems to do better when loading a lot of
-libraries is involved.
+Google Chrome; this setup greatly alleviates the problem. Firefox may
+work better in this regard. Fiferox also seems to do better when
+loading a lot of libraries is involved.
 
-Older Google Chrome versions required the
+Older Google Chrome versions that don't use the Ignition engine
+usually require the
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
+flag enabled for heavy workloads.
 
 **Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
 [bug
@@ -59,22 +60,29 @@ page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
 
 #### Development Version
 
-Development for 0.9 takes place in the `js-worker` branch. A preview
-release of jsCoq 0.9 is available at:
+Development for 0.9 takes place in the `js-worker` branch. This branch
+provides significant advantages due to Coq being ran in Worker thread,
+while not yet ready for general use, it is mandatory for developers. A
+preview build of jsCoq 0.9 is usually available at:
 
 <https://x80.org/rhino-trunk/>
 
-Note that the version in this link is very unstable. Big structural
-changes are happening in 0.9, please drop a mail to the mailing list
-if you plan to contribute.
+The version in this link is very unstable. Big structural changes are
+happening in 0.9, please stop by gitter or by the mailing list if you
+would to contribute.
 
-Previous Coq versions such as 8.5 and 8.6 can be accessed as:
+jsCoq is easy to develop using the Chrome developer tools; the jsCoq
+object has a `debug` flag, and it is possible to compile Coq with
+debug information by setting the make variable `JSCOQ_DEBUG=yes`.
+
+Previous Coq versions can be accessed at:
 
 - <https://x80.org/rhino-coq/v8.5/>
 - <https://x80.org/rhino-coq/v8.6/>
 
-etc... In the future we may provide builds corresponding to particular hashes.
-See below for more jsCoq versions, including one adapted to HoTT.
+In the future, we may provide builds corresponding to particular git
+hashes. See below for more jsCoq versions, including one adapted to
+HoTT.
 
 ### Publications
 
@@ -111,7 +119,7 @@ Some further ideas behind jsCoq are also discussed in
 A small pastebin-like server based on haste is available at
 https://x80.org/collacoq
 
-Note that this is totally experimental, data loss is guaranteed.
+Note that this is totally experimental, and data loss is guaranteed.
 
 See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
 
@@ -145,7 +153,6 @@ the constructor:
 * `wrapper_id`: id of the div where to attach the panel.
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `prelude: bool`: Whether to load Coq's prelude or not.
-* `mock: bool`: Use a mock jsCoq object, useful for prototyping.
 
 ### Homotopy Type Theory
 
@@ -200,7 +207,7 @@ https://github.com/ejgallego/udoc
 It works kind of OK for converting coqdoc files, but it produces some
 artifacts and omits some declarations.
 
-There is also a superseded experimental version of coqdoc outputting
+There also is a superseded experimental version of coqdoc outputting
 jsCoq at https://github.com/ejgallego/coq/tree/coqdoc
 
 Just build coqdoc normally and use the option `--backend=jscoq`.
@@ -219,8 +226,9 @@ you can post to the list using nntp.
 
 ## Troubleshooting ##
 
-* Clearing the browser cache may solve lots of issues.
+* Clearing the browser cache usually solves lots of issues.
 * Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
+* Use the `--js-flags="--harmony-tailcalls"` command line flag.
 * Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
 
 ## Contributing ##
@@ -283,51 +291,45 @@ You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
 instructions to build JsCoq yourself, it is reasonably easy these days.
 
-* First, you need OPAM and a 32 bit Ocaml toolchain. Install
+* First, you will need OPAM and a 32 bit Ocaml toolchain. Install
   a recent opam and a multiarch gcc (`gcc-multilib` package in
-  Debian/Ubuntu), then running:
+  Debian/Ubuntu), then run:
 
   ```
   $ ./toolchain-setup.sh
   ```
 
-  should do the trick.
+* [Optional] You may want to tweak some variables with paths and options present
+  in the `build-common.sh` and `config.mk` file. The rest of this
+  guide assumes the default values.
 
-  You should tweak some variables in the `build-common.sh` file before proceeding.
+  If you want to use a different location for the Coq sources, edit
+  the `COQDIR` variable, `ADDONS` will select what libraries get
+  included. See the files for more paremeters.
 
-* Second, you need to build Coq v8.7:
+* Second, you need to build a 32bit Coq v8.7:
 
   ```
-  $ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
-  $ cd ~/external/coq-v8.7+32bit
   $ opam switch 4.04.1+32bit
   $ eval `opam config env`
+  $ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
+  $ cd ~/external/coq-v8.7+32bit
   $ ./configure -local -coqide no -native-compiler no
   $ make               # use -j N as desired
   ```
 
   jsCoq is compatible with vanilla Coq v8.7. However, we maintain a
   tree with some specific patches at
-  https://github.com/ejgallego/coq/tree/jscoq-patchqueue
+  https://github.com/ejgallego/coq/tree/jscoq-patchqueue.
 
-* You must checkout jsCoq git submodules:
+* You need to build jsCoq's version of CodeMirror:
 
   ```
   $ git submodules update --remote
-  ```
-
-  and build CodeMirror:
-
-  ```
   $ cd ui-external/CodeMirror && npm install
   ```
 
-* Adjust build parameters in `config.mk`.
-
-  If you want to use a different location for the Coq sources, edit
-  the `COQDIR` variable, `ADDONS` will select what libraries get
-  included. See the file for more paremeters.
-
+  hopefully, we will merge our Coq mode with CodeMirror upstream soon.
 
 * Finally:
 
@@ -335,27 +337,31 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   $ ./build.sh
   ```
 
-  should build jscoq. The script tries to manage the pain of the 32/64
-  bit switch, you can also use make if you want finer control.
+  will build jscoq. The script tries to manage the 32/64 bit toolchain
+  switching, you can also directly use make if you want finer control
+  over the build process.
 
-* To run jscoq in locally you may need to start your browser as:
+* To run jscoq locally you need to start your browser with some options:
 
   ```
   $ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
   ```
 
+* ?
+
 * Profit!
 
 ### Building Addon Packages:
 
-  JsCoq supports many extra addons, including ssreflect. Package
-  download and building is still not very streamlined. External
-  packages are built into jscoq in two steps:
+  JsCoq supports some extra addons, including ssreflect. Package
+  download and building is still not very streamlined. To build an
+  external package for jsCoq, you need to perform two steps:
 
-  - Building the package itself with the Coq version linked to jsCoq.
-  - Generating the package files for jsCoq.
+  - Build the package itself with the Coq version used to build jsCoq.
+  - Generate the right package files for jsCoq package manager.
 
-  The first step can be taken care of by the `Makefile.addons` makefile.
+  The `Makefile.addons` make file has some make targets in order to
+  help with the first item.
 
   ```
 $ opam switch 4.04.1+32bit
@@ -365,13 +371,15 @@ $ make -f Makefile.addons $TARGET
   ```
 
   You will need to adjust the makefile to point out the location of
-  the packages, most of them are assumed to live in `~/external/coq/$package`.
+  the packages, they are assumed to live in `$ADDONS_PATH/$package`.
 
-  For the second step, edit the `config.mk` file to select the
-  packages you want to install, and call `./build.sh` again.
+  The second step is performed by jsCoq `./build.sh` script, but you
+  may want to edit the `config.mk` file to select the packages you
+  want to install, then call `./build.sh` again.
 
-  A patch optimizing mathcomp loading times can be found in the `etc/patch`
-  folder, it is highly recommended.
+  A patch to improve mathcomp load time can be found in the
+  `etc/patch` folder, it is highly recommended as otherwise loading
+  mathcomp's `ssrnat` pulls half of the standard library.
 
 ## Commit tag conventions [work in progress]:
 
