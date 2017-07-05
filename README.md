@@ -14,7 +14,7 @@ JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
 jsCoq also runs in my 4-years old Galaxy Nexus.  Browser performance
 is greatly variable these days, see the [Browser
-Optimization](Browser-Tips-and-Tricks) section if you have browser
+Optimization](#Browser-Tips-and-Tricks) section if you have browser
 problems.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
@@ -27,7 +27,7 @@ you need to prefix your imports:
 
 ```coq
 Require Import Lists.
-(* becomes *)
+(* should become *)
 From Coq Require Import Lists.
 ```
 
@@ -35,14 +35,14 @@ You should be able to tweak this behavior using an option, however,
 due to the large number of packages bundled we recommend you write
 qualified Coq imports.
 
-#### Browser Tips and Tricks
+### Browser Tips and Tricks
 
 Browser performance is very variable these days, it is the case that
 some jsCoq workloads work better in Firefox and some others work
 better in Chrome. Browser performance seems to get better at every
 iteration so we are hopeful about the future.
 
-**Are you getting a `StackOverflow` exception?** We **recommend**
+**Are you getting a `StackOverflow` exception?** We recommend
 using the `--js-flags="--harmony-tailcalls"` command line flag in
 Google Chrome; this setup greatly alleviates the problem. Firefox may
 work better in this regard. Fiferox also seems to do better when
@@ -58,22 +58,24 @@ flag enabled for heavy workloads.
 page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
 . We recommend Chrome just for jsCoq, _not for other uses_.
 
-#### Development Version
+## Development Version
 
-Development for 0.9 takes place in the `js-worker` branch. This branch
-provides significant advantages due to Coq being ran in Worker thread,
-while not yet ready for general use, it is mandatory for developers. A
-preview build of jsCoq 0.9 is usually available at:
+Development for jsCoq 0.9 takes place in the `js-worker` branch. This
+branch provides significant advantages due to Coq being ran in a
+Worker thread. While the branch is not yet ready for general use, it
+is the mandatory for developers. A preview build of jsCoq 0.9 is
+usually available at:
 
 <https://x80.org/rhino-trunk/>
 
-The version in this link is very unstable. Big structural changes are
-happening in 0.9, please stop by gitter or by the mailing list if you
-would to contribute.
+Be warned that the version uploaded to the link is quite unstable. Big
+structural changes are happening in 0.9, please stop by gitter or by
+the mailing list if you would to contribute. See below for build
+instructions.
 
 jsCoq is easy to develop using the Chrome developer tools; the jsCoq
 object has a `debug` flag, and it is possible to compile Coq with
-debug information by setting the make variable `JSCOQ_DEBUG=yes`.
+debug information by setting the makefile variable `JSCOQ_DEBUG=yes`.
 
 Previous Coq versions can be accessed at:
 
@@ -84,7 +86,7 @@ In the future, we may provide builds corresponding to particular git
 hashes. See below for more jsCoq versions, including one adapted to
 HoTT.
 
-### Publications
+## Publications
 
 A paper describing the ideas behind jsCoq 0.9 has been published in
 the proceeding of the
@@ -114,7 +116,7 @@ proceedings. The recommended citation is:
 Some further ideas behind jsCoq are also discussed in
 [SerAPI: Machine-Friendly, Data-Centric Serialization for COQ. Technical Report](https://hal-mines-paristech.archives-ouvertes.fr/hal-01384408)
 
-### Collacoq
+## Collacoq
 
 A small pastebin-like server based on haste is available at
 https://x80.org/collacoq
@@ -124,6 +126,13 @@ Note that this is totally experimental, and data loss is guaranteed.
 See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
 
 Help with Collacoq is very welcome!
+
+## Troubleshooting ##
+
+* Clearing the browser cache usually solves lots of issues.
+* Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
+* Use the `--js-flags="--harmony-tailcalls"` command line flag.
+* Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
 
 ## API / How to embed in your own webpage
 
@@ -154,12 +163,12 @@ the constructor:
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `prelude: bool`: Whether to load Coq's prelude or not.
 
-### Homotopy Type Theory
+## Homotopy Type Theory
 
 jsCoq supports the HoTT library which requires a special build of Coq,
 an online version is at: https://x80.org/rhino-hott/
 
-### Examples
+## Examples
 
 The main page includes a proof of the infinitude of primes by
 G. Gonthier. We provide some more examples as a showcase of the tool:
@@ -191,14 +200,14 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
     monoids:
     https://x80.org/rhino-coq/v8.5/examples/mirror-core-rtac-demo.html
 
-### Serialization
+## Serialization
 
 JsCoq used to support serialization to Json or Sexps for Coq's
 internal data structures, but this effort has been split to an
 independent development. See https://github.com/ejgallego/coq-serapi
 for more information.
 
-### CoqDoc
+## CoqDoc
 
 A coqdoc replacement that is better suited to produce jsCoq output
 while (mostly) remaining compatible is being developed at
@@ -223,13 +232,6 @@ The list archives should be also available through Gmane at group:
 `gmane.science.mathematics.logic.coq.jscoq`
 
 you can post to the list using nntp.
-
-## Troubleshooting ##
-
-* Clearing the browser cache usually solves lots of issues.
-* Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
-* Use the `--js-flags="--harmony-tailcalls"` command line flag.
-* Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
 
 ## Contributing ##
 
