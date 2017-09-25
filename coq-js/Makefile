@@ -44,8 +44,7 @@ COQOBJS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/vernac/vernac.cma		\
 	$(COQDIR)/stm/stm.cma			\
 	$(COQDIR)/toplevel/toplevel.cma		\
-	$(COQDIR)/parsing/highparsing.cma       \
-	$(COQDIR)/API/API.cma
+	$(COQDIR)/parsing/highparsing.cma
 
 CAMLDEBUG=
 

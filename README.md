@@ -317,7 +317,7 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   $ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
   $ cd ~/external/coq-v8.7+32bit
   $ ./configure -local -coqide no -native-compiler no
-  $ make               # use -j N as desired
+  $ make && make byte          # use -j N as desired
   ```
 
   jsCoq is compatible with vanilla Coq v8.7. However, we maintain a

@@ -19,8 +19,8 @@ env:
   # - COQ_REPOS=git://scm.gforge.inria.fr/coq/coq.git
   - COQ_REPOS="https://github.com/coq/coq.git"
   # system is == 4.02.3
-  - COMPILER="4.04.1+32bit"
-  - COQ_BRANCH="trunk"
+  - COMPILER="4.04.2+32bit"
+  - COQ_BRANCH="v8.7"
   - COQ_VERSION="v8.7"
   - BASE_OPAM="camlp5 yojson ppx_import ppx_deriving_yojson js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt"
   # Main test suites
