@@ -1,3 +1,4 @@
+# -*- mode: makefile -*-
 .PHONY: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
 
 # Makefile for addons
@@ -86,7 +87,7 @@ mtac: $(MTAC_DEST)
 # Addons: ssreflect                                                    #
 ########################################################################
 
-SSR_HOME=$(ADDONS_PATH)/math-comp-32/mathcomp
+SSR_HOME=$(ADDONS_PATH)/math-comp/mathcomp
 SSR_PLUG=$(SSR_HOME)/ssreflect_plugin.cmo
 
 SSR_DEST=coq-pkgs/mathcomp/ssreflect

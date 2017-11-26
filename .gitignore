@@ -14,3 +14,4 @@ dist/
 dist-hott/
 index.html
 Makefile.libs
+coq-external/
