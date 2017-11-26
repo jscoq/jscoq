@@ -125,7 +125,7 @@ let preload_vo_file ?(refresh=false) base_url (file, _hash) : unit Lwt.t =
             * downloads.
             *)
          } in
-         (* Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5); *)
+         if cma_verb then Format.eprintf "Cached: %s with md5: %s\n%!" full_url (Digest.to_hex cache_entry.md5);
          Hashtbl.add file_cache full_url cache_entry;
          ()
          (* Jslog.printf Jslog.jscoq_log "Cached %s [%d/%d/%d/%s]\n%!" full_url bl (u8arr##length)
@@ -224,7 +224,7 @@ let load_pkg pkg_file = Lwt.async (fun () ->
 
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
-  (* Format.eprintf "file %s requested\n%!" url; (\* with category info *\) *)
+  if cma_verb then Format.eprintf "file %s requested\n%!" url; (* with category info *)
   (* if not @@ is_bad_url url then *)
   try let c_entry = Hashtbl.find file_cache url in
     (* Jslog.printf Jslog.jscoq_log "coq_resource_req %s\n%!" (Js.to_string url); *)
