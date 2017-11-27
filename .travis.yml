@@ -35,9 +35,8 @@ install:
 - opam config var root
 - opam install -j ${NJOBS} -y ${BASE_OPAM} ${EXTRA_OPAM}
 - opam list
-- mkdir -p ${HOME}/external && pushd ${HOME}/external
-- git clone --depth=3 -b ${COQ_BRANCH} ${COQ_REPOS} coq-${COQ_VERSION}+32bit
-- cd coq-${COQ_VERSION}+32bit
+- git clone --depth=2 -b ${COQ_BRANCH} ${COQ_REPOS} coq-external/coq-${COQ_VERSION}+32bit
+- pushd coq-external/coq-${COQ_VERSION}+32bit
 - ./configure -local -native-compiler no -coqide no
 - make -j ${NJOBS}
 - make -j ${NJOBS} byte
