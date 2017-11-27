@@ -18,9 +18,9 @@ do_setup() {
   # popd
 }
 
-opam switch -j $NJOBS -y $OCAML_VER
-eval `opam config env`
-do_setup
+#opam switch -j $NJOBS -y $OCAML_VER
+#eval `opam config env`
+#do_setup
 
 opam switch -j $NJOBS -y $OCAML_VER+32bit
 eval `opam config env`

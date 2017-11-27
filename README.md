@@ -12,7 +12,7 @@ accessibility of the Coq platform itself. Current stable version is jsCoq 0.8b s
 
 JsCoq is written in ES2015, thus any standard-compliant browser should
 work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
-jsCoq also runs in my 4-years old Galaxy Nexus.  Browser performance
+jsCoq also runs in my 5-year old Galaxy Nexus.  Browser performance
 is greatly variable these days, see the [Browser
 Optimization](#Browser-Tips-and-Tricks) section if you have browser
 problems.
@@ -291,7 +291,19 @@ Incomplete list of places where jsCoq has been used:
 
 You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
-instructions to build JsCoq yourself, it is reasonably easy these days.
+instructions to build JsCoq yourself, it is reasonably easy.
+
+Short instructions:
+```shell
+$ ./toolchain-setup.sh
+$ make coq
+$ ./build.sh
+$ git submodule update --remote
+$ cd ui-external/CodeMirror && npm install
+
+```
+
+Here are the explanations of the steps:
 
 * First, you will need OPAM and a 32 bit Ocaml toolchain. Install
   a recent opam and a multiarch gcc (`gcc-multilib` package in
@@ -309,22 +321,24 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   the `COQDIR` variable, `ADDONS` will select what libraries get
   included. See the files for more paremeters.
 
-* Second, you need to build a 32bit Coq v8.7:
+* Second, you need to build a 32bit Coq v8.7. `make coq` should do it
+  automatically, otherwise the process resembles something like:
 
   ```
-  $ opam switch 4.04.1+32bit
+  $ opam switch 4.04.2+32bit
   $ eval `opam config env`
-  $ git clone -b v8.7 https://github.com/coq/coq.git ~/external/coq-v8.7+32bit
-  $ cd ~/external/coq-v8.7+32bit
+  $ git clone -b v8.7 https://github.com/coq/coq.git coq-external/coq-v8.7+32bit
+  $ pushd coq-external/coq-v8.7+32bit
   $ ./configure -local -coqide no -native-compiler no
   $ make && make byte          # use -j N as desired
+  $ popd
   ```
 
   jsCoq is compatible with vanilla Coq v8.7. However, we maintain a
   tree with some specific patches at
   https://github.com/ejgallego/coq/tree/jscoq-patchqueue.
 
-* You need to build jsCoq's version of CodeMirror:
+* You'll need to build jsCoq's version of CodeMirror:
 
   ```
   $ git submodules update --remote
@@ -339,7 +353,7 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   $ ./build.sh
   ```
 
-  will build jscoq. The script tries to manage the 32/64 bit toolchain
+  will build jsCoq. The script tries to manage the 32/64 bit toolchain
   switching, you can also directly use make if you want finer control
   over the build process.
 
@@ -366,7 +380,7 @@ instructions to build JsCoq yourself, it is reasonably easy these days.
   help with the first item.
 
   ```
-$ opam switch 4.04.1+32bit
+$ opam switch 4.04.2+32bit
 $ eval `opam config env`
 $ export PATH=~/external/coq-v8.7+32bit/bin:$PATH
 $ make -f Makefile.addons $TARGET
