@@ -24,7 +24,7 @@ install:
 - eval $(opam config env)
 - opam update
 - opam config var root
-- ./setup-toolchain.sh
+- ./toolchain-setup.sh
 - opam list
 - make coq
 
