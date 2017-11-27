@@ -28,5 +28,7 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(IRIS_HOME); make; make install
 
 jscoq-install:
+	mkdir -p $(STDPP_DEST)
 	$(SYNCVO) $(STDPP_HOME)/theories/ $(STDPP_DEST)
+	mkdir -p $(IRIS_DEST)
 	$(SYNCVO) $(IRIS_HOME)/theories/ $(IRIS_DEST)

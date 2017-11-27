@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force coq
+.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force coq coq-get coq-build
 
 include config.mk
 
@@ -130,9 +130,17 @@ pau:
 COQ_BRANCH=v8.7
 COQ_REPOS=https://github.com/coq/coq.git
 NJOBS=2
-coq:
-	mkdir -p coq-external
+
+coq-get:
+	mkdir -p coq-external coq-pkgs
 	git clone --depth=2 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
-	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -coqide no &&  make -j $(NJOBS) && make -j $(NJOBS) byte
-	make -f coq-addons/ssreflect.addon get build jscoq-install
-	make -f coq-addons/iris.addon get build jscoq-install
+	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -coqide no
+	make -f coq-addons/ssreflect.addon get
+	make -f coq-addons/iris.addon get
+
+coq-build:
+	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte
+	make -f coq-addons/ssreflect.addon build jscoq-install
+	make -f coq-addons/iris.addon build jscoq-install
+
+coq: coq-get coq-build

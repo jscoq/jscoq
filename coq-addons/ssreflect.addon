@@ -22,4 +22,5 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/ssreflect; make; make install
 
 jscoq-install:
+	mkdir -p $(MATHCOMP_DEST)
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(MATHCOMP_DEST)

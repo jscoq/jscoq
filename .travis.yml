@@ -26,7 +26,8 @@ install:
 - opam config var root
 - ./toolchain-setup.sh
 - opam list
-- make coq
+- make coq-get
+- make coq-build
 
 script:
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
