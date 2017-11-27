@@ -1,0 +1,32 @@
+# -*- mode: makefile -*-
+
+include config.mk
+
+STDPP_GIT=https://gitlab.mpi-sws.org/robbertkrebbers/coq-stdpp.git
+IRIS_GIT=https://gitlab.mpi-sws.org/FP/iris-coq.git
+
+# From addons
+SYNC=rsync -avq
+SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+
+STDPP_HOME=$(ADDONS_PATH)/stdpp
+STDPP_DEST=coq-pkgs/stdpp
+
+IRIS_HOME=$(ADDONS_PATH)/iris
+IRIS_DEST=coq-pkgs/iris
+
+.PHONY: nothing get build install
+
+nothing:
+
+get:
+	[ -d $(STDPP_HOME) ] || git clone --depth=1 $(STDPP_GIT) $(STDPP_HOME)
+	[ -d $(IRIS_HOME) ]  || git clone --depth=1 $(IRIS_GIT) $(IRIS_HOME)
+
+build:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(STDPP_HOME); make; make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(IRIS_HOME); make; make install
+
+jscoq-install:
+	$(SYNCVO) $(STDPP_HOME)/theories/ $(STDPP_DEST)
+	$(SYNCVO) $(IRIS_HOME)/theories/ $(IRIS_DEST)

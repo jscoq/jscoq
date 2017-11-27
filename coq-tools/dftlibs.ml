@@ -308,5 +308,17 @@ let pkgs : (string * string list * string list list) list=
 
     ; ["McExamples" ; "Cancel" ]
     ]
-  ]
 
+  ; "stdpp", [ "coq-reals" ],
+    [ [ "stdpp" ] ]
+
+  ; "iris", [ "stdpp" ],
+    [ [ "iris" ]
+    ; [ "iris" ; "algebra" ]
+    ; [ "iris" ; "base_logic" ]
+    ; [ "iris" ; "heap_lang" ]
+    ; [ "iris" ; "program_logic" ]
+    ; [ "iris" ; "proofmode" ]
+    ; [ "iris" ; "tests" ]
+    ]
+  ]
