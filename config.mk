@@ -18,7 +18,9 @@ ADDONS_PATH := $(current_dir)/coq-external
 COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
 # Addons to build
-ADDONS = ssr-libs
+ADDONS =
+# Woking on coq-8.7:
+# ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott color
 # Woking on coq-8.6:
 # ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott color
 # Woking on coq-8.5:
