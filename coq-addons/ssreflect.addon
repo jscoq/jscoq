@@ -1,0 +1,25 @@
+# -*- mode: makefile -*-
+# jscoq addon: ssreflect
+
+include config.mk
+
+# From addons
+SYNC=rsync -avq
+SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+
+MATHCOMP_GIT=https://github.com/math-comp/math-comp.git
+MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
+MATHCOMP_DEST=coq-pkgs/math-comp
+
+.PHONY: nothing get build install
+
+nothing:
+
+get:
+	[ -d $(MATHCOMP_HOME) ] || git clone --depth=1 $(MATHCOMP_GIT) $(MATHCOMP_HOME)
+
+build:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/ssreflect; make; make install
+
+jscoq-install:
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(MATHCOMP_DEST)

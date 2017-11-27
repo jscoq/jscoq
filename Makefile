@@ -129,7 +129,10 @@ pau:
 
 COQ_BRANCH=v8.7
 COQ_REPOS=https://github.com/coq/coq.git
-
+NJOBS=2
 coq:
+	mkdir -p coq-external
 	git clone --depth=2 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
 	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -coqide no &&  make -j $(NJOBS) && make -j $(NJOBS) byte
+	make -f coq-addons/ssreflect.addon get build jscoq-install
+	make -f coq-addons/iris.addon get build jscoq-install
