@@ -235,6 +235,10 @@ color: $(COLOR_DEST)
 iris:
 	make -f coq-addons/iris.addon jscoq-install
 
+
+elpi:
+	make -f coq-addons/elpi.addon jscoq-install
+
 ########################################################################
 # Addons: relalg                                                       #
 ########################################################################

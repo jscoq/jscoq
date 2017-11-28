@@ -323,4 +323,12 @@ let pkgs : (string * string list * string list list) list=
     ; [ "iris" ; "proofmode" ]
     ; [ "iris" ; "tests" ]
     ]
+
+  ; "elpi", [ ],
+    [ [ "elpi" ]
+    ; [ "elpi" ; "ltac" ]
+    ; [ "elpi" ; "test" ]
+    ; [ "elpi" ; "tutorial" ]
+    ; [ "elpi" ; "derive" ]
+    ]
   ]
