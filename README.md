@@ -55,8 +55,8 @@ flag enabled for heavy workloads.
 
 **Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
 [bug
-page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430)
-. We recommend Chrome just for jsCoq, _not for other uses_.
+page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430).
+We recommend Chrome just for jsCoq, _not for other uses_.
 
 ## Development Version
 
@@ -173,11 +173,15 @@ an online version is at: https://x80.org/rhino-hott/
 The main page includes a proof of the infinitude of primes by
 G. Gonthier. We provide some more examples as a showcase of the tool:
 
-- dft.v: https://x80.org/rhino-coq/examples/dft.html
+- dft.v: https://x80.org/rhino-coq/v8.6/examples/dft.html
 
   A small development of the theory of the Fourier Transform following
   Julius Orion Smith III's "The Mathematics of the Discrete Fourier
   Transform"
+
+- The IRIS program logic, by Robbert Krebbers et al.
+
+  https://x80.org/rhino-coq/v8.7/examples/iris.html
 
 - Mtac: The Mtac tutorial by Beta Zilliani:
 
@@ -186,7 +190,7 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 - Stlc: The "Simply Typed Lambda Calculus" chapter from Software
   Foundations by Benjamin Pierce et al:
 
-  https://x80.org/rhino-coq/examples/Stlc.html
+  https://x80.org/rhino-coq/v8.6/examples/Stlc.html
 
 - StackMachine: The First chapter of the book "Certified Programming
   with Dependent Types" by Adam Chlipala:
@@ -199,13 +203,6 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
   - A demo of developing a cancellation algorithm for commutative
     monoids:
     https://x80.org/rhino-coq/v8.5/examples/mirror-core-rtac-demo.html
-
-## Serialization
-
-JsCoq used to support serialization to Json or Sexps for Coq's
-internal data structures, but this effort has been split to an
-independent development. See https://github.com/ejgallego/coq-serapi
-for more information.
 
 ## CoqDoc
 
@@ -256,8 +253,8 @@ Please consider supporting the development of CodeMirror with a donation.
 
 * Loading ML modules is slow.
 * Loading `.vo` files is slow.
-* `vm_compute` and `native_compute` are not supported.
 * There surely are threading and performance problems.
+* `vm_compute` and `native_compute` are devired to regular `compute`.
 
 ## Contact & Sponsorship ##
 
@@ -305,47 +302,28 @@ $ cd ui-external/CodeMirror && npm install
 
 Here are the explanations of the steps:
 
-* First, you will need OPAM and a 32 bit Ocaml toolchain. Install
+* First, let's setup a 32-bit Ocaml toolchain. Install
   a recent opam and a multiarch gcc (`gcc-multilib` package in
-  Debian/Ubuntu), then run:
+  Debian/Ubuntu), then:
 
   ```
   $ ./toolchain-setup.sh
   ```
 
-* [Optional] You may want to tweak some variables with paths and options present
-  in the `build-common.sh` and `config.mk` file. The rest of this
-  guide assumes the default values.
+  will do the job.
 
-  If you want to use a different location for the Coq sources, edit
-  the `COQDIR` variable, `ADDONS` will select what libraries get
-  included. See the files for more paremeters.
+* Second, build a 32-bit Coq v8.7 and all the libraries to
+  be installed. `make coq` should do it automatically.
+  jsCoq is compatible with vanilla Coq v8.7.
 
-* Second, you need to build a 32bit Coq v8.7. `make coq` should do it
-  automatically, otherwise the process resembles something like:
-
-  ```
-  $ opam switch 4.04.2+32bit
-  $ eval `opam config env`
-  $ git clone -b v8.7 https://github.com/coq/coq.git coq-external/coq-v8.7+32bit
-  $ pushd coq-external/coq-v8.7+32bit
-  $ ./configure -local -coqide no -native-compiler no
-  $ make && make byte          # use -j N as desired
-  $ popd
-  ```
-
-  jsCoq is compatible with vanilla Coq v8.7. However, we maintain a
-  tree with some specific patches at
-  https://github.com/ejgallego/coq/tree/jscoq-patchqueue.
-
-* You'll need to build jsCoq's version of CodeMirror:
+* You also need jsCoq's version of CodeMirror:
 
   ```
   $ git submodules update --remote
   $ cd ui-external/CodeMirror && npm install
   ```
 
-  hopefully, we will merge our Coq mode with CodeMirror upstream soon.
+  hopefully, the Coq mode will be merged in CodeMirror some day.
 
 * Finally:
 
@@ -353,49 +331,37 @@ Here are the explanations of the steps:
   $ ./build.sh
   ```
 
-  will build jsCoq. The script tries to manage the 32/64 bit toolchain
-  switching, you can also directly use make if you want finer control
+  will build jsCoq. The script manages the 32/64 bit toolchain
+  switching; you can also use make directly if you want finer control
   over the build process.
 
-* To run jscoq locally you need to start your browser with some options:
+* To run jsCoq locally you need to start your browser with some
+  options:
 
   ```
   $ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
   ```
 
 * ?
-
 * Profit!
 
-### Building Addon Packages:
+### Addon Packages:
 
-  JsCoq supports some extra addons, including ssreflect. Package
-  download and building is still not very streamlined. To build an
-  external package for jsCoq, you need to perform two steps:
+  One of jsCoq's strengths is its support for bundling addon
+  packages. In order to add your Coq package to jsCoq, you need to add
+  a definition file in the `coq-addons` repository. We recommend you
+  use one of the existing files as a model.
 
-  - Build the package itself with the Coq version used to build jsCoq.
-  - Generate the right package files for jsCoq package manager.
+  Also, you need to define a jsCoq package by editing the
+  `coq-tools/dftlibs.ml` file. Once that is done, calling `build.sh`
+  and `make coq` should build your package.
 
-  The `Makefile.addons` make file has some make targets in order to
-  help with the first item.
+## Serialization
 
-  ```
-$ opam switch 4.04.2+32bit
-$ eval `opam config env`
-$ export PATH=~/external/coq-v8.7+32bit/bin:$PATH
-$ make -f Makefile.addons $TARGET
-  ```
-
-  You will need to adjust the makefile to point out the location of
-  the packages, they are assumed to live in `$ADDONS_PATH/$package`.
-
-  The second step is performed by jsCoq `./build.sh` script, but you
-  may want to edit the `config.mk` file to select the packages you
-  want to install, then call `./build.sh` again.
-
-  A patch to improve mathcomp load time can be found in the
-  `etc/patch` folder, it is highly recommended as otherwise loading
-  mathcomp's `ssrnat` pulls half of the standard library.
+JsCoq used to support serialization to Json or Sexps for Coq's
+internal data structures, but this effort has been split to an
+independent development. See https://github.com/ejgallego/coq-serapi
+for more information.
 
 ## Commit tag conventions [work in progress]:
 
