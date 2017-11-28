@@ -127,14 +127,16 @@ pau:
 	rsync -avpz ~/research/jscoq pau:~/
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
-COQ_BRANCH=v8.7
-COQ_REPOS=https://github.com/coq/coq.git
+# COQ_BRANCH=v8.7
+COQ_BRANCH=v8.7+vm+allow_disable
+# COQ_REPOS=https://github.com/coq/coq.git
+COQ_REPOS=https://github.com/ejgallego/coq.git
 NJOBS=2
 
 coq-get:
 	mkdir -p coq-external coq-pkgs
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
-	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -coqide no
+	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -enable-vm no -coqide no
 	make -f coq-addons/ssreflect.addon get
 	make -f coq-addons/iris.addon get
 	make -f coq-addons/elpi.addon get
