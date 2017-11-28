@@ -66,7 +66,7 @@ Worker thread. While the branch is not yet ready for general use, it
 is the mandatory for developers. A preview build of jsCoq 0.9 is
 usually available at:
 
-<https://x80.org/rhino-trunk/>
+<https://x80.org/rhino-coq/v8.7-js-worker/>
 
 Be warned that the version uploaded to the link is quite unstable. Big
 structural changes are happening in 0.9, please stop by gitter or by
@@ -81,6 +81,7 @@ Previous Coq versions can be accessed at:
 
 - <https://x80.org/rhino-coq/v8.5/>
 - <https://x80.org/rhino-coq/v8.6/>
+- <https://x80.org/rhino-coq/v8.7/>
 
 In the future, we may provide builds corresponding to particular git
 hashes. See below for more jsCoq versions, including one adapted to
