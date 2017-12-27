@@ -1,0 +1,30 @@
+# -*- mode: makefile -*-
+# jscoq addon: equations
+
+include config.mk
+
+# From addons
+SYNC=rsync -avq
+SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+
+EQUATIONS_GIT=https://github.com/mattam82/Coq-Equations
+EQUATIONS_HOME=$(ADDONS_PATH)/Coq-Equations
+EQUATIONS_DEST=coq-pkgs/Equations
+
+export COQBIN=$(COQDIR)/bin/
+
+.PHONY: nothing get build install
+
+nothing:
+
+get:
+	[ -d $(EQUATIONS_HOME) ] || git clone -b 8.7 --depth=1 $(EQUATIONS_GIT) $(EQUATIONS_HOME)
+
+build:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(EQUATIONS_HOME); coq_makefile -f _CoqProject -o Makefile; make byte; make; make install
+
+jscoq-install:
+	mkdir -p $(EQUATIONS_DEST)
+	$(SYNC) $(EQUATIONS_HOME)/src/equations_plugin.cma $(EQUATIONS_DEST)
+	$(SYNCVO) $(EQUATIONS_HOME)/theories/ $(EQUATIONS_DEST)
+

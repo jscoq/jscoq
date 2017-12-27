@@ -1,5 +1,5 @@
 # -*- mode: makefile -*-
-.PHONY: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
+.PHONY: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core equations elpi ltac2
 
 # Makefile for addons
 include config.mk
@@ -235,9 +235,14 @@ color: $(COLOR_DEST)
 iris:
 	make -f coq-addons/iris.addon jscoq-install
 
-
 elpi:
 	make -f coq-addons/elpi.addon jscoq-install
+
+equations:
+	make -f coq-addons/equations.addon jscoq-install
+
+ltac2:
+	make -f coq-addons/ltac2.addon jscoq-install
 
 ########################################################################
 # Addons: relalg                                                       #

@@ -331,4 +331,12 @@ let pkgs : (string * string list * string list list) list=
     ; [ "elpi" ; "tutorial" ]
     ; [ "elpi" ; "derive" ]
     ]
+
+  ; "equations", [ "coq-reals" ],
+    [ [ "Equations" ]
+    ]
+
+  ; "ltac2", [ ],
+    [ [ "Ltac2" ]
+    ]
   ]

@@ -157,7 +157,7 @@ class CoqManager {
             base_path:  "./",
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
-                        'coq-base', 'coq-arith', 'coq-reals',
+                        'coq-base', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
                         'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ]
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',

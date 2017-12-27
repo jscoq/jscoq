@@ -26,10 +26,11 @@ let build_pkg (pid : string list) : Jslib.coq_pkg =
     try
       let open List                                    in
       let files     = Array.to_list @@ Sys.readdir dir in
+      (* eprintf "files for %s: %n@\n" dir (List.length files); *)
       filter is_vo files, filter is_cma files
     with
     | Sys_error _msg ->
-      (* eprintf "Warning: %s@\n%!" msg; *)
+      (* eprintf "Warning: %s@\n%!" _msg; *)
       incr n_warn;
       [], []
   in
