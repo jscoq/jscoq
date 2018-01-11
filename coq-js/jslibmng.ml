@@ -1,5 +1,7 @@
-(* JsCoq
- * Copyright (C) 2015 Emilio Gallego / Mines ParisTech
+(* JsCoq/SerAPI
+ *
+ * Copyright (C) 2016-2018 Emilio J. Gallego Arias
+ * Copyright (C) 2016-2018 Mines ParisTech
  *
  * LICENSE: GPLv3+
  *)
