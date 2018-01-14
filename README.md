@@ -1,12 +1,12 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.7)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.8)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
-accessibility of the Coq platform itself. Current stable version is jsCoq 0.8b supporting Coq 8.7, try it:
+accessibility of the Coq platform itself. Current stable version is jsCoq 0.8b supporting Coq 8.8, try it:
 
 <https://x80.org/rhino-coq/>
 
@@ -66,7 +66,7 @@ Worker thread. While the branch is not yet ready for general use, it
 is the mandatory for developers. A preview build of jsCoq 0.9 is
 usually available at:
 
-<https://x80.org/rhino-coq/v8.7-js-worker/>
+<https://x80.org/rhino-coq/v8.8-js-worker/>
 
 Be warned that the version uploaded to the link is quite unstable. Big
 structural changes are happening in 0.9, please stop by gitter or by
@@ -82,6 +82,7 @@ Previous Coq versions can be accessed at:
 - <https://x80.org/rhino-coq/v8.5/>
 - <https://x80.org/rhino-coq/v8.6/>
 - <https://x80.org/rhino-coq/v8.7/>
+- <https://x80.org/rhino-coq/v8.8/>
 
 In the future, we may provide builds corresponding to particular git
 hashes. See below for more jsCoq versions, including one adapted to
@@ -313,9 +314,9 @@ Here are the explanations of the steps:
 
   will do the job.
 
-* Second, build a 32-bit Coq v8.7 and all the libraries to
+* Second, build a 32-bit Coq v8.8 and all the libraries to
   be installed. `make coq` should do it automatically.
-  jsCoq is compatible with vanilla Coq v8.7.
+  jsCoq is compatible with vanilla Coq v8.8.
 
 * You also need jsCoq's version of CodeMirror:
 

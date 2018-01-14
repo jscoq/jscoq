@@ -121,7 +121,7 @@ let internal_log (this : jsCoq t) (str : js_string t) =
 let jscoq_feedback_handler this (fb : Feedback.feedback) =
   let open Feedback in
   let fb_s = Printf.sprintf "feedback for [%s]: %s\n%!"
-                            (string_of_sid fb.id)
+                            (string_of_sid fb.span_id)
                             (string_of_feedback fb.contents)  in
 
   internal_log this (string fb_s)
@@ -142,11 +142,12 @@ let setup_printers (this : jsCoq t) =
 let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
   setup_printers this;
   setup_pseudo_fs ();
-  let sid = Icoq.init { Icoq.ml_load    = Jslibmng.coq_cma_req;
-                        Icoq.fb_handler = (jscoq_feedback_handler this);
-                      } in
-
-  let init_callback () = ignore (invoke_handler this##.onInit this ()) in
+  let init_callback () = (
+      let _sid = Icoq.init { Icoq.ml_load    = Jslibmng.coq_cma_req;
+                             Icoq.fb_handler = (jscoq_feedback_handler this);
+                           } in
+      ignore(invoke_handler this##.onInit this ())
+    ) in
   let open Jslibmng in
   let pkg_callbacks = {
     bundle_info  = (fun pi -> ignore (invoke_handler this##.onBundleInfo   this pi));
@@ -157,7 +158,7 @@ let jscoq_init (this : jsCoq t) (init_info : initInfo t) =
     pkg_load     = (fun pi -> ignore (invoke_handler this##.onPkgLoad      this pi));
   } in
   Jslibmng.init init_callback pkg_callbacks init_info##.base_path_ init_info##.all_pkgs_ init_info##.init_pkgs_;
-  sid
+  Stateid.of_int 1
 
 let jscoq_version _this =
   let coqv, coqd, ccd, ccv = Icoq.version                     in
@@ -239,4 +240,8 @@ let _ =
   jsCoq##.onPkgProgress  := no_handler;
   jsCoq##.onLog          := no_handler;
   jsCoq##.onError        := no_handler;
+
+  (* This needs to happen here to not delete the effects the
+     library manager later. *)
+  Lib.init ();
   ()

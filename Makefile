@@ -127,28 +127,27 @@ pau:
 	rsync -avpz ~/research/jscoq pau:~/
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
-# COQ_BRANCH=v8.7
-COQ_BRANCH=v8.7+vm+allow_disable
-# COQ_REPOS=https://github.com/coq/coq.git
-COQ_REPOS=https://github.com/ejgallego/coq.git
-NJOBS=2
+# COQ_BRANCH=v8.8
+COQ_BRANCH=master
+COQ_REPOS=https://github.com/coq/coq.git
+NJOBS=4
 
 coq-get:
 	mkdir -p coq-external coq-pkgs
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
-	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -enable-vm no -coqide no
+	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 	make -f coq-addons/mathcomp.addon get
 	make -f coq-addons/iris.addon get
-	make -f coq-addons/elpi.addon get
 	make -f coq-addons/equations.addon get
 	make -f coq-addons/ltac2.addon get
+	#make -f coq-addons/elpi.addon get
 
 coq-build:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte
 	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
-	make -f coq-addons/elpi.addon build jscoq-install
 	make -f coq-addons/equations.addon build jscoq-install
 	make -f coq-addons/ltac2.addon build jscoq-install
+	# make -f coq-addons/elpi.addon build jscoq-install
 
 coq: coq-get coq-build

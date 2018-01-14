@@ -14,6 +14,7 @@ all:
 
 # Include coq files
 COQINCLUDE=-I $(COQDIR)/config     \
+	   -I $(COQDIR)/clib/      \
 	   -I $(COQDIR)/lib/       \
            -I $(COQDIR)/kernel/    \
            -I $(COQDIR)/library/   \
@@ -25,11 +26,11 @@ COQINCLUDE=-I $(COQDIR)/config     \
            -I $(COQDIR)/printing/  \
            -I $(COQDIR)/intf/      \
            -I $(COQDIR)/proofs/    \
+           -I $(COQDIR)/tactics/   \
            -I $(COQDIR)/vernac/    \
-           -I $(COQDIR)/stm/       \
-           -I $(COQDIR)/toplevel
+           -I $(COQDIR)/stm/
 
-COQOBJS=$(COQDIR)/lib/clib.cma			\
+COQOBJS=$(COQDIR)/clib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
 	$(COQDIR)/intf/intf.cma			\
 	$(COQDIR)/kernel/kernel.cma		\
@@ -42,9 +43,7 @@ COQOBJS=$(COQDIR)/lib/clib.cma			\
 	$(COQDIR)/printing/printing.cma		\
 	$(COQDIR)/tactics/tactics.cma		\
 	$(COQDIR)/vernac/vernac.cma		\
-	$(COQDIR)/stm/stm.cma			\
-	$(COQDIR)/toplevel/toplevel.cma		\
-	$(COQDIR)/parsing/highparsing.cma
+	$(COQDIR)/stm/stm.cma
 
 CAMLDEBUG=
 

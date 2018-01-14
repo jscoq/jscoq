@@ -10,6 +10,7 @@ SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --fil
 EQUATIONS_GIT=https://github.com/mattam82/Coq-Equations
 EQUATIONS_HOME=$(ADDONS_PATH)/Coq-Equations
 EQUATIONS_DEST=coq-pkgs/Equations
+EQUATIONS_BRANCH=8.8+alpha
 
 export COQBIN=$(COQDIR)/bin/
 
@@ -18,7 +19,7 @@ export COQBIN=$(COQDIR)/bin/
 nothing:
 
 get:
-	[ -d $(EQUATIONS_HOME) ] || git clone -b 8.7 --depth=1 $(EQUATIONS_GIT) $(EQUATIONS_HOME)
+	[ -d $(EQUATIONS_HOME) ] || git clone -b $(EQUATIONS_BRANCH) --depth=1 $(EQUATIONS_GIT) $(EQUATIONS_HOME)
 
 build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(EQUATIONS_HOME); coq_makefile -f _CoqProject -o Makefile; make byte; make; make install

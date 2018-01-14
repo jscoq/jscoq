@@ -1,7 +1,7 @@
 # Jobs to use
 JOBS=8
 
-COQ_VERSION:=v8.7
+COQ_VERSION:=v8.8
 # JSCOQ_BRANCH:=js-worker
 
 JSCOQ_VERSION:=$(COQ_VERSION)
@@ -18,12 +18,13 @@ ADDONS_PATH := $(current_dir)/coq-external
 COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
 # Addons to build
-ADDONS = mathcomp iris elpi equations ltac2
-# Woking on coq-8.7:
+# Working on coq-8.8:
+ADDONS = mathcomp iris equations ltac2 #elpi
+# Working on coq-8.7:
+# ADDONS = mathcomp iris equations ltac2 elpi
+# Working on coq-8.6:
 # ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott color
-# Woking on coq-8.6:
-# ADDONS += ssr-libs coquelicot flocq sf cpdt dsp hott color
-# Woking on coq-8.5:
+# Working on coq-8.5:
 # ADDONS += ssr-libs mtac coquelicot flocq tlc color sf cpdt hott dsp relalg unimath plugin-utils cel mirror-core
 
 # Have in every add-on a make jscoq target? We could certainly
