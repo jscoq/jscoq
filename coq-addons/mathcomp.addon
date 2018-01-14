@@ -1,5 +1,5 @@
 # -*- mode: makefile -*-
-# jscoq addon: ssreflect
+# jscoq addon: mathcomp
 
 include config.mk
 
@@ -9,7 +9,7 @@ SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --fil
 
 MATHCOMP_GIT=https://github.com/ejgallego/math-comp.git
 MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
-MATHCOMP_DEST=coq-pkgs/math-comp
+MATHCOMP_DEST=coq-pkgs/mathcomp
 
 .PHONY: nothing get build install
 

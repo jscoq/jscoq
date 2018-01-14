@@ -137,7 +137,7 @@ coq-get:
 	mkdir -p coq-external coq-pkgs
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
 	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -enable-vm no -coqide no
-	make -f coq-addons/ssreflect.addon get
+	make -f coq-addons/mathcomp.addon get
 	make -f coq-addons/iris.addon get
 	make -f coq-addons/elpi.addon get
 	make -f coq-addons/equations.addon get
@@ -145,7 +145,7 @@ coq-get:
 
 coq-build:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte
-	make -f coq-addons/ssreflect.addon build jscoq-install
+	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
 	make -f coq-addons/elpi.addon build jscoq-install
 	make -f coq-addons/equations.addon build jscoq-install

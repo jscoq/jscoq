@@ -1,5 +1,5 @@
 # -*- mode: makefile -*-
-.PHONY: mtac ssr-libs coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core equations elpi ltac2
+.PHONY: mathcomp mtac coquelicot flocq tlc color sf cpdt hott dsp plugin-utils extlib mirror-core equations elpi ltac2
 
 # Makefile for addons
 include config.mk
@@ -7,7 +7,7 @@ include config.mk
 # XXX: Move to a common makefile
 all:
 
-all-addons: ssr-libs coquelicot flocq mtac tlc color sf cpdt hott dsp plugin-utils extlib mirror-core
+all-addons: mathcomp coquelicot flocq mtac tlc color sf cpdt hott dsp plugin-utils extlib mirror-core peacoq
 
 ifndef VERBOSE
 .SILENT:
@@ -82,24 +82,6 @@ $(MTAC_DEST):
 mtac: $(MTAC_DEST)
 	-$(SYNC) $(MTAC_PLUG) $(MTAC_DEST)/mtac.cma
 	$(SYNCVO) $(MTAC_HOME)/ $(MTAC_DEST)
-
-########################################################################
-# Addons: ssreflect                                                    #
-########################################################################
-
-SSR_HOME=$(ADDONS_PATH)/math-comp/mathcomp
-SSR_PLUG=$(SSR_HOME)/ssreflect_plugin.cmo
-
-SSR_DEST=coq-pkgs/mathcomp/ssreflect
-MATHCOMP_DEST=coq-pkgs/mathcomp/
-
-# XXX: Use a pattern rule!
-$(SSR_DEST):
-	mkdir -p $(SSR_DEST)
-
-ssr-libs: $(SSR_DEST)
-#	$(SYNC) $(SSR_PLUG) $(SSR_DEST)
-	$(SYNCVO) $(SSR_HOME)/ $(MATHCOMP_DEST)
 
 ########################################################################
 # Addons: coquelicot                                                   #
@@ -232,6 +214,10 @@ color: $(COLOR_DEST)
 ########################################################################
 # Addons: stdpp / iris                                                 #
 ########################################################################
+
+mathcomp:
+	make -f coq-addons/mathcomp.addon jscoq-install
+
 iris:
 	make -f coq-addons/iris.addon jscoq-install
 
@@ -263,38 +249,17 @@ relalg: $(RELALG_DEST) $(RELALG_FILES)
 # Build helpers                                                        #
 ########################################################################
 
-all-build-clean:
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make clean || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake clean || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake clean || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make clean
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make clean
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make clean || true
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make clean
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make clean
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make clean
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make clean
-
 all-build: all-build-ssr all-build-std
 
 all-build-ssr:
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(SSR_HOME);      make -j $(JOBS) || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COQCOT_HOME); ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(FLOCQ_HOME);  ./remake          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME);      make -j $(JOBS)          || true
 
 all-build-std:
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(MTAC_HOME);     make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(SF_HOME);       make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(HOTT_HOME);     make -j $(JOBS)          || true
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(RELALG_HOME);   make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make -j $(JOBS) proof_vo || true
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(UNIM_HOME);     make -j $(JOBS)          || true
-	# export PATH=$(COQDIR)/bin:$$PATH; cd $(EXTLIB_HOME);   make || true
 
 

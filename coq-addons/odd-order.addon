@@ -1,5 +1,5 @@
 # -*- mode: makefile -*-
-# jscoq addon: ssreflect
+# jscoq addon: odd-order
 
 include config.mk
 

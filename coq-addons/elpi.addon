@@ -1,5 +1,5 @@
 # -*- mode: makefile -*-
-# jscoq addon: ssreflect
+# jscoq addon: mathcomp
 
 include config.mk
 
