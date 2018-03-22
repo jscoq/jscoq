@@ -18,10 +18,10 @@ coq-tools:
 ########################################################################
 
 %.cma.js: %.cma
-	js_of_ocaml --wrap-with-fun= $< -o $<.js
+	js_of_ocaml --wrap-with-fun= -o $<.js $<
 
 %.cmo.js: %.cmo
-	js_of_ocaml --wrap-with-fun= $< -o $<.js
+	js_of_ocaml --wrap-with-fun= -o $<.js $<
 
 # XXX FIXME
 # Compile all cmo/cma in coq-pkgs
