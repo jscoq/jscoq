@@ -110,7 +110,7 @@ endif
 # JSOO_OPTS+=-opt 3
 
 jscoq.js: jscoq.byte $(JSFILES)
-	js_of_ocaml $(JSOO_OPTS) +nat.js +weak.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
+	js_of_ocaml $(JSOO_OPTS) +nat.js +dynlink.js +toplevel.js $(JSFILES) jscoq.byte
 
 jscoq64: jscoq.js
 
