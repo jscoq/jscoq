@@ -18,10 +18,10 @@ coq-tools:
 ########################################################################
 
 %.cma.js: %.cma
-	js_of_ocaml --wrap-with-fun $< -o $<.js
+	js_of_ocaml --wrap-with-fun= $< -o $<.js
 
 %.cmo.js: %.cmo
-	js_of_ocaml --wrap-with-fun $< -o $<.js
+	js_of_ocaml --wrap-with-fun= $< -o $<.js
 
 # XXX FIXME
 # Compile all cmo/cma in coq-pkgs
@@ -127,8 +127,7 @@ pau:
 	rsync -avpz ~/research/jscoq pau:~/
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
-# COQ_BRANCH=v8.8
-COQ_BRANCH=master
+COQ_BRANCH=v8.8
 COQ_REPOS=https://github.com/coq/coq.git
 NJOBS=4
 
