@@ -280,6 +280,8 @@ Incomplete list of places where jsCoq has been used:
 * Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
 * School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
 * Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
+* Elpi Tutorial / Demo at CoqPL 2017 _Los Angeles_ https://lpcic.github.io/coq-elpi-www/tutorial-demo_CoqPL2018.html
+* Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
 
 ### jsCoq in the press
 
