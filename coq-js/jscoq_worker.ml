@@ -76,7 +76,7 @@ type jscoq_answer =
   | Cancelled of Stateid.t list
 
   (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t
+  | GoalInfo  of Stateid.t * Pp.t option
 
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t
@@ -206,9 +206,10 @@ let jscoq_execute =
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
     doc := ndoc; out_fn @@ Log (Debug, str @@ "observe " ^ (Stateid.to_string sid))
 
-  | Goals _sid        ->
-    let goal_pp = pp_opt @@ Icoq.pp_of_goals () in
-    out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), goal_pp)
+  | Goals sid        ->
+    let doc = fst !doc in
+    let goal_pp = Option.map pp_opt @@ Icoq.pp_of_goals ~doc sid in
+    out_fn @@ GoalInfo (sid, goal_pp)
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 

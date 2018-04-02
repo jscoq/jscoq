@@ -49,8 +49,8 @@ val coq_init : coq_opts -> Stm.doc * Stateid.t
 (** [version] returns miscellaneous version information *)
 val version : string * string * string * string * int
 
-(** [richpp_of_goals ()] returns a pp representing the current goals  *)
-val pp_of_goals : unit -> Pp.t (* Proof.pre_goals *)
+(** [pp_of_goals ~doc sid] returns a pp representing the current goals  *)
+val pp_of_goals : doc:Stm.doc -> Stateid.t -> Pp.t option
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit
