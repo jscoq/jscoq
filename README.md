@@ -282,6 +282,8 @@ Incomplete list of places where jsCoq has been used:
 * Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
 * Elpi Tutorial / Demo at CoqPL 2017 _Los Angeles_ https://lpcic.github.io/coq-elpi-www/tutorial-demo_CoqPL2018.html
 * Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
+* Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
+  https://specfun.inria.fr/amahboub/Jncf18/cours2.html
 
 ### jsCoq in the press
 
