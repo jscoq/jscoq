@@ -8,6 +8,7 @@ SYNC=rsync -avq
 SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
 
 ELPI_GIT=https://github.com/LPCIC/coq-elpi.git
+ELPI_BRANCH=coq-v8.8
 ELPI_HOME=$(ADDONS_PATH)/elpi
 ELPI_DEST=coq-pkgs/elpi
 
@@ -18,7 +19,7 @@ export COQBIN=$(COQDIR)/bin/
 nothing:
 
 get:
-	[ -d $(ELPI_HOME) ] || git clone --depth=1 $(ELPI_GIT) $(ELPI_HOME)
+	[ -d $(ELPI_HOME) ] || git clone --depth=1 -b $(ELPI_BRANCH) $(ELPI_GIT) $(ELPI_HOME)
 
 build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(ELPI_HOME); make; make install

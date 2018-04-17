@@ -139,7 +139,7 @@ coq-get:
 	make -f coq-addons/iris.addon get
 	make -f coq-addons/equations.addon get
 	make -f coq-addons/ltac2.addon get
-	#make -f coq-addons/elpi.addon get
+	make -f coq-addons/elpi.addon get
 
 coq-build:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte

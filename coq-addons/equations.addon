@@ -10,7 +10,7 @@ SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --fil
 EQUATIONS_GIT=https://github.com/mattam82/Coq-Equations
 EQUATIONS_HOME=$(ADDONS_PATH)/Coq-Equations
 EQUATIONS_DEST=coq-pkgs/Equations
-EQUATIONS_BRANCH=8.8+alpha
+EQUATIONS_BRANCH=8.8
 
 export COQBIN=$(COQDIR)/bin/
 
