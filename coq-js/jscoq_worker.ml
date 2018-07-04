@@ -28,9 +28,28 @@ let rec pp_opt (d : Pp.t) = let open Pp in
     )
   [@@warning "-4"]
 
+let pp_fmt (d : Pp.t) =
+ try
+  let w = Option.default 60 (Topfmt.get_margin ()) in
+  let b = Buffer.create 1024 in
+  let f = Format.formatter_of_buffer b in
+  Format.pp_set_formatter_tag_functions f { Format.
+     mark_open_tag = (fun t -> Format.sprintf "<span class='%s'>" t);
+     mark_close_tag = (fun _ -> Format.sprintf "</span>");
+     print_open_tag = (fun _ -> ());
+     print_close_tag = (fun _ -> ());
+  };
+  Format.pp_set_tags f true;
+  Format.pp_set_margin f w;
+  Pp.pp_with f (pp_opt d);
+  Format.pp_print_flush f ();
+  Pp.str (Buffer.contents b)
+ with e -> Pp.str (Printexc.to_string e)
+
+
 let fbc_opt (fbc : Feedback.feedback_content) =
   Feedback.(match fbc with
-  | Message(id,loc,msg) -> Message(id,loc,pp_opt msg)
+  | Message(id,loc,msg) -> Message(id,loc,pp_fmt msg)
   | _ -> fbc)
   [@@warning "-4"]
 
@@ -183,7 +202,7 @@ let exec_getopt on =
 
 let coq_exn_info exn =
     let (e, info) = CErrors.push exn                   in
-    let pp_exn    = pp_opt @@ CErrors.iprint (e, info) in
+    let pp_exn    = pp_fmt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
 let jscoq_execute =
@@ -206,7 +225,7 @@ let jscoq_execute =
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
     doc := ndoc; out_fn @@ Log (Debug, str @@ "observe " ^ (Stateid.to_string sid))
 
-  | Goals _sid        -> out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), pp_opt @@ Icoq.pp_of_goals ())
+  | Goals _sid        -> out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), pp_fmt @@ Icoq.pp_of_goals ())
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
