@@ -284,6 +284,7 @@ Incomplete list of places where jsCoq has been used:
 * Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
 * Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
   https://specfun.inria.fr/amahboub/Jncf18/cours2.html
+* [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
 
 ### jsCoq in the press
 
