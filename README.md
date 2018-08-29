@@ -322,7 +322,7 @@ Here are the explanations of the steps:
 * You also need jsCoq's version of CodeMirror:
 
   ```
-  $ git submodules update --remote
+  $ git submodule update --remote
   $ cd ui-external/CodeMirror && npm install
   ```
 
