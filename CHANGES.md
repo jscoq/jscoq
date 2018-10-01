@@ -1,15 +1,9 @@
-+ JsCoq 1.0 ((())((()()(()))((()()))))
---------------------------------------
-
-  - [ ] Move to sertop.
-  - [ ] Worker support.
-
-  Released on: 
-
-+ JsCoq 0.9 "The idea kills the idea"
+# JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - [ ] UI layout.
+  - [ ] Support for UI layouts.
+  - [_] Use Dune as build system
+  - [x] Support for Coq 8.9
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6.
   - [x] Migrated to ppx for jsoo syntax.
@@ -17,7 +11,7 @@
 
   Released on: 
 
-+ JsCoq 0.8 "The most inefficient programming language ever designed"
+# JsCoq 0.8 "The most inefficient programming language ever designed"
 -------------------------------------
 
   - Port to Ocaml 4.03.0.
@@ -26,42 +20,42 @@
 
   Released on: 13/06/2016
 
-+ JsCoq 0.7 "Hott"
+# JsCoq 0.7 "Hott"
 --------------------------------
 
   - New panel support.
   - Support many more addons.
 
-+ JsCoq 0.6 "���𐄽𐄺�"
+# JsCoq 0.6 "���𐄽𐄺�"
 --------------------------------
 
   - JSON/sexp serialization of Constr_uctions.
   - Add jscoq loader.
 
-+ JsCoq 0.5 "Alexandria"
+# JsCoq 0.5 "Alexandria"
 --------------------------------
 
   - Library manager support.
   - Coqdoc backend.
 
-+ JsCoq 0.4 "For real"
+# JsCoq 0.4 "For real"
 --------------------------------
 
   - New manager for multi-snippet documents.
   - Rudimentary Cache of cma => js compilation.
 
-+ JsCoq 0.3 "Kitties everywhere"
+# JsCoq 0.3 "Kitties everywhere"
 --------------------------------
 
   - New IDE/parsing based on CodeMirror.
 
-+ JsCoq 0.2 "Castle edition"
+# JsCoq 0.2 "Castle edition"
 ----------------------------
 
   - Asynchronous library caching.
   - CMA precompilation
 
-+ JsCoq 0.1 "Mediterranean edition"
+# JsCoq 0.1 "Mediterranean edition"
 -----------------------------------
 
   - Initial release, support for plugins and modules.

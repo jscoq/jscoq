@@ -8,7 +8,7 @@ SYNC=rsync -avq
 SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
 
 ELPI_GIT=https://github.com/LPCIC/coq-elpi.git
-ELPI_BRANCH=coq-v8.8
+ELPI_BRANCH=coq-v8.9
 ELPI_HOME=$(ADDONS_PATH)/elpi
 ELPI_DEST=coq-pkgs/elpi
 

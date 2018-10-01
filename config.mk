@@ -1,7 +1,7 @@
 # Jobs to use
 JOBS=8
 
-COQ_VERSION:=v8.8
+COQ_VERSION:=v8.9
 # JSCOQ_BRANCH:=js-worker
 
 JSCOQ_VERSION:=$(COQ_VERSION)
@@ -18,8 +18,10 @@ ADDONS_PATH := $(current_dir)/coq-external
 COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
 # Addons to build
+# Working on coq-8.9:
+ADDONS = mathcomp iris ltac2 elpi dsp #equations
 # Working on coq-8.8:
-ADDONS = mathcomp iris equations ltac2 dsp #elpi
+# ADDONS = mathcomp iris ltac2 elpi dsp equations
 # Working on coq-8.7:
 # ADDONS = mathcomp iris equations ltac2 elpi
 # Working on coq-8.6:

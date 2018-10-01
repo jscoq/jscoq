@@ -8,7 +8,7 @@ SYNC=rsync -avq
 SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
 
 LTAC2_GIT=https://github.com/ppedrot/ltac2
-LTAC2_BRANCH=v8.8
+LTAC2_BRANCH=v8.9
 LTAC2_HOME=$(ADDONS_PATH)/ltac2
 LTAC2_DEST=coq-pkgs/Ltac2
 

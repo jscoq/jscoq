@@ -94,7 +94,7 @@ let add_load_path pkg pkg_path has_ml =
   if has_ml then Mltop.(add_coq_path { path_spec = MlPath pkg_path; recursive = false; })
 
 let add_to_doc sid s =
-  let pa = Pcoq.Gram.parsable (Stream.of_string s) in
+  let pa = Pcoq.Parsable.make (Stream.of_string s) in
   let doc = !gdoc in
   let ast = Stm.parse_sentence ~doc sid pa in
   let ndoc, nsid, _ = Stm.add ~doc ~ontop:sid false ast in
@@ -114,7 +114,7 @@ let commit_doc sid =
   ()
 
 let query sid cmd =
-  let pa = Pcoq.Gram.parsable (Stream.of_string cmd) in
+  let pa = Pcoq.Parsable.make (Stream.of_string cmd) in
   let doc = !gdoc in
   Stm.query ~doc ~route:0 ~at:sid pa
 
