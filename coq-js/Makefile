@@ -84,9 +84,10 @@ WOVR=-w -31
 # having to set CAML_LD_LIBRARY_PATH here is strange...
 jscoq.byte: $(COQDEPS) jscoq.cmo
 	CAML_LD_LIBRARY_PATH=$(COQDIR)/kernel/byterun:$(CAML_LD_LIBRARY_PATH) \
+			  OCAMLPATH=$(COQDIR) \
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
-	   -package str,dynlink,threads,camlp5,camlp5.gramlib                     \
-	   $(JSOOFLAGS) $(COQOBJS)                                                \
+	   -package str,dynlink,threads,camlp5,camlp5.gramlib,coq.toplevel                     \
+	   $(JSOOFLAGS)                                                \
            +nums.cma jslib.cmo icoq.cmo jslibmng.cmo jscoq.cmo -o jscoq.byte
 
 jscoq32: jscoq.byte
