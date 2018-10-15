@@ -1,7 +1,7 @@
 # Jobs to use
 JOBS=8
 
-COQ_VERSION:=v8.8
+COQ_VERSION:=v8.9
 # JSCOQ_BRANCH:=js-worker
 
 JSCOQ_VERSION:=$(COQ_VERSION)

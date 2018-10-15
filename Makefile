@@ -127,7 +127,7 @@ pau:
 	rsync -avpz ~/research/jscoq pau:~/
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
-COQ_BRANCH=v8.8
+COQ_BRANCH=v8.9
 COQ_REPOS=https://github.com/coq/coq.git
 NJOBS=4
 
