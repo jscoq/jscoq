@@ -1,5 +1,5 @@
-# JsCoq 1.0 ((())((()()(()))((()()))))
---------------------------------------
+# JsCoq 0.10 ((())((()()(()))((()()))))
+---------------------------------------
 
   - [ ] Automatic parsing mode.
   - [ ] Execution gutters.
@@ -9,9 +9,8 @@
 
 Pending worker tasks:
 
-+ A race: we cancel, then add before the cancelled message arrives.
-  Review and factorize code here.
-+ don't reexec states, this brings back the parser to an improper state.
++ Race: we cancel, then we add before the cancelled event arrives.
++ Be careful about re-execing states, as this brings back the parser to an improper state.
 + quick prev/next creates problems in long commands.
 + we are reusing span_ids and this is not ok for the STM.
 
@@ -41,6 +40,7 @@ Pending worker tasks:
   - [x] Auto-completion of tactics and lemmas. (@corwin-of-amber)
   - [x] PoC running on Node.js. (@corwin-of-amber)
   - [x] Improved goal display (@ejgallego)
+  - [x] Use Dune as build system (@ejgallego)
 
   Released on: 
 

@@ -1,20 +1,20 @@
+# General ignores
 *~
-*.byte
-*.cmi
-*.cmo
-*.cmt
-*.cmti
-*.sw?
-.AppleDouble
-coq-js/jscoq_worker.js
-coq-tools/mklibfs
-coq-tools/mklibjson
-coq-pkgs/
-local/
-dist/
-dist-hott/
-index.html
-Makefile.libs
+
+# Externals
 coq-external/
-node_modules/
+
+# Dune stuff
+_build
+.merlin
+*.install
+
+# Links for in-place serving
+node_modules
+coq-pkgs
+coq-js/jscoq_worker.bc.js
+
+# Apple-stuff
 .DS_Store
+.AppleDouble
+
