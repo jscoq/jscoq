@@ -45,7 +45,6 @@ install:
 
 script:
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
-- ./build.sh
 - git submodule update --remote
-- npm install
+- ./build.sh
 - echo -en 'travis_fold:end:jscoq.build\\r'

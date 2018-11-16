@@ -5,17 +5,11 @@
   - [ ] Execution gutters.
   - [ ] Move to sertop.
   - [ ] UI layout.
-  - [x] Worker support.
-  - [_] Use Dune as build system
 
 Pending worker tasks:
 
-+ Race: we cancel, then add before the cancelled arrives. Review and
-  factorize code.
-+ don't reexec states, as this brings back the parser to an improper
-  state.
-+ Better printing.
-+ Library tweaks.
++ Race: we cancel, then we add before the cancelled event arrives.
++ Be careful about re-execing states, as this brings back the parser to an improper state.
 + quick prev/next creates problems in long commands.
 + we are reusing span_ids and this is not ok for the STM.
 
@@ -24,8 +18,8 @@ Pending worker tasks:
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - [ ] Support for UI layouts.
-  - [_] Use Dune as build system
+  - [x] Use Dune as build system
+  - [x] Worker support.
   - [x] Support for Coq 8.9
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6/8.7/8.8/8.9.

@@ -1,7 +1,7 @@
 (* JsCoq/SerAPI
  *
- * Copyright (C) 2016-2018 Emilio J. Gallego Arias
- * Copyright (C) 2016-2018 Mines ParisTech
+ * Copyright (C) 2016-2019 Emilio J. Gallego Arias
+ * Copyright (C) 2016-2019 Mines ParisTech
  *
  * LICENSE: GPLv3+
  *)
@@ -18,10 +18,10 @@ open Js_of_ocaml
 let verb = false
 
 (* Main file_cache, indexed by url *)
-type cache_entry = {
-  file_content : string  ; (* file_content is backed by a TypedArray, thanks to @hhugo *)
-  md5          : Digest.t;
-}
+type cache_entry =
+  { file_content : string   (* file_content is backed by a TypedArray, thanks to @hhugo *)
+  ; md5          : Digest.t
+  }
 
 (* Number of actual files in a full distribution ~ 2000 *)
 let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
@@ -29,12 +29,12 @@ let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
 (* The cma resolver cache maps a cma module to its actual path. *)
 let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 103
 
-type progress_info = {
-  bundle : string;
-  pkg    : string;
-  loaded : int;
-  total  : int;
-}
+type progress_info =
+  { bundle : string
+  ; pkg    : string
+  ; loaded : int
+  ; total  : int
+  }
 
 type lib_event =
   | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
@@ -184,7 +184,7 @@ let coq_cma_link cmo_file =
   Feedback.feedback (Feedback.FileDependency(Some cmo_file, cmo_file));
   try
     (* let js_code = (Hashtbl.find file_cache cmo_file).file_content in *)
-    let js_code = 
+    let js_code =
       try (Hashtbl.find file_cache cmo_file).file_content
       with Not_found -> Sys_js.read_file ~name:(cmo_file ^ ".js") in
     (* When eval'ed, the js_code will return a closure waiting for the

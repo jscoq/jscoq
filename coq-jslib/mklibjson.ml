@@ -19,7 +19,7 @@ let is_cma s =
   Filename.check_suffix s ".cma" ||
   Filename.check_suffix s ".cmo"
 
-let select (l : string list) (sel : Dl.selector) = 
+let select (l : string list) (sel : Dl.selector) =
   let open Dl in
   match sel with
   | All -> l

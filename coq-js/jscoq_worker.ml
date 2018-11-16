@@ -8,6 +8,7 @@
  *)
 
 open Js_of_ocaml
+open Jscoqlib
 
 open Jser_feedback
 open Jser_feedback.Feedback
@@ -127,16 +128,22 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
       let json_string = Js.to_string (Json.output cobj) in
       Yojson.Safe.from_string json_string
 
+let _answer_to_jsobj msg =
+  let json_msg = jscoq_answer_to_yojson msg                            in
+  let json_str = Yojson.Safe.to_string json_msg                        in
+  (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
+  Js._JSON##(parse (Js.string json_str))
+
 let answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg       in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
 type progress_info =
-  [%import: Jslibmng.progress_info]
+  [%import: Jscoqlib.Jslibmng.progress_info]
   [@@deriving yojson]
 
 type lib_event =
-  [%import: Jslibmng.lib_event]
+  [%import: Jscoqlib.Jslibmng.lib_event]
   [@@deriving yojson]
 
 let lib_event_to_jsobj msg =

@@ -6,7 +6,7 @@ The required packages can be obtained using `apt` (Debian), MacPorts/Homebrew (m
 or the like.
 
 ## Prerequisites
- * OPAM 2  (use binary installer from https://opam.ocaml.org/doc/Install.html)
+ * OPAM 2 (you can the installer from https://opam.ocaml.org/doc/Install.html)
  * m4 (`apt install m4`)
  * bubblewrap (`apt install bubblewrap`)
  * npm (bundled with latest Nodejs, follow the [instructions](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)).
@@ -28,13 +28,11 @@ make coq
 ```
 ./build.sh
 ```
- 5. Resolve JavaScript dependencies using `npm`.
-```
-npm install
-```
+
+This will create a working distribution under `_build/default`.
 
 Now serve the files at the root directory of the project via HTTP, and
-navigate your browser to `http://localhost/newide.html`, or run them locally:
+navigate your browser to `http://localhost/index.html`, or run them locally:
 ```
  google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
 ```
