@@ -1,5 +1,5 @@
 (* JsCoq
- * Copyright (C) 2016 Emilio Gallego / Mines ParisTech
+ * Copyright (C) 2016-2019 Emilio Gallego / Mines ParisTech
  *
  * LICENSE: GPLv3+
  *)
@@ -10,12 +10,12 @@
  * loading in the browser.
 *)
 
-type progress_info = {
-  bundle : string;
-  pkg    : string;
-  loaded : int;
-  total  : int;
-}
+type progress_info =
+  { bundle : string
+  ; pkg    : string
+  ; loaded : int
+  ; total  : int
+  }
 
 type lib_event =
   | LibInfo     of string * Jslib.coq_bundle (* Information about the bundle, we could well put the json here *)
