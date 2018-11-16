@@ -28,21 +28,21 @@ let init_by_id id app =
   let b = Dom_html.getElementById id in
   init b app
 
-let add lb ll el =
+let add lb _ll el =
   if lb.append then (
     Dom.appendChild lb.buffer el;
-    lb.buffer##scrollTop <- lb.buffer##scrollHeight
+    lb.buffer##.scrollTop := lb.buffer##.scrollHeight
   ) else
-    Dom.insertBefore lb.buffer el (lb.buffer##firstChild)
+    Dom.insertBefore lb.buffer el (lb.buffer##.firstChild)
 
 let replace lb ll el =
   if lb.append then (
-    Js.Opt.case (lb.buffer##lastChild)
+    Js.Opt.case (lb.buffer##.lastChild)
       (fun () -> add lb ll el)
       (fun rn -> Dom.replaceChild lb.buffer el rn);
-    lb.buffer##scrollTop <- lb.buffer##scrollHeight
+    lb.buffer##.scrollTop := lb.buffer##.scrollHeight
   ) else (
-    Js.Opt.case (lb.buffer##firstChild)
+    Js.Opt.case (lb.buffer##.firstChild)
       (fun () -> add lb ll el)
       (fun rn -> Dom.replaceChild lb.buffer el rn)
   )
@@ -64,7 +64,7 @@ let printf_rep lb =
   Printf.ksprintf (replace_text lb Info)
 
 (* jscoq internal log *)
-let jscoq_log : t =
+let _jscoq_log : t =
   try
     init_by_id "message-panel"  false
   with Not_found ->

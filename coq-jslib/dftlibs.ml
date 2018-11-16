@@ -1,3 +1,10 @@
+type selector =
+  | All
+  | Only of string list
+  | Except of string list
+
+let all_of pkgs = List.map (fun pkg -> (pkg, All)) pkgs
+
 let to_name = String.concat "_"
 let to_dir  = String.concat "/"
 let prefix  = "coq-pkgs"
@@ -56,14 +63,7 @@ let coq_theory_list =
 
 (* Packages: name, deps, modules *)
 
-type selector =
-  | All
-  | Only of string list
-  | Except of string list
-
-let all_of pkgs = List.map (fun pkg -> (pkg, All)) pkgs
-
-let pkgs : (string * string list * (string list * selector) list) list=
+let pkgs : (string * string list * (string list * selector) list) list =
   [ "init", [], all_of
     [ ["Coq"; "ltac"]
     ; ["Coq"; "syntax"]
@@ -347,6 +347,7 @@ let pkgs : (string * string list * (string list * selector) list) list=
 
   ; "equations", [ "coq-reals" ], all_of
     [ [ "Equations" ]
+    ; [ "Equations" ; "Prop" ]
     ]
 
   ; "ltac2", [ ], all_of
