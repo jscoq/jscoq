@@ -16,3 +16,6 @@ index.html
 Makefile.libs
 coq-external/
 node_modules/
+_build
+.merlin
+*.install

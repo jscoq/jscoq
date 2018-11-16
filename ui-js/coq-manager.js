@@ -207,7 +207,7 @@ class CoqManager {
         this.waitForPkgs = [];
 
         var coq_script = this.options.base_path +
-            (this.options.mock ? 'coq-js/jsmock' : 'coq-js/jscoq');
+º            (this.options.mock ? 'coq-js/jsmock' : '_build/default/coq-js/jscoq.bc');
 
         // Missing Promise.bind from the browsers....
         loadJs(coq_script)().then(() => this.setupCoq());

@@ -1,0 +1,25 @@
+(library
+ (name jscoqlib)
+ (modes byte)
+ (modules :standard \ jscoq jslog)
+ (preprocess (pps js_of_ocaml.ppx ppx_deriving_yojson))
+ (flags :standard -w -39)
+ ; (preprocess (staged_pps ppx_import ppx_sexp_conv))
+ (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm))
+
+; js_of_ocaml-tyxml tyxml
+
+(executable
+ (name jscoq)
+ (modules jscoq)
+ (modes byte)
+ (preprocess (pps js_of_ocaml.ppx))
+ (js_of_ocaml
+  (javascript_files
+    ../coq-libjs/mutex.js
+    ../coq-libjs/unix.js
+    ../coq-libjs/str.js
+    ../coq-libjs/coq_vm.js)
+  (flags :standard --dynlink +nat.js +dynlink.js +toplevel.js))
+ (link_flags -linkall)
+ (libraries jscoqlib))

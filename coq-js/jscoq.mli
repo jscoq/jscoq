@@ -16,6 +16,8 @@ open Js_of_ocaml
 open Js
 open Dom
 
+open Jscoqlib
+
 (* Packages to load first *)
 class type initInfo = object
   method init_pkgs_ : js_string t js_array t readonly_prop

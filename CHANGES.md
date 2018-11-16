@@ -1,8 +1,7 @@
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - [ ] Support for UI layouts.
-  - [_] Use Dune as build system
+  - [x] Use Dune as build system
   - [x] Support for Coq 8.9
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6.
