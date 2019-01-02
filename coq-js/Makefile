@@ -56,6 +56,11 @@ BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 JSOOCFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_import,ppx_deriving_yojson
 JSOOLFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_deriving_yojson
 
+ifeq "${shell uname -s}" "Darwin"
+# On macOS, ocamlc invokes gcc, which then complains about missing symbols from libcoqrun.
+JSOOLFLAGS+=-cclib "-undefined dynamic_lookup"
+endif
+
 # Our OCAML rules, we could refine the includes
 %.cmi: %.mli
 	ocamlfind ocamlc -c $(BYTEFLAGS) $(COQINCLUDE) $(JSOOCFLAGS) $<
