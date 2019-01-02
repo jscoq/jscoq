@@ -70,12 +70,12 @@ DISTEXT=$(addprefix ui-external/,CodeMirror CodeMirror-TeX-input pace d3.min.js 
 dist: libs
 	ln -sf $(DISTHTML) index.html
 	mkdir -p $(BUILDDIR)
-        # Copy static files, XXX: minimize
-	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
-        # The monster
+	# Copy static files, XXX: minimize
+	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --exclude='*.cmo' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
+	# The monster
 	mkdir -p $(BUILDDIR)/coq-js/
-	cp -a coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
-        # Externals
+	cp -a coq-js/jscoq.js $(BUILDDIR)/coq-js/
+	# Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
 
 BUILDDIR_HOTT=$(BUILDDIR)-hott
@@ -141,8 +141,17 @@ coq-get:
 	make -f coq-addons/ltac2.addon get
 	#make -f coq-addons/elpi.addon get
 
+COQ_MAKE_FLAGS = -j $(NJOBS)
+
+ifeq "${shell uname -s}" "Darwin"
+# Coq cannot be built natively on macOS with 32-bit.
+# At least not unless plugins are linked statically.
+COQ_MAKE_FLAGS += BEST=byte
+endif
+
+
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte
+	cd coq-external/coq-$(COQ_VERSION)+32bit && make $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
 	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
 	make -f coq-addons/equations.addon build jscoq-install
