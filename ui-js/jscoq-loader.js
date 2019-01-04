@@ -44,28 +44,33 @@ var loadJsCoq;
     // - D3
     // - jsCoq = cm-provider + coq-packages + coq-manager
 
-    loadJsCoq = function(base_path) {
+    loadJsCoq = function(base_path, node_modules_path) {
 
+        base_path = base_path || "./";
+        if (/[^/]$/.exec(base_path)) base_path += "/";
+
+        node_modules_path = node_modules_path || base_path + "node_modules/";
+        if (/[^/]$/.exec(node_modules_path)) node_modules_path += "/";
+
+        loadCss(node_modules_path + 'codemirror/lib/codemirror');
+        loadCss(node_modules_path + 'codemirror/theme/blackboard');
+        loadCss(node_modules_path + 'codemirror/theme/blackboard');
+        loadCss(node_modules_path + 'codemirror/addon/hint/show-hint');
         loadCss(base_path + 'ui-css/coq-log');
-        loadCss(base_path + 'ui-external/CodeMirror/lib/codemirror');
-        loadCss(base_path + 'ui-external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'ui-external/CodeMirror/theme/blackboard');
-        loadCss(base_path + 'ui-external/CodeMirror/addon/hint/show-hint');
         loadCss(base_path + 'ui-css/coq-base');
         loadCss(base_path + 'ui-css/coq-light');
 
-        var files = ['ui-external/CodeMirror/lib/codemirror',
-                     'ui-external/CodeMirror/mode/coq/coq',
-                     'ui-external/CodeMirror/keymap/emacs',
-                     'ui-external/CodeMirror/addon/hint/show-hint',
-                     'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
-                     'ui-external/d3.min',
-                     'ui-js/cm-provider',
-                     'ui-js/coq-packages',
-                     'ui-js/coq-layout-classic',
-                     'ui-js/coq-manager'];
-
-        files = files.map(file => base_path + file);
+        var files = [node_modules_path + 'codemirror/lib/codemirror',
+                     node_modules_path + 'codemirror/keymap/emacs',
+                     node_modules_path + 'codemirror/addon/hint/show-hint',
+                     node_modules_path + 'd3/dist/d3.min',
+                     base_path + 'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
+                     base_path + 'coq-js/jscoq',
+                     base_path + 'ui-js/coq-mode',
+                     base_path + 'ui-js/cm-provider',
+                     base_path + 'ui-js/coq-packages',
+                     base_path + 'ui-js/coq-layout-classic',
+                     base_path + 'ui-js/coq-manager'];
 
         return files.reduce(function(prom, file) {
             return prom.then(loadJs(file));

@@ -7,6 +7,8 @@
  * Coq.
  *)
 
+open Js_of_ocaml
+
 (* XXX *)
 let str = Pp.str
 let rec pp_opt (d : Pp.t) = let open Pp in
