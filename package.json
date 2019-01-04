@@ -1,0 +1,21 @@
+{
+  "name": "jscoq",
+  "version": "0.8.2",
+  "description": "Run the Coq Proof Assistant in your browser!",
+  "main": "newide.html",
+  "dependencies": {
+    "codemirror": "^5.42.2",
+    "d3": "^5.7.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ejgallego/jscoq.git"
+  },
+  "author": "ejgallego",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ejgallego/jscoq/issues"
+  },
+  "homepage": "https://github.com/ejgallego/jscoq#readme"
+}
