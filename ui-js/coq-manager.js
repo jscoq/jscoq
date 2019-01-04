@@ -200,7 +200,8 @@ class CoqManager {
         // Display packages panel:
         var pkg_panel = document.getElementById('packages-panel').parentNode;
         pkg_panel.classList.remove('collapsed');
-        this.layout.show();
+        
+        requestAnimationFrame(() => this.layout.show());
 
         // Get Coq version, etc...
         this.coq.getInfo();
@@ -277,8 +278,8 @@ class CoqManager {
     feedProcessed(sid) {
 
         this.layout.proof.textContent +=
-            "\ncoq worker is ready with sid!! " + sid.toString() +
-            "\nPlease, wait for library loading";
+            "\nCoq worker is ready with sid = " + sid.toString() + "\n";
+            /* init libraries have already been loaded by now */
 
         this.feedProcessed = this.feedProcessedReady;
         this.enable();
@@ -600,16 +601,14 @@ class CoqManager {
 
         this.packages.onBundleLoad(bname);
 
-        var rem_pkg = this.options.init_pkgs;
-        var idx = rem_pkg.indexOf(bname);
+        var init_pkgs = this.options.init_pkgs,
+            loaded_pkgs = this.packages.pkg_init;
 
-        if(idx > -1) {
-
-            this.packages.pkg_init.push(bname);
-            rem_pkg.splice(idx, 1);
-
+        if (init_pkgs.indexOf(bname) > -1) {
+            loaded_pkgs.push(bname);
+            
             // All the packages have been loaded.
-            if (rem_pkg.length === 0)
+            if (init_pkgs.every(x => loaded_pkgs.indexOf(x) > -1))
                 this.coqInit();
         }
     }

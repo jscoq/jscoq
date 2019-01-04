@@ -137,19 +137,18 @@ class CoqLayoutClassic {
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error
-        d3.select(this.query)
-            .append('div')
-            .attr('class', level)
-            .html(text);
-            // .node()
-            // .scrollIntoView();
+        var item =
+            d3.select(this.query)
+                .append('div')
+                .attr('class', level)
+                .html(text);
 
-        if (!this.scrollTimeout) {
-            this.scrollTimeout = setTimeout( () => {
-                this.query.scrollIntoView(false);
-                this.scrollTimeout = null;
-            }, 400 );
-        }
+        if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
+
+        this.scrollTimeout = setTimeout( () => {
+            item.node().scrollIntoView(false);
+            this.scrollTimeout = null;
+        }, 1 );
     }
 
     filterLog(level_select) {
