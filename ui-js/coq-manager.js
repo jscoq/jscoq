@@ -172,15 +172,9 @@ class CoqManager {
         this.layout = new CoqLayoutClassic(this.options);
 
         // Setup the Coq worker.
-        this.coq           = new Worker(this.options.base_path + 'coq-js/jscoq_worker.js');
-        this.coq.onmessage = evt => this.coq_handler(evt);
-
-        this.coq.sendCommand = msg => {
-            if(this.options.debug) {
-                console.log("Posting: ", msg);
-            }
-            this.coq.postMessage(msg);
-        };
+        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
+        this.coq.options   = this.options;
+        this.coq.observers.push(this);
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -209,7 +203,7 @@ class CoqManager {
         this.layout.show();
 
         // Get Coq version, etc...
-        this.coq.sendCommand(["GetInfo"]);
+        this.coq.getInfo();
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -234,7 +228,7 @@ class CoqManager {
 
         // The fun starts: Load the set of packages.
         let bp = this.options.base_path + "../coq-pkgs/";
-        this.coq.sendCommand(["InfoPkg", bp, this.options.all_pkgs]);
+        this.coq.infoPkg(bp, this.options.all_pkgs);
     }
 
     // Provider setup
@@ -296,7 +290,7 @@ class CoqManager {
             console.log('State processed', nsid);
 
         // The semantics of the stm here were a bit inconvenient: it
-        // would send `ProcessedReady` feedback message before we the
+        // would send `ProcessedReady` feedback message before the
         // `Stm.add` call has returned, thus we were not ready to
         // handle as we didn't know of their existance yet. The
         // typical example is when `Stm.add` forces an observe due to
@@ -317,7 +311,7 @@ class CoqManager {
         this.provider.mark(stm, "ok");
 
         // Get goals
-        this.coq.sendCommand(["Goals", nsid]);
+        this.coq.goals(nsid);
     }
 
     // Simplifier to the "rich" format coq uses.
@@ -453,7 +447,7 @@ class CoqManager {
             this.provider.mark(err_stm, "clear");
             this.provider.mark(err_stm, "error");
 
-            this.coq.sendCommand(['Cancel', sid]);
+            this.coq.cancel(sid);
         }
     }
 
@@ -481,13 +475,13 @@ class CoqManager {
     coqFeedback(fb) {
 
         var feed_tag = fb.contents[0];
+        var feed_args = [fb.span_id].concat(fb.contents.slice(1));
 
         if(this.options.debug)
             console.log('Feedback', fb.span_id, fb.contents);
 
         if( this['feed'+feed_tag] ) {
-            fb.contents[0] = fb.span_id;
-            this['feed'+feed_tag].apply(this, fb.contents);
+            this['feed'+feed_tag].apply(this, feed_args);
         } else {
             console.log('Feedback type', feed_tag, 'not handled');
         }
@@ -509,7 +503,7 @@ class CoqManager {
 
                 // We have reached the destination...
                 if(!cur_stm.executed) {
-                    this.coq.sendCommand(['Exec', nsid]);
+                    this.coq.exec(nsid);
                 }
 
                 this.goTarget = false;
@@ -519,7 +513,7 @@ class CoqManager {
             }
         } else {
             if(!cur_stm.executed) {
-                this.coq.sendCommand(['Exec', nsid]);
+                this.coq.exec(nsid);
             }
         }
     }
@@ -594,7 +588,7 @@ class CoqManager {
         let bp = this.options.base_path + "../coq-pkgs/";
 
         if(idx > -1) {
-            this.coq.sendCommand(['LoadPkg', bp, bname]);
+            this.coq.loadPkg(bp, bname);
         }
     }
 
@@ -647,7 +641,7 @@ class CoqManager {
         pkg_panel.classList.add('collapsed');
 
         this.layout.proof.textContent +=
-            "\n===> JsCoq filesystem initalized with success!\n" +
+            "\n===> JsCoq filesystem initialized successfully!\n" +
             "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n";
 
         // XXXXXX: Critical point
@@ -664,27 +658,8 @@ class CoqManager {
             bundle => this.packages.pkg_info[bundle].pkgs
         ).flatten().map( pkg => pkg.pkg_id );
 
-        this.coq.sendCommand(["Init", this.options.implicit_libs, load_lib, load_paths]);
+        this.coq.init(this.options.implicit_libs, load_lib, load_paths);
         // Done!
-    }
-
-    coq_handler(evt) {
-
-        var msg     = evt.data;
-        var msg_tag = msg[0];
-
-        if(this.options.debug)
-            console.log("coq_evt", msg);
-
-        // We call the corresponding coq$msg_tag(msg[1]..msg[n])
-
-        if( this['coq'+msg_tag] ) {
-            msg.shift();
-            this['coq'+msg_tag].apply(this, msg);
-        } else {
-            console.log('Message type', msg_tag, 'not handled');
-        }
-
     }
 
     goPrev() {
@@ -693,7 +668,7 @@ class CoqManager {
         // workaround a bug in Coq.
         if (this.doc.sentences.length <= 1) return;
 
-        debugger;
+        //debugger;
         // XXX: Optimization, in case of error, but incorrect in the
         // new general framework.
         if (this.error.length > 0) {
@@ -718,7 +693,7 @@ class CoqManager {
         this.doc.stm_id[cur_stm.coq_sid] = null;
         this.doc.goals[cur_stm.coq_sid]  = null;
         this.provider.mark(cur_stm, "clear");
-        this.coq.sendCommand(['Cancel', cur_stm.coq_sid]);
+        this.coq.cancel(cur_stm.coq_sid);
         cur_stm.coq_sid = null;
     }
 
@@ -758,13 +733,13 @@ class CoqManager {
         // process special jscoq commands, for now:
         // Comment "pkg: list" will load packages.
         this.process_special(next_stm.text);
-        this.coq.sendCommand(["Add", cur_sid, next_sid, next_stm.text]);
+        this.coq.add(cur_sid, next_sid, next_stm.text);
 
         // Avoid stack overflows by doing a commit every 24
         // sentences, due to the STM co-tail recursive traversal bug?
         let so_threshold = 24;
         if( (this.doc.number_adds++ % so_threshold) === 0 )
-            this.coq.sendCommand(['Exec', next_sid]);
+            this.coq.exec(next_sid);
 
         return false;
     }
@@ -777,7 +752,7 @@ class CoqManager {
             if(!cur.coq_sid) {
                 console.log("critical error, stm not registered");
             } else {
-                this.coq.sendCommand(['Cancel', cur.coq_sid]);
+                this.coq.cancel(cur.coq_sid);
             }
         } else {
             this.goTarget = true;
