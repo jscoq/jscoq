@@ -25,7 +25,7 @@ a, a:link, a:visited, a:active {
 #ide-wrapper {
   /*padding-left: 0;*/
   padding-right: 45%;
-  transition: all 0.5s ease;
+  /*transition: all 0.5s ease;*/
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
@@ -42,7 +42,7 @@ a, a:link, a:visited, a:active {
   height: 100%;
   margin-left: 0px;
   padding-right: 45%;
-  transition: all 0.5s ease;
+  transition: padding-right 0.5s ease;
 }
 
 #ide-wrapper.toggled #code-wrapper {
@@ -88,11 +88,12 @@ a, a:link, a:visited, a:active {
   border: 1px solid #9f9f9f;
   flex: 1000 1;
   overflow: auto;
-  transition: all 0.5s ease-in-out;
+  transition: flex 0.5s ease-in-out;
 }
 
 .flex-panel > .caption {
   background: #c4c4c4;
+  font-size: 11px;
   height: 20px;
   padding: 3px 10px 0 10px;
   position: absolute;
@@ -111,12 +112,16 @@ a, a:link, a:visited, a:active {
   top: 1px;
   right: 7px;
   transform: rotate(-90deg);
-  transition: all 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
+}
+
+.flex-panel > .caption select {
+  font-size: 6px;
 }
 
 .flex-panel > .content {
   margin: 22px 4px 4px 4px;
-  transition: all 0.5s ease-in-out;
+  /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
   height: fit-content;
@@ -129,11 +134,11 @@ a, a:link, a:visited, a:active {
 .flex-panel.collapsed > .caption:after {
   transform: none;
 }
-
+/*
 .flex-panel.collapsed > .content {
   opacity: 0;
 }
-
+*/
 #goal-panel {
   flex: 2000 1;
 }
