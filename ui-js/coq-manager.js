@@ -22,7 +22,9 @@ Array.prototype.flatten = function() { return [].concat.apply([], this); };
 /***********************************************************************/
 class ProviderContainer {
 
-    constructor(elms) {
+    constructor(elms, options) {
+
+        this.options = options ? options : {};
 
         // Code snippets.
         this.snippets = [];
@@ -31,10 +33,10 @@ class ProviderContainer {
         var idx = 0;
 
         // for (e of elms) not very covenient here due to the closure.
-        elms.forEach(function (e) {
+        elms.forEach(e => {
 
             // Init.
-            var cm = new CmCoqProvider(e);
+            var cm = new CmCoqProvider(e, this.options.editor);
             cm.idx = idx++;
             this.snippets.push(cm);
 
@@ -46,7 +48,7 @@ class ProviderContainer {
             cm.onMouseEnter = stm => { this.onMouseEnter(stm); };
             cm.onMouseLeave = stm => { this.onMouseLeave(stm); };
 
-        },this);
+        });
     }
 
     // Get the next candidate and mark it.
@@ -133,7 +135,7 @@ class ProviderContainer {
 
 var copyOptions = function(obj, target) {
     if (!target) target = {};
-    for (var prop in target) {
+    for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
             target[prop] = obj[prop];
         }
@@ -157,7 +159,8 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
-                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ]
+                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ],
+            editor: { /* codemirror options */ }
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
             // 'plugin-utils', 'extlib', 'mirrorcore']
@@ -178,7 +181,7 @@ class CoqManager {
 
         // Keybindings setup
         // XXX: This should go in the panel init.
-        document.addEventListener('keydown', evt => this.keyHandler(evt));
+        document.addEventListener('keydown', evt => this.keyHandler(evt), true);
 
         // XXX: Depends on layout IDs.
         document.getElementById('hide-panel')
@@ -235,7 +238,7 @@ class CoqManager {
     // Provider setup
     setupProvider(elems) {
 
-        var provider = new ProviderContainer(elems);
+        var provider = new ProviderContainer(elems, this.options);
 
         provider.onInvalidate = stm => {
 
@@ -307,12 +310,15 @@ class CoqManager {
             return;
         }
 
-        stm.executed = true;
-        this.provider.mark(stm, "clear");
-        this.provider.mark(stm, "ok");
+        if (!stm.executed) {
+            stm.executed = true;
+            this.provider.mark(stm, "clear");
+            this.provider.mark(stm, "ok");
 
-        // Get goals
-        this.coq.goals(nsid);
+            // Get goals
+            if (nsid == this.doc.sentences.last().coq_sid)
+                this.coq.goals(nsid);
+        }
     }
 
     // Simplifier to the "rich" format coq uses.
@@ -495,27 +501,24 @@ class CoqManager {
             console.log('adding: ', nsid, loc);
 
         // XXX Rewrite, the sentence could have vanished...
-        let cur_stm = this.doc.stm_id[nsid];
+        let cur_stm = this.doc.stm_id[nsid], exec = false;
 
         if (this.goTarget) {
             // [Modulo the same old bugs, we need a position comparison op]
             if (this.provider.getAtPoint() || this.provider.afterPoint(cur_stm) ) {
-            // if (this.provider.getAtPoint()) {
-
-                // We have reached the destination...
-                if(!cur_stm.executed) {
-                    this.coq.exec(nsid);
-                }
-
+                // Go-to target has been reached
+                exec = true;
                 this.goTarget = false;
             } else {
                 // We have not reached the destination, continue forward.
-                this.goNext(false);
+                exec = !this.goNext(false);
             }
         } else {
-            if(!cur_stm.executed) {
-                this.coq.exec(nsid);
-            }
+            exec = true;
+        }
+
+        if (exec && !cur_stm.executed) {
+            this.coq.exec(nsid);
         }
     }
 
@@ -551,8 +554,14 @@ class CoqManager {
         }, this);
 
         // Update goals
-
-        this.layout.update_goals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+        var nsid = this.doc.sentences.last().coq_sid, 
+            hgoals = this.doc.goals[nsid];
+        if (hgoals) {
+            this.layout.update_goals(hgoals);
+        }
+        else {
+            this.coq.goals(nsid); // no goals fetched for current statement, ask worker
+        }
     }
 
     coqGoalInfo(sid, goals) {
@@ -662,7 +671,7 @@ class CoqManager {
         // Done!
     }
 
-    goPrev() {
+    goPrev(update_focus) {
 
         // If we didn't load the prelude, prevent unloading it to
         // workaround a bug in Coq.
@@ -679,7 +688,6 @@ class CoqManager {
         var cur_stm  = this.doc.sentences.last();
         var prev_stm = this.doc.sentences[this.doc.sentences.length - 2];
 
-        let update_focus = true;
         if(update_focus && prev_stm) {
             this.currentFocus = prev_stm.sp;
             this.currentFocus.focus();
@@ -738,7 +746,7 @@ class CoqManager {
         // Avoid stack overflows by doing a commit every 24
         // sentences, due to the STM co-tail recursive traversal bug?
         let so_threshold = 24;
-        if( (this.doc.number_adds++ % so_threshold) === 0 )
+        if( (++this.doc.number_adds % so_threshold) === 0 )
             this.coq.exec(next_sid);
 
         return false;
@@ -775,30 +783,29 @@ class CoqManager {
     // Keyboard handling
     keyHandler(e) {
 
-        // All our keybindings are prefixed by alt.
         if (e.keyCode === 119) // F8
             this.layout.toggle();
 
-        if (!e.altKey && !e.metaKey) return true;
-        var btn_name;
+        // All other keybindings are prefixed by alt.
+        if (!e.altKey /*&& !e.metaKey*/) return true;
+
         switch (e.keyCode) {
             case 13: // ENTER
-                btn_name = 'to-cursor';
+            case 39: // Right arrow
+                this.goCursor();
+                e.preventDefault();
+                e.stopPropagation();
                 break;
             case 78: // N
-            case 40: // flèche en bas
-                btn_name = 'down';
+            case 40: // Down arrow
+                this.goNext(true);
+                e.preventDefault();
                 break;
             case 80: // P
-            case 38: // flèche en haut
-                btn_name = 'up';
+            case 38: // Up arrow
+                this.goPrev(true);
+                e.preventDefault();
                 break;
-        }
-
-        if(btn_name) {
-            this.provider.focus();
-            this.raiseButton(btn_name);
-            e.preventDefault();
         }
     }
 
@@ -834,7 +841,7 @@ class CoqManager {
             break;
 
         case 'up' :
-            this.goPrev();
+            this.goPrev(true);
             break;
 
         case 'down' :

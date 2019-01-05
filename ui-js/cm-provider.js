@@ -16,7 +16,7 @@ class CmSentence {
 // A CodeMirror-based Provider of coq statements.
 class CmCoqProvider {
 
-    constructor(element) {
+    constructor(element, options) {
 
         var cmOpts =
             { mode : { name : "coq",
@@ -29,6 +29,9 @@ class CmCoqProvider {
               // theme         : 'blackboard',
               keyMap        : "emacs"
             };
+
+        if (options)
+            copyOptions(options, cmOpts);
 
         if (typeof element === 'string' || element instanceof String) {
             this.editor = CodeMirror.fromTextArea(document.getElementById(element), cmOpts);
