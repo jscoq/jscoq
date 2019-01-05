@@ -1,4 +1,10 @@
-/* FIXME: do not modify order */
+
+#query-panel > div {
+  line-height: 1.25em;
+  padding-left: 18px;
+  white-space: pre;
+}
+
 #query-panel .Error {
   background: url('../ui-images/log-error.png') no-repeat;
 }
@@ -8,14 +14,24 @@
 }
 
 #query-panel .Notice {
-  background: url('../ui-images/log-info.png') no-repeat;
+  background: url('../ui-images/log-notice.png') no-repeat;
 }
 
 #query-panel .Info {
   background: url('../ui-images/log-info.png') no-repeat;
 }
 
+#query-panel .Error,
+#query-panel .Warning,
+#query-panel .Notice,
+#query-panel .Info,
 #query-panel .Debug {
   display: none;
 }
 
+/* These will override the default rule for displayed items */
+#query-panel.show-Error   .Error   { display: block; }
+#query-panel.show-Warning .Warning { display: block; }
+#query-panel.show-Notice  .Notice  { display: block; }
+#query-panel.show-Info    .Info    { display: block; }
+#query-panel.show-Debug   .Debug   { display: block; }

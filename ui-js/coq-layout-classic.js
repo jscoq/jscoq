@@ -31,12 +31,17 @@ class CoqLayoutClassic {
       </div>
       </div>
       <div class="exits">
+        <i>js+</i><!--
+        --><a href="https://coq/inria.fr"><!--
+          --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle">
+        <a>
+        <!-- 
         <a href="http://feever.fr/" target="_blank">
           <img src="${base_path}/ui-images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
                style="vertical-align: middle"/>
         </a>
-        <a href="https://github.com/ejgallego/jscoq">Readme @ GitHub</a>
-      </div> <!-- /#exits -->
+        -->
+      </div> <!-- /.exits -->
       <span id="buttons">
         <img src="${base_path}/ui-images/up.png" width="21" height="24"
              alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/>
@@ -45,6 +50,10 @@ class CoqLayoutClassic {
         <img src="${base_path}/ui-images/to-cursor.png" width="38" height="24"
              alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
       </span>
+      <div class="exits right">
+        <a href="https://github.com/ejgallego/jscoq">Readme @ 
+        <img src="https://github.com/favicon.ico" id="at-github"></a>
+      </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
       <div id="goal-panel" class="flex-panel">
@@ -92,14 +101,14 @@ class CoqLayoutClassic {
         this.packages = document.getElementById('packages-panel');
         this.buttons  = document.getElementById('buttons');
 
-        // XXXXXXX: This has to be fixed.
-        this.log_css_rules = document.styleSheets[1].cssRules;
-
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
+        // Configure log
+        this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
         d3.select('select[name=msg_filter]')
-            .on('change', () => this.filterLog(d3.event.target));
+            .on('change', () => this.filterLog(parseInt(d3.event.target.value)));
+        this.filterLog(3); // Info
     }
 
     show() {
@@ -143,28 +152,37 @@ class CoqLayoutClassic {
                 .attr('class', level)
                 .html(text);
 
-        if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
+        if (this.isLogVisible(level)) {
+            if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
 
-        this.scrollTimeout = setTimeout( () => {
-            item.node().scrollIntoView(false);
-            this.scrollTimeout = null;
-        }, 1 );
+            this.scrollTimeout = setTimeout( () => {
+                this.item = item;
+                item.node().scrollIntoView(false);
+                this.scrollTimeout = null;
+            }, 1 );
+        }
     }
 
     filterLog(level_select) {
-
-        // debugger;
-        var length = level_select.getElementsByTagName('option').length;
-        var min_log_level = parseInt(level_select.value, 10);
         var i;
 
-        // XXXX!
-        console.log('setting lvl', min_log_level);
-        for(i = 0 ; i <= min_log_level ; i++)
-            this.log_css_rules[i].style.display = 'block';
+        if (typeof level_select == 'string')
+            level_select = this.log_levels.indexOf(level_select);
 
-        for(i = min_log_level+1 ; i < length ; i++)
-            this.log_css_rules[i].style.display = 'none';
+        console.log('setting log level', level_select);
+        for(i = 0 ; i <= level_select ; i++)
+            this.query.classList.add(`show-${this.log_levels[i]}`);
+        for(i = level_select+1 ; i < this.log_levels.length ; i++)
+            this.query.classList.remove(`show-${this.log_levels[i]}`);
+
+        this.log_level = level_select;
+    }
+
+    isLogVisible(level) {
+        if (typeof level == 'string')
+            level = this.log_levels.indexOf(level);
+
+        return level <= this.log_level;
     }
 
     // Execute a query to Coq
