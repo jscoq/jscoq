@@ -270,3 +270,22 @@ img.download-icon.checked {
   top: -18px;
   right: 0;
 }
+
+/* Pretty-printing hacks */
+
+div.Pp_box {
+  display: inline;
+}
+
+div.Pp_box[data-margin="1"] {
+  margin-left: 0.75em;
+}
+
+div.Pp_box[data-margin="2"] {
+  margin-left: 1.5em;
+}
+
+#goal-text > div.Pp_box[data-mode="vertical"],
+#goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
+  display: block;
+}

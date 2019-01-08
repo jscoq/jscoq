@@ -180,6 +180,9 @@ class CoqManager {
         this.coq.options   = this.options;
         this.coq.observers.push(this);
 
+        // Setup pretty printer for feedback and goals
+        this.pprint = new CoqPrettyPrint();
+
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
@@ -320,111 +323,6 @@ class CoqManager {
         }
     }
 
-    // Simplifier to the "rich" format coq uses.
-    richpp2HTML(msg) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        var ret;
-        var tag, ct, id, att, m;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-        case "Element":
-            [id, att, m] = ct;
-            let imm = m.map(this.richpp2HTML, this);
-            ret = "".concat(...imm);
-            ret = `<span class="${id}">` + ret + `</span>`;
-            break;
-
-        // PCData contains a string
-        case "PCData":
-            ret = ct;
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
-    pp2HTML(msg) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        var ret;
-        var tag, ct;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-        case "Pp_glue":
-            let imm = ct.map(this.pp2HTML, this);
-            ret = "".concat(...imm);
-            // ret = `<span class="${id}">` + ret + `</span>`;
-            break;
-
-        // ["Pp_string", string]
-        case "Pp_string":
-            if (ct.match(/={4}=*/)) {
-                ret = "<hr/>"
-                this.breakMode = false;
-            }
-            else
-                ret = ct;
-            break;
-
-        // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
-        case "Pp_box":
-            var vmode = this.breakMode || false;
-
-            switch(msg[1][0]) {
-            case "Pp_vbox":
-                this.breakMode = true;
-                break;
-            default:
-                this.breakMode = false;
-            }
-
-            ret = this.pp2HTML(msg[2]);
-            this.breakMode = vmode;
-            break;
-
-        // ["Pp_tag", tag, content]
-        case "Pp_tag":
-            ret = this.pp2HTML(msg[2]);
-            ret = `<span class="${msg[1]}">` + ret + `</span>`;
-            break;
-
-        case "Pp_force_newline":
-            ret = "<br/>";
-            break;
-
-        case "Pp_print_break":
-            if (this.breakMode) {
-                ret = "<br/>";
-            } else if (msg[2] > 0) {
-                ret = "<br/>";
-            } else {
-                ret = " ";
-            }
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
     // Error handler.
     handleError(sid, loc, msg) {
 
@@ -464,9 +362,9 @@ class CoqManager {
 
     feedMessage(sid, lvl, loc, msg) {
 
-        // var fmsg = this.richpp2HTML(msg);
+        // var fmsg = this.pretty.richpp2HTML(msg);
         // var fsmg = msg.toString();
-        var fmsg = this.pp2HTML(msg);
+        var fmsg = this.pprint.pp2HTML(msg);
 
         // JSON encoding...
         lvl = lvl[0];
@@ -554,7 +452,7 @@ class CoqManager {
 
     coqGoalInfo(sid, goals) {
 
-        var hgoals = this.pp2HTML(goals);
+        var hgoals = this.pprint.pp2HTML(goals);
         this.doc.goals[sid] = hgoals;
 
         // XXX optimize!
@@ -565,7 +463,7 @@ class CoqManager {
 
     coqLog(level, msg) {
 
-        let rmsg = this.pp2HTML(msg);
+        let rmsg = this.pprint.pp2HTML(msg);
 
         if (this.options.debug)
             console.log(rmsg, level[0]);
@@ -896,6 +794,126 @@ class CoqManager {
 
 
 class CoqPrettyPrint {
+
+    // Simplifier to the "rich" format coq uses.
+    richpp2HTML(msg) {
+
+        // Elements are ...
+        if (msg.constructor !== Array) {
+            return msg;
+        }
+
+        var ret;
+        var tag, ct, id, att, m;
+        [tag, ct] = msg;
+
+        switch (tag) {
+
+        // Element(tag_of_element, att (single string), list of xml)
+        case "Element":
+            [id, att, m] = ct;
+            let imm = m.map(this.richpp2HTML, this);
+            ret = "".concat(...imm);
+            ret = `<span class="${id}">` + ret + `</span>`;
+            break;
+
+        // PCData contains a string
+        case "PCData":
+            ret = ct;
+            break;
+
+        default:
+            ret = msg;
+        }
+        return ret;
+    }
+
+    pp2HTML(msg, state) {
+
+        // Elements are ...
+        if (msg.constructor !== Array) {
+            return msg;
+        }
+
+        state = state || {breakMode: 'horizontal'};
+
+        var ret;
+        var tag, ct;
+        [tag, ct] = msg;
+
+        switch (tag) {
+
+        // Element(tag_of_element, att (single string), list of xml)
+
+        // ["Pp_glue", [...elements]]
+        case "Pp_glue":
+            let imm = ct.map(x => this.pp2HTML(x, state));
+            ret = "".concat(...imm);
+            break;
+
+        // ["Pp_string", string]
+        case "Pp_string":
+            if (ct.match(/^={4}=*$/)) {
+                ret = "<hr/>";
+                state.breakMode = 'skip-vertical';
+            }
+            else if (state.breakMode === 'vertical' && ct.match(/^\ +$/)) {
+                ret = "";
+                state.margin = ct;
+            }
+            else
+                ret = ct;
+            break;
+
+        // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
+        case "Pp_box":
+            var vmode = state.breakMode,
+                margin = state.margin ? state.margin.length : 0;
+
+            state.margin = null;
+
+            switch(msg[1][0]) {
+            case "Pp_vbox":
+                state.breakMode = 'vertical';
+                break;
+            default:
+                state.breakMode = 'horizontal';
+            }
+
+            ret = `<div class="Pp_box" data-mode="${state.breakMode}" data-margin="${margin}">` + 
+                  this.pp2HTML(msg[2], state) + 
+                  '</div>';
+            state.breakMode = vmode;
+            break;
+
+        // ["Pp_tag", tag, content]
+        case "Pp_tag":
+            ret = this.pp2HTML(msg[2], state);
+            ret = `<span class="${msg[1]}">` + ret + `</span>`;
+            break;
+
+        case "Pp_force_newline":
+            ret = "<br/>";
+            state.margin = null;
+            break;
+
+        case "Pp_print_break":
+            ret = "";
+            state.margin = null;
+            if (state.breakMode === 'vertical'|| (msg[1] == 0 && msg[2] > 0 /* XXX need to count columns etc. */)) {
+                ret = "<br/>";
+            } else if (state.breakMode === 'horizontal') {
+                ret = " ";
+            } else if (state.breakMode === 'skip-vertical') {
+                state.breakMode = 'vertical';
+            }
+            break;
+
+        default:
+            ret = msg;
+        }
+        return ret;
+    }
 
 }
 
