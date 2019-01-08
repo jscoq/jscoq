@@ -38,7 +38,7 @@ a:hover {
 /* Coq settings */
 
 .coq-eval-ok {
-  background: #aaaabb;
+  background: rgba(0,0,0,0.15);
 }
 
 .coq-eval-pending {
@@ -46,7 +46,7 @@ a:hover {
 }
 
 .coq-eval-failed {
-    background: #ff7878;
+    background: rgba(255, 00, 50, 0.4);
 }
 
 /* Normal theme settings */
