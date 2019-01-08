@@ -201,8 +201,7 @@ class CoqManager {
         this.pre_packages = [];
 
         // Display packages panel:
-        var pkg_panel = document.getElementById('packages-panel').parentNode;
-        pkg_panel.classList.remove('collapsed');
+        this.packages.expand();
         
         requestAnimationFrame(() => this.layout.show());
 
@@ -374,12 +373,17 @@ class CoqManager {
             // ret = `<span class="${id}">` + ret + `</span>`;
             break;
 
-        // PCData contains a string
+        // ["Pp_string", string]
         case "Pp_string":
-            ret = ct;
+            if (ct.match(/={4}=*/)) {
+                ret = "<hr/>"
+                this.breakMode = false;
+            }
+            else
+                ret = ct;
             break;
 
-        // Pp_box is encoded as an array of 3.
+        // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
         case "Pp_box":
             var vmode = this.breakMode || false;
 
@@ -395,21 +399,21 @@ class CoqManager {
             this.breakMode = vmode;
             break;
 
-        // Pp_tag is encoded as an array of 3.
+        // ["Pp_tag", tag, content]
         case "Pp_tag":
             ret = this.pp2HTML(msg[2]);
             ret = `<span class="${msg[1]}">` + ret + `</span>`;
             break;
 
         case "Pp_force_newline":
-            ret = "</br>";
+            ret = "<br/>";
             break;
 
         case "Pp_print_break":
             if (this.breakMode) {
-                ret = "</br>";
+                ret = "<br/>";
             } else if (msg[2] > 0) {
-                ret = "</br>";
+                ret = "<br/>";
             } else {
                 ret = " ";
             }
@@ -479,22 +483,6 @@ class CoqManager {
     }
 
     // Coq Message processing.
-    coqFeedback(fb) {
-
-        var feed_tag = fb.contents[0];
-        var feed_args = [fb.span_id].concat(fb.contents.slice(1));
-
-        if(this.options.debug)
-            console.log('Feedback', fb.span_id, fb.contents);
-
-        if( this['feed'+feed_tag] ) {
-            this['feed'+feed_tag].apply(this, feed_args);
-        } else {
-            console.log('Feedback type', feed_tag, 'not handled');
-        }
-
-    }
-
     coqAdded(nsid,loc) {
 
         if(this.options.debug)
@@ -611,14 +599,23 @@ class CoqManager {
         this.packages.onBundleLoad(bname);
 
         var init_pkgs = this.options.init_pkgs,
+            wait_pkgs = this.waitForPkgs,
             loaded_pkgs = this.packages.pkg_init;
 
+        loaded_pkgs.push(bname);
+
         if (init_pkgs.indexOf(bname) > -1) {
-            loaded_pkgs.push(bname);
-            
             // All the packages have been loaded.
             if (init_pkgs.every(x => loaded_pkgs.indexOf(x) > -1))
                 this.coqInit();
+        }
+
+        if (wait_pkgs.length > 0) {
+            if (wait_pkgs.every(x => loaded_pkgs.indexOf(x) > -1)) {
+                this.enable();
+                this.packages.collapse();
+                this.waitForPkgs = [];
+            }
         }
     }
 
@@ -644,9 +641,7 @@ class CoqManager {
     // and Coq is ready to be used.
     coqInit() {
 
-        // Hide the packages panel.
-        var pkg_panel = document.getElementById('packages-panel').parentNode;
-        pkg_panel.classList.add('collapsed');
+        this.packages.collapse();
 
         this.layout.proof.textContent +=
             "\n===> JsCoq filesystem initialized successfully!\n" +
@@ -788,6 +783,8 @@ class CoqManager {
         // All other keybindings are prefixed by alt.
         if (!e.altKey /*&& !e.metaKey*/) return true;
 
+        // TODO disable actions when IDE is not ready
+
         switch (e.keyCode) {
             case 13: // ENTER
             case 39: // Right arrow
@@ -881,13 +878,14 @@ class CoqManager {
                 let pkgs = args.split(' ');
                 console.log('Requested pkgs '); console.log(pkgs);
 
-                let pkg_panel = document.getElementById('packages-panel').parentNode;
-                pkg_panel.classList.remove('collapsed');
+                this.packages.expand();
 
                 this.disable();
                 this.waitForPkgs = pkgs;
 
-                pkgs.forEach(this.coq.add_pkg, this);
+                for (let pkg of pkgs) {
+                    this.packages.startPackageDownload(pkg);
+                }
 
                 return true;
 
@@ -899,6 +897,12 @@ class CoqManager {
         return false;
     }
 }
+
+
+class CoqPrettyPrint {
+
+}
+
 
 // Local Variables:
 // js-indent-level: 4
