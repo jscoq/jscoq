@@ -6,7 +6,8 @@ class CoqWorker {
         this.options = {
             debug: false
         };
-        this.observers = [];
+        this.observers = [this];
+        this.sids = [];
 
         // Create actual worker. Ideally, CoqWorker would extend Worker, but this is
         // not supported at the moment.
@@ -61,7 +62,7 @@ class CoqWorker {
         var handled = false;
 
         if(this.options.debug)
-            console.log("coq_evt", msg);
+            console.log("Coq message", msg);
 
         // We call the corresponding method coq$msg_tag(msg[1]..msg[n])
         for (let o of this.observers) {
@@ -74,6 +75,29 @@ class CoqWorker {
          
          if (!handled) {
             console.warn('Message ', msg, ' not handled');
+        }
+    }
+
+    coqFeedback(fb_msg) {
+
+        var feed_tag = fb_msg.contents[0];
+        var feed_args = [fb_msg.span_id].concat(fb_msg.contents.slice(1));
+        var handled = false;
+
+        if(this.options.debug)
+            console.log('Coq Feedback message', fb_msg.span_id, fb_msg.contents);
+
+        // We call the corresponding method feed$msg_tag(sid, msg[1]..msg[n])
+        for (let o of this.observers) {
+            let handler = o['feed'+feed_tag];
+            if (handler) {
+                handler.apply(o, feed_args);
+                handled = true;
+            }
+        }
+
+        if (!handled) {
+            console.log('Feedback type', feed_tag, 'not handled');
         }
     }
 }

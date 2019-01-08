@@ -18,7 +18,7 @@ class PackageManager {
 
         dsel.append('img')
             .attr('src', this.base_path + 'ui-images/dl.png')
-            .on('click', () => { this.startPackageDownload(); });
+            .on('click', () => { this.startPackageDownload(pkg_info.desc); });
 
         dsel.append('span')
             .text(d => d.desc);
@@ -42,12 +42,10 @@ class PackageManager {
 
     // XXX [EG]: This needs to be tweaked, package loading could be
     // externally initiated.
-    startPackageDownload() {
-
-        var row = d3.select(d3.event.target.parentNode);
+    startPackageDownload(pkg_name) {
 
         let bp = this.base_path + "../coq-pkgs/";
-        this.coq.sendCommand(["LoadPkg", bp, row.datum().desc]);
+        this.coq.sendCommand(["LoadPkg", bp, pkg_name]);
 
     }
 
@@ -111,6 +109,14 @@ class PackageManager {
         row.select('.rel-pos').remove();
             row.select('img')
                 .attr('src', this.base_path + 'ui-images/checked.png');
+    }
+    
+    collapse() {
+        this.panel.parentNode.classList.add('collapsed');
+    }
+
+    expand() {
+        this.panel.parentNode.classList.remove('collapsed');
     }
 }
 
