@@ -2,11 +2,11 @@
 
 class PackageManager {
 
-    constructor(panel, base_path, coq) {
-        this.base_path = base_path;
-        this.panel   = panel;
-        this.bundles = {};
-        this.coq     = coq;
+    constructor(panel_dom, pkg_root_path, coq) {
+        this.pkg_root_path = pkg_root_path;
+        this.panel         = panel_dom;
+        this.bundles       = {};
+        this.coq           = coq;
     }
 
     addBundleInfo(bname, pkg_info) {
@@ -17,7 +17,7 @@ class PackageManager {
         dsel.data([pkg_info]);
 
         dsel.append('img')
-            .attr('src', this.base_path + 'ui-images/dl.png')
+            .attr('class', 'download-icon')
             .on('click', () => { this.startPackageDownload(pkg_info.desc); });
 
         dsel.append('span')
@@ -40,13 +40,10 @@ class PackageManager {
 
     }
 
-    // XXX [EG]: This needs to be tweaked, package loading could be
-    // externally initiated.
+    // Loads a package from the preconfigured path.
+    // pkg_name : string - name of package (e.g., 'init', 'math-comp')
     startPackageDownload(pkg_name) {
-
-        let bp = this.base_path + "../coq-pkgs/";
-        this.coq.sendCommand(["LoadPkg", bp, pkg_name]);
-
+        this.coq.sendCommand(["LoadPkg", this.pkg_root_path, pkg_name]);
     }
 
     // In all the three cases below, evt = progressInfo
@@ -75,7 +72,6 @@ class PackageManager {
 
             var egg = bar
                 .append('img')
-                .attr('src', this.base_path + 'ui-images/egg.png')
                 .attr('class', 'progress-egg');
 
             this.bundles[bname].bar = bar;
@@ -94,8 +90,10 @@ class PackageManager {
         var bar  = this.bundles[evt.bundle].bar;
         var egg  = this.bundles[evt.bundle].egg;
 
-        var progress = ++info.loaded / info.total;
-        var angle    = (progress * 360 * 15) % 360;
+        ++info.loaded; // this is not actually the number of files loaded :\
+
+        var progress = Math.min(1.0, info.loaded / info.total);
+        var angle    = (info.loaded * 15) % 360;
         egg.style('transform', 'rotate(' + angle + 'deg)');
         bar.style('width', progress * 100 + '%');
     }
@@ -108,9 +106,9 @@ class PackageManager {
 
         row.select('.rel-pos').remove();
             row.select('img')
-                .attr('src', this.base_path + 'ui-images/checked.png');
+                .attr('class', 'download-icon checked');
     }
-    
+
     collapse() {
         this.panel.parentNode.classList.add('collapsed');
     }
@@ -123,7 +121,7 @@ class PackageManager {
 // EG: This will be useful once we move file downloading to javascript.
 // PackagesManager
 
-class PackageDowloader {
+class PackageDownloader {
 
     constructor(row, panel) {
         this.row = row;

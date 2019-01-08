@@ -243,6 +243,14 @@ a, a:link, a:visited, a:active {
   cursor: pointer;
 }
 
+img.download-icon {
+  content:url("../ui-images/dl.png");
+}
+
+img.download-icon.checked {
+  content:url("../ui-images/checked.png");
+}
+
 .rel-pos {
   position: relative;
   height:0;
@@ -257,6 +265,7 @@ a, a:link, a:visited, a:active {
 }
 
 .progress-egg {
+  content:url("../ui-images/egg.png");
   position: absolute;
   top: -18px;
   right: 0;

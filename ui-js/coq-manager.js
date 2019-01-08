@@ -155,6 +155,7 @@ class CoqManager {
             debug:   true,
             wrapper_id: 'ide-wrapper',
             base_path:  "./",
+            pkg_path: "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
@@ -189,7 +190,7 @@ class CoqManager {
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(this.layout.packages, this.options.base_path, this.coq);
+        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path, this.coq);
 
         // Info
         this.packages.pkg_info = [];
@@ -230,8 +231,7 @@ class CoqManager {
         this.waitForPkgs = [];
 
         // The fun starts: Load the set of packages.
-        let bp = this.options.base_path + "../coq-pkgs/";
-        this.coq.infoPkg(bp, this.options.all_pkgs);
+        this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
     }
 
     // Provider setup
@@ -579,15 +579,11 @@ class CoqManager {
         this.packages.addBundleInfo(bname, bi);
         this.packages.pkg_info[bname] = bi;
 
-        // Check if we want to load this package.
-        var rem_pkg = this.options.init_pkgs;
-        var idx = rem_pkg.indexOf(bname);
-
-        // Worker path is coq-js.
-        let bp = this.options.base_path + "../coq-pkgs/";
+        // Check if we want to load this package at startup.
+        var idx = this.options.init_pkgs.indexOf(bname);
 
         if(idx > -1) {
-            this.coq.loadPkg(bp, bname);
+            this.packages.startPackageDownload(bname);
         }
     }
 
