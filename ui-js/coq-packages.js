@@ -6,6 +6,7 @@ class PackageManager {
         this.pkg_root_path = pkg_root_path;
         this.panel         = panel_dom;
         this.bundles       = {};
+        this.loaded_pkgs   = [];
         this.coq           = coq;
     }
 
@@ -99,6 +100,8 @@ class PackageManager {
     }
 
     onBundleLoad(bundle) {
+
+        this.loaded_pkgs.push(bundle);
 
         var info = this.bundles[bundle].info;
         var div  = this.bundles[bundle].div;
