@@ -30,8 +30,12 @@ class CoqWorker {
         this.sendCommand(["GetInfo"]);
     }
 
-    add(ontop_sid, new_sid, stm_text) {
-        this.sendCommand(["Add", ontop_sid, new_sid, stm_text]);
+    add(ontop_sid, new_sid, stm_text, resolve) {
+        this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve || false]);
+    }
+
+    resolve(ontop_sid, new_sid, stm_text) {
+        this.add(ontop_sid, new_sid, stm_text, true);
     }
 
     exec(sid) {

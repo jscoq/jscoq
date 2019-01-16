@@ -178,3 +178,32 @@ let coq_cma_link cmo_file =
   with
   | Not_found ->
     eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file
+
+
+let path_to_coqpath ?(implicit=false) lib_path =
+  Mltop.{
+    path_spec = VoPath {
+        unix_path = String.concat "/" lib_path;
+        coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
+        has_ml = AddTopML;
+        implicit = implicit;
+      };
+    recursive = false;
+  }
+
+let coqpath_of_bundle ?(implicit=false) bundle =
+  List.map (fun pkg ->
+    path_to_coqpath ~implicit pkg.pkg_id
+  ) bundle.pkgs
+
+let path_of_dirpath dirpath =
+  Names.(List.rev_map Id.to_string (DirPath.repr dirpath))
+
+let module_name_of_qualid qualid =
+  let (dirpath, id) = Libnames.repr_qualid qualid in
+  (path_of_dirpath dirpath) @ [Names.Id.to_string id]
+
+let module_name_of_reference ref =
+  match ref with
+  | Libnames.Ident id -> [Names.Id.to_string id]
+  | Libnames.Qualid qid -> module_name_of_qualid qid

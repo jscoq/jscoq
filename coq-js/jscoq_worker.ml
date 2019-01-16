@@ -40,7 +40,6 @@ let fb_opt (fb : Feedback.feedback) =
   Feedback.({ fb with contents = fbc_opt fb.contents })
 
 open Jser_feedback
-open Jser_ast
 
 type gvalue =
   [%import: Goptions.option_value]
@@ -57,8 +56,8 @@ type jscoq_cmd =
   (*           implicit initial_imports      load paths     *)
   | Init    of bool   * string list list   * string list list
 
-  (*           ontop       new      sentence                *)
-  | Add     of Stateid.t * Stateid.t * string
+  (*           ontop       new         sentence                *)
+  | Add     of Stateid.t * Stateid.t * string * bool
   | Cancel  of Stateid.t
   | Exec    of Stateid.t
 
@@ -73,13 +72,16 @@ type jscoq_answer =
   | CoqInfo   of string
 
   (* Merely Informative now *)
-  | Added     of Stateid.t * Loc.t option * Vernacexpr.vernac_control
+  | Added     of Stateid.t * Loc.t option
+
+  (* Requires pkg(s)         prefix        module names    *)
+  | Pending   of Stateid.t * string list * string list list
 
   (* Main feedback *)
   | Cancelled of Stateid.t list
 
   (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t * EasyAst.t
+  | GoalInfo  of Stateid.t * Pp.t
 
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t
@@ -141,12 +143,12 @@ let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
 
 (* When a new package is loaded, the library load path has to be updated *)
-let update_loadpath (msg : lib_event) : unit = 
+let update_loadpath (msg : lib_event) : unit =
   match msg with
   | LibLoaded (_,bundle) ->
     List.iter Mltop.add_coq_path
-      (Jslib.coqpath_of_bundle ~implicit:true (* TODO get implicit_flag from opts *) bundle)
-  | _ -> () 
+      (Jslibmng.coqpath_of_bundle ~implicit:true (* TODO get implicit_flag from opts *) bundle)
+  | _ -> ()
   [@@warning "-4"]
 
 let process_lib_event (msg : lib_event) : unit =
@@ -169,7 +171,7 @@ let exec_init (implicit_flag : bool) (lib_init : string list list) (lib_path : s
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = (fun fb -> post_answer (Feedback (fb_opt fb)));
       require_libs = lib_require;
-      iload_path   = List.map (Jslib.path_to_coqpath ~implicit:implicit_flag) lib_path;
+      iload_path   = List.map (Jslibmng.path_to_coqpath ~implicit:implicit_flag) lib_path;
       top_name     = "JsCoq";
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -189,12 +191,30 @@ let coq_exn_info exn =
     let pp_exn    = pp_opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
+let requires ast =
+  match ast with
+  | Vernacexpr.VernacExpr (_, Vernacexpr.VernacRequire (prefix, _export, module_refs)) ->
+    let prefix_str = match prefix with
+    | Some ref -> Jslibmng.module_name_of_reference (ref.CAst.v)
+    | _ -> [] in
+    let module_refs_str = List.map (fun modref -> Jslibmng.module_name_of_reference (modref.CAst.v))
+                                   module_refs in
+    Some ((prefix_str, module_refs_str))
+  | _ -> None
+  [@@warning "-4"]
+
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
-  | Add(ontop,newid,stm) ->
+  | Add(ontop,newid,stm,resolved) ->
       begin try
-          let ast,loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
-          doc := ndoc; out_fn @@ Added (newid,loc,ast.CAst.v)
+          let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
+          let requires = if resolved then None else requires ast.CAst.v in
+          match requires with
+          | Some ((prefix, module_names)) ->
+            out_fn @@ Pending (newid, prefix, module_names)
+          | _ ->
+            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
+            doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
           let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
           out_fn @@ Feedback { doc_id = 0; span_id = newid; route = 0; contents = Message(Error, loc, msg ) };
@@ -209,12 +229,9 @@ let jscoq_execute =
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
     doc := ndoc; out_fn @@ Log (Debug, str @@ "observe " ^ (Stateid.to_string sid))
 
-  | Goals sid        -> 
+  | Goals sid        ->
     ignore(Jscoq_doc.observe ~doc:!doc sid); (* observe sid but keep the existing doc *)
-    let east = match Icoq.env_sigma_concl_of_goal () with
-    | Some ((env, sigma, econstr)) -> EasyAst.of_econstr env sigma econstr
-    | None -> EasyAst.empty in
-    out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), pp_opt @@ Icoq.pp_of_goals (), east)
+    out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), pp_opt @@ Icoq.pp_of_goals ())
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 

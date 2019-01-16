@@ -11,6 +11,12 @@ type ser_doc = Stm.doc * Stateid.t list
 
 val create : Stm.doc -> ser_doc
 
+val parse : 
+  doc:ser_doc        ->
+  ontop:Stateid.t    ->
+  string             ->
+  Vernacexpr.vernac_control CAst.t
+
 val add :
   doc:ser_doc        ->
   ontop:Stateid.t    ->

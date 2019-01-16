@@ -29,9 +29,6 @@ val to_desc : coq_pkg -> string
 
 val no_files : coq_pkg -> int
 
-val path_to_coqpath : ?implicit:bool -> string list -> Mltop.coq_path
-val coqpath_of_bundle : ?implicit:bool -> coq_bundle -> Mltop.coq_path list
-
 (* JSON handling *)
 open Yojson.Safe
 
@@ -41,4 +38,3 @@ val coq_pkg_of_yojson : json -> (coq_pkg, string) Result.result
 
 val coq_bundle_to_yojson : coq_bundle -> json
 val coq_bundle_of_yojson : json -> (coq_bundle, string) Result.result
-
