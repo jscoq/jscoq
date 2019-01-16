@@ -14,12 +14,12 @@ all:
 
 # Include coq files
 COQINCLUDE=-I $(COQDIR)/config     \
-	   -I $(COQDIR)/clib/      \
-	   -I $(COQDIR)/lib/       \
+           -I $(COQDIR)/clib/      \
+           -I $(COQDIR)/lib/       \
            -I $(COQDIR)/kernel/    \
            -I $(COQDIR)/library/   \
            -I $(COQDIR)/engine/    \
-           -I $(COQDIR)/pretying/  \
+           -I $(COQDIR)/pretyping/ \
            -I $(COQDIR)/interp/    \
            -I $(COQDIR)/parsing/   \
            -I $(COQDIR)/grammar/   \

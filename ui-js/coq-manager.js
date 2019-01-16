@@ -499,6 +499,8 @@ class CoqManager {
 
         loaded_pkgs.push(bname);
 
+        console.log("" + loaded_pkgs);
+
         if (init_pkgs.indexOf(bname) > -1) {
             // All the packages have been loaded.
             if (init_pkgs.every(x => loaded_pkgs.indexOf(x) > -1))
@@ -514,14 +516,16 @@ class CoqManager {
         }
     }
 
-    coqCoqExn(msg) {
-        // this.layout.log(msg, "Error");
-        console.log('coqExn', msg);
+    coqCoqExn(loc, sids, msg) {
+        console.error('Coq Exeption', msg);
+
+        var rmsg = this.pprint.pp2HTML(msg);
+        this.layout.log(rmsg, 'Error');
     }
 
     coqJsonExn(msg) {
         // this.layout.log(msg, "Error");
-        console.log('jsonExn', msg);
+        console.error('jsonExn', msg);
     }
 
     coqCoqInfo(info) {
