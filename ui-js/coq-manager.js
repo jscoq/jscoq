@@ -417,9 +417,8 @@ class CoqManager {
 
     // Gets a request to load packages
     coqPending(nsid, prefix, module_names) {
-        let ontop = this.doc.sentences.last().coq_sid;
-
         let stm = this.doc.stm_id[nsid];
+        let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1].coq_sid;
 
         var pkgs_to_load = [];
         for (let module_name of module_names) {
