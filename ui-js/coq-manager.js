@@ -195,12 +195,6 @@ class CoqManager {
         // XXX: In the future this may also manage the downloads.
         this.packages = new PackageManager(this.layout.packages, this.options.pkg_path, this.coq);
 
-        // Info
-        this.packages.pkg_info = [];
-
-        // Packages to load
-        this.packages.pkg_init = [];
-
         // Pre-init packages
         this.pre_packages = [];
 
@@ -235,6 +229,8 @@ class CoqManager {
 
         // The fun starts: Load the set of packages.
         this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+
+        if (this.options.init_pkgs.length == 0) this.coqInit();
     }
 
     // Provider setup
@@ -475,7 +471,6 @@ class CoqManager {
     coqLibInfo(bname, bi) {
 
         this.packages.addBundleInfo(bname, bi);
-        this.packages.pkg_info[bname] = bi;
 
         // Check if we want to load this package at startup.
         var idx = this.options.init_pkgs.indexOf(bname);
@@ -495,11 +490,7 @@ class CoqManager {
 
         var init_pkgs = this.options.init_pkgs,
             wait_pkgs = this.waitForPkgs,
-            loaded_pkgs = this.packages.pkg_init;
-
-        loaded_pkgs.push(bname);
-
-        console.log("" + loaded_pkgs);
+            loaded_pkgs = this.packages.loaded_pkgs;
 
         if (init_pkgs.indexOf(bname) > -1) {
             // All the packages have been loaded.
@@ -548,20 +539,17 @@ class CoqManager {
 
         // XXXXXX: Critical point
         var load_lib = [];
-        var init_lib = this.options.init_pkgs;
 
         if (this.options.prelude) {
             load_lib.push(["Coq", "Init", "Prelude"]);
         }
 
-        let bp = this.options.base_path + "../";
-
-        let load_paths = this.packages.pkg_init.map(
-            bundle => this.packages.pkg_info[bundle].pkgs
+        let load_paths = this.packages.loaded_pkgs.map(
+            bundle => this.packages.bundles[bundle].info.pkgs
         ).flatten().map( pkg => pkg.pkg_id );
 
         this.coq.init(this.options.implicit_libs, load_lib, load_paths);
-        // Done!
+        // Almost done!
     }
 
     goPrev(update_focus) {
