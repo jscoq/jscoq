@@ -39,7 +39,7 @@ type progress_info = {
 type lib_event =
   | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
   | LibProgress of progress_info        (* Information about loading progress *)
-  | LibLoaded   of string               (* Bundle [pkg] is loaded *)
+  | LibLoaded   of string * coq_bundle  (* Bundle [pkg] is loaded *)
 
 type out_fn = lib_event -> unit
 
@@ -118,7 +118,7 @@ let rec preload_from_file ?(verb=false) out_fn base_path file =
   (* Load deps in paralell *)
   Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps           <&>
   Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path file) bundle.pkgs  >>= fun () ->
-  return @@ out_fn (LibLoaded file))
+  return @@ out_fn (LibLoaded (file, bundle)))
 
 let info_from_file out_fn base_path file =
   parse_bundle base_path file >>= (fun bundle ->
@@ -129,8 +129,8 @@ let info_pkg out_fn base_path pkgs =
 
 (* Hack *)
 let load_pkg out_fn base_path pkg_file =
-  preload_from_file out_fn base_path pkg_file >>= fun () ->
-  parse_bundle base_path pkg_file
+  preload_from_file out_fn base_path pkg_file (*>>= fun () ->
+  parse_bundle base_path pkg_file *)
 
 (* let _is_bad_url _ = false *)
 
