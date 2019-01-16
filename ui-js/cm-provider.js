@@ -9,6 +9,7 @@ class CmSentence {
         this.text  = text;
         this.mark  = undefined;
         this.is_comment = is_comment;
+        this.feedback = [];
     }
 
 }
@@ -39,7 +40,7 @@ class CmCoqProvider {
             this.editor = CodeMirror(element, cmOpts);
         }
 
-        this.editor.on('change', evt => this.onCMChange(evt) );
+        this.editor.on('change', (cm, evt) => this.onCMChange(cm, evt) );
         // From XQuery-CM
         CodeMirror.on(this.editor.getWrapperElement(), "mouseenter",
                       evt => this.onCMMouseEnter(this.editor, evt));
@@ -104,6 +105,10 @@ class CmCoqProvider {
 
         var doc = this.editor.getDoc();
 
+        let markWithClass = (className) =>
+            doc.markText(stm.start, stm.end, {className: className,
+                                              attributes: {'data-sid': stm.coq_sid}})
+
         switch (mark) {
         case "clear":
             stm.mark.clear();
@@ -112,17 +117,17 @@ class CmCoqProvider {
             // doc.setCursor(stm.start);
             break;
         case "processing":
-            stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-pending'});
+            stm.mark = markWithClass('coq-eval-pending');
             stm.mark.stm = stm;
             break;
         case "error":
-            stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-failed'});
+            stm.mark = markWithClass('coq-eval-failed');
             stm.mark.stm = stm;
             // XXX: Check this is the right place.
             doc.setCursor(stm.end);
             break;
         case "ok":
-            stm.mark = doc.markText(stm.start, stm.end, {className : 'coq-eval-ok'});
+            stm.mark = markWithClass('coq-eval-ok');
             stm.mark.stm = stm;
             // XXX: Check this is the right place.
             // This interferes with the go to target.
@@ -155,10 +160,10 @@ class CmCoqProvider {
     }
 
     // If any marks, then call the invalidate callback!
-    onCMChange(evt) {
+    onCMChange(editor, evt) {
 
-        var doc   = this.editor.getDoc();
-        var marks = doc.findMarksAt(doc.getCursor());
+        var doc   = editor.getDoc();
+        var marks = doc.findMarksAt(evt.from);
 
         // We assume that the cursor is positioned in the change.
         if (marks.length === 1) {
