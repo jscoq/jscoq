@@ -41,3 +41,19 @@ type coq_bundle = {
 let to_dir   pkg = String.concat "/" (pkg.pkg_id)
 let to_desc  pkg = String.concat "." (pkg.pkg_id)
 let no_files pkg = List.length pkg.vo_files + List.length pkg.cma_files
+
+let path_to_coqpath ?(implicit=false) lib_path =
+  Mltop.{
+    path_spec = VoPath {
+        unix_path = String.concat "/" lib_path;
+        coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
+        has_ml = AddTopML;
+        implicit = implicit;
+      };
+    recursive = false;
+  }
+
+let coqpath_of_bundle ?(implicit=false) bundle =
+  List.map (fun pkg -> 
+    path_to_coqpath ~implicit pkg.pkg_id
+  ) bundle.pkgs
