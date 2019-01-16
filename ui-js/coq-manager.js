@@ -14,6 +14,19 @@
 
 Array.prototype.last    = function() { return this[this.length-1]; };
 Array.prototype.flatten = function() { return [].concat.apply([], this); };
+Array.prototype.equals  = function(other) {
+    if (!other || this.length != other.length) return false;
+    for (var i = 0, l=this.length; i < l; i++) {
+        let te = this[i], oe = other[i];
+        if (!(te instanceof Array && oe instanceof Array ? te.equals(oe) : te == oe))
+            return false;
+    }
+    return true;
+}
+Object.defineProperty(Array.prototype, "last",    {enumerable: false});
+Object.defineProperty(Array.prototype, "flatten", {enumerable: false});
+Object.defineProperty(Array.prototype, "equals",  {enumerable: false});
+
 
 /***********************************************************************/
 /* A Provider Container aggregates several containers, the main deal   */
@@ -200,7 +213,7 @@ class CoqManager {
 
         // Display packages panel:
         this.packages.expand();
-        
+
         requestAnimationFrame(() => this.layout.show());
 
         // Get Coq version, etc...
@@ -322,9 +335,7 @@ class CoqManager {
     // Error handler.
     handleError(sid, loc, msg) {
 
-        let err_stm;
-
-        err_stm = this.doc.stm_id[sid];
+        let err_stm = this.doc.stm_id[sid];
 
         // The sentence has already vanished! This can happen for
         // instance if the execution of an erroneous sentence is
@@ -335,7 +346,7 @@ class CoqManager {
 
         this.layout.log(msg, 'Error');
 
-        // this.error will make the cancel handler to mark the stm red
+        // this.error will make the cancel handler mark the stm red
         // instead of just clearing the mark.
         this.error.push(err_stm);
 
@@ -358,15 +369,15 @@ class CoqManager {
 
     feedMessage(sid, lvl, loc, msg) {
 
-        // var fmsg = this.pretty.richpp2HTML(msg);
-        // var fsmg = msg.toString();
         var fmsg = this.pprint.pp2HTML(msg);
 
-        // JSON encoding...
-        lvl = lvl[0];
+        lvl = lvl[0];  // JSON encoding
 
         if(this.options.debug)
             console.log('Message', sid, lvl, fmsg);
+
+        let stm = this.doc.stm_id[sid];
+        if (stm) stm.feedback.push({level: lvl, loc: loc, msg: msg})
 
         // XXX: highlight error location.
         if (lvl === 'Error') {
@@ -404,6 +415,26 @@ class CoqManager {
         }
     }
 
+    // Gets a request to load packages
+    coqPending(nsid, prefix, module_names) {
+        let ontop = this.doc.sentences.last().coq_sid;
+
+        let stm = this.doc.stm_id[nsid];
+
+        var pkgs_to_load = [];
+        for (let module_name of module_names) {
+            let binfo = this.packages.searchBundleInfo(prefix, module_name);
+            if (binfo && !binfo.loaded)
+                pkgs_to_load.push(binfo.desc);
+        }
+
+        if (pkgs_to_load.length > 0)
+            console.log("Pending: loading packages", pkgs);
+
+        Promise.all(pkgs_to_load.map(pkg => this.packages.startPackageDownload(pkg)))
+            .then(() => this.coq.resolve(ontop, nsid, stm.text));
+    }
+
     // Gets a list of cancelled sids.
     coqCancelled(sids) {
 
@@ -436,7 +467,7 @@ class CoqManager {
         }, this);
 
         // Update goals
-        var nsid = this.doc.sentences.last().coq_sid, 
+        var nsid = this.doc.sentences.last().coq_sid,
             hgoals = this.doc.goals[nsid];
         if (hgoals) {
             this.layout.update_goals(hgoals);
@@ -508,7 +539,11 @@ class CoqManager {
     }
 
     coqCoqExn(loc, sids, msg) {
-        console.error('Coq Exeption', msg);
+        console.error('Coq Exception', msg);
+
+        // If error has already been reported by Feedback, bail
+        if (this.error.some(stm => stm.feedback.some(x => x.msg.equals(msg))))
+            return;
 
         var rmsg = this.pprint.pp2HTML(msg);
         this.layout.log(rmsg, 'Error');
@@ -554,17 +589,16 @@ class CoqManager {
 
     goPrev(update_focus) {
 
-        // If we didn't load the prelude, prevent unloading it to
-        // workaround a bug in Coq.
-        if (this.doc.sentences.length <= 1) return;
-
-        //debugger;
         // XXX: Optimization, in case of error, but incorrect in the
         // new general framework.
         if (this.error.length > 0) {
             this.provider.mark(this.error.pop(), "clear");
             return;
         }
+
+        // If we didn't load the prelude, prevent unloading it to
+        // workaround a bug in Coq.
+        if (this.doc.sentences.length <= 1) return;
 
         var cur_stm  = this.doc.sentences.last();
         var prev_stm = this.doc.sentences[this.doc.sentences.length - 2];
@@ -873,8 +907,8 @@ class CoqPrettyPrint {
                 state.breakMode = 'horizontal';
             }
 
-            ret = `<div class="Pp_box" data-mode="${state.breakMode}" data-margin="${margin}">` + 
-                  this.pp2HTML(msg[2], state) + 
+            ret = `<div class="Pp_box" data-mode="${state.breakMode}" data-margin="${margin}">` +
+                  this.pp2HTML(msg[2], state) +
                   '</div>';
             state.breakMode = vmode;
             break;
