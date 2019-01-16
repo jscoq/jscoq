@@ -41,10 +41,33 @@ class PackageManager {
 
     }
 
+    searchBundleInfo(prefix, module_name) {
+        /* TODO for now, prefix and suffix are ignored :\ */
+        var vo_filename = module_name[module_name.length - 1] + '.vo';
+
+        for (let bundle_key in this.bundles) {
+            let bundle = this.bundles[bundle_key];
+            for (let pkg of bundle.info.pkgs) {
+                if (pkg.vo_files.some(entry => entry[0] === vo_filename))
+                    return bundle.info;
+            }
+        }
+    }
+
     // Loads a package from the preconfigured path.
     // pkg_name : string - name of package (e.g., 'init', 'math-comp')
     startPackageDownload(pkg_name) {
+        var bundle = this.bundles[pkg_name], promise;
+
+        if (bundle) {
+            bundle.promise = promise = new Promise((resolve, reject) => 
+                bundle._resolve = resolve
+            );
+        }
+
         this.coq.sendCommand(["LoadPkg", this.pkg_root_path, pkg_name]);
+
+        return promise;
     }
 
     // In all the three cases below, evt = progressInfo
@@ -103,8 +126,10 @@ class PackageManager {
 
         this.loaded_pkgs.push(bundle);
 
-        var info = this.bundles[bundle].info;
-        var div  = this.bundles[bundle].div;
+        var bundle = this.bundles[bundle];
+        if (bundle._resolve) bundle._resolve();
+
+        var div  = bundle.div;
         var row  = d3.select(div);
 
         row.select('.rel-pos').remove();
