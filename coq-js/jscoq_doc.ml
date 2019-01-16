@@ -61,6 +61,12 @@ let _ = CErrors.register_handler (function
     | _ ->
       raise CErrors.Unhandled)
 
+let parse ~doc ~ontop stm =
+  let doc, sdoc = doc in
+  if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
+  let pa = Pcoq.Parsable.make (Stream.of_string stm) in
+  Stm.parse_sentence ~doc ontop pa
+
 (* Main add logic; we check that the ontop state is present in the
  * document, as it could well happen that the user request to add
  * arrives out of order wrt to a cancel request demanded by Coq, even
