@@ -96,18 +96,18 @@ class CoqLayoutClassic {
         this.ide.appendChild(this.panel);
 
         // UI setup.
-        this.proof    = document.getElementById('goal-text');
-        this.query    = document.getElementById('query-panel');
-        this.packages = document.getElementById('packages-panel');
-        this.buttons  = document.getElementById('buttons');
+        this.proof    = this.panel.querySelector('#goal-text');
+        this.query    = this.panel.querySelector('#query-panel');
+        this.packages = this.panel.querySelector('#packages-panel');
+        this.buttons  = this.panel.querySelector('#buttons');
 
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
-        d3.select('select[name=msg_filter]')
-            .on('change', () => this.filterLog(parseInt(d3.event.target.value)));
+        $(this.panel).find('select[name=msg_filter]')
+            .change(ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
     }
 
@@ -146,19 +146,16 @@ class CoqLayoutClassic {
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error
-        var item =
-            d3.select(this.query)
-                .append('div')
-                .attr('class', level)
-                .html(text);
+        var item = $('<div>').addClass(level).html(text);
+
+        $(this.query).append(item);
 
         if (this.isLogVisible(level)) {
             if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
 
             this.scrollTimeout = setTimeout( () => {
-                this.item = item;
-                item.node().scrollIntoView(false);
-                this.scrollTimeout = null;
+                this.query.scrollTo({top: this.query.scrollHeight, 
+                                     behavior: 'smooth'});
             }, 1 );
         }
     }
