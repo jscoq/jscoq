@@ -65,6 +65,8 @@ type jscoq_cmd =
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
+
+  | ReassureLoadPath of string list list
   [@@deriving yojson]
 
 type jscoq_answer =
@@ -254,6 +256,11 @@ let jscoq_execute =
     let header2 = Printf.sprintf
         " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
     out_fn @@ CoqInfo (header1 ^ header2)
+
+  | ReassureLoadPath load_path ->
+    List.iter (fun path_el -> Mltop.add_coq_path
+      (Jslibmng.path_to_coqpath ~implicit:true  (* TODO get implicit_flag from opts *) path_el)
+    ) load_path
 
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)
