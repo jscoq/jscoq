@@ -206,10 +206,9 @@ class CoqManager {
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path, this.coq);
-
-        // Pre-init packages
-        this.pre_packages = [];
+        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
+                                           this.options.all_pkgs,
+                                           this.coq);
 
         // Display packages panel:
         this.packages.expand();
