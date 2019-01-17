@@ -54,6 +54,12 @@ class PackageManager {
         }
     }
 
+    getLoadPath() {
+        return this.loaded_pkgs.map(
+            bundle => this.bundles[bundle].info.pkgs
+        ).flatten().map( pkg => pkg.pkg_id );
+    }
+
     // Loads a package from the preconfigured path.
     // pkg_name : string - name of package (e.g., 'init', 'math-comp')
     startPackageDownload(pkg_name) {

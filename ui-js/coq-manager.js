@@ -242,8 +242,6 @@ class CoqManager {
 
         // The fun starts: Load the set of packages.
         this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
-
-        if (this.options.init_pkgs.length == 0) this.coqInit();
     }
 
     // Provider setup
@@ -420,6 +418,10 @@ class CoqManager {
         let stm = this.doc.stm_id[nsid];
         let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1].coq_sid;
 
+        /* This is needed because canceling stms may have reset
+         * the LoadPath to a previous value. */
+        this.coq.reassureLoadPath(this.packages.getLoadPath());
+
         var pkgs_to_load = [];
         for (let module_name of module_names) {
             let binfo = this.packages.searchBundleInfo(prefix, module_name);
@@ -427,8 +429,10 @@ class CoqManager {
                 pkgs_to_load.push(binfo.desc);
         }
 
-        if (pkgs_to_load.length > 0)
-            console.log("Pending: loading packages", pkgs);
+        if (pkgs_to_load.length > 0) {
+            console.log("Pending: loading packages", pkgs_to_load);
+            this.packages.expand();
+        }
 
         Promise.all(pkgs_to_load.map(pkg => this.packages.startPackageDownload(pkg)))
             .then(() => this.coq.resolve(ontop, nsid, stm.text));
@@ -555,10 +559,14 @@ class CoqManager {
 
     coqCoqInfo(info) {
 
-        this.layout.proof.textContent =
-               info
-            + "\nPlease wait for the libraries to load, thanks!"
-            + "\nIf you have trouble try cleaning your browser's cache.\n";
+        this.layout.proof.textContent = info;
+
+        if (this.options.init_pkgs.length == 0)
+            this.coqInit();
+        else
+            this.layout.proof.textContent +=
+                  "\nPlease wait for the libraries to load, thanks!"
+                + "\n(If you are having trouble, try cleaning your browser's cache.)\n";
     }
 
     // Coq Init: At this point, the required libraries are loaded
@@ -578,11 +586,9 @@ class CoqManager {
             load_lib.push(["Coq", "Init", "Prelude"]);
         }
 
-        let load_paths = this.packages.loaded_pkgs.map(
-            bundle => this.packages.bundles[bundle].info.pkgs
-        ).flatten().map( pkg => pkg.pkg_id );
+        let load_path = this.packages.getLoadPath();
 
-        this.coq.init(this.options.implicit_libs, load_lib, load_paths);
+        this.coq.init(this.options.implicit_libs, load_lib, load_path);
         // Almost done!
     }
 

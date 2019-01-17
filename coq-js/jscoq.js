@@ -58,6 +58,10 @@ class CoqWorker {
         this.sendCommand(["InfoPkg", base_path, pkgs]);
     }
 
+    reassureLoadPath(load_path) {
+        this.sendCommand(["ReassureLoadPath", load_path]);
+    }
+
     coq_handler(evt) {
 
         var msg     = evt.data;
