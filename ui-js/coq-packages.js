@@ -2,8 +2,18 @@
 
 class PackageManager {
 
-    constructor(panel_dom, pkg_root_path, coq) {
+    /**
+     * Creates the packages UI and loading manager.
+     *
+     * @param {Element} panel_dom <div> element to hold the package entries
+     * @param {string} pkg_root_path base URL of package locations (coq-pkgs)
+     * @param {list} pkg_names list of package names
+     * @param {CoqWorker} coq reference to the Coq worker instance to send
+     *   load requests to
+     */
+    constructor(panel_dom, pkg_root_path, pkg_names, coq) {
         this.pkg_root_path = pkg_root_path;
+        this.pkg_names     = pkg_names;
         this.panel         = panel_dom;
         this.bundles       = {};
         this.loaded_pkgs   = [];
@@ -15,6 +25,7 @@ class PackageManager {
         var div  = document.createElement('div');
         var row = $(div);
 
+        row.attr('data-name', bname);
         row.data(pkg_info);
 
         row.append($('<img>').addClass('download-icon')
@@ -22,7 +33,18 @@ class PackageManager {
 
         row.append($('<span>').text(pkg_info.desc));
 
-        this.panel.appendChild(div);
+        // Find bundle's proper place in the order of child elements
+        var place_before = null, idx = this.pkg_names.indexOf(bname);
+
+        for (let child = this.panel.firstElementChild; child;
+                 child = child.nextElementSibling) {
+            if (this.pkg_names.indexOf($(child).attr('data-name')) > idx) {
+                place_before = child;
+                break;
+            }
+        }
+
+        this.panel.insertBefore(div, place_before /* null == at end */ );
 
         var desc = pkg_info.desc;
         var pkgs = pkg_info.pkgs;
