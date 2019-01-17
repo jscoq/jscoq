@@ -81,22 +81,25 @@ a, a:link, a:visited, a:active {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 35px);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .flex-panel {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #9f9f9f;
   flex: 1000 1;
-  overflow: auto;
+  overflow: hidden;
   transition: flex 0.5s ease-in-out;
 }
 
 .flex-panel > .caption {
+  flex-shrink: 0;
   background: #c4c4c4;
   font-size: 11px;
   height: 20px;
   padding: 3px 10px 0 10px;
-  position: absolute;
+  position: relative;
   z-index: 3;
   width: 100%;
   cursor: pointer;
@@ -121,11 +124,11 @@ a, a:link, a:visited, a:active {
 }
 
 .flex-panel > .content {
-  margin: 22px 4px 4px 4px;
+  flex: 1000 1;
+  padding: 2px 4px 4px 4px;
   /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
-  height: fit-content;
 }
 
 .flex-panel.collapsed {
@@ -150,7 +153,6 @@ a, a:link, a:visited, a:active {
 
 #goal-text {
   border: 0;
-  padding: 0;
   white-space: pre;
 }
 
@@ -269,6 +271,7 @@ img.download-icon.checked {
   position: absolute;
   top: -18px;
   right: 0;
+  height: 18px;
 }
 
 /* Pretty-printing hacks */
