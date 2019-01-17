@@ -13,16 +13,14 @@ class PackageManager {
     addBundleInfo(bname, pkg_info) {
 
         var div  = document.createElement('div');
-        var dsel = d3.select(div);
+        var row = $(div);
 
-        dsel.data([pkg_info]);
+        row.data(pkg_info);
 
-        dsel.append('img')
-            .attr('class', 'download-icon')
-            .on('click', () => { this.startPackageDownload(pkg_info.desc); });
+        row.append($('<img>').addClass('download-icon')
+                   .click(() => { this.startPackageDownload(pkg_info.desc); }));
 
-        dsel.append('span')
-            .text(d => d.desc);
+        row.append($('<span>').text(pkg_info.desc));
 
         this.panel.appendChild(div);
 
@@ -93,16 +91,12 @@ class PackageManager {
 
         if (! this.bundles[bname].bar ) {
 
-            var row  = d3.select(div);
+            var row  = $(div),
+                bar = $('<div>').addClass('progressbar'),
+                egg = $('<img>').addClass('progress-egg');
 
-            var bar = row.append('div')
-                .attr('class', 'rel-pos')
-                .append('div')
-                .attr('class', 'progressbar');
-
-            var egg = bar
-                .append('img')
-                .attr('class', 'progress-egg');
+            bar.append(egg);
+            row.append($('<div>').addClass('rel-pos').append(bar));
 
             this.bundles[bname].bar = bar;
             this.bundles[bname].egg = egg;
@@ -124,8 +118,8 @@ class PackageManager {
 
         var progress = Math.min(1.0, info.loaded / info.total);
         var angle    = (info.loaded * 15) % 360;
-        egg.style('transform', 'rotate(' + angle + 'deg)');
-        bar.style('width', progress * 100 + '%');
+        egg.css('transform', 'rotate(' + angle + 'deg)');
+        bar.css('width', progress * 100 + '%');
     }
 
     onBundleLoad(bundle) {
@@ -135,12 +129,11 @@ class PackageManager {
         var bundle = this.bundles[bundle];
         if (bundle._resolve) bundle._resolve();
 
-        var div  = bundle.div;
-        var row  = d3.select(div);
+        var row  = $(bundle.div);
 
-        row.select('.rel-pos').remove();
-            row.select('img')
-                .attr('class', 'download-icon checked');
+        row.find('.rel-pos').remove();
+        row.find('img')
+            .addClass(['download-icon', 'checked']);
     }
 
     collapse() {

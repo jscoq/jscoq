@@ -63,7 +63,7 @@ var loadJsCoq;
         var files = [node_modules_path + 'codemirror/lib/codemirror',
                      node_modules_path + 'codemirror/keymap/emacs',
                      node_modules_path + 'codemirror/addon/hint/show-hint',
-                     node_modules_path + 'd3/dist/d3.min',
+                     node_modules_path + 'jquery/dist/jquery.min',
                      base_path + 'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
                      base_path + 'coq-js/jscoq',
                      base_path + 'ui-js/coq-mode',
