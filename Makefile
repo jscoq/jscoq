@@ -71,10 +71,11 @@ dist: libs
 	ln -sf $(DISTHTML) index.html
 	mkdir -p $(BUILDDIR)
 	# Copy static files, XXX: minimize
-	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --exclude='*.cmo' --delete-excluded $(BUILDOBJ) $(BUILDDIR)
+	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --exclude='*.cmo' \
+	      --delete-excluded $(BUILDOBJ) $(BUILDDIR)
 	# The monster
 	mkdir -p $(BUILDDIR)/coq-js/
-	cp -a coq-js/jscoq.js $(BUILDDIR)/coq-js/
+	cp -a coq-js/jscoq.js coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
 	# Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
 
