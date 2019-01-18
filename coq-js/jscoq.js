@@ -13,6 +13,8 @@ class CoqWorker {
         // not supported at the moment.
         this.worker = new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
         this.worker.onmessage = evt => this.coq_handler(evt);
+
+        window.addEventListener('unload', () => this.worker.terminate());
     }
 
     sendCommand(msg) {
