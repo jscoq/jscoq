@@ -41,6 +41,10 @@ a:hover {
   background: rgba(0,0,0,0.15);
 }
 
+.coq-eval-ok.highlight {
+  background: #ada;
+}
+  
 .coq-eval-pending {
     background: #fc6;
 }

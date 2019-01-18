@@ -233,7 +233,7 @@ let jscoq_execute =
 
   | Goals sid        ->
     ignore(Jscoq_doc.observe ~doc:!doc sid); (* observe sid but keep the existing doc *)
-    out_fn @@ GoalInfo (Stm.get_current_state ~doc:(fst !doc), pp_opt @@ Icoq.pp_of_goals ())
+    out_fn @@ GoalInfo (sid, pp_opt @@ Icoq.pp_of_goals ())
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
