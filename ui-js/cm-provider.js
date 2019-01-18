@@ -123,7 +123,7 @@ class CmCoqProvider {
         case "error":
             this.markWithClass(stm, 'coq-eval-failed');
             // XXX: Check this is the right place.
-            doc.setCursor(stm.end);
+            this.editor.setCursor(stm.end);
             break;
         case "ok":
             this.markWithClass(stm, 'coq-eval-ok');
