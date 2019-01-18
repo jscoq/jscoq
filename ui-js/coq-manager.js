@@ -278,11 +278,21 @@ class CoqManager {
     feedProcessingIn(sid) {
     }
 
-    feedFileDependency(sid) {
+    feedFileDependency(sid, file, mod) {
+        let msg = `${mod} loading....`,
+            item = this.layout.log(msg, 'Info');
+        item.addClass('loading').data('mod', mod);
     }
 
-    feedFileLoaded(sid, file, mod) {
-        this.layout.log(file + ' loading.', 'Info');
+    feedFileLoaded(sid, mod, file) {
+        let item = [...this.layout.query.getElementsByClassName('loading')]
+                    .find(x => $(x).data('mod') === mod),
+            msg = `${mod} loaded.`;
+
+        if (item)
+            $(item).removeClass('loading').text(msg);
+        else
+            this.layout.log(msg, 'Info');
     }
 
     // The first state is ready.

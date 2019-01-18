@@ -158,6 +158,8 @@ class CoqLayoutClassic {
                                      behavior: 'smooth'});
             }, 1 );
         }
+
+        return item;
     }
 
     filterLog(level_select) {
