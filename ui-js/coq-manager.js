@@ -57,9 +57,9 @@ class ProviderContainer {
             cm.editor.on('focus', evt => { this.currentFocus = cm; });
 
             // Track invalidate
-            cm.onInvalidate = stm => { this.onInvalidate(stm); };
-            cm.onMouseEnter = stm => { this.onMouseEnter(stm); };
-            cm.onMouseLeave = stm => { this.onMouseLeave(stm); };
+            cm.onInvalidate = stm       => { this.onInvalidate(stm); };
+            cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
+            cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
         });
     }
@@ -103,6 +103,10 @@ class ProviderContainer {
 
     mark(stm, mark) {
         stm.sp.mark(stm, mark);
+    }
+
+    highlight(stm, flag) {
+        stm.sp.highlight(stm, flag);
     }
 
     // Focus and movement-related operations.
@@ -262,12 +266,16 @@ class CoqManager {
             this.goCursor();
         };
 
-        provider.onMouseEnter = stm => {
-            if (stm.coq_sid && this.doc.goals[stm.coq_sid])
-                this.layout.update_goals(this.doc.goals[stm.coq_sid]);
+        provider.onMouseEnter = (stm, ev) => {
+            if (stm.coq_sid && ev.altKey) {
+                if (this.doc.goals[stm.coq_sid])
+                    this.layout.update_goals(this.doc.goals[stm.coq_sid]);
+                else
+                    this.coq.goals(stm.coq_sid);  // XXX: async
+            }
         };
 
-        provider.onMouseLeave = stm => {
+        provider.onMouseLeave = (stm, ev) => {
             this.layout.update_goals(this.doc.goals[this.doc.sentences.last().coq_sid]);
         };
 
@@ -330,7 +338,6 @@ class CoqManager {
 
         if (!stm.executed) {
             stm.executed = true;
-            this.provider.mark(stm, "clear");
             this.provider.mark(stm, "ok");
 
             // Get goals
@@ -367,7 +374,6 @@ class CoqManager {
             this.doc.goals[sid]  = null;
             err_stm.coq_sid = null;
 
-            this.provider.mark(err_stm, "clear");
             this.provider.mark(err_stm, "error");
 
             this.coq.cancel(sid);

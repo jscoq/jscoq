@@ -41,11 +41,13 @@ class CmCoqProvider {
         }
 
         this.editor.on('change', (cm, evt) => this.onCMChange(cm, evt) );
-        // From XQuery-CM
-        CodeMirror.on(this.editor.getWrapperElement(), "mouseenter",
-                      evt => this.onCMMouseEnter(this.editor, evt));
-        CodeMirror.on(this.editor.getWrapperElement(), "mouseleave",
-                      evt => this.onCMMouseLeave(this.editor, evt));
+
+        /* Handle mouse hover events */
+        var editor_element = $(this.editor.getWrapperElement());
+        editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
+        editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
+
+        this.hover = [];
     }
 
     focus() {
@@ -101,39 +103,58 @@ class CmCoqProvider {
     }
 
     // Mark a sentence with {clear, processing, error, ok}
-    mark(stm, mark) {
+    mark(stm, mark_type) {
 
-        var doc = this.editor.getDoc();
-
-        let markWithClass = (className) =>
-            doc.markText(stm.start, stm.end, {className: className,
-                                              attributes: {'data-sid': stm.coq_sid}})
-
-        switch (mark) {
-        case "clear":
+        if (stm.mark) {
+            let b = stm.mark.find();
+            stm.start = b.from; stm.end = b.to;
             stm.mark.clear();
             stm.mark = null;
+        }
+
+        switch (mark_type) {
+        case "clear":
             // XXX: Check this is the right place.
             // doc.setCursor(stm.start);
             break;
         case "processing":
-            stm.mark = markWithClass('coq-eval-pending');
-            stm.mark.stm = stm;
+            this.markWithClass(stm, 'coq-eval-pending');
             break;
         case "error":
-            stm.mark = markWithClass('coq-eval-failed');
-            stm.mark.stm = stm;
+            this.markWithClass(stm, 'coq-eval-failed');
             // XXX: Check this is the right place.
             doc.setCursor(stm.end);
             break;
         case "ok":
-            stm.mark = markWithClass('coq-eval-ok');
-            stm.mark.stm = stm;
+            this.markWithClass(stm, 'coq-eval-ok');
             // XXX: Check this is the right place.
             // This interferes with the go to target.
             // doc.setCursor(stm.end);
             break;
         }
+    }
+
+    highlight(stm, flag) {
+        if (stm.mark) {
+            let b = stm.mark.find();
+            stm.start = b.from; stm.end = b.to;
+            var new_class = 
+                stm.mark.className.replace(/( highlight)?$/, flag ? ' highlight' : '')
+            if (new_class != stm.mark.className) {
+                stm.mark.clear();
+                this.markWithClass(stm, new_class);
+            }
+        }
+    }
+
+    markWithClass(stm, className) {
+        var doc = this.editor.getDoc();
+
+        var mark = 
+            doc.markText(stm.start, stm.end, {className: className,
+                attributes: {'data-sid': stm.coq_sid}})
+        mark.stm = stm;
+        stm.mark = mark;
     }
 
     cursorLess(c1, c2) {
@@ -175,35 +196,49 @@ class CmCoqProvider {
         }
     }
 
+    _markFromElement(dom) {
+        var sid = $(dom).attr('data-sid');
+
+        if (sid) {
+            for (let mark of this.editor.getAllMarks()) {
+                if (mark.stm.coq_sid == sid) {
+                    return mark;
+                }
+            }
+        }
+
+        return undefined;
+    }
+
     // If a mark is present, request contextual information.
-    onCMMouseEnter(editor,evt) {
+    onCMMouseMove(evt) {
 
-        var doc   = editor.getDoc();
-        var marks = doc.findMarksAt(doc.getCursor());
+        var mark = this._markFromElement(evt.target);
 
-        // We assume that the cursor is positioned in the change.
-        if (marks.length === 1) {
-            // XXX: Notify of the latest mark.
-            this.onMouseEnter(marks[0].stm);
-        } else if (marks.length > 1) {
-            console.log("Trying the first mark of", marks.length);
-            this.onMouseEnter(marks[0].stm);
+        if (mark && this.hover.indexOf(mark) > -1) return;
+
+        for (let m of this.hover)
+            this.highlight(m.stm, false);
+
+        if (mark) {
+            this.hover = [mark];
+            this.highlight(mark.stm, true);
+            this.onMouseEnter(mark.stm, evt);
+        }
+        else {
+            if (this.hover[0])
+                this.onMouseLeave(this.hover[0].stm, evt);
+            this.hover = [];
         }
     }
 
     // Notification of leaving the mark.
-    onCMMouseLeave(editor,evt) {
-
-        var doc   = editor.getDoc();
-        var marks = doc.findMarksAt(doc.getCursor());
-
-        // We assume that the cursor is positioned in the change.
-        if (marks.length === 1) {
-            // XXX: Notify of the latest mark.
-            this.onMouseLeave(marks[0].stm);
-        } else if (marks.length > 1) {
-            console.log("Trying the first mark of", marks.length);
-            this.onMouseLeave(marks[0].stm);
+    onCMMouseLeave(evt) {
+        if (this.hover.length > 0) {
+            for (let m of this.hover)
+                this.highlight(m.stm, false);
+            this.onMouseLeave(this.hover[0].stm, evt);
+            this.hover = [];
         }
     }
 
