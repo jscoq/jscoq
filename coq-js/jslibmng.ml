@@ -169,12 +169,14 @@ let coq_cma_link cmo_file =
       eprintf "!! cache inconsistency for file %s\n%!" cmo_file;
       cmo_file
   in
+  Feedback.feedback (Feedback.FileDependency(Some cmo_file, cmo_file));
   try
     let js_code = (Hashtbl.find file_cache cmo_file).file_content in
     (* When eval'ed, the js_code will return a closure waiting for the
        jsoo global object to link the plugin.
     *)
-    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global)
+    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global);
+    Feedback.feedback (Feedback.FileLoaded(cmo_file, cmo_file));
   with
   | Not_found ->
     eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file

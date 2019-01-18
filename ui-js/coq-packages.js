@@ -26,7 +26,7 @@ class PackageManager {
         var row = $(div);
 
         row.attr('data-name', bname);
-        row.data(pkg_info);
+        row.data('info', pkg_info);
 
         row.append($('<img>').addClass('download-icon')
                    .click(() => { this.startPackageDownload(pkg_info.desc); }));
@@ -86,12 +86,14 @@ class PackageManager {
         var bundle = this.bundles[pkg_name], promise;
 
         if (bundle) {
+            if (bundle.promise) return bundle.promise; /* load issued already */
+
             bundle.promise = promise = new Promise((resolve, reject) => 
                 bundle._resolve = resolve
             );
         }
 
-        this.coq.sendCommand(["LoadPkg", this.pkg_root_path, pkg_name]);
+        this.coq.loadPkg(this.pkg_root_path, pkg_name);
 
         return promise;
     }
