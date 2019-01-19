@@ -140,6 +140,7 @@ coq-get:
 	make -f coq-addons/equations.addon get
 	make -f coq-addons/ltac2.addon get
 	make -f coq-addons/elpi.addon get
+	make -f coq-addons/dsp.addon get
 
 coq-build:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && make -j $(NJOBS) && make -j $(NJOBS) byte
@@ -147,6 +148,7 @@ coq-build:
 	make -f coq-addons/iris.addon build jscoq-install
 	make -f coq-addons/equations.addon build jscoq-install
 	make -f coq-addons/ltac2.addon build jscoq-install
+	make -f coq-addons/dsp.addon jscoq-install
 	# make -f coq-addons/elpi.addon build jscoq-install
 
 coq: coq-get coq-build

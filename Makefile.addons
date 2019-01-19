@@ -230,6 +230,9 @@ equations:
 ltac2:
 	make -f coq-addons/ltac2.addon jscoq-install
 
+dsp:
+	make -f coq-addons/dsp.addon jscoq-install
+
 ########################################################################
 # Addons: relalg                                                       #
 ########################################################################
@@ -261,5 +264,3 @@ all-build-std:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(CPDT_HOME);     make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(COLOR_HOME);    make -j $(JOBS)          || true
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(TLC_HOME);      make -j $(JOBS) proof_vo || true
-
-
