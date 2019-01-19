@@ -10,6 +10,7 @@
  * loading in the browser.
 *)
 
+open Js_of_ocaml
 open Js
 
 (* XXX This should be the serialization of the jslib.ml:coq_pkg, but waiting for *)

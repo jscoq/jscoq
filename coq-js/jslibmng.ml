@@ -13,6 +13,7 @@
 *)
 open Jslib
 open Lwt
+open Js_of_ocaml
 open Js
 
 let cma_verb     = false

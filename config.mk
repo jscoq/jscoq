@@ -19,7 +19,7 @@ COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
 # Addons to build
 # Working on coq-8.8:
-ADDONS = mathcomp iris equations ltac2 #elpi
+ADDONS = mathcomp iris equations ltac2 dsp #elpi
 # Working on coq-8.7:
 # ADDONS = mathcomp iris equations ltac2 elpi
 # Working on coq-8.6:

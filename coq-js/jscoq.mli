@@ -12,6 +12,7 @@
  *
  *)
 
+open Js_of_ocaml
 open Js
 open Dom
 
