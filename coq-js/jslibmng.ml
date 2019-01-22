@@ -182,10 +182,10 @@ let coq_cma_link cmo_file =
     eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file
 
 
-let path_to_coqpath ?(implicit=false) lib_path =
+let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
   Mltop.{
     path_spec = VoPath {
-        unix_path = String.concat "/" lib_path;
+        unix_path = String.concat "/" (unix_prefix @ lib_path);
         coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
         has_ml = AddTopML;
         implicit = implicit;
