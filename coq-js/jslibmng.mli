@@ -40,7 +40,7 @@ val coq_vo_req  : string -> string option
 val coq_cma_link : string -> unit
 
 (* auxiliary functions to create and process paths *)
-val path_to_coqpath : ?implicit:bool -> string list -> Mltop.coq_path
+val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list -> Mltop.coq_path
 val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Mltop.coq_path list
 
 val path_of_dirpath : Names.DirPath.t -> string list

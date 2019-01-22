@@ -173,7 +173,7 @@ let exec_init (implicit_flag : bool) (lib_init : string list list) (lib_path : s
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = (fun fb -> post_answer (Feedback (fb_opt fb)));
       require_libs = lib_require;
-      iload_path   = List.map (Jslibmng.path_to_coqpath ~implicit:implicit_flag) lib_path;
+      iload_path   = List.map (Jslibmng.path_to_coqpath ~implicit:implicit_flag ~unix_prefix:[]) lib_path;
       top_name     = "JsCoq";
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -258,6 +258,7 @@ let jscoq_execute =
     out_fn @@ CoqInfo (header1 ^ header2)
 
   | ReassureLoadPath load_path ->
+    Mltop.add_coq_path @@ Jslibmng.path_to_coqpath ~implicit:true ~unix_prefix:["/lib"] [];
     List.iter (fun path_el -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:true  (* TODO get implicit_flag from opts *) path_el)
     ) load_path
@@ -265,7 +266,17 @@ let jscoq_execute =
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)
   Sys_js.unmount ~path:"/static";
-  Sys_js.mount ~path:"/static/" (fun ~prefix ~path -> ignore(prefix); Jslibmng.coq_vo_req path)
+  Sys_js.mount ~path:"/static/" (fun ~prefix:_ ~path -> Jslibmng.coq_vo_req path);
+  (* '/lib' is the target for Put commands *)
+  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None);
+  Sys_js.create_file ~name:"/lib/.anchor" ~content:""
+
+let put_pseudo_file ~name ~buf =
+  let str = Typed_array.String.of_arrayBuffer buf in
+  try
+    Sys_js.create_file ~name ~content:str
+  with _e ->
+    Sys_js.update_file ~name ~content:str
 
 let setup_std_printers () =
   Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, str @@ "stdout: " ^ msg)));
@@ -277,16 +288,39 @@ let jscoq_protect f =
   with | exn -> post_answer @@ coq_exn_info exn
 
 (* Message from the main thread *)
-let on_msg doc obj =
-  (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
-  let json_string = Js.to_string (Json.output obj) in
-  let json_obj = Yojson.Safe.from_string json_string in
+let on_msg doc msg =
 
-  match jscoq_cmd_of_yojson json_obj with
-  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, str json_string)) ;
-                                      jscoq_execute doc cmd)
-  | Result.Error s -> post_answer @@
-    JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output obj)))
+  (*-- "Regular" messages are pure POD --*)
+  let on_json_msg doc obj =
+    (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
+    let json_string = Js.to_string (Json.output obj) in
+    let json_obj = Yojson.Safe.from_string json_string in
+
+    match jscoq_cmd_of_yojson json_obj with
+    | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, str json_string)) ;
+                                        jscoq_execute doc cmd)
+    | Result.Error s -> post_answer @@
+      JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output obj)))
+  in
+  (*-- "Special" messages containing ArrayBuffers require special treatment --*)
+  let get_cmd arr =
+    Js.Optdef.case (Js.array_get arr 0)
+      (fun () -> "")
+      (fun s -> Js.to_string (Js.Unsafe.coerce s))
+  in
+  let array_unsafe_get arr idx =
+    Js.Unsafe.coerce (Js.Optdef.get (Js.array_get arr idx) (fun _ -> assert false))
+  in
+  let on_buffer_msg msg =
+    (* Assume msg is of the form ["Put", filename, <ArrayBuffer>] *)
+    let filename = Js.to_string (array_unsafe_get msg 1) in 
+    let content = array_unsafe_get msg 2 in
+    put_pseudo_file ~name:filename ~buf:content
+  
+  in
+  match get_cmd msg with
+  | "Put" -> on_buffer_msg msg
+  | _     -> on_json_msg doc msg
 
 (* This code is executed on Worker initialization *)
 let _ =
