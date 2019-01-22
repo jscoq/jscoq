@@ -12,9 +12,11 @@
 
 // Extra stuff:
 
-Array.prototype.last    = function() { return this[this.length-1]; };
-Array.prototype.flatten = function() { return [].concat.apply([], this); };
-Array.prototype.equals  = function(other) {
+Array.prototype.last     = function() { return this[this.length-1]; };
+Array.prototype.flatten  = function() { return [].concat.apply([], this); };
+Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; ) 
+                                                    if (p(r = this[--i])) return r; }
+Array.prototype.equals   = function(other) {
     if (!other || this.length != other.length) return false;
     for (var i = 0, l=this.length; i < l; i++) {
         let te = this[i], oe = other[i];
@@ -23,9 +25,10 @@ Array.prototype.equals  = function(other) {
     }
     return true;
 }
-Object.defineProperty(Array.prototype, "last",    {enumerable: false});
-Object.defineProperty(Array.prototype, "flatten", {enumerable: false});
-Object.defineProperty(Array.prototype, "equals",  {enumerable: false});
+Object.defineProperty(Array.prototype, "last",     {enumerable: false});
+Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
+Object.defineProperty(Array.prototype, "findLast", {enumerable: false});
+Object.defineProperty(Array.prototype, "equals",   {enumerable: false});
 
 
 /***********************************************************************/
@@ -191,6 +194,7 @@ class CoqManager {
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
+        this.layout.onAction = this.toolbarClickHandler.bind(this);
 
         // Setup the Coq worker.
         this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
@@ -294,7 +298,7 @@ class CoqManager {
 
     feedFileLoaded(sid, mod, file) {
         let item = [...this.layout.query.getElementsByClassName('loading')]
-                    .find(x => $(x).data('mod') === mod),
+                    .findLast(x => $(x).data('mod') === mod),
             msg = `${mod} loaded.`;
 
         if (item)
@@ -306,8 +310,8 @@ class CoqManager {
     // The first state is ready.
     feedProcessed(sid) {
 
-        this.layout.proof.textContent +=
-            "\nCoq worker is ready with sid = " + sid.toString() + "\n";
+        this.layout.proof.append(document.createTextNode(
+            "\nCoq worker is ready with sid = " + sid.toString() + "\n"));
             /* init libraries have already been loaded by now */
 
         this.feedProcessed = this.feedProcessedReady;
@@ -589,9 +593,9 @@ class CoqManager {
 
         this.packages.collapse();
 
-        this.layout.proof.textContent +=
+        this.layout.proof.append(document.createTextNode(
             "\n===> JsCoq filesystem initialized successfully!\n" +
-            "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n";
+            "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n"));
 
         // XXXXXX: Critical point
         var load_lib = [];
@@ -747,24 +751,15 @@ class CoqManager {
 
     // Enable the IDE.
     enable() {
-
-        // XXX: Should be the task of the layout.
-        this.btnEventHandler = this.toolbarClickHandler.bind(this);
-        this.layout.buttons.addEventListener('click', this.btnEventHandler);
-        this.layout.buttons.style.display = 'inline-block';
-        this.layout.buttons.style.opacity = 1;
+        this.layout.toolbarOn();
         this.provider.focus();
     }
 
     // Disable the IDE.
     disable() {
-
-        // Disable the buttons.
-        this.layout.buttons.removeEventListener('click', this.btnEventHandler);
-        this.layout.buttons.style.display = 'none';
-        this.layout.buttons.style.opacity = 0;
-        this.layout.proof.textContent +=
-                "\n===> Waiting for Package load!\n";
+        this.layout.toolbarOff();
+        this.layout.proof.append(document.createTextNode(
+                "\n===> Waiting for Package load!\n"));
     }
 
     toolbarClickHandler(evt) {
@@ -783,24 +778,6 @@ class CoqManager {
         case 'down' :
             this.goNext(true);
             break;
-        }
-    }
-
-    raiseButton(btn_name) {
-
-        // XXX: EG: Here I disagree with the current code, it
-        // should be possible to use the coq manager without a toolbar!
-
-        // This is a bit different from most UI indeed.
-        var btns = this.layout.buttons.getElementsByTagName('img');
-        var btn  = btns.namedItem(btn_name);
-
-        if (btn) {
-            btn.dispatchEvent(new MouseEvent('click',
-                                             {'view'       : window,
-                                              'bubbles'    : true,
-                                              'cancelable' : true
-                                             }));
         }
     }
 

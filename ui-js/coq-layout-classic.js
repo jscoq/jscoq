@@ -104,6 +104,8 @@ class CoqLayoutClassic {
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
+        this.onAction = evt => {};
+
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
         $(this.panel).find('select[name=msg_filter]')
@@ -133,6 +135,20 @@ class CoqLayoutClassic {
         }
     }
 
+    toolbarOn() {
+        // Enable the button actions and show them.
+        this.btnEventHandler = (evt) => this.onAction(evt);
+        this.buttons.addEventListener('click', this.btnEventHandler);
+        this.buttons.style.display = 'inline-block';
+        this.buttons.style.opacity = 1;
+    }
+
+    toolbarOff() {
+        // Disable the button actions and dim them.
+        this.buttons.removeEventListener('click', this.btnEventHandler);
+        this.buttons.style.display = 'none';
+        this.buttons.style.opacity = 0;
+    }
 
     // This is still not optimal.
     update_goals(str) {
