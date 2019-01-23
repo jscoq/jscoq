@@ -53,6 +53,17 @@ a:hover {
     background: rgba(255, 00, 50, 0.4);
 }
 
+.coq-eval-ok.CodeMirror-selectedtext,
+.coq-eval-pending.CodeMirror-selectedtext,
+.coq-eval-failed.CodeMirror-selectedtext {
+    background: none;
+}
+
+.coq-eval-ok.highlight.CodeMirror-selectedtext {
+    background: #aee; 
+}
+
+
 /* Normal theme settings */
 
 .cm-s-default.CodeMirror {
@@ -94,6 +105,13 @@ a:hover {
 .cm-s-default .cm-bracket {
   /* background: bisque; */
   color: red;
+}
+
+div.CodeMirror span.CodeMirror-matchingbracket {
+  color: #939;
+  outline: 1px solid rgba(200, 0, 0, 0.3);
+  outline-offset: -1px;
+  text-shadow: 0 -1px #939;
 }
 
 /*  */
