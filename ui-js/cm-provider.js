@@ -27,6 +27,7 @@ class CmCoqProvider {
               lineNumbers   : true,
               indentUnit    : 4,
               matchBrackets : true,
+              styleSelectedText : true,
               // theme         : 'blackboard',
               keyMap        : "emacs"
             };
@@ -201,7 +202,7 @@ class CmCoqProvider {
 
         if (sid) {
             for (let mark of this.editor.getAllMarks()) {
-                if (mark.stm.coq_sid == sid) {
+                if (mark.stm && mark.stm.coq_sid == sid) {
                     return mark;
                 }
             }
