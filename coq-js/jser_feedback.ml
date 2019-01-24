@@ -126,26 +126,29 @@ end
 type state_id = Stateid.t
   [@@deriving yojson]
 
-type level =
-  [%import: Feedback.level]
-  [@@deriving yojson]
-  [@@ocaml.warning "-39"]
+module Feedback = struct
+  type level =
+    [%import: Feedback.level]
+    [@@deriving yojson]
+    [@@ocaml.warning "-39"]
 
-type route_id =
-  [%import: Feedback.route_id]
-  [@@deriving yojson]
+  type route_id =
+    [%import: Feedback.route_id]
+    [@@deriving yojson]
 
-type doc_id =
-  [%import: Feedback.doc_id]
-  [@@deriving yojson]
+  type doc_id =
+    [%import: Feedback.doc_id]
+    [@@deriving yojson]
 
-type feedback_content =
-  [%import: Feedback.feedback_content]
-  [@@deriving yojson]
+  type feedback_content =
+    [%import: Feedback.feedback_content]
+    [@@deriving yojson]
 
-type feedback =
-  [%import: Feedback.feedback
-  [@with
-     Feedback.route_id := route_id;
-  ]]
-  [@@deriving yojson]
+  type feedback =
+    [%import: Feedback.feedback
+    [@with
+      Feedback.route_id := route_id;
+    ]]
+    [@@deriving yojson]
+
+end

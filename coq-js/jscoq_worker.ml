@@ -40,6 +40,7 @@ let fb_opt (fb : Feedback.feedback) =
   Feedback.({ fb with contents = fbc_opt fb.contents })
 
 open Jser_feedback
+open Jser_feedback.Feedback
 
 type gvalue =
   [%import: Goptions.option_value]
@@ -62,6 +63,7 @@ type jscoq_cmd =
   | Exec    of Stateid.t
 
   | Goals   of Stateid.t
+  | Query   of Stateid.t * Feedback.route_id * string
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
@@ -234,6 +236,14 @@ let jscoq_execute =
     let doc = fst !doc in
     let goal_pp = Option.map pp_opt @@ Icoq.pp_of_goals ~doc sid in
     out_fn @@ GoalInfo (sid, goal_pp)
+
+  | Query (sid, rid, query) ->
+    begin try
+      Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query
+    with exn ->
+      let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
+    end
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 

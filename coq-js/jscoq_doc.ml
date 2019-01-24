@@ -83,6 +83,12 @@ let add ~doc ~ontop ~newid stm =
   let new_sdoc    = new_st :: sdoc                       in
   east.CAst.loc, foc, (ndoc,new_sdoc)
 
+let query ~doc ~at ~route query =
+  let doc, sdoc = doc in
+  if not (List.mem at sdoc) then raise (NoSuchState at);
+  let pa = Pcoq.Parsable.make (Stream.of_string query) in
+  Stm.query ~doc ~at ~route pa
+
 (* invalid range returns a list of all the invalid stateid from
    can_st and the new doc _in reverse order_ *)
 let invalid_range ~sdoc can_st =
