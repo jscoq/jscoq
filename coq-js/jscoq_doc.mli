@@ -24,6 +24,13 @@ val add :
   string             ->
   Loc.t option * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
 
+val query :
+  doc:ser_doc              ->
+  at:Stateid.t             ->
+  route:Feedback.route_id  ->
+  string                   ->
+  unit
+
 val cancel  : doc:ser_doc -> Stateid.t -> Stateid.t list * ser_doc
 
 (** [observe ~doc sid] evals up to state [sid] on document [doc]. *)
