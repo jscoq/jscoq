@@ -202,7 +202,7 @@ class CoqManager {
         this.coq.observers.push(this);
 
         // Setup pretty printer for feedback and goals
-        this.pprint = new CoqPrettyPrint();
+        this.pprint = new FormatPrettyPrint();
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -273,14 +273,14 @@ class CoqManager {
         provider.onMouseEnter = (stm, ev) => {
             if (stm.coq_sid && ev.altKey) {
                 if (this.doc.goals[stm.coq_sid])
-                    this.layout.update_goals(this.doc.goals[stm.coq_sid]);
+                    this.updateGoals(this.doc.goals[stm.coq_sid]);
                 else
                     this.coq.goals(stm.coq_sid);  // XXX: async
             }
         };
 
         provider.onMouseLeave = (stm, ev) => {
-            this.layout.update_goals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+            this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
         };
 
         return provider;
@@ -492,7 +492,7 @@ class CoqManager {
         var nsid = this.doc.sentences.last().coq_sid,
             hgoals = this.doc.goals[nsid];
         if (hgoals) {
-            this.layout.update_goals(hgoals);
+            this.updateGoals(hgoals);
         }
         else {
             this.coq.goals(nsid); // no goals fetched for current statement, ask worker
@@ -506,8 +506,7 @@ class CoqManager {
 
         // XXX optimize!
         // if(!this.goTarget)
-        this.layout.update_goals(hgoals);
-
+        this.updateGoals(hgoals);
     }
 
     coqLog(level, msg) {
@@ -781,6 +780,11 @@ class CoqManager {
         }
     }
 
+    updateGoals(html) {
+        this.layout.update_goals(html);
+        this.pprint.adjustBreaks($(this.layout.proof));
+    }
+
     process_special(text) {
 
         var special;
@@ -813,131 +817,6 @@ class CoqManager {
         }
         return false;
     }
-}
-
-
-class CoqPrettyPrint {
-
-    // Simplifier to the "rich" format coq uses.
-    richpp2HTML(msg) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        var ret;
-        var tag, ct, id, att, m;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-        case "Element":
-            [id, att, m] = ct;
-            let imm = m.map(this.richpp2HTML, this);
-            ret = "".concat(...imm);
-            ret = `<span class="${id}">` + ret + `</span>`;
-            break;
-
-        // PCData contains a string
-        case "PCData":
-            ret = ct;
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
-    pp2HTML(msg, state) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        state = state || {breakMode: 'horizontal'};
-
-        var ret;
-        var tag, ct;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-
-        // ["Pp_glue", [...elements]]
-        case "Pp_glue":
-            let imm = ct.map(x => this.pp2HTML(x, state));
-            ret = "".concat(...imm);
-            break;
-
-        // ["Pp_string", string]
-        case "Pp_string":
-            if (ct.match(/^={4}=*$/)) {
-                ret = "<hr/>";
-                state.breakMode = 'skip-vertical';
-            }
-            else if (state.breakMode === 'vertical' && ct.match(/^\ +$/)) {
-                ret = "";
-                state.margin = ct;
-            }
-            else
-                ret = ct;
-            break;
-
-        // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
-        case "Pp_box":
-            var vmode = state.breakMode,
-                margin = state.margin ? state.margin.length : 0;
-
-            state.margin = null;
-
-            switch(msg[1][0]) {
-            case "Pp_vbox":
-                state.breakMode = 'vertical';
-                break;
-            default:
-                state.breakMode = 'horizontal';
-            }
-
-            ret = `<div class="Pp_box" data-mode="${state.breakMode}" data-margin="${margin}">` +
-                  this.pp2HTML(msg[2], state) +
-                  '</div>';
-            state.breakMode = vmode;
-            break;
-
-        // ["Pp_tag", tag, content]
-        case "Pp_tag":
-            ret = this.pp2HTML(msg[2], state);
-            ret = `<span class="${msg[1]}">` + ret + `</span>`;
-            break;
-
-        case "Pp_force_newline":
-            ret = "<br/>";
-            state.margin = null;
-            break;
-
-        case "Pp_print_break":
-            ret = "";
-            state.margin = null;
-            if (state.breakMode === 'vertical'|| (msg[1] == 0 && msg[2] > 0 /* XXX need to count columns etc. */)) {
-                ret = "<br/>";
-            } else if (state.breakMode === 'horizontal') {
-                ret = " ";
-            } else if (state.breakMode === 'skip-vertical') {
-                state.breakMode = 'vertical';
-            }
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
 }
 
 
