@@ -11,6 +11,8 @@ type ser_doc = Stm.doc * Stateid.t list
 
 val create : Stm.doc -> ser_doc
 
+val tip : ser_doc -> Stateid.t
+
 val parse : 
   doc:ser_doc        ->
   ontop:Stateid.t    ->

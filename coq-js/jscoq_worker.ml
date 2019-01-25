@@ -238,6 +238,7 @@ let jscoq_execute =
     out_fn @@ GoalInfo (sid, pp_opt @@ Icoq.pp_of_goals ())
 
   | Query (sid, rid, query) ->
+    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
     begin try
       Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query
     with exn ->

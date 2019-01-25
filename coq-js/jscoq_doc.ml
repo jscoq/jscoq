@@ -52,6 +52,10 @@ let _dump_doc doc =
 
 let create doc = doc, [Stateid.initial]
 
+let tip ser_doc =
+  let _, sdoc = ser_doc in
+  List.hd sdoc
+
 (* Sadly this is not properly exported from Stm/Vernac *)
 exception NoSuchState of Stateid.t
 
