@@ -176,6 +176,8 @@ a, a:link, a:visited, a:active {
 #toolbar {
   white-space: nowrap;
   border-bottom: 1px solid #ddd;
+  position: relative;
+  overflow: hidden;
   /*height: 36px;*/
 }
 
@@ -188,8 +190,14 @@ a, a:link, a:visited, a:active {
 
 #toolbar .exits.right {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
+  transition: opacity 620ms ease-in;
+}
+
+#ide-wrapper.toggled #toolbar .exits.right {
+  opacity: 0;
+  transition: opacity 120ms linear;
 }
 
 #at-github {

@@ -208,10 +208,6 @@ class CoqManager {
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
 
-        // XXX: Depends on layout IDs.
-        document.getElementById('hide-panel')
-            .addEventListener('click', evt => this.layout.toggle() );
-
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
         this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
