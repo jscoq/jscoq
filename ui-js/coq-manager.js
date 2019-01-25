@@ -266,8 +266,9 @@ class CoqManager {
                 this.error.splice(stm_err_idx, 1);
                 return;
             }
-
-            this.goCursor();
+            else if (stm.coq_sid) {
+                this.coq.cancel(stm.coq_sid);
+            }
         };
 
         provider.onMouseEnter = (stm, ev) => {
@@ -347,40 +348,6 @@ class CoqManager {
             // Get goals
             if (nsid == this.doc.sentences.last().coq_sid)
                 this.coq.goals(nsid);
-        }
-    }
-
-    // Error handler.
-    handleError(sid, loc, msg) {
-
-        let err_stm = this.doc.stm_id[sid];
-
-        // The sentence has already vanished! This can happen for
-        // instance if the execution of an erroneous sentence is
-        // queued twice, which is hard to avoid due to STM exec
-        // forcing on parsing.
-
-        if(!err_stm) return;
-
-        this.layout.log(msg, 'Error');
-
-        // this.error will make the cancel handler mark the stm red
-        // instead of just clearing the mark.
-        this.error.push(err_stm);
-
-        let stm_idx       = this.doc.sentences.indexOf(err_stm);
-
-        // The stm was not deleted!
-        if (stm_idx >= 0) {
-            this.doc.sentences.splice(stm_idx, 1);
-
-            this.doc.stm_id[sid] = null;
-            this.doc.goals[sid]  = null;
-            err_stm.coq_sid = null;
-
-            this.provider.mark(err_stm, "error");
-
-            this.coq.cancel(sid);
         }
     }
 
@@ -469,7 +436,7 @@ class CoqManager {
             let stm_err_idx   = this.error.indexOf(stm_to_cancel);
 
             if (stm_err_idx >= 0) {
-
+                // Do not clear the mark, to keep the error indicator.
             } else {
                 let stm_idx = this.doc.sentences.indexOf(stm_to_cancel);
 
@@ -696,15 +663,56 @@ class CoqManager {
         var cur = this.provider.getAtPoint();
 
         if (cur) {
-            if(!cur.coq_sid) {
-                console.log("critical error, stm not registered");
-            } else {
+            if (cur.coq_sid) {
                 this.coq.cancel(cur.coq_sid);
+            }
+            else {
+                console.warn("in goCursor(): stm not registered");
             }
         } else {
             this.goTarget = true;
             this.goNext(false);
         }
+    }
+
+    // Error handler.
+    handleError(sid, loc, msg) {
+
+        let err_stm = this.doc.stm_id[sid];
+
+        // The sentence has already vanished! This can happen for
+        // instance if the execution of an erroneous sentence is
+        // queued twice, which is hard to avoid due to STM exec
+        // forcing on parsing.
+        if(!err_stm) return;
+
+        this.layout.log(msg, 'Error');
+
+        // this.error will prevent the cancel handler from 
+        // clearing the mark.
+        this.error.push(err_stm);
+
+        let stm_idx       = this.doc.sentences.indexOf(err_stm);
+
+        // The stm was not deleted!
+        if (stm_idx >= 0) {
+            this.doc.sentences.splice(stm_idx, 1);
+
+            this.doc.stm_id[sid] = null;
+            this.doc.goals[sid]  = null;
+            err_stm.coq_sid = null;
+
+            this.provider.mark(err_stm, "error");
+
+            this.coq.cancel(sid);
+        }
+    }
+
+    clearErrors() {
+        for (let err of this.error) {
+            this.provider.mark(err, "clear");
+        }
+        this.error = [];
     }
 
     // Drops all the state!
