@@ -94,13 +94,9 @@ class CmCoqProvider {
         var doc   = this.editor.getDoc();
         var marks = doc.findMarksAt(doc.getCursor());
 
-        // XXX
-        if (marks.length) {
-            return marks[0].stm;
-        } else {
-            return null;
+        for (let mark of marks) {
+            if (mark.stm) return mark.stm;
         }
-        // } while(stm && (stm.end.line < cursor.line || stm.end.ch < cursor.ch));
     }
 
     // Mark a sentence with {clear, processing, error, ok}
@@ -161,7 +157,7 @@ class CmCoqProvider {
     cursorLess(c1, c2) {
 
         return (c1.line < c2.line ||
-                (c1.line === c2.line && c1.ch <= c2.ch));
+                (c1.line === c2.line && c1.ch < c2.ch));
     }
 
     cursorToStart(stm) {
@@ -185,15 +181,15 @@ class CmCoqProvider {
     onCMChange(editor, evt) {
 
         var doc   = editor.getDoc();
-        var marks = doc.findMarksAt(evt.from);
+        var marks = doc.getAllMarks();
 
-        // We assume that the cursor is positioned in the change.
-        if (marks.length === 1) {
-            // XXX: Notify of the latest mark.
-            this.onInvalidate(marks[0].stm);
-        } else if (marks.length > 1) {
-            console.log("Cursor in mark boundary, invalidating the first...");
-            this.onInvalidate(marks[0].stm);
+        // Find the first mark that is at or after the change point
+        for (let mark of marks) {
+            let b = mark.find();
+            if (mark.stm && this.cursorLess(evt.from, b.to)) {
+                this.onInvalidate(mark.stm);
+                break;
+            }
         }
     }
 
