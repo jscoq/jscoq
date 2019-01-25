@@ -151,7 +151,18 @@ div.CodeMirror span.CodeMirror-matchingbracket {
     color: #432165;
 }
 .tactic\.primitive {
+    color: #333333;
 }
 .tactic\.string {
     color: #99ff99;
+}
+
+.constr\.reference:hover,
+.constr\.type:hover,
+.constr\.variable:hover {
+    background: rgba(0,100,0,0.15);
+}
+
+.contextual-focus {
+    background: rgba(80,100,0,0.15);
 }

@@ -145,6 +145,7 @@ a, a:link, a:visited, a:active {
 */
 #goal-panel {
   flex: 2000 1;
+  position: relative;
 }
 
 #goal-panel.collapsed {
@@ -299,4 +300,15 @@ div.Pp_box[data-margin="2"] {
 #goal-text > div.Pp_box[data-mode="vertical"],
 #goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
   display: block;
+}
+
+#goal-panel div.contextual-info {
+  position: absolute;
+  bottom: 2px;
+  left: 3px;
+  background: rgba(255, 255, 255, 0.7);
+  font-family: monospace;
+  font-size: 9pt;
+  border-top: 1px solid rgba(0,0,0,0.25);
+  white-space: pre-wrap;
 }

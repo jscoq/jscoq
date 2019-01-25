@@ -204,6 +204,10 @@ class CoqManager {
         // Setup pretty printer for feedback and goals
         this.pprint = new FormatPrettyPrint();
 
+        // Setup contextual info bar
+        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+                                                     this.coq, this.pprint);
+
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
@@ -826,6 +830,66 @@ class CoqManager {
             }
         }
         return false;
+    }
+}
+
+
+class CoqContextualInfo {
+    /**
+     * 
+     * @param {jQuery} container <div> element to show info in
+     * @param {CoqWorker} coq jsCoq worker for querying types and definitions
+     * @param {FormatPrettyPrint} pprint formatter for Pp data
+     */
+    constructor(container, coq, pprint) {
+        this.container = container;
+        this.coq = coq;
+        this.pprint = pprint;
+        this.el = $('<div>').addClass('contextual-info').hide();
+        this.is_visible = false;
+
+        this.container.append(this.el);
+
+        // Set up mouse events
+        var r = String.raw,
+            contextual_sel = r`.constr\.reference, .constr\.variable, .constr\.type`;
+
+        container.on('mouseenter', contextual_sel, evt => this.showFor(evt.target));
+        container.on('mouseleave', contextual_sel, evt => this.hide());
+    }
+
+    showFor(dom) {
+        var jdom = $(dom);
+        console.log(dom);
+        if (jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
+            this.showQuery(`Check ${jdom.text()}.`);
+        }
+        else if (jdom.hasClass('constr.variable')) {
+            var name = jdom.text();
+            this.container.find('.constr\\.variable').filter(function() {
+                return $(this).text() === name;
+            }).addClass('contextual-focus');
+        }
+    }
+
+    showQuery(query) {
+        this.is_visible = true;
+        this.coq.queryPromise(0, query).then(result => {
+            if (this.is_visible)
+                this.show(this.pprint.pp2HTML(result));
+        });
+    }
+
+    show(html) {
+        this.el.html(html);
+        this.el.show();
+        this.is_visible = true;
+    }
+
+    hide() {
+        this.container.find('.contextual-focus').removeClass('contextual-focus');
+        this.el.hide();
+        this.is_visible = false;
     }
 }
 

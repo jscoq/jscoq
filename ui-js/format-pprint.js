@@ -145,8 +145,7 @@ class FormatPrettyPrint {
                     else break;
                 }
                 if (brk) {
-                    console.log(brk);
-                    brk.text("\n");
+                    brk.html("<br/>");
                 }
             }
         }
