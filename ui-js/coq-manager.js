@@ -404,10 +404,6 @@ class CoqManager {
         let stm = this.doc.stm_id[nsid];
         let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1].coq_sid;
 
-        /* This is needed because canceling stms may have reset
-         * the LoadPath to a previous value. */
-        this.coq.reassureLoadPath(this.packages.getLoadPath());
-
         var pkgs_to_load = [];
         for (let module_name of module_names) {
             let binfo = this.packages.searchBundleInfo(prefix, module_name);
@@ -420,8 +416,11 @@ class CoqManager {
             this.packages.expand();
         }
 
-        Promise.all(pkgs_to_load.map(pkg => this.packages.startPackageDownload(pkg)))
-            .then(() => this.coq.resolve(ontop, nsid, stm.text));
+        this.packages.loadDeps(pkgs_to_load)
+            .then(() => {
+                this.coq.reassureLoadPath(this.packages.getLoadPath());
+                this.coq.resolve(ontop, nsid, stm.text)
+            });
     }
 
     // Gets a list of cancelled sids.
@@ -613,6 +612,8 @@ class CoqManager {
 
     // Return if we had success.
     goNext(update_focus) {
+
+        this.clearErrors();
 
         let cur_stm = this.doc.sentences.last();
         let cur_sid = cur_stm.coq_sid;

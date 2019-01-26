@@ -82,6 +82,17 @@ class CoqWorker {
         this.sendCommand(["ReassureLoadPath", load_path]);
     }
 
+    put(filename, content) {
+        var msg = ["Put", filename, content];
+        if(this.options.debug) {
+            console.log("Posting file: ", msg);
+        }
+        this.worker.postMessage(msg, [content]);
+        /* Notice: ownership of the 'content' buffer is transferred to the worker 
+         * (for efficiency)
+         */
+    }
+
     coq_handler(evt) {
 
         var msg     = evt.data;
@@ -89,8 +100,12 @@ class CoqWorker {
         var msg_args = msg.slice(1);
         var handled = false;
 
-        if(this.options.debug)
-            console.log("Coq message", msg);
+        if(this.options.debug) {
+            if (msg_tag === 'LibProgress')
+                console.debug("Coq message", msg); // too much spam :\
+            else
+                console.log("Coq message", msg);
+        }
 
         // We call the corresponding method coq$msg_tag(msg[1]..msg[n])
         for (let o of this.observers) {

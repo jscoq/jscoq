@@ -54,8 +54,8 @@ type jscoq_cmd =
   | InfoPkg of string * string list
   | LoadPkg of string * string
 
-  (*           implicit initial_imports      load paths     *)
-  | Init    of bool   * string list list   * string list list
+  (*           implicit initial_imports      load paths                      *)
+  | Init    of bool   * string list list   * (string list * string list) list
 
   (*           ontop       new         sentence                *)
   | Add     of Stateid.t * Stateid.t * string * bool
@@ -68,7 +68,7 @@ type jscoq_cmd =
   (* XXX: Not well founded... *)
   | GetOpt  of string list
 
-  | ReassureLoadPath of string list list
+  | ReassureLoadPath of (string list * string list) list
   [@@deriving yojson]
 
 type jscoq_answer =
@@ -161,7 +161,7 @@ let process_lib_event (msg : lib_event) : unit =
 (* implicit_flag : whether to enable loading of modules by short name only *)
 (* lib_init      : list of modules to load *)
 (* lib_path      : list of load paths *)
-let exec_init (implicit_flag : bool) (lib_init : string list list) (lib_path : string list list) =
+let exec_init (implicit_flag : bool) (lib_init : string list list) (lib_path : (string list * string list) list) =
 
   let lib_require  = List.map (fun lp ->
       (* Format.eprintf "u: %s, %s@\n" (to_name md) (to_dir md); *)
@@ -175,7 +175,9 @@ let exec_init (implicit_flag : bool) (lib_init : string list list) (lib_path : s
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = (fun fb -> post_answer (Feedback (fb_opt fb)));
       require_libs = lib_require;
-      iload_path   = List.map (Jslibmng.path_to_coqpath ~implicit:implicit_flag ~unix_prefix:[]) lib_path;
+      iload_path   = List.map (fun (path_el, phys) ->
+                         Jslibmng.path_to_coqpath ~implicit:implicit_flag ~unix_prefix:phys path_el
+                     ) lib_path;
       top_name     = "JsCoq";
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -270,8 +272,8 @@ let jscoq_execute =
 
   | ReassureLoadPath load_path ->
     Mltop.add_coq_path @@ Jslibmng.path_to_coqpath ~implicit:true ~unix_prefix:["/lib"] [];
-    List.iter (fun path_el -> Mltop.add_coq_path
-      (Jslibmng.path_to_coqpath ~implicit:true  (* TODO get implicit_flag from opts *) path_el)
+    List.iter (fun (path_el, phys) -> Mltop.add_coq_path
+      (Jslibmng.path_to_coqpath ~implicit:true  (* TODO get implicit_flag from opts *) ~unix_prefix:phys path_el)
     ) load_path
 
 let setup_pseudo_fs () =
