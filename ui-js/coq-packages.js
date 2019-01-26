@@ -65,30 +65,45 @@ class PackageManager {
     addBundleZip(bname, zip, pkg_info) {
         pkg_info = pkg_info || {};
 
+        var manifest = zip.file('coq-pkg.json'),
+            manifest_process = manifest ?
+                manifest.async('text').then((data) => {
+                    var json = JSON.parse(data);
+                    for (let k in json) if (!pkg_info[k]) pkg_info[k] = json[k];
+                })
+                .catch((err) => console.warn(`malformed 'coq-pkg.json' in bundle ${bname} (${err})`))
+              : Promise.resolve();
+
         var entries_by_dir = {};
 
         zip.forEach((rel_path, entry) => {
-            var [, dir, fn] = /^(?:(.*)[/])(.*[.]vo)$/.exec(rel_path);
-            if (fn)
+            var mo = /^(?:(.*)[/])(.*[.](?:vo|vio))$/.exec(rel_path);
+            if (mo) {
+                var [, dir, fn] = mo;
                 (entries_by_dir[dir] = entries_by_dir[dir] || []).push(fn);
+            }
         });
 
-        pkg_info.pkgs = [];
+        var pkgs = [];
         for (let dir in entries_by_dir) {
-            pkg_info.pkgs.push({
+            pkgs.push({
                 pkg_id: dir.split('/'),
                 vo_files: entries_by_dir[dir].map(x => [x])
             });
         }
 
-        this.addBundleInfo(bname, pkg_info);
-        this.bundles[bname].archive = zip;
+        return manifest_process.then(() => {
+            pkg_info.pkgs = pkgs;
+            this.addBundleInfo(bname, pkg_info);
+            this.bundles[bname].archive = zip;
+        });
     }
 
     searchBundleInfo(prefix, module_name) {
         // Look for a .vo file matching the given prefix and module name
         var suffix = module_name.slice(0, -1),
-            vo_filename = module_name.slice(-1)[0] + '.vo';
+            basename = module_name.slice(-1)[0],
+            possible_filenames = [basename + '.vo', basename + '.vio'];
 
         let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
         let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
@@ -98,7 +113,7 @@ class PackageManager {
             for (let pkg of bundle.info.pkgs) {
                 if (startsWith(pkg.pkg_id, prefix) && 
                     endsWith(pkg.pkg_id, suffix) &&
-                    pkg.vo_files.some(entry => entry[0] === vo_filename))
+                    pkg.vo_files.some(entry => possible_filenames.indexOf(entry[0]) > -1))
                     return bundle.info;
             }
         }
