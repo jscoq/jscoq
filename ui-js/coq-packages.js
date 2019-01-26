@@ -33,14 +33,16 @@ class PackageManager {
 
         row.append($('<span>').text(pkg_info.desc));
 
-        // Find bundle's proper place in the order of child elements
+        // Find bundle's proper place in the order among existing entries
         var place_before = null, idx = this.pkg_names.indexOf(bname);
 
-        for (let child = this.panel.firstElementChild; child;
-                 child = child.nextElementSibling) {
-            if (this.pkg_names.indexOf($(child).attr('data-name')) > idx) {
-                place_before = child;
-                break;
+        if (idx > -1) {
+            for (let e of $(this.panel).children()) {
+                let eidx = this.pkg_names.indexOf($(e).attr('data-name'));
+                if (eidx == -1 || eidx > idx) {
+                    place_before = e;
+                    break;
+                }
             }
         }
 
@@ -58,26 +60,56 @@ class PackageManager {
         pkg_info.total  = no_files;
 
         this.bundles[bname] = { div: div, info: pkg_info };
+    }
 
+    addBundleZip(bname, zip, pkg_info) {
+        pkg_info = pkg_info || {};
+
+        var entries_by_dir = {};
+
+        zip.forEach((rel_path, entry) => {
+            var [, dir, fn] = /^(?:(.*)[/])(.*[.]vo)$/.exec(rel_path);
+            if (fn)
+                (entries_by_dir[dir] = entries_by_dir[dir] || []).push(fn);
+        });
+
+        pkg_info.pkgs = [];
+        for (let dir in entries_by_dir) {
+            pkg_info.pkgs.push({
+                pkg_id: dir.split('/'),
+                vo_files: entries_by_dir[dir].map(x => [x])
+            });
+        }
+
+        this.addBundleInfo(bname, pkg_info);
+        this.bundles[bname].archive = zip;
     }
 
     searchBundleInfo(prefix, module_name) {
-        /* TODO for now, prefix and suffix are ignored :\ */
-        var vo_filename = module_name[module_name.length - 1] + '.vo';
+        // Look for a .vo file matching the given prefix and module name
+        var suffix = module_name.slice(0, -1),
+            vo_filename = module_name.slice(-1)[0] + '.vo';
+
+        let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
+        let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
 
         for (let bundle_key in this.bundles) {
             let bundle = this.bundles[bundle_key];
             for (let pkg of bundle.info.pkgs) {
-                if (pkg.vo_files.some(entry => entry[0] === vo_filename))
+                if (startsWith(pkg.pkg_id, prefix) && 
+                    endsWith(pkg.pkg_id, suffix) &&
+                    pkg.vo_files.some(entry => entry[0] === vo_filename))
                     return bundle.info;
             }
         }
     }
 
     getLoadPath() {
-        return this.loaded_pkgs.map(
-            bundle => this.bundles[bundle].info.pkgs
-        ).flatten().map( pkg => pkg.pkg_id );
+        return this.loaded_pkgs.map( bname => {
+            let bundle = this.bundles[bname],
+                phys = bundle.archive ? ['/lib'] : [];
+            return bundle.info.pkgs.map( pkg => [pkg.pkg_id, phys] );
+        }).flatten();
     }
 
     // Loads a package from the preconfigured path.
@@ -88,14 +120,27 @@ class PackageManager {
         if (bundle) {
             if (bundle.promise) return bundle.promise; /* load issued already */
 
-            bundle.promise = promise = new Promise((resolve, reject) => 
-                bundle._resolve = resolve
-            );
+            if (bundle.archive) {
+                bundle.promise = promise = 
+                    this.loadDeps(bundle.info.deps)
+                    .then(() => this.unpackArchive(bundle.archive))
+                    .then(() => this.onBundleLoad(pkg_name));
+
+                return promise;
+            }
+            else {
+                bundle.promise = promise = new Promise((resolve, reject) => 
+                    bundle._resolve = resolve
+                );
+
+                this.coq.loadPkg(this.pkg_root_path, pkg_name);
+            
+                return promise;
+            }
         }
-
-        this.coq.loadPkg(this.pkg_root_path, pkg_name);
-
-        return promise;
+        else {
+            return Promise.reject(`bundle missing: ${pkg_name}`);
+        }
     }
 
     // In all the three cases below, evt = progressInfo
@@ -158,6 +203,22 @@ class PackageManager {
         row.find('.rel-pos').remove();
         row.find('img')
             .addClass(['download-icon', 'checked']);
+    }
+
+    loadDeps(deps) {
+        return Promise.all(
+            deps.map(pkg => this.startPackageDownload(pkg)));
+    }
+
+    unpackArchive(zip) {
+        var asyncs = [];
+        zip.forEach((rel_path, entry) => {
+            asyncs.push(
+                entry.async('arraybuffer').then(content =>
+                    this.coq.put(`/lib/${rel_path}`, content))
+            );
+        });
+        return Promise.all(asyncs);
     }
 
     collapse() {
