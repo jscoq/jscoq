@@ -65,6 +65,8 @@ type jscoq_cmd =
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
 
+  | Register of string
+
   (* XXX: Not well founded... *)
   | GetOpt  of string list
 
@@ -72,8 +74,9 @@ type jscoq_cmd =
   [@@deriving yojson]
 
 type jscoq_answer =
-  (* XXX: Init? *)
   | CoqInfo   of string
+
+  | Ready     of Stateid.t
 
   (* Merely Informative now *)
   | Added     of Stateid.t * Loc.t option
@@ -95,6 +98,8 @@ type jscoq_answer =
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
   | JsonExn   of string
   [@@deriving to_yojson]
+
+let jsCoq = Js.Unsafe.obj [||]
 
 let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t =
   let open Js.Unsafe in
@@ -139,9 +144,16 @@ let lib_event_to_jsobj msg =
   let json_msg = lib_event_to_yojson msg                            in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
+let is_worker = (Js.Unsafe.global##.onmessage != Js.undefined)
+
+let post_message : < .. > Js.t -> unit = 
+  if is_worker then Worker.post_message
+  else 
+    fun msg -> Js.Unsafe.fun_call (jsCoq##.onmessage) [|Js.Unsafe.inject msg|]
+
 (* Send messages to the main thread *)
 let post_answer (msg : jscoq_answer) : unit =
-  Worker.post_message (answer_to_jsobj msg)
+  post_message (answer_to_jsobj msg)
 
 let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
@@ -248,12 +260,17 @@ let jscoq_execute =
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
     end
 
+  | Register file_path  ->
+    let filename = Filename.basename file_path in
+    let dir = Filename.dirname file_path in
+    Jslibmng.register_cma ~filename ~dir
+
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
   | Init(implicit_flag, lib_init, lib_path) ->
     let ndoc, iid = exec_init implicit_flag lib_init lib_path in
     doc := Jscoq_doc.create ndoc;
-    out_fn @@ Log (Debug, str @@ "init " ^ (Stateid.to_string iid))
+    out_fn @@ Ready iid
 
   | InfoPkg(base, pkgs) ->
     Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
@@ -353,6 +370,12 @@ let _ =
                         Lwt_js.yield () >>= fun () ->
                         return @@ on_msg obj    )) in
    *)
-
   let on_msg = on_msg doc  in
-  Worker.set_onmessage on_msg
+
+  if is_worker then  
+    Worker.set_onmessage on_msg
+  else
+    Js.export "jsCoq" jsCoq;
+    jsCoq##.postMessage := Js.wrap_callback on_msg ;
+    jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
+      (* Js.Unsafe.fun_call Js.Unsafe.global##.console##.log [|x|]); *)

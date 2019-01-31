@@ -43,6 +43,8 @@ type lib_event =
 
 type out_fn = lib_event -> unit
 
+exception DynLinkFailed of string
+
 let is_bytecode file = Filename.(check_suffix file "cma" || check_suffix file "cmo")
 
 let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t =
@@ -171,16 +173,22 @@ let coq_cma_link cmo_file =
   in
   Feedback.feedback (Feedback.FileDependency(Some cmo_file, cmo_file));
   try
-    let js_code = (Hashtbl.find file_cache cmo_file).file_content in
+    (* let js_code = (Hashtbl.find file_cache cmo_file).file_content in *)
+    let js_code = 
+      try (Hashtbl.find file_cache cmo_file).file_content
+      with Not_found -> Sys_js.read_file ~name:(cmo_file ^ ".js") in
     (* When eval'ed, the js_code will return a closure waiting for the
        jsoo global object to link the plugin.
     *)
     Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global);
     Feedback.feedback (Feedback.FileLoaded(cmo_file, cmo_file));
   with
-  | Not_found ->
-    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file
+  | Sys_error _ ->
+    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file;
+    raise @@ DynLinkFailed cmo_file
 
+let register_cma ~filename ~dir =
+  Hashtbl.add cma_cache filename dir
 
 let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
   Mltop.{

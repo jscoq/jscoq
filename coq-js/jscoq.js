@@ -7,7 +7,7 @@ class CoqWorker {
             debug: false
         };
         this.observers = [this];
-        this.routes = [this.observers]
+        this.routes = [this.observers];
         this.sids = [];
 
         // Create actual worker. Ideally, CoqWorker would extend Worker, but this is
@@ -93,6 +93,10 @@ class CoqWorker {
          */
     }
 
+    register(filename) {
+        this.sendCommand(["Register", filename]);
+    }
+
     coq_handler(evt) {
 
         var msg     = evt.data;
@@ -170,4 +174,8 @@ class PromiseFeedbackRoute {
 }
 
 
-CoqWorker.scriptDir = document.currentScript.attributes.src.value.replace(/[^/]*$/, '');
+if (typeof document !== 'undefined' && document.currentScript)
+    CoqWorker.scriptDir = document.currentScript.attributes.src.value.replace(/[^/]*$/, '');
+
+if (typeof module !== 'undefined')
+    module.exports = {CoqWorker}

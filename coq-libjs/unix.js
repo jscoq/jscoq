@@ -1,6 +1,5 @@
-// Whether to log.
-var v_log = false;
-function ll(s) { if (v_log) console.log(s); }
+var v_log = true;   // Whether to log
+function ll(s) { if (v_log) console.warn(s); }
 
 function caml_raise_unix_error(msg) {
   var tag = caml_named_value("Unix.Unix_error");
@@ -221,5 +220,12 @@ function unix_wait() {
 //Provides: unix_waitpid
 function unix_waitpid() {
   // ll("unix_waitpid");
+  return 0;
+}
+
+//Provides: unix_stat
+var ll;
+function unix_stat(arg) {
+  ll("unix_stat(" + arg + ")");
   return 0;
 }
