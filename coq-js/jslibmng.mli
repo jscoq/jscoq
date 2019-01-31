@@ -39,6 +39,8 @@ val coq_vo_req  : string -> string option
 (** [coq_cma_link cma] dynlinks the bytecode plugin [cma] *)
 val coq_cma_link : string -> unit
 
+val register_cma : filename:string -> dir:string -> unit
+
 (* auxiliary functions to create and process paths *)
 val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list -> Mltop.coq_path
 val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Mltop.coq_path list

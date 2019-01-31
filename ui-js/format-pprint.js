@@ -131,6 +131,92 @@ class FormatPrettyPrint {
         return ret;
     }
 
+    pp2Text(msg, state) {
+
+        // Elements are ...
+        if (msg.constructor !== Array) {
+            return msg;
+        }
+
+        state = state || {breakMode: 'horizontal'};
+
+        var ret;
+        var tag, ct;
+        [tag, ct] = msg;
+
+        switch (tag) {
+
+        // Element(tag_of_element, att (single string), list of xml)
+
+        // ["Pp_glue", [...elements]]
+        case "Pp_glue":
+            let imm = ct.map(x => this.pp2Text(x, state));
+            ret = "".concat(...imm);
+            break;
+
+        // ["Pp_string", string]
+        case "Pp_string":
+            if (state.breakMode === 'vertical' && ct.match(/^\ +$/)) {
+                ret = "";
+                state.margin = ct;
+            }
+            else
+                ret = ct;
+            break;
+
+        // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
+        case "Pp_box":
+            var vmode = state.breakMode,
+                margin = state.margin ? state.margin.length : 0;
+
+            state.margin = null;
+
+            switch(msg[1][0]) {
+            case "Pp_vbox":
+                state.breakMode = 'vertical';
+                break;
+            default:
+                state.breakMode = 'horizontal';
+            }
+
+            ret = this.pp2Text(msg[2], state);  /* TODO indent according to margin */
+            state.breakMode = vmode;
+            break;
+
+        // ["Pp_tag", tag, content]
+        case "Pp_tag":
+            ret = this.pp2Text(msg[2], state);
+            break;
+
+        case "Pp_force_newline":
+            ret = "\n";
+            state.margin = null;
+            break;
+
+        // ["Pp_print_break", nspaces, indent-offset]
+        case "Pp_print_break":
+            ret = "";
+            state.margin = null;
+            if (state.breakMode === 'vertical'|| (msg[1] == 0 && msg[2] > 0 /* XXX need to count columns etc. */)) {
+                ret = "\n";
+            } else if (state.breakMode === 'horizontal') {
+                ret = " ";
+            } else if (state.breakMode === 'skip-vertical') {
+                state.breakMode = 'vertical';
+            }
+            break;
+        
+        case "Pp_empty":
+            ret = "";
+            break;
+
+        default:
+            console.warn("unhandled Format case", msg);
+            ret = msg;
+        }
+        return ret;
+    }
+
     adjustBreaks(jdom) {
         var width = jdom.width(),
             hboxes = jdom.find('.Pp_box[data-mode="horizontal"]');
@@ -154,6 +240,9 @@ class FormatPrettyPrint {
 }
 
 
+
+if (typeof module !== 'undefined')
+    module.exports = {FormatPrettyPrint}
 
 // Local Variables:
 // js-indent-level: 4
