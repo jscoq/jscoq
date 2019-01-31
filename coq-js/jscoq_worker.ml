@@ -65,7 +65,9 @@ type jscoq_cmd =
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
 
+  (*            filename   content *)
   | Register of string
+  | Put      of string  *  string
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
@@ -115,6 +117,23 @@ let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t
   | `Intlit s -> coerce @@ Js.number_of_float (float_of_string s)
   | `Tuple t  -> Array.(Js.array @@ map ofresh (of_list t))
   | `Variant(_,_) -> pure_js_expr "undefined"
+
+let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
+  let open Js in
+  let open Js.Unsafe in
+  let typeof_cobj = to_string (typeof cobj) in
+  match typeof_cobj with
+  | "string"  -> `String (to_string @@ coerce cobj)
+  | "boolean" -> `Bool (to_bool @@ coerce cobj)
+  | "number"  -> `Int (int_of_float @@ float_of_number @@ coerce cobj)
+  | _ ->
+    if instanceof cobj array_empty then
+      `List Array.(to_list @@ map obj_to_json @@ to_array @@ coerce cobj)
+    else if instanceof cobj Typed_array.arrayBuffer then
+      `String (Typed_array.String.of_arrayBuffer @@ coerce cobj)
+    else
+      `Null
+
 
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
@@ -265,6 +284,11 @@ let jscoq_execute =
     let dir = Filename.dirname file_path in
     Jslibmng.register_cma ~filename ~dir
 
+  | Put (filename, content) -> begin
+      try         Sys_js.create_file ~name:filename ~content
+      with _e ->  Sys_js.update_file ~name:filename ~content
+    end
+
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
   | Init(implicit_flag, lib_init, lib_path) ->
@@ -320,37 +344,19 @@ let jscoq_protect f =
 (* Message from the main thread *)
 let on_msg doc msg =
 
-  (*-- "Regular" messages are pure POD --*)
-  let on_json_msg doc obj =
-    (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
-    let json_string = Js.to_string (Json.output obj) in
-    let json_obj = Yojson.Safe.from_string json_string in
+  (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
+  let json_obj = obj_to_json msg in
 
-    match jscoq_cmd_of_yojson json_obj with
-    | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, str json_string)) ;
-                                        jscoq_execute doc cmd)
-    | Result.Error s -> post_answer @@
-      JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output obj)))
-  in
-  (*-- "Special" messages containing ArrayBuffers require special treatment --*)
-  let get_cmd arr =
-    Js.Optdef.case (Js.array_get arr 0)
-      (fun () -> "")
-      (fun s -> Js.to_string (Js.Unsafe.coerce s))
-  in
-  let array_unsafe_get arr idx =
-    Js.Unsafe.coerce (Js.Optdef.get (Js.array_get arr idx) (fun _ -> assert false))
-  in
-  let on_buffer_msg msg =
-    (* Assume msg is of the form ["Put", filename, <ArrayBuffer>] *)
-    let filename = Js.to_string (array_unsafe_get msg 1) in 
-    let content = array_unsafe_get msg 2 in
-    put_pseudo_file ~name:filename ~buf:content
-  
-  in
-  match get_cmd msg with
-  | "Put" -> on_buffer_msg msg
-  | _     -> on_json_msg doc msg
+  let log_cmd cmd = match cmd with
+  | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
+  | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
+
+  match jscoq_cmd_of_yojson json_obj with
+  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, str @@ log_cmd cmd)) ;
+                                      jscoq_execute doc cmd)
+  | Result.Error s -> post_answer @@
+    JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
+
 
 (* This code is executed on Worker initialization *)
 let _ =
