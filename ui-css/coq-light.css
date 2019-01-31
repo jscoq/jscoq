@@ -127,7 +127,7 @@ div.CodeMirror span.CodeMirror-matchingbracket {
     color: #11aeea;
 }
 .constr\.notation {
-    color: #dd2222;
+    color: #bb2222;
 }
 .constr\.path {
     color: #0e8709;
@@ -159,7 +159,8 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 
 .constr\.reference:hover,
 .constr\.type:hover,
-.constr\.variable:hover {
+.constr\.variable:hover,
+.constr\.notation:hover {
     background: rgba(0,100,0,0.15);
 }
 

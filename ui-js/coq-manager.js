@@ -848,29 +848,50 @@ class CoqContextualInfo {
         this.pprint = pprint;
         this.el = $('<div>').addClass('contextual-info').hide();
         this.is_visible = false;
+        this.focus = null;
 
         this.container.append(this.el);
 
         // Set up mouse events
         var r = String.raw,
-            contextual_sel = r`.constr\.reference, .constr\.variable, .constr\.type`;
+            contextual_sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
 
-        container.on('mouseenter', contextual_sel, evt => this.showFor(evt.target));
+        container.on('mouseenter', contextual_sel, evt => this.showFor(evt.target, evt.altKey));
         container.on('mouseleave', contextual_sel, evt => this.hide());
+
+        this._keyHandler = this.keyHandler.bind(this);
+        this._key_bound = false;
     }
 
-    showFor(dom) {
-        var jdom = $(dom);
-        console.log(dom);
+    showFor(dom, alt) {
+        var jdom = $(dom), name = jdom.text();
         if (jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
-            this.showQuery(`Check ${jdom.text()}.`);
+            if (alt) this.showPrint(name);
+            else     this.showCheck(name);
+        }
+        else if (jdom.hasClass('constr.notation')) {
+            this.showLocate(name);
         }
         else if (jdom.hasClass('constr.variable')) {
-            var name = jdom.text();
             this.container.find('.constr\\.variable').filter(function() {
                 return $(this).text() === name;
             }).addClass('contextual-focus');
         }
+    }
+
+    showCheck(name) {
+        this.focus = {identifier: name, info: 'Check'};
+        this.showQuery(`Check ${name}.`);
+    }
+
+    showPrint(name) {
+        this.focus = {identifier: name, info: 'Print'};
+        this.showQuery(`Print ${name}.`);
+    }
+
+    showLocate(symbol) {
+        this.focus = {symbol: symbol, info: 'Locate'};
+        this.showQuery(`Locate "${symbol}".`);
     }
 
     showQuery(query) {
@@ -885,12 +906,26 @@ class CoqContextualInfo {
         this.el.html(html);
         this.el.show();
         this.is_visible = true;
+        if (!this._key_bound) {
+            this._key_bound = true;
+            $(document).on('keydown keyup', this._keyHandler);
+        }
     }
 
     hide() {
         this.container.find('.contextual-focus').removeClass('contextual-focus');
         this.el.hide();
         this.is_visible = false;
+        $(document).off('keydown keyup', this._keyHandler);
+        this._key_bound = false;
+    }
+
+    keyHandler(evt) {
+        var name = this.focus.identifier;
+        if (name) {
+            if (evt.altKey) this.showPrint(name);
+            else            this.showCheck(name);
+        }
     }
 }
 
