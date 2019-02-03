@@ -190,10 +190,19 @@ let coq_cma_link cmo_file =
 let register_cma ~filename ~dir =
   Hashtbl.add cma_cache filename dir
 
+let rec last = function
+    | [] -> None
+    | [x] -> Some x
+    | _ :: t -> last t
+
 let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
+  let phys_path =  (* HACK to allow manual override of dir path *)
+    if last unix_prefix = Some "." then unix_prefix
+                                   else unix_prefix @ lib_path
+  in
   Mltop.{
     path_spec = VoPath {
-        unix_path = String.concat "/" (unix_prefix @ lib_path);
+        unix_path = String.concat "/" phys_path;
         coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
         has_ml = AddTopML;
         implicit = implicit;
