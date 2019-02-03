@@ -11,6 +11,11 @@
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
   <div id="document">
+    <p>
+    Alt+↑/↓ – move through proof; Alt+→ or Alt+⏎ – go to cursor. <br/>
+    Alt+hover executed sentences to watch intermediate steps. <br/>
+    Hover identifiers in goals to view their types. Alt+hover to view definitions.
+  </p>
     <textarea id="workspace">
 Check nat.
 
@@ -22,10 +27,29 @@ Proof.
 Qed.
 
 
-Require Import Arith List.
+Require Import List.
 Import ListNotations.
 
 Check [1;3].
+
+Fixpoint nonzeros (l : list nat) :=
+  match l with
+  | [] => []
+  | 0 :: xs => nonzeros xs
+  | x :: xs => x :: nonzeros xs
+  end.
+  
+Arguments nonzeros l : simpl nomatch.
+
+Lemma nonzeros_app : forall l1 l2 : list nat,
+  nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
+Proof.
+  intros l1 l2. induction l1 as [| n' l' IHl'].
+  - simpl. reflexivity.
+  - simpl. case n'.
+    + simpl; apply IHl'.
+    + simpl; rewrite IHl'. reflexivity.
+Qed.
 </textarea>
   </div> <!-- /#document -->
   </div> <!-- /#code-wrapper -->
