@@ -41,7 +41,7 @@ class CmCoqProvider {
             this.editor = CodeMirror(element, cmOpts);
         }
 
-        this.editor.on('change', (cm, evt) => this.onCMChange(cm, evt) );
+        this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
 
         /* Handle mouse hover events */
         var editor_element = $(this.editor.getWrapperElement());
