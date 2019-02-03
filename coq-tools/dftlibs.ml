@@ -56,8 +56,15 @@ let coq_theory_list =
 
 (* Packages: name, deps, modules *)
 
-let pkgs : (string * string list * string list list) list=
-  [ "init", [],
+type selector =
+  | All
+  | Only of string list
+  | Except of string list
+
+let all_of pkgs = List.map (fun pkg -> (pkg, All)) pkgs
+
+let pkgs : (string * string list * (string list * selector) list) list=
+  [ "init", [], all_of
     [ ["Coq"; "ltac"]
     ; ["Coq"; "syntax"]
     ; ["Coq"; "cc"]
@@ -72,7 +79,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "ssr"]
     ; ["mathcomp"; "ssreflect"]
     ]
-  ; "math-comp", [],
+  ; "math-comp", [], all_of
     [ ["mathcomp"; "algebra"]
     ; ["mathcomp"; "fingroup"]
     ; ["mathcomp"; "solvable"]
@@ -80,7 +87,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["mathcomp"; "character"]
     ; ["mathcomp"; "odd_order"]
     ]
-  ; "coq-base", [],
+  ; "coq-base", [], all_of
     [ ["Coq"; "Logic"]
     ; ["Coq"; "Program"]
     ; ["Coq"; "Classes"]
@@ -93,56 +100,59 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Strings"]
     ]
   ; "coq-numbers", ["coq-base"],
-    [ ["Coq"; "Arith"]
-    ; ["Coq"; "Numbers"]
-    ; ["Coq"; "Numbers"; "NatInt"]
-    ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
-    ; ["Coq"; "Numbers"; "Natural"; "Peano"]
-    ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
+    [ ["Coq"; "Arith"], Only ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
+                              "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
+    ; ["Coq"; "Numbers"], All
+    ; ["Coq"; "Numbers"; "NatInt"], All
+    ; ["Coq"; "Numbers"; "Natural"; "Abstract"], All
+    ; ["Coq"; "Numbers"; "Natural"; "Peano"], All
+    ; ["Coq"; "Numbers"; "Integer"; "Abstract"], All
     ]
-  ; "coq-collections", ["coq-base"; "coq-numbers"],
+  ; "coq-collections", ["coq-base"; "coq-numbers"], all_of
     [ ["Coq"; "Lists"]
     ; ["Coq"; "Vectors"]
     ; ["Coq"; "Sets"]
     ; ["Coq"; "Sorting"]
     ]
-  ; "coq-arith", ["coq-base"],
-    [ ["Coq"; "setoid_ring"]
-    ; ["Coq"; "NArith"]
-    ; ["Coq"; "PArith"]
-    ; ["Coq"; "ZArith"]
-    ; ["Coq"; "QArith"]
-    ; ["Coq"; "omega"]
+  ; "coq-arith", ["coq-base"; "coq-numbers"; "coq-collections"],
+    [ ["Coq"; "setoid_ring"], All
+    ; ["Coq"; "Arith"], Except ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
+                                "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
+    ; ["Coq"; "NArith"], All
+    ; ["Coq"; "PArith"], All
+    ; ["Coq"; "ZArith"], All
+    ; ["Coq"; "QArith"], All
+    ; ["Coq"; "omega"], All
     ]
-  ; "mtac", ["coq-arith"],
+  ; "mtac", ["coq-arith"], all_of
     [ ["Mtac"]
     ]
 
-  ; "coq-reals", ["coq-arith"],
+  ; "coq-reals", ["coq-arith"], all_of
     [ ["Coq"; "fourier"]
     ; ["Coq"; "micromega"]
     ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"] ]
 
-  ; "coquelicot", ["coq-reals"],
+  ; "coquelicot", ["coq-reals"], all_of
     [ [ "Coquelicot" ] ]
 
-  ; "flocq", ["coq-reals"],
+  ; "flocq", ["coq-reals"], all_of
     [ [ "Coq"   ; "romega"]
     ; [ "Flocq" ; "Core" ]
     ; [ "Flocq" ; "Appli" ]
     ; [ "Flocq" ; "Calc" ]
     ; [ "Flocq" ; "Translate" ]
-    ; [ "Flocq" ; "Prop" ] ]
+    ; [ "Flocq" ; "Prop" ] ] 
 
-  ; "tlc", ["coq-reals"],
+  ; "tlc", ["coq-reals"], all_of
     [ ["TLC"] ]
-  ; "sf", ["coq-reals"],
+  ; "sf", ["coq-reals"], all_of
     [ ["SF"] ]
-  ; "cpdt", ["coq-reals"],
+  ; "cpdt", ["coq-reals"], all_of
     [ ["Cpdt"] ]
 
-  ; "color", [ "coq-reals"],
+  ; "color", [ "coq-reals"], all_of
     [ ["CoLoR" ; "Filter"]
     ; ["CoLoR" ; "RPO"]
     ; ["CoLoR" ; "Coccinelle"]
@@ -192,13 +202,13 @@ let pkgs : (string * string list * string list list) list=
     ; ["CoLoR" ; "MannaNess"]
     ]
 
-  ; "dsp", ["math-comp"],
+  ; "dsp", ["math-comp"], all_of
     [ ["Dsp"] ]
 
-  ; "relalg", ["coq-arith"],
+  ; "relalg", ["coq-arith"], all_of
     [ ["RelationAlgebra"] ]
 
-  ; "hott-init", [],
+  ; "hott-init", [], all_of
     [ ["Coq"; "syntax"]
     ; ["Coq"; "Init"]
     ; ["Coq"; "Bool"]
@@ -206,7 +216,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["Coq"; "Unicode"]
     ]
 
-  ; "hott", ["hott-init"],
+  ; "hott", ["hott-init"], all_of
 
     [ ["HoTT"]
     ; ["HoTT" ; "Algebra"]
@@ -255,7 +265,7 @@ let pkgs : (string * string list * string list list) list=
     ; ["HoTT" ; "Tactics"]
     ; ["HoTT" ; "Types"] ]
 
-  ; "unimath", [ ],
+  ; "unimath", [ ], all_of
 
     [ ["UniMath"]
     ; ["UniMath" ; "CategoryTheory" ]
@@ -273,10 +283,10 @@ let pkgs : (string * string list * string list list) list=
     ; ["UniMath" ; "Dedekind" ]
     ]
 
-  ; "peacoq", [ "init" ],
+  ; "peacoq", [ "init" ], all_of
     [ ["PeaCoq"] ]
 
-  ; "extlib", [ "coq-reals" ],
+  ; "extlib", [ "coq-reals" ], all_of
     [ ["ExtLib"]
     ; ["ExtLib" ; "Core" ]
     ; ["ExtLib" ; "Data" ]
@@ -293,10 +303,10 @@ let pkgs : (string * string list * string list list) list=
     ; ["ExtLib" ; "Tactics" ]
     ]
 
-  ; "plugin-utils", [ ],
+  ; "plugin-utils", [ ], all_of
     [ ["PluginUtils"] ]
 
-  ; "mirrorcore", [ "plugin-utils"; "extlib" ],
+  ; "mirrorcore", [ "plugin-utils"; "extlib" ], all_of
     [ ["MirrorCore"]
     ; ["MirrorCore" ; "Lambda" ]
     ; ["MirrorCore" ; "Lambda"; "Rewrite" ]
@@ -311,10 +321,10 @@ let pkgs : (string * string list * string list list) list=
     ; ["McExamples" ; "Cancel" ]
     ]
 
-  ; "stdpp", [ "coq-reals" ],
+  ; "stdpp", [ "coq-reals" ], all_of
     [ [ "stdpp" ] ]
 
-  ; "iris", [ "stdpp" ],
+  ; "iris", [ "stdpp" ], all_of
     [ [ "iris" ]
     ; [ "iris" ; "algebra" ]
     ; [ "iris" ; "base_logic" ]
@@ -326,7 +336,7 @@ let pkgs : (string * string list * string list list) list=
     ; [ "iris" ; "tests" ]
     ]
 
-  ; "elpi", [ ],
+  ; "elpi", [ ], all_of
     [ [ "elpi" ]
     ; [ "elpi" ; "ltac" ]
     ; [ "elpi" ; "test" ]
@@ -334,11 +344,11 @@ let pkgs : (string * string list * string list list) list=
     ; [ "elpi" ; "derive" ]
     ]
 
-  ; "equations", [ "coq-reals" ],
+  ; "equations", [ "coq-reals" ], all_of
     [ [ "Equations" ]
     ]
 
-  ; "ltac2", [ ],
+  ; "ltac2", [ ], all_of
     [ [ "Ltac2" ]
     ]
   ]

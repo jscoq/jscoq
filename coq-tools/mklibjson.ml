@@ -19,13 +19,21 @@ let is_cma s =
   Filename.check_suffix s ".cma" ||
   Filename.check_suffix s ".cmo"
 
-let build_pkg (pid : string list) : Jslib.coq_pkg =
+let select (l : string list) (sel : Dl.selector) = 
+  let open Dl in
+  match sel with
+  | All -> l
+  | Only s -> List.filter (fun fn -> List.mem fn s) l
+  | Except s -> List.filter (fun fn -> not @@ List.mem fn s) l
+
+let build_pkg ((pid, sel) : string list * Dl.selector) : Jslib.coq_pkg =
   let dummy_d   = Digest.string ""                 in
   let dir       = Dl.prefix ^ "/" ^ Dl.to_dir pid  in
   let vo_files, cma_files =
     try
-      let open List                                    in
-      let files     = Array.to_list @@ Sys.readdir dir in
+      let open List                                 in
+      let files = Array.to_list @@ Sys.readdir dir  in
+      let files = select files sel                  in
       (* eprintf "files for %s: %n@\n" dir (List.length files); *)
       filter is_vo files, filter is_cma files
     with
