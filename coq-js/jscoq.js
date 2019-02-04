@@ -34,6 +34,7 @@ class CoqWorker {
     }
 
     add(ontop_sid, new_sid, stm_text, resolve) {
+        this.sids[new_sid] = new Future();
         this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve || false]);
     }
 
@@ -46,6 +47,8 @@ class CoqWorker {
     }
 
     cancel(sid) {
+        for (let i in this.sids)
+            if (i >= sid) this.sids[i].reject();
         this.sendCommand(["Cancel", sid]);
     }
 
@@ -59,15 +62,6 @@ class CoqWorker {
             rid = this._gen_rid = (this._gen_rid || 0) + 1;
         this.sendCommand(["Query", sid, rid, query]);
         return rid;
-    }
-
-    queryPromise(sid, rid, query) {
-        let pfr = new PromiseFeedbackRoute();
-        rid = this.query(sid, rid, query);
-
-        this.routes[rid] = [pfr];
-        pfr.atexit = () => { delete this.routes[rid]; };
-        return pfr.promise;
     }
 
     loadPkg(base_path, pkg) {
@@ -101,6 +95,29 @@ class CoqWorker {
     register(filename) {
         this.sendCommand(["Register", filename]);
     }
+
+    // Promise-based APIs
+
+    execPromise(sid) {
+        this.exec(sid);
+        
+        if (!this.sids[sid]) {
+            console.warn(`exec'd sid=${sid} that was not added (or was cancelled)`);
+            this.sids[sid] = new Future();
+        }
+        return this.sids[sid].promise;
+    }
+
+    queryPromise(sid, rid, query) {
+        let pfr = new PromiseFeedbackRoute();
+        rid = this.query(sid, rid, query);
+
+        this.routes[rid] = [pfr];
+        pfr.atexit = () => { delete this.routes[rid]; };
+        return pfr.promise;
+    }
+
+    // Internal event handling
 
     coq_handler(evt) {
 
@@ -153,20 +170,45 @@ class CoqWorker {
             console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
         }
     }
+
+    feedProcessed(sid) {
+        var fut = this.sids[sid];
+        if (fut) fut.resolve();
+    }
 }
 
 
-class PromiseFeedbackRoute {
+class Future {
     constructor() {
         this.promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
+            this._resolve = resolve;
+            this._reject = reject;
         });
+        this._done = false;
+        this._success = false;
+    }
+
+    resolve(val) { if (!this._done) { this._done = this._success = true; this._resolve(val); } }
+    reject(err) { if (!this._done) { this._done = true; this._reject(err); } }
+
+    isDone()        { return this._done; }
+    isSuccessful()  { return this._success; }
+    isFailed()      { return this._done && !this._success; }
+}
+
+
+class PromiseFeedbackRoute extends Future {
+    constructor() {
+        super();
         this.atexit = () => {};
+        this._got_message = false;
+        this._got_processed = false;
     }
 
     feedMessage(sid, lvl, loc, msg) {
-        this.atexit();
+        this._got_message = true;
+        if (this._got_processed) this.atexit();
+
         if (lvl[0] === 'Error')
             this.reject(msg);
         else
@@ -174,7 +216,8 @@ class PromiseFeedbackRoute {
     }
 
     feedProcessed(sid) {
-        /* ignore */
+        this._got_processed = true;
+        if (this._got_message) this.atexit();
     }
 }
 

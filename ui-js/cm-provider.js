@@ -56,7 +56,7 @@ class CmCoqProvider {
     }
 
     // If prev == null then get the first.
-    getNext(prev) {
+    getNext(prev, until) {
 
         var start = {line : 0, ch : 0};
         var doc = this.editor.getDoc();
@@ -64,6 +64,9 @@ class CmCoqProvider {
         if (prev) {
             start = prev.end;
         }
+
+        if (until && this.onlySpacesBetween(start, until))
+            return null;
 
         // EOF
         if (start.line === doc.lastLine() &&
@@ -83,7 +86,7 @@ class CmCoqProvider {
         var stm = new CmSentence(start, end,
                                  doc.getRange({line : start.line, ch : start.ch},
                                               {line : token.line, ch : token.end}),
-                                 token.type === 'comment'
+                                 token.type === 'comment'  // XXX This is never true
                                 );
         return stm;
     }
@@ -154,6 +157,10 @@ class CmCoqProvider {
         stm.mark = mark;
     }
 
+    getCursor() {
+        return this.editor.getCursor();
+    }
+
     cursorLess(c1, c2) {
 
         return (c1.line < c2.line ||
@@ -175,6 +182,30 @@ class CmCoqProvider {
 
         if (this.cursorLess(csr, stm.end))
             doc.setCursor(stm.end);
+    }
+
+    /**
+     * Checks whether the range from start to end consists solely of
+     * whitespaces.
+     * @param {Pos} start starting position ({line, ch})
+     * @param {Pos} end ending position ({line, ch})
+     */
+    onlySpacesBetween(start, end) {
+        console.warn("onlySpacesBetween", start, end);
+        if (start.line > end.line) return true;
+        var cur = {line: start.line, ch: start.ch};
+        while (cur.line < end.line) {
+            let cur_end = this.editor.getLine(cur.line).length,
+                portion = this.editor.getRange(cur, {line: cur.line, ch: cur_end});
+            if (!this._onlySpaces(portion)) return false;
+            cur.line++;
+            cur.ch = 0;
+        }
+        return this._onlySpaces(this.editor.getRange(cur, end));
+    }
+
+    _onlySpaces(str) {
+        return !!(/^\s*$/.exec(str));
     }
 
     // If any marks, then call the invalidate callback!
