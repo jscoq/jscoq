@@ -68,24 +68,23 @@ class ProviderContainer {
     }
 
     // Get the next candidate and mark it.
-    getNext(prev) {
-
-        var spr, next;
+    getNext(prev, until) {
 
         // If we have no previous element start with the first
-        // snippet, else get the current one.
-        if (!prev) {
-            spr  = this.snippets[0];
-            next = spr.getNext(null);
-        } else {
-            spr  = prev.sp;
-            next = spr.getNext(prev);
-        }
+        // snippet, else continue with the current one.
+        var spr = prev ? prev.sp : this.snippets[0];
+
+        if (until && this.snippets.indexOf(spr) > this.snippets.indexOf(until.sp))
+            return null;
+
+        var next = spr.getNext(prev, (until && until.sp === spr) ? until.pos : null);
 
         // We got a snippet!
         if (next) {
             next.sp = spr;
             return next;
+        } else if (until && until.sp === spr) {
+            return null;
         } else {
             // Try the next snippet.
             var idx = this.snippets.indexOf(spr);
@@ -128,6 +127,11 @@ class ProviderContainer {
 
         return (idx_point < idx_cur);
 
+    }
+
+    getCursor() {
+        return {sp: this.currentFocus,
+                pos: this.currentFocus.getCursor()}
     }
 
     cursorToStart(stm) {
@@ -234,8 +238,6 @@ class CoqManager {
             goals:             []
         };
 
-        this.error = [];
-
         // XXX: Initial sentence == hack
         let  dummyProvider = { mark : function() {},
                                getNext: function() { return null; },
@@ -243,6 +245,9 @@ class CoqManager {
                              };
         this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider };
         this.doc.sentences = [this.doc.stm_id[1]];
+
+        this.error = [];
+        this.goTarget = null;
 
         // XXX: Hack
         this.waitForPkgs = [];
@@ -381,15 +386,9 @@ class CoqManager {
         let cur_stm = this.doc.stm_id[nsid], exec = false;
 
         if (this.goTarget) {
-            // [Modulo the same old bugs, we need a position comparison op]
-            if (this.provider.getAtPoint() || this.provider.afterPoint(cur_stm) ) {
-                // Go-to target has been reached
-                exec = true;
-                this.goTarget = false;
-            } else {
-                // We have not reached the destination, continue forward.
-                exec = !this.goNext(false);
-            }
+            exec = !this.goNext(false, this.goTarget);
+            if (exec)
+                this.goTarget = null;
         } else {
             exec = true;
         }
@@ -402,7 +401,10 @@ class CoqManager {
     // Gets a request to load packages
     coqPending(nsid, prefix, module_names) {
         let stm = this.doc.stm_id[nsid];
-        let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1].coq_sid;
+        let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1];
+
+        let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
+            this.coq.execPromise(ontop.coq_sid);
 
         var pkgs_to_load = [];
         for (let module_name of module_names) {
@@ -416,10 +418,10 @@ class CoqManager {
             this.packages.expand();
         }
 
-        this.packages.loadDeps(pkgs_to_load)
+        this.packages.loadDeps(pkgs_to_load).then(() => ontop_finished)
             .then(() => {
                 this.coq.reassureLoadPath(this.packages.getLoadPath());
-                this.coq.resolve(ontop, nsid, stm.text)
+                this.coq.resolve(ontop.coq_sid, nsid, stm.text);
             });
     }
 
@@ -586,6 +588,8 @@ class CoqManager {
             return;
         }
 
+        if (this.goTarget) return;
+
         // If we didn't load the prelude, prevent unloading it to
         // workaround a bug in Coq.
         if (this.doc.sentences.length <= 1) return;
@@ -611,14 +615,16 @@ class CoqManager {
     }
 
     // Return if we had success.
-    goNext(update_focus) {
+    goNext(update_focus, until) {
+
+        if (this.goTarget && !until) return false;
 
         this.clearErrors();
 
         let cur_stm = this.doc.sentences.last();
         let cur_sid = cur_stm.coq_sid;
 
-        let next_stm = this.provider.getNext(cur_stm);
+        let next_stm = this.provider.getNext(cur_stm, until);
 
         // We are the the end
         if(!next_stm) { return false; }
@@ -656,7 +662,7 @@ class CoqManager {
         if( (++this.doc.number_adds % so_threshold) === 0 )
             this.coq.exec(next_sid);
 
-        return false;
+        return true;
     }
 
     goCursor() {
@@ -671,13 +677,15 @@ class CoqManager {
                 console.warn("in goCursor(): stm not registered");
             }
         } else {
-            this.goTarget = true;
-            this.goNext(false);
+            this.goTarget = this.provider.getCursor();
+            this.goNext(false, this.goTarget);
         }
     }
 
     // Error handler.
     handleError(sid, loc, msg) {
+
+        this.goTarget = null;  // first of all, stop any pending additions
 
         let err_stm = this.doc.stm_id[sid];
 
