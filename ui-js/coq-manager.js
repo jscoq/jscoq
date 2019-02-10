@@ -158,10 +158,11 @@ class ProviderContainer {
 /***********************************************************************/
 
 var copyOptions = function(obj, target) {
-    if (!target) target = {};
+    if (typeof obj !== 'object') return obj;
+    if (typeof target !== 'object') target = {};
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
-            target[prop] = obj[prop];
+            target[prop] = copyOptions(obj[prop], target[prop]);
         }
     }
     return target;
@@ -413,15 +414,19 @@ class CoqManager {
                 pkgs_to_load.push(binfo.desc);
         }
 
+        var cleanup = () => {};
+
         if (pkgs_to_load.length > 0) {
             console.log("Pending: loading packages", pkgs_to_load);
             this.packages.expand();
+            cleanup = () => { this.packages.collapse(); }
         }
 
         this.packages.loadDeps(pkgs_to_load).then(() => ontop_finished)
             .then(() => {
                 this.coq.reassureLoadPath(this.packages.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
+                cleanup();
             });
     }
 

@@ -45,6 +45,10 @@ a, a:link, a:visited, a:active {
   transition: padding-right 0.5s ease;
 }
 
+#code-wrapper .CodeMirror .CodeMirror-widget {
+  line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
+}
+
 #ide-wrapper.toggled #code-wrapper {
   padding-right: 0;
 }
