@@ -46,7 +46,7 @@ class CmCoqProvider {
         /* Handle mouse hover events */
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
-        editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
+        editor_element.on('mouseout', ev => this.onCMMouseLeave(ev));
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
@@ -155,34 +155,42 @@ class CmCoqProvider {
 
         var mark = 
             doc.markText(stm.start, stm.end, {className: className,
-                attributes: {'data-sid': stm.coq_sid}});
+                attributes: {'data-coq-sid': stm.coq_sid}});
 
-        this._markWidgetsWithClass(stm.start, stm.end, className);
+        this._markWidgetsAsWell(stm.start, stm.end, mark);
 
         mark.stm = stm;
         stm.mark = mark;
     }
 
     /**
-     * Hack to apply MarkedSpan CSS class formatting to widgets within mark
-     * boundaries as well. (This is not handled by the native CodeMirror#markText.)
+     * Hack to apply MarkedSpan CSS class formatting and attributes to widgets
+     * within mark boundaries as well. 
+     * (This is not handled by the native CodeMirror#markText.)
      */
-    _markWidgetsWithClass(start, end, className) {
-        var classNames = className.split(/ +/);
+    _markWidgetsAsWell(start, end, mark) {
+        var classNames = mark.className.split(/ +/);
+        var attrs = mark.attributes || {};
         for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
             for (let cn of classNames)
                 w.widgetNode.classList.add(cn);
+            for (let attr in attrs)
+                w.widgetNode.setAttribute(attr, attrs[attr]);
         }
     }
 
     /** 
-     * Hack contd: negates effects of _markWidgetsWithClass when mark is cleared.
+     * Hack contd: negates effects of _markWidgetsAsWell when mark is cleared.
      */
     _unmarkWidgets(start, end) {
         for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
             for (let cn of [...w.widgetNode.classList]) {
                 if (/^coq-/.exec(cn))
                     w.widgetNode.classList.remove(cn);
+            }
+            for (let attr of [...w.widgetNode.attributes]) {
+                if (/^data-coq-/.exec(attr.name))
+                    w.widgetNode.removeAttributeNode(attr);
             }
         }
     }
@@ -255,7 +263,9 @@ class CmCoqProvider {
     }
 
     _markFromElement(dom) {
-        var sid = $(dom).attr('data-sid');
+        var sid = dom.classList.contains('CodeMirror-line') ?
+                    $(dom).find('[data-coq-sid]').last().attr('data-coq-sid')
+                  : $(dom).attr('data-coq-sid');
 
         if (sid) {
             for (let mark of this.editor.getAllMarks()) {
