@@ -48,6 +48,9 @@ class CmCoqProvider {
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
         editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
 
+        this._keyHandler = this.keyHandler.bind(this);
+        this._key_bound = false;
+
         this.hover = [];
     }
 
@@ -279,11 +282,17 @@ class CmCoqProvider {
             this.hover = [mark];
             this.highlight(mark.stm, true);
             this.onMouseEnter(mark.stm, evt);
+            if (!this._key_bound) {
+                this._key_bound = true;
+                $(document).on('keydown keyup', this._keyHandler);
+            }
         }
         else {
             if (this.hover[0])
                 this.onMouseLeave(this.hover[0].stm, evt);
             this.hover = [];
+            $(document).off('keydown keyup', this._keyHandler);
+            this._key_bound = false;
         }
     }
 
@@ -295,6 +304,11 @@ class CmCoqProvider {
             this.onMouseLeave(this.hover[0].stm, evt);
             this.hover = [];
         }
+    }
+
+    keyHandler(evt) {
+        if (this.hover[0])
+            this.onMouseEnter(this.hover[0].stm, evt);
     }
 
 

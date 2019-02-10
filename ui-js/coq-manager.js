@@ -284,6 +284,9 @@ class CoqManager {
                 else
                     this.coq.goals(stm.coq_sid);  // XXX: async
             }
+            else {
+                this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+            }
         };
 
         provider.onMouseLeave = (stm, ev) => {
