@@ -108,7 +108,7 @@ class CmCoqProvider {
         if (stm.mark) {
             let b = stm.mark.find();
             stm.start = b.from; stm.end = b.to;
-            stm.mark.clear();
+            stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
             stm.mark = null;
         }
 
@@ -139,9 +139,9 @@ class CmCoqProvider {
             let b = stm.mark.find();
             stm.start = b.from; stm.end = b.to;
             var new_class = 
-                stm.mark.className.replace(/( highlight)?$/, flag ? ' highlight' : '')
+                stm.mark.className.replace(/( coq-highlight)?$/, flag ? ' coq-highlight' : '')
             if (new_class != stm.mark.className) {
-                stm.mark.clear();
+                stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
                 this.markWithClass(stm, new_class);
             }
         }
@@ -152,9 +152,36 @@ class CmCoqProvider {
 
         var mark = 
             doc.markText(stm.start, stm.end, {className: className,
-                attributes: {'data-sid': stm.coq_sid}})
+                attributes: {'data-sid': stm.coq_sid}});
+
+        this._markWidgetsWithClass(stm.start, stm.end, className);
+
         mark.stm = stm;
         stm.mark = mark;
+    }
+
+    /**
+     * Hack to apply MarkedSpan CSS class formatting to widgets within mark
+     * boundaries as well. (This is not handled by the native CodeMirror#markText.)
+     */
+    _markWidgetsWithClass(start, end, className) {
+        var classNames = className.split(/ +/);
+        for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
+            for (let cn of classNames)
+                w.widgetNode.classList.add(cn);
+        }
+    }
+
+    /** 
+     * Hack contd: negates effects of _markWidgetsWithClass when mark is cleared.
+     */
+    _unmarkWidgets(start, end) {
+        for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
+            for (let cn of [...w.widgetNode.classList]) {
+                if (/^coq-/.exec(cn))
+                    w.widgetNode.classList.remove(cn);
+            }
+        }
     }
 
     getCursor() {

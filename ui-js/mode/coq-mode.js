@@ -187,6 +187,8 @@
       if(stream.eatSpace())
         return null;
 
+      if (stream.match(/[-=<]>|<-|[<>]=|\\\/|\/\\/)) return 'operator';
+
       var ch = stream.next();
 
       if(state.begin_sentence && (/[-*+{}]/.test(ch)))

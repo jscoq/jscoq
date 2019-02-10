@@ -41,7 +41,7 @@ a:hover {
   background: rgba(0,0,0,0.15);
 }
 
-.coq-eval-ok.highlight {
+.coq-eval-ok.coq-highlight {
   background: #ada;
 }
   
@@ -59,7 +59,7 @@ a:hover {
     background: none;
 }
 
-.coq-eval-ok.highlight.CodeMirror-selectedtext {
+.coq-eval-ok.coq-highlight.CodeMirror-selectedtext {
     background: #aee; 
 }
 
