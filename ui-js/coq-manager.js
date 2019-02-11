@@ -862,7 +862,11 @@ class CoqContextualInfo {
         this.pprint = pprint;
         this.el = $('<div>').addClass('contextual-info').hide();
         this.is_visible = false;
+        this.is_sticky = false;
         this.focus = null;
+        this.minimal_exposure = Promise.resolve();
+
+        this.MINIMAL_EXPOSURE_DURATION = 150; // ms
 
         this.container.append(this.el);
 
@@ -870,11 +874,27 @@ class CoqContextualInfo {
         var r = String.raw,
             contextual_sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
 
-        container.on('mouseenter', contextual_sel, evt => this.showFor(evt.target, evt.altKey));
-        container.on('mouseleave', contextual_sel, evt => this.hide());
+        container.on('mouseenter', contextual_sel, evt => this.onMouseEnter(evt));
+        container.on('mousedown',  contextual_sel, evt => this.onMouseDown(evt, true));
+        container.on('mouseleave', contextual_sel, evt => this.onMouseLeave(evt));
+        container.on('mouseleave',                 evt => this.onMouseLeave(evt));
+        container.on('mousedown',  evt => this.hideReq());
+
+        this.el.on('mouseenter', evt => this.hideCancel());
+        this.el.on('mousedown', evt => { this.hideReq(); evt.stopPropagation(); });
+        this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
+    }
+
+    onMouseEnter(evt) { if (!this.is_sticky) this.showFor(evt.target, evt.altKey); }
+    onMouseLeave(evt) { if (!this.is_sticky) this.hideReq(); }
+
+    onMouseDown(evt)  { 
+        this.showFor(evt.target, evt.altKey); 
+        this.is_sticky = true;
+        evt.stopPropagation();
     }
 
     showFor(dom, alt) {
@@ -920,6 +940,7 @@ class CoqContextualInfo {
         this.el.html(html);
         this.el.show();
         this.is_visible = true;
+        this.minimal_exposure = this.elapse(this.MINIMAL_EXPOSURE_DURATION);
         if (!this._key_bound) {
             this._key_bound = true;
             $(document).on('keydown keyup', this._keyHandler);
@@ -930,8 +951,18 @@ class CoqContextualInfo {
         this.container.find('.contextual-focus').removeClass('contextual-focus');
         this.el.hide();
         this.is_visible = false;
+        this.is_sticky = false;
         $(document).off('keydown keyup', this._keyHandler);
         this._key_bound = false;
+    }
+
+    hideReq() {
+        this.request_hide = true;
+        this.minimal_exposure.then(() => { if (this.request_hide) this.hide() });
+    }
+
+    hideCancel() {
+        this.request_hide = false;
     }
 
     keyHandler(evt) {
@@ -940,6 +971,11 @@ class CoqContextualInfo {
             if (evt.altKey) this.showPrint(name);
             else            this.showCheck(name);
         }
+    }
+
+    elapse(duration) {
+        return new Promise((resolve, reject) =>
+            setTimeout(resolve, duration));
     }
 }
 
