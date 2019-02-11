@@ -25,8 +25,8 @@ class CoqWorker {
         this.worker.postMessage(msg);
     }
 
-    init(implicit, lib_init, lib_path) {
-        this.sendCommand(["Init", implicit, lib_init, lib_path]);
+    init(opts, lib_init, lib_path) {
+        this.sendCommand(["Init", opts, lib_init, lib_path]);
     }
 
     getInfo() {
