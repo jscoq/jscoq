@@ -244,7 +244,7 @@ class CoqManager {
                                getNext: function() { return null; },
                                focus: function() { return null; }
                              };
-        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider };
+        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider, executed: true };
         this.doc.sentences = [this.doc.stm_id[1]];
 
         this.error = [];
@@ -279,7 +279,7 @@ class CoqManager {
 
         provider.onMouseEnter = (stm, ev) => {
             if (stm.coq_sid && ev.altKey) {
-                if (this.doc.goals[stm.coq_sid])
+                if (this.doc.goals[stm.coq_sid] !== undefined)
                     this.updateGoals(this.doc.goals[stm.coq_sid]);
                 else
                     this.coq.goals(stm.coq_sid);  // XXX: async
@@ -318,17 +318,17 @@ class CoqManager {
     }
 
     // The first state is ready.
-    feedProcessed(sid) {
+    coqReady(sid) {
 
         this.layout.proof.append(document.createTextNode(
             "\nCoq worker is ready with sid = " + sid.toString() + "\n"));
             /* init libraries have already been loaded by now */
 
-        this.feedProcessed = this.feedProcessedReady;
+        //this.feedProcessed = this.feedProcessedReady;
         this.enable();
     }
 
-    feedProcessedReady(nsid) {
+    feedProcessed(nsid) {
 
         if(this.options.debug)
             console.log('State processed', nsid);
