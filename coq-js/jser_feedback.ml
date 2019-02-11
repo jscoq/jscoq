@@ -81,6 +81,25 @@ let to_yojson d = P.(_doc_view_to_yojson (from_t d))
 let std_ppcmds_of_yojson = of_yojson
 let std_ppcmds_to_yojson = to_yojson
 
+(* XXX *)
+let str = Pp.str
+let rec opt (d : Pp.t) = let open Pp in
+  let rec flatten_glue l = match l with
+    | []  -> []
+    | (Ppcmd_glue g :: l) -> flatten_glue (List.map repr g @ flatten_glue l)
+    | (Ppcmd_string s1 :: Ppcmd_string s2 :: l) -> flatten_glue (Ppcmd_string (s1 ^ s2) :: flatten_glue l)
+    | (x :: l) -> x :: flatten_glue l
+  in
+  unrepr (match repr d with
+      | Ppcmd_glue []   -> Ppcmd_empty
+      | Ppcmd_glue [x]  -> repr (opt x)
+      | Ppcmd_glue l    -> Ppcmd_glue List.(map opt (map unrepr (flatten_glue (map repr l))))
+      | Ppcmd_box(bt,d) -> Ppcmd_box(bt, opt d)
+      | Ppcmd_tag(t, d) -> Ppcmd_tag(t,  opt d)
+      | d -> d
+    )
+  [@@warning "-4"]
+
 end
 
 module Loc = struct
