@@ -317,4 +317,6 @@ div.Pp_box[data-margin="2"] {
   font-size: 9pt;
   border-top: 1px solid rgba(0,0,0,0.25);
   white-space: pre-wrap;
+  max-height: 60%;
+  overflow-y: auto;
 }
