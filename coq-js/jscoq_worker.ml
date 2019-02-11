@@ -9,54 +9,27 @@
 
 open Js_of_ocaml
 
-(* XXX *)
-let str = Pp.str
-let rec pp_opt (d : Pp.t) = let open Pp in
-  let rec flatten_glue l = match l with
-    | []  -> []
-    | (Ppcmd_glue g :: l) -> flatten_glue (List.map repr g @ flatten_glue l)
-    | (Ppcmd_string s1 :: Ppcmd_string s2 :: l) -> flatten_glue (Ppcmd_string (s1 ^ s2) :: flatten_glue l)
-    | (x :: l) -> x :: flatten_glue l
-  in
-  (* let rec flatten_glue l = match l with *)
-  (*   | (Ppcmd_string s1 :: Ppcmd_string s2 :: l) -> Ppcmd_string (s1 ^ s2) :: flatten_glue l *)
-  unrepr (match repr d with
-      | Ppcmd_glue []   -> Ppcmd_empty
-      | Ppcmd_glue [x]  -> repr (pp_opt x)
-      | Ppcmd_glue l    -> Ppcmd_glue List.(map pp_opt (map unrepr (flatten_glue (map repr l))))
-      | Ppcmd_box(bt,d) -> Ppcmd_box(bt, pp_opt d)
-      | Ppcmd_tag(t, d) -> Ppcmd_tag(t,  pp_opt d)
-      | d -> d
-    )
-  [@@warning "-4"]
-
-let fbc_opt (fbc : Feedback.feedback_content) =
-  Feedback.(match fbc with
-  | Message(id,loc,msg) -> Message(id,loc,pp_opt msg)
-  | _ -> fbc)
-  [@@warning "-4"]
-
-let fb_opt (fb : Feedback.feedback) =
-  Feedback.({ fb with contents = fbc_opt fb.contents })
-
 open Jser_feedback
 open Jser_feedback.Feedback
 
-type gvalue =
-  [%import: Goptions.option_value]
-  [@@deriving yojson]
+
+let jscoq_version = "0.9~beta0"
 
 type jscoq_options = {
   implicit_libs: bool; 
   stm_debug: bool;
 }
-  [@@deriving yojson]
+[@@deriving yojson]
 
 let opts = ref { implicit_libs = true; stm_debug = false; }
 
-(* Main RPC calls *)
-let jscoq_version = "0.9~beta0"
 
+type gvalue =
+  [%import: Goptions.option_value]
+  [@@deriving yojson]
+
+
+(* Main RPC calls *)
 type jscoq_cmd =
   | GetInfo
   | InfoPkg of string * string list
@@ -143,14 +116,8 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
       let json_string = Js.to_string (Json.output cobj) in
       Yojson.Safe.from_string json_string
 
-let _answer_to_jsobj msg =
-  let json_msg = jscoq_answer_to_yojson msg                            in
-  let json_str = Yojson.Safe.to_string json_msg                        in
-  (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
-  Js.Unsafe.global##.JSON##(parse (Js.string json_str))
-
 let answer_to_jsobj msg =
-  let json_msg = jscoq_answer_to_yojson msg                            in
+  let json_msg = jscoq_answer_to_yojson msg       in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
 type progress_info =
@@ -161,14 +128,8 @@ type lib_event =
   [%import: Jslibmng.lib_event]
   [@@deriving yojson]
 
-let _lib_event_to_jsobj msg =
-  let json_msg = lib_event_to_yojson msg                               in
-  let json_str = Yojson.Safe.to_string json_msg                        in
-  (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
-  Js.Unsafe.global##.JSON##(parse (Js.string json_str))
-
 let lib_event_to_jsobj msg =
-  let json_msg = lib_event_to_yojson msg                            in
+  let json_msg = lib_event_to_yojson msg          in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
 let is_worker = (Js.Unsafe.global##.onmessage != Js.undefined)
@@ -197,6 +158,15 @@ let update_loadpath (msg : lib_event) : unit =
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg ; post_lib_event msg
 
+let fbc_opt (fbc : Feedback.feedback_content) =
+  Feedback.(match fbc with
+  | Message(id,loc,msg) -> Message(id,loc,Pp.opt msg)
+  | _ -> fbc)
+  [@@warning "-4"]
+
+let fb_opt (fb : Feedback.feedback) =
+  Feedback.({ fb with contents = fbc_opt fb.contents })
+
 (* set_opts  : general options *)
 (* lib_init  : list of modules to load *)
 (* lib_path  : list of load paths *)
@@ -206,7 +176,6 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
   let opts = set_opts in
 
   let lib_require  = List.map (fun lp ->
-      (* Format.eprintf "u: %s, %s@\n" (to_name md) (to_dir md); *)
       String.concat "." lp, None, Some true) lib_init  in
 
   (* None       : just require            *)
@@ -236,7 +205,7 @@ let exec_getopt on =
 
 let coq_exn_info exn =
     let (e, info) = CErrors.push exn                   in
-    let pp_exn    = pp_opt @@ CErrors.iprint (e, info) in
+    let pp_exn    = Pp.opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
 let requires ast =
@@ -275,11 +244,11 @@ let jscoq_execute =
 
   | Exec sid          ->
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
-    doc := ndoc; out_fn @@ Log (Debug, str @@ "observe " ^ (Stateid.to_string sid))
+    doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string sid))
 
   | Goals sid        ->
     ignore(Jscoq_doc.observe ~doc:!doc sid); (* observe sid but keep the existing doc *)
-    out_fn @@ GoalInfo (sid, pp_opt @@ Icoq.pp_of_goals ())
+    out_fn @@ GoalInfo (sid, Pp.opt @@ Icoq.pp_of_goals ())
 
   | Query (sid, rid, query) ->
     let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
@@ -344,8 +313,8 @@ let put_pseudo_file ~name ~buf =
     Sys_js.update_file ~name ~content:str
 
 let setup_std_printers () =
-  Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, str @@ "stdout: " ^ msg)));
-  Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, str @@ "stderr: " ^ msg)));
+  Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, Pp.str @@ "stdout: " ^ msg)));
+  Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, Pp.str @@ "stderr: " ^ msg)));
   ()
 
 let jscoq_protect f =
@@ -363,7 +332,7 @@ let on_msg doc msg =
   | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
 
   match jscoq_cmd_of_yojson json_obj with
-  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, str @@ log_cmd cmd)) ;
+  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, Pp.str @@ log_cmd cmd)) ;
                                       jscoq_execute doc cmd)
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
