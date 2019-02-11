@@ -581,9 +581,10 @@ class CoqManager {
             load_lib.push(["Coq", "Init", "Prelude"]);
         }
 
-        let load_path = this.packages.getLoadPath();
+        let set_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
+            load_path = this.packages.getLoadPath();
 
-        this.coq.init(this.options.implicit_libs, load_lib, load_path);
+        this.coq.init(set_opts, load_lib, load_path);
         // Almost done!
     }
 
