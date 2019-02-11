@@ -8,7 +8,7 @@ class CoqWorker {
         };
         this.observers = [this];
         this.routes = [this.observers];
-        this.sids = [];
+        this.sids = [, new Future()];
 
         // Create actual worker. Ideally, CoqWorker would extend Worker, but this is
         // not supported at the moment.
@@ -48,7 +48,7 @@ class CoqWorker {
 
     cancel(sid) {
         for (let i in this.sids)
-            if (i >= sid) this.sids[i].reject();
+            if (i >= sid && this.sids[i]) { this.sids[i].reject(); delete this.sids[i]; }
         this.sendCommand(["Cancel", sid]);
     }
 
@@ -173,7 +173,7 @@ class CoqWorker {
 
     feedProcessed(sid) {
         var fut = this.sids[sid];
-        if (fut) fut.resolve();
+        if (fut) { fut.resolve(); }
     }
 }
 
