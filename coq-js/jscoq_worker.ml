@@ -253,10 +253,12 @@ let jscoq_execute =
   | Query (sid, rid, query) ->
     let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
     begin try
-      Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query
+      Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query;
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Complete }
     with exn ->
       let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
     end
 
   | Register file_path  ->

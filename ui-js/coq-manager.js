@@ -932,7 +932,7 @@ class CoqContextualInfo {
         this.is_visible = true;
         this.coq.queryPromise(0, query).then(result => {
             if (this.is_visible)
-                this.show(this.pprint.pp2HTML(result));
+                this.show(this.formatMessages(result));
         });
     }
 
@@ -971,6 +971,10 @@ class CoqContextualInfo {
             if (evt.altKey) this.showPrint(name);
             else            this.showCheck(name);
         }
+    }
+
+    formatMessages(msgs) {
+        return msgs.map(feedback => this.pprint.pp2HTML(feedback.msg)).join("<hr/>");
     }
 
     elapse(duration) {
