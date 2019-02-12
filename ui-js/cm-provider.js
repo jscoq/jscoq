@@ -229,7 +229,6 @@ class CmCoqProvider {
      * @param {Pos} end ending position ({line, ch})
      */
     onlySpacesBetween(start, end) {
-        console.warn("onlySpacesBetween", start, end);
         if (start.line > end.line) return true;
         var cur = {line: start.line, ch: start.ch};
         while (cur.line < end.line) {
