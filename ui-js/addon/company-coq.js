@@ -33,7 +33,7 @@ class Markup {
             if (lit) {
                 var from = {line, ch: tok.start},
                     to = {line, ch: tok.end};
-                this.cm.markText(from, to, 
+                this.markText(from, to, 
                         {replacedWith: this.mkSymbol(lit), className: this.className, 
                          handleMouseEvents: true});
             }
@@ -45,6 +45,20 @@ class Markup {
             to = {line, ch: this.cm.getLine(line).length};
         for (let mark of this.cm.findMarks(from, to, m => m.className == this.className))
             mark.clear();
+    }
+
+    markText(from, to, options) {
+        var existing_marks = this.cm.findMarksAt(from),
+            mark = this.cm.markText(from, to, options);
+        // Respect className and attributes of existing marks
+        if (mark.widgetNode) {
+            for (let em of existing_marks) {
+                if (em.className) $(mark.widgetNode).addClass(em.className);
+                for (let attrName in em.attributes || {})
+                    $(mark.widgetNode).attr(attrName, em.attributes[attrName]);
+            }
+        }
+        return mark;
     }
 
     mkSymbol(lit) {
