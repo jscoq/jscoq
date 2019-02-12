@@ -151,13 +151,13 @@ class CoqWorker {
 
         var feed_tag = fb_msg.contents[0];
         var feed_route = fb_msg.route || 0;
-        var feed_args = [fb_msg.span_id].concat(fb_msg.contents.slice(1));
+        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1)];
         var handled = false;
 
         if(this.options.debug)
             console.log('Coq Feedback message', fb_msg.span_id, fb_msg.contents);
 
-        // We call the corresponding method feed$msg_tag(sid, msg[1]..msg[n])
+        // We call the corresponding method feed$feed_tag(sid, msg[1]..msg[n])
         for (let o of this.routes[feed_route] || []) {
             let handler = o['feed'+feed_tag];
             if (handler) {
@@ -201,23 +201,30 @@ class PromiseFeedbackRoute extends Future {
     constructor() {
         super();
         this.atexit = () => {};
-        this._got_message = false;
+        this.messages = [];
         this._got_processed = false;
+        this._done = false;
     }
 
     feedMessage(sid, lvl, loc, msg) {
-        this._got_message = true;
-        if (this._got_processed) this.atexit();
-
-        if (lvl[0] === 'Error')
-            this.reject(msg);
-        else
-            this.resolve(msg);
+        this.messages.push({sid: sid, lvl: lvl[0], loc: loc, msg: msg});
     }
 
+    feedComplete(sid) {
+        this.resolve(this.messages);
+        this._done = true;
+        if (this._got_processed) this.atexit();
+    }
+
+    feedIncomplete(sid) {
+        this.reject(this.messages);
+        this._done = true;
+        if (this._got_processed) this.atexit();
+    }
+    
     feedProcessed(sid) {
         this._got_processed = true;
-        if (this._got_message) this.atexit();
+        if (this._done) this.atexit();
     }
 }
 
