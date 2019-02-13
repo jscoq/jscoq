@@ -312,7 +312,7 @@ div.Pp_box[data-margin="2"] {
   position: absolute;
   bottom: 2px;
   left: 3px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.9);
   font-family: monospace;
   font-size: 9pt;
   border-top: 1px solid rgba(0,0,0,0.25);
