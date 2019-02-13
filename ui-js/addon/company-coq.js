@@ -1,10 +1,24 @@
+/************************************************************************/
+/* company-coq addon to coq-mode, a CodeMirror mode for the Coq Proof   */
+/*   Assistant.                                                         */
+/*                                                                      */
+/* Inspired by company-coq [https://github.com/cpitclaudel/company-coq] */
+/* by Clément Pit-Claudel, which is a minor mode for Emacs.             */
+/*                                                                      */
+/* Features:                                                            */
+/*  - Prettification of symbols such as '->' and 'forall' via their     */
+/*    Unicode counterparts.                                             */
+/*  - Auto-completion of identifier names: tactics and lemmas in proof  */
+/*    mode, constants in Gallina terms (the latter is not implemented   */
+/*    of yet).                                                          */
+/************************************************************************/
 
 
 (function(mod) {
     if (typeof exports == "object" && typeof module == "object") // CommonJS
-        mod(require("../../lib/codemirror"));
+        mod(require("codemirror"));
     else if (typeof define == "function" && define.amd) // AMD
-        define(["../../lib/codemirror"], mod);
+        define(["codemirror"], mod);
     else // Plain browser env
         mod(CodeMirror);
 })(function(CodeMirror) {
