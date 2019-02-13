@@ -42,9 +42,9 @@
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
-    mod(require("../../lib/codemirror"));
+    mod(require("codemirror"));
   else if (typeof define == "function" && define.amd) // AMD
-    define(["../../lib/codemirror"], mod);
+    define(["codemirror"], mod);
   else // Plain browser env
     mod(CodeMirror);
 })(function(CodeMirror) {
@@ -155,6 +155,10 @@
       Coq mode defines the following state variables:
 
       - begin_sentence: only \s caracters seen from the last sentence.
+
+      - is_head: at first (non-comment, non-space) token of sentence.
+
+      - sentence_kind: kind of the head token.
 
       - commentLevel [:int] = Level of nested comments.
 
