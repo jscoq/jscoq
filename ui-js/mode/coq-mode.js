@@ -56,7 +56,7 @@
       'Abort', 'About', 'Add', 'All', 'Arguments', 'Asymmetric', 'Axiom',
       'Bind',
       'Canonical', 'Check', 'Class', 'Close', 'Coercion', 'CoFixpoint', 'Comments',
-      'CoInductive', 'Context', 'Constructors', 'Contextual', 'Corollary',
+      'CoInductive', 'Compute', 'Context', 'Constructors', 'Contextual', 'Corollary',
       'Defined', 'Definition', 'Delimit',
       'Fail',
       'Eval',
@@ -183,6 +183,10 @@
      */
     function tokenBase(stream, state) {
 
+      var at_sentence_start = state.begin_sentence;
+
+      state.is_head = false;
+
       // If any space in the input, return null.
       if(stream.eatSpace())
         return null;
@@ -191,7 +195,7 @@
 
       var ch = stream.next();
 
-      if(state.begin_sentence && (/[-*+{}]/.test(ch)))
+      if(at_sentence_start && (/[-*+{}]/.test(ch)))
         return 'coq-bullet';
 
       // Preserve begin sentence after comment.
@@ -230,16 +234,6 @@
       if(ch === ')')
         return 'parenthesis';
 
-      if (ch === '~') {
-        stream.eatWhile(/\w/);
-        return 'variable-2';
-      }
-
-      if (ch === '`') {
-        stream.eatWhile(/\w/);
-        return 'quote';
-      }
-
       if (/\d/.test(ch)) {
         stream.eatWhile(/[\d]/);
         /*
@@ -259,9 +253,15 @@
       }
 
       stream.eatWhile(/\w/);
-      var cur = stream.current();
-      return words.hasOwnProperty(cur) ? words[cur] : 'variable';
+      var cur = stream.current(),
+          kind = words[cur] || 'variable';
 
+      if (at_sentence_start) {
+        state.sentence_kind = kind;
+        state.is_head = true;
+      }
+
+      return kind;
     }
 
     function tokenString(stream, state) {
@@ -304,13 +304,14 @@
 
       if(stream.eol() || stream.match(/\s/, false)) {
         state.begin_sentence = true;
+        state.sentence_kind = undefined;
         return 'statementend';
       }
     }
 
     return {
       startState: function() {
-        return {begin_sentence: true, tokenize: tokenBase, commentLevel: 0};
+        return {begin_sentence: true, is_head: false, tokenize: tokenBase, commentLevel: 0};
       },
 
       token: function(stream, state) {
