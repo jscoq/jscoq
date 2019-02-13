@@ -69,8 +69,8 @@ class Markup {
 
 }
 
-// Builtin tactics are part of coq-mode.
-// TODO: rank tactics by usefulness rather than alphabetically.
+// Builtin tactics are copied from coq-mode.
+// TODO: order tactics most common first rather than alphabetically.
 var tactics = [
     'after', 'apply', 'assert', 'auto', 'autorewrite',
     'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
@@ -84,18 +84,19 @@ var tactics = [
     'left',
     'move',
     'pattern', 'pose',
-    'refine', 'remember', 'rename', 'replace', 'revert', 'rewrite',
+    'refine', 'remember', 'rename', 'repeat', 'replace', 'revert', 'rewrite',
     'right', 'ring',
     'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
-    'transitivity', 'trivial',
+    'transitivity', 'trivial', 'try',
     'unfold', 'unlock', 'using',
     'vm_compute',
     'where', 'wlog',
-    // Terminators
+    /* Terminators */
     'assumption',
     'by',
     'contradiction',
     'discriminate',
+    'easy',
     'exact',
     'now',
     'omega',

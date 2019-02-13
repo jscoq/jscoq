@@ -24,12 +24,11 @@ class CmCoqProvider {
                        version: 4,
                        singleLineStringErrors : false
                      },
-              lineNumbers   : true,
-              indentUnit    : 4,
-              matchBrackets : true,
+              lineNumbers       : true,
+              indentUnit        : 4,
+              matchBrackets     : true,
               styleSelectedText : true,
-              // theme         : 'blackboard',
-              keyMap        : "emacs"
+              keyMap            : "emacs"
             };
 
         if (options)
@@ -41,9 +40,16 @@ class CmCoqProvider {
             this.editor = CodeMirror(element, cmOpts);
         }
 
+        // Event handlers (to be overridden by ProviderContainer)
+        this.onInvalidate = (mark) => {};
+        this.onMouseEnter = (stm, ev) => {};
+        this.onMouseLeave = (stm, ev) => {};
+        this.onTipHover = (completion, zoom) => {};
+        this.onTipOut = () => {};
+
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
 
-        /* Handle mouse hover events */
+        // Handle mouse hover events
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
         editor_element.on('mouseout', ev => this.onCMMouseLeave(ev));
@@ -52,6 +58,11 @@ class CmCoqProvider {
         this._key_bound = false;
 
         this.hover = [];
+
+        // Handle hint events
+        this.editor.on('hintHover',     completion => this.onTipHover(completion, false));
+        this.editor.on('hintZoom',      completion => this.onTipHover(completion, true));
+        this.editor.on('endCompletion', cm         => this.onTipOut());
     }
 
     focus() {

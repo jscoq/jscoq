@@ -48,6 +48,13 @@ class ProviderContainer {
         // Debug variables
         var idx = 0;
 
+        // Event handlers (to be overridden by CoqManager)
+        this.onInvalidate = (mark) => {};
+        this.onMouseEnter = (stm, ev) => {};
+        this.onMouseLeave = (stm, ev) => {};
+        this.onTipHover = (completion, zoom) => {};
+        this.onTipOut = () => {};
+
         // for (e of elms) not very covenient here due to the closure.
         elms.forEach(e => {
 
@@ -64,6 +71,8 @@ class ProviderContainer {
             cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
             cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
+            cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
+            cm.onTipOut   = ()             => { this.onTipOut(); }
         });
     }
 
@@ -292,6 +301,12 @@ class CoqManager {
         provider.onMouseLeave = (stm, ev) => {
             this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
         };
+
+        provider.onTipHover = (entry, zoom) => {
+            if (entry.kind == 'lemma')
+                this.contextual_info.showCheck(entry.text);
+        };
+        provider.onTipOut = () => { this.contextual_info.hide(); };
 
         return provider;
     }
