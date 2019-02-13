@@ -10,6 +10,8 @@
 })(function(CodeMirror) {
 "use strict";
 
+var Pos = CodeMirror.Pos;
+
 /**
  * Generic markup class.
  */
@@ -67,6 +69,142 @@ class Markup {
 
 }
 
+// Builtin tactics are part of coq-mode.
+// TODO: rank tactics by usefulness rather than alphabetically.
+var tactics = [
+    'after', 'apply', 'assert', 'auto', 'autorewrite',
+    'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
+    'congr', 'cut', 'cutrewrite',
+    'dependent', 'destruct',
+    'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
+    'field', 'firstorder', 'fold', 'fourier',
+    'generalize',
+    'have', 'hnf',
+    'induction', 'injection', 'instantiate', 'intro', 'intros', 'inversion',
+    'left',
+    'move',
+    'pattern', 'pose',
+    'refine', 'remember', 'rename', 'replace', 'revert', 'rewrite',
+    'right', 'ring',
+    'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
+    'transitivity', 'trivial',
+    'unfold', 'unlock', 'using',
+    'vm_compute',
+    'where', 'wlog',
+    // Terminators
+    'assumption',
+    'by',
+    'contradiction',
+    'discriminate',
+    'exact',
+    'now',
+    'omega',
+    'reflexivity',
+    'tauto'
+  ];
+
+/**
+ * Hints for lemma names and tactics.
+ */
+class AutoComplete {
+
+    constructor() {
+        // TODO: Allow to be configured externally
+        this.vocab = {
+            lemmas: ["andb_prop", "andb_true_intro", "and_iff_compat_l", "eq_sym", "not_eq_sym"],
+            tactics: tactics
+        };
+
+        this.extraKeys = {
+            Alt: (cm) => { this.hintZoom(cm); }
+        };
+    }
+
+    lemmaHint(cm, options) { return this.hint(cm, options, 'lemmas', 'lemma'); }
+    tacticHint(cm, options) { return this.hint(cm, options, 'tactics', 'tactic'); }
+
+    hint(cm, _options, family, kind) {
+            var cur = cm.getCursor(), 
+            [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
+            match = /^\w/.exec(token.string) ? token.string : "";
+    
+        // Build completion list
+        var matching = this._matches(match, family, kind);
+
+        if (matching.length === 0) {
+            cm.closeHint();
+            return;
+        }
+    
+        var data = { list: matching, from: token_start, to: token_end };
+    
+        // Emit 'hintHover' to allow context-sensitive info to be displayed by the IDE
+        CodeMirror.on(data, "select",
+            completion => CodeMirror.signal(cm, 'hintHover', completion));
+    
+        return data;
+    }
+
+    hintZoom(cm) {
+        var cA = cm.state.completionActive;
+        if (cA && cA.data && cA.widget) {
+            // Emit 'hintZoom' to allow context-sensitive info to be displayed by the IDE
+            var completion = cA.data.list[cA.widget.selectedHint];
+            if (completion)
+                CodeMirror.signal(cm, 'hintZoom', completion);
+        }          
+    }
+
+    /**
+     * Determines what kind of hint, if any, should be displayed when the
+     * document is being edited.
+     * Called on 'change' event; relies on coq-mode to recover context.
+     * @param {CodeMirror} cm editor instance
+     * @param {ChangeEvent} evt document modification object
+     */
+    senseContext(cm, evt) {
+        if (evt.origin === '+input' && !cm.state.completionActive) {
+            var cur = cm.getCursor(), token = cm.getTokenAt(cur),
+                is_head = token.state.is_head,
+                kind = token.state.sentence_kind;
+
+            if ((is_head || kind === 'tactic' || kind === 'terminator') && 
+                /^[a-zA-Z_]./.exec(token.string)) {
+                var hint = is_head ? this.tacticHint : this.lemmaHint;
+                cm.showHint({
+                    hint: (cm, options) => hint.call(this, cm, options), 
+                    completeSingle: false, 
+                    extraKeys: this.extraKeys
+                });
+            }
+        }
+    }
+
+    _adjustToken(cur, token) {
+        if (token.end > cur.ch) {
+            token.end = cur.ch;
+            token.string = token.string.slice(0, cur.ch - token.start);
+        }
+      
+        var tokenStart = Pos(cur.line, token.start),
+            tokenEnd = Pos(cur.line, token.end);
+      
+        return [token, tokenStart, tokenEnd];
+    }
+
+    _matches(match, family, kind) {
+        var matching = [];
+    
+        this.vocab[family].map( function(name) {
+            if ( name.startsWith(match) ) {
+                matching.push({text: name, kind: kind});
+            }
+        });
+    
+        return matching;
+    }
+}
+
 /**
  * Main CompanyCoq entry point.
  * - Creates markup and configures it with specific tokens.
@@ -80,6 +218,8 @@ class CompanyCoq {
             'fun': 'λ', 'forall': '∀', 'exists': '∃', 
             'Real': 'ℝ', 'nat': 'ℕ'
         };
+
+        this.completion = new AutoComplete();
     }
 
     attach(cm) {
@@ -88,8 +228,9 @@ class CompanyCoq {
         this.markup.special_tokens = this.special_tokens;
         this.markup.className = 'company-coq';
         this.markup.applyToDocument();
-        
+
         cm.on('change', () => this.markup.applyToDocument());
+        cm.on('change', (cm, evt) => this.completion.senseContext(cm, evt));
         return this;
     }
 
