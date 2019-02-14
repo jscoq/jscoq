@@ -222,6 +222,9 @@ class CoqManager {
         this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                      this.coq, this.pprint);
 
+        // Setup autocomplete
+        this.loadSymbolsFrom(this.options.base_path + 'ui-js/prelude.symb.json');
+
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
@@ -303,12 +306,26 @@ class CoqManager {
         };
 
         provider.onTipHover = (entry, zoom) => {
+            var fullname = [...entry.prefix, entry.text].join('.');
             if (entry.kind == 'lemma')
-                this.contextual_info.showCheck(entry.text);
+                this.contextual_info.showCheck(fullname);
         };
         provider.onTipOut = () => { this.contextual_info.hide(); };
 
         return provider;
+    }
+
+    /**
+     * Reads symbols from a URL and populates CompanyCoq.vocab.
+     * @param {string} url address of .symb.json resource
+     */
+    loadSymbolsFrom(url) {
+        $.get({url, dataType: 'json'}).done(data => { 
+            CodeMirror.CompanyCoq.loadSymbols(data, /*replace_existing=*/true); 
+        })
+        .fail((_, status, msg) => {
+            console.warn(`Symbol resource available: ${url} (${status}, ${msg})`)
+        });
     }
 
     // Feedback Processing

@@ -320,3 +320,15 @@ div.Pp_box[data-margin="2"] {
   max-height: 60%;
   overflow-y: auto;
 }
+
+div.hint-package {
+  float: right;
+  margin-left: 1em;
+  color: #aaa;
+  font-size: 90%;
+  position: relative;
+  top: 1px;  /* this is safer than padding or margin, for floats */
+}
+.CodeMirror-hint-active div.hint-package {
+  color: #ddd;
+}
