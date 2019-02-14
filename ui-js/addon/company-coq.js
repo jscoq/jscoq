@@ -85,7 +85,9 @@ class Markup {
 
 // Builtin tactics are copied from coq-mode.
 // TODO: order tactics most common first rather than alphabetically.
-var tactics = [
+var vocab = {
+    lemmas: ["andb_prop", "andb_true_intro", "and_iff_compat_l", "eq_sym", "not_eq_sym"],
+    tactics: [
     'after', 'apply', 'assert', 'auto', 'autorewrite',
     'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
     'congr', 'cut', 'cutrewrite',
@@ -116,7 +118,7 @@ var tactics = [
     'omega',
     'reflexivity',
     'tauto'
-  ];
+  ]};
 
 /**
  * Hints for lemma names and tactics.
@@ -124,10 +126,9 @@ var tactics = [
 class AutoComplete {
 
     constructor() {
-        // TODO: Allow to be configured externally
         this.vocab = {
-            lemmas: ["andb_prop", "andb_true_intro", "and_iff_compat_l", "eq_sym", "not_eq_sym"],
-            tactics: tactics
+            lemmas: vocab.lemmas,
+            tactics: vocab.tactics
         };
 
         this.extraKeys = {
@@ -149,6 +150,10 @@ class AutoComplete {
         if (matching.length === 0) {
             cm.closeHint();
             return;
+        }
+
+        for (let m of matching) {
+            m.render = (el, self, data) => this._render(el, data, match, cm)
         }
     
         var data = { list: matching, from: token_start, to: token_end };
@@ -210,13 +215,38 @@ class AutoComplete {
     _matches(match, family, kind) {
         var matching = [];
     
-        this.vocab[family].map( function(name) {
-            if ( name.startsWith(match) ) {
-                matching.push({text: name, kind: kind});
+        this.vocab[family].map( (entry) => {
+            var name = entry.label || entry;
+            if ( name.indexOf(match) > -1 ) {
+                matching.push({
+                    text: name, kind, prefix: entry.prefix || []
+                });
             }
         });
     
         return matching;
+    }
+
+    _render(el, data, match, cm) {
+        var first = true,
+            bold = $('<b>').text(match),
+            pkg = data.prefix && data.prefix.length ? data.prefix.join('.') : null;
+
+        for (let part of data.text.split(match)) {
+            if (!first) $(el).append(bold.clone());
+            $(el).append(document.createTextNode(part));
+            first = false;
+        }
+        if (pkg)
+            $(el).append(
+                $('<div>').addClass('hint-package').text(pkg)
+            );
+        // Make element active on hover (mostly in order to show tips)
+        $(el).mouseenter(() => {
+            var cA = cm.state.completionActive;
+            if (cA && cA.widget)
+                cA.widget.changeActive($(el).index());
+        });
     }
 }
 
@@ -249,7 +279,21 @@ class CompanyCoq {
         return this;
     }
 
+    static loadSymbols(symbols, replace_existing=false) {
+        for (let key in CompanyCoq.vocab) {
+            if (symbols[key]) {
+                if (replace_existing) CompanyCoq.vocab[key].splice(0);
+                CompanyCoq.vocab[key].push(...symbols[key]);
+                // It is important to modify in-place to also affect CodeMirror
+                //  instances that were already created... :\
+            }
+        }
+    }
+
     static init() {
+        CompanyCoq.vocab = vocab;
+        CodeMirror.CompanyCoq = CompanyCoq;
+
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])
                 cm.company_coq = new CompanyCoq().attach(cm);
