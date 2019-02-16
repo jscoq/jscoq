@@ -114,13 +114,24 @@ let parse_bundle base_path file : coq_bundle Lwt.t =
                             Lwt.fail (Failure s)
     )
 
+let load_under_way = ref ([])
+
+let only_once lref s =
+  if List.mem s !lref then false
+  else begin
+    lref := !lref @ [s]; true
+  end
+
 (* Load a bundle *)
-let rec preload_from_file ?(verb=false) out_fn base_path file =
-  parse_bundle base_path file >>= (fun bundle ->
-  (* Load deps in paralell *)
-  Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps           <&>
-  Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path file) bundle.pkgs  >>= fun () ->
-  return @@ out_fn (LibLoaded (file, bundle)))
+let rec preload_from_file ?(verb=false) out_fn base_path bundle_name =
+  if only_once load_under_way bundle_name then
+    parse_bundle base_path bundle_name >>= (fun bundle ->
+    (* Load deps in parallel *)
+    Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps        <&>
+    Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
+    return @@ out_fn (LibLoaded (bundle_name, bundle)))
+  else
+    Lwt.return_unit
 
 let info_from_file out_fn base_path file =
   parse_bundle base_path file >>= (fun bundle ->
