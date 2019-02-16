@@ -64,7 +64,8 @@ Qed.
         base_path: './',
         init_pkgs: ['init'],
         all_pkgs:  ['init', 'coq-base', 'coq-numbers', 'coq-collections', 'coq-arith', 'coq-reals', 'math-comp'],
-        editor: {keyMap: 'default'}
+        implicit_libs: true,
+        editor: { mode: { 'company-coq': true }, keyMap: 'default' }
     };
 
     /* Global reference */
