@@ -65,37 +65,14 @@ class PackageManager {
     addBundleZip(bname, zip, pkg_info) {
         pkg_info = pkg_info || {};
 
-        var manifest = zip.file('coq-pkg.json'),
-            manifest_process = manifest ?
-                manifest.async('text').then((data) => {
-                    var json = JSON.parse(data);
-                    for (let k in json) if (!pkg_info[k]) pkg_info[k] = json[k];
-                })
-                .catch((err) => console.warn(`malformed 'coq-pkg.json' in bundle ${bname} (${err})`))
-              : Promise.resolve();
+        var archive = new CoqPkgArchive(zip);
 
-        var entries_by_dir = {};
+        return archive.getPackageInfo().then(pi => {
+            for (let k in pi)
+                if (!pkg_info[k]) pkg_info[k] = pi[k];
 
-        zip.forEach((rel_path, entry) => {
-            var mo = /^(?:(.*)[/])(.*[.](?:vo|vio))$/.exec(rel_path);
-            if (mo) {
-                var [, dir, fn] = mo;
-                (entries_by_dir[dir] = entries_by_dir[dir] || []).push(fn);
-            }
-        });
-
-        var pkgs = [];
-        for (let dir in entries_by_dir) {
-            pkgs.push({
-                pkg_id: dir.split('/'),
-                vo_files: entries_by_dir[dir].map(x => [x])
-            });
-        }
-
-        return manifest_process.then(() => {
-            pkg_info.pkgs = pkgs;
             this.addBundleInfo(bname, pkg_info);
-            this.bundles[bname].archive = zip;
+            this.bundles[bname].archive = archive;
         });
     }
 
@@ -138,7 +115,7 @@ class PackageManager {
             if (bundle.archive) {
                 bundle.promise = promise = 
                     this.loadDeps(bundle.info.deps)
-                    .then(() => this.unpackArchive(bundle.archive))
+                    .then(() => bundle.archive.unpack(this.coq))
                     .then(() => this.onBundleLoad(pkg_name));
 
                 return promise;
@@ -225,23 +202,92 @@ class PackageManager {
             deps.map(pkg => this.startPackageDownload(pkg)));
     }
 
-    unpackArchive(zip) {
-        var asyncs = [];
-        zip.forEach((rel_path, entry) => {
-            asyncs.push(
-                entry.async('arraybuffer').then(content =>
-                    this.coq.put(`/lib/${rel_path}`, content))
-            );
-        });
-        return Promise.all(asyncs);
-    }
-
     collapse() {
         this.panel.parentNode.classList.add('collapsed');
     }
 
     expand() {
         this.panel.parentNode.classList.remove('collapsed');
+    }
+}
+
+
+/**
+ * Represents a bundle stored in a Zip archive; either a remote
+ * file that has to be downloaded or a local one.
+ */
+class CoqPkgArchive {
+    constructor(resource) {
+        if (resource instanceof URL)
+            this.url = resource;
+        else if (resource.file /* JSZip-like */)
+            this.zip = resource;
+    }
+
+    load() {
+        return this.download().then(data =>
+            JSZip.loadAsync(data)).then(zip =>
+                { this.zip = zip; return this; });
+    }
+
+    download() {
+        // Here comes some boilerplate
+        return new Promise((resolve, reject) => {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'arraybuffer';
+            xhr.onload = () => resolve(xhr.response);
+            xhr.onerror = () => reject(new Error("download failed"));
+            xhr.open('GET', this.url);
+            xhr.send();
+        });
+    }
+
+    readManifest() {
+        var manifest = this.zip.file('coq-pkg.json');
+        return manifest ?
+                manifest.async('text').then(data => JSON.parse(data))
+                .catch(err => {
+                    console.warn(`malformed 'coq-pkg.json' in bundle ${this.url || ''} (${err})`);
+                    return {}; 
+                })
+              : Promise.resolve({});
+    }
+
+    getPackageInfo() {
+        return this.readManifest().then(pkg_info => {
+
+            var entries_by_dir = {};
+
+            this.zip.forEach((rel_path, entry) => {
+                var mo = /^(?:(.*)[/])(.*[.](?:vo|vio))$/.exec(rel_path);
+                if (mo) {
+                    var [, dir, fn] = mo;
+                    (entries_by_dir[dir] = entries_by_dir[dir] || []).push(fn);
+                }
+            });
+
+            var pkgs = [];
+            for (let dir in entries_by_dir) {
+                pkgs.push({
+                    pkg_id: dir.split('/'),
+                    vo_files: entries_by_dir[dir].map(x => [x])
+                });
+            }
+
+            pkg_info.pkgs = pkgs;
+            return pkg_info;
+        });
+    }
+
+    unpack(worker) {
+        var asyncs = [];
+        this.zip.forEach((rel_path, entry) => {
+            asyncs.push(
+                entry.async('arraybuffer').then(content =>
+                    worker.put(`/lib/${rel_path}`, content))
+            );
+        });
+        return Promise.all(asyncs);
     }
 }
 
