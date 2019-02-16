@@ -152,10 +152,13 @@ class ProviderContainer {
     }
 
     focus() {
-        if (this.currentFocus)
-            this.currentFocus.focus();
-        else
-            this.snippets[0].focus();
+        var sp = this.currentFocus || this.snippets[0];
+        if (sp) sp.focus();
+    }
+
+    openFile(file) {
+        var sp = this.currentFocus || this.snippets[0];
+        if (sp) sp.openFile(file);
     }
 
 }
@@ -209,6 +212,8 @@ class CoqManager {
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
         this.layout.onAction = this.toolbarClickHandler.bind(this);
+
+        this.setupDragDrop();
 
         // Setup the Coq worker.
         this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
@@ -315,6 +320,20 @@ class CoqManager {
         return provider;
     }
 
+    setupDragDrop() {
+        $(this.layout.ide).on('dragover', (evt) => { 
+            evt.preventDefault(); 
+        });
+        $(this.layout.ide).on('drop', (evt) => { 
+            evt.preventDefault();
+            // TODO better check file type and size before
+            //  opening
+            var file = evt.originalEvent.dataTransfer.files[0];
+            if (file)
+                this.provider.openFile(file);
+        });
+    }
+
     /**
      * Reads symbols from a URL and populates CompanyCoq.vocab.
      * @param {string} url address of .symb.json resource
@@ -324,7 +343,7 @@ class CoqManager {
             CodeMirror.CompanyCoq.loadSymbols(data, /*replace_existing=*/true); 
         })
         .fail((_, status, msg) => {
-            console.warn(`Symbol resource available: ${url} (${status}, ${msg})`)
+            console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
         });
     }
 

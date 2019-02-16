@@ -28,6 +28,7 @@ class CmCoqProvider {
               indentUnit        : 4,
               matchBrackets     : true,
               styleSelectedText : true,
+              dragDrop          : false, /* handled by CoqManager */
               keyMap            : "emacs"
             };
 
@@ -356,6 +357,15 @@ class CmCoqProvider {
             position = {line:next.line, ch:next.end};
         } while(type_re && !(type_re.test(next.type)));
         return next;
+    }
+
+    openFile(file) {
+        var rdr = new FileReader();
+        rdr.onload = evt => {
+            // TODO clear marks and issue invalidate
+            this.editor.setValue(evt.target.result);
+        };
+        rdr.readAsText(file, 'utf-8');
     }
 
 }
