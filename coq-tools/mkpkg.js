@@ -24,6 +24,9 @@ class PackageDefinition {
         for (let pkg of this.manifest.pkgs) {
             for (let file_entry of (pkg.vo_files || []).concat(pkg.cma_files || [])) {
                 files.push(path.join(...pkg.pkg_id, file_entry[0]));
+                // include compiled .js counterpart of .cmo/.cma
+                if (/[.]cm[ao]$/.exec(file_entry[0]))
+                    files.push(path.join(...pkg.pkg_id, `${file_entry[0]}.js`));
             }
         }
         return files;

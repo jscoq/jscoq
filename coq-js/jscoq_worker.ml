@@ -262,14 +262,14 @@ let jscoq_execute =
     end
 
   | Register file_path  ->
-    let filename = Filename.basename file_path in
-    let dir = Filename.dirname file_path in
-    Jslibmng.register_cma ~filename ~dir
+    Jslibmng.register_cma ~file_path
 
   | Put (filename, content) -> begin
       try         Sys_js.create_file ~name:filename ~content
       with _e ->  Sys_js.update_file ~name:filename ~content
-    end
+    end;
+    if Jslibmng.is_bytecode filename then 
+      Jslibmng.register_cma ~file_path:filename
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
