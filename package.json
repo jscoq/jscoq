@@ -4,9 +4,10 @@
   "description": "Run the Coq Proof Assistant in your browser!",
   "main": "newide.html",
   "dependencies": {
-    "jquery": "^3.3.1",
+    "bootstrap": "^3.3.5",
     "codemirror": "^5.42.2",
-    "bootstrap": "^3.3.5"
+    "jquery": "^3.3.1",
+    "jszip": "^3.1.5"
   },
   "devDependencies": {},
   "repository": {
