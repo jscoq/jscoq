@@ -259,7 +259,7 @@ class CoqPkgArchive {
             var entries_by_dir = {};
 
             this.zip.forEach((rel_path, entry) => {
-                var mo = /^(?:(.*)[/])(.*[.](?:vo|vio))$/.exec(rel_path);
+                var mo = /^(?:(.*)[/])(.*[.](?:vo|vio|cm[ao]))$/.exec(rel_path);
                 if (mo) {
                     var [, dir, fn] = mo;
                     (entries_by_dir[dir] = entries_by_dir[dir] || []).push(fn);
