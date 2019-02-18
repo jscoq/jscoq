@@ -37,8 +37,11 @@ class PackageDefinition {
         z.file("coq-pkg.json", JSON.stringify(this.manifest, null, 2));
         for (let fn of this.listFiles()) {
             let phys = path.join(this.base_path, fn);
-            z.file(fn, fs.createReadStream(phys)
-                .on("error", () => console.log(`error reading '${phys}'.`)));
+            if (/[.]cm[ao]$/.exec(fn))
+                z.file(fn, '') // stub the actual objects; a bit ugly but saves space
+            else
+                z.file(fn, fs.createReadStream(phys)
+                    .on("error", () => console.error(`error reading '${phys}'.`)));
         }
         if (save_as) {
             return z.generateNodeStream()
@@ -55,7 +58,7 @@ class PackageDefinition {
 if (module.id == '.') {
     for (let json_fn of process.argv.slice(2)) {
         var pd = new PackageDefinition(json_fn),
-            zip_fn = json_fn.replace(/([.]json|)$/, '.zip');
+            zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
         pd.toZip(zip_fn);
     }
 }

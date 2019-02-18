@@ -549,15 +549,7 @@ class CoqManager {
     }
 
     coqLibInfo(bname, bi) {
-
         this.packages.addBundleInfo(bname, bi);
-
-        // Check if we want to load this package at startup.
-        var idx = this.options.init_pkgs.indexOf(bname);
-
-        if(idx > -1) {
-            this.packages.startPackageDownload(bname);
-        }
     }
 
     coqLibProgress(evt) {
@@ -568,15 +560,8 @@ class CoqManager {
 
         this.packages.onBundleLoad(bname);
 
-        var init_pkgs = this.options.init_pkgs,
-            wait_pkgs = this.waitForPkgs,
+        var wait_pkgs = this.waitForPkgs,
             loaded_pkgs = this.packages.loaded_pkgs;
-
-        if (init_pkgs.indexOf(bname) > -1) {
-            // All the packages have been loaded.
-            if (init_pkgs.every(x => loaded_pkgs.indexOf(x) > -1))
-                this.coqInit();
-        }
 
         if (wait_pkgs.length > 0) {
             if (wait_pkgs.every(x => loaded_pkgs.indexOf(x) > -1)) {
@@ -607,12 +592,16 @@ class CoqManager {
 
         this.layout.proof.textContent = info;
 
-        if (this.options.init_pkgs.length == 0)
-            this.coqInit();
-        else
+        var pkgs = this.options.init_pkgs;
+
+        if (pkgs.length > 0)
             this.layout.proof.textContent +=
                   "\nPlease wait for the libraries to load, thanks!"
                 + "\n(If you are having trouble, try cleaning your browser's cache.)\n";
+        
+        this.packages.waitFor(pkgs)
+        .then(() => this.packages.loadDeps(pkgs))
+        .then(() => { this.coqInit(); });
     }
 
     // Coq Init: At this point, the required libraries are loaded
