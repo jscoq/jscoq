@@ -21,6 +21,7 @@ type coq_pkg = {
 type coq_bundle = {
   desc      : string;
   deps      : string list;
+  archive   : string option;
   pkgs      : coq_pkg list;
 }
 

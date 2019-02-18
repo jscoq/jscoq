@@ -60,6 +60,14 @@ class PackageManager {
         pkg_info.total  = no_files;
 
         this.bundles[bname] = { div: div, info: pkg_info };
+
+        if (pkg_info.archive) {
+            var archive = new CoqPkgArchive(this.getUrl(pkg_info.archive));
+            archive.onProgress = evt => this.onPkgProgress(evt, bname);
+            this.bundles[bname].archive = archive;
+        }
+
+        this.dispatchEvent(new Event('change'));
     }
 
     addBundleZip(bname, zip, pkg_info) {
@@ -73,6 +81,20 @@ class PackageManager {
 
             this.addBundleInfo(bname, pkg_info);
             this.bundles[bname].archive = archive;
+        });
+    }
+
+    waitFor(init_pkgs) {
+        return new Promise((resolve, reject) => {
+            var observe = () => {
+                if (init_pkgs.every(x => this.bundles[x])) {
+                    this.removeEventListener('change', observe);
+                    resolve(init_pkgs.map(x => this.bundles[x]));
+                    return true;
+                }
+            };
+            if (!observe())
+                this.addEventListener('change', observe);
         });
     }
 
@@ -94,6 +116,12 @@ class PackageManager {
                     return bundle.info;
             }
         }
+    }
+
+    getUrl(resource) {
+        // Generate URL with the pkg_root_path as the base
+        return new URL(resource,
+                  new URL(this.pkg_root_path, PackageManager.scriptUrl))
     }
 
     getLoadPath() {
@@ -165,17 +193,24 @@ class PackageManager {
     }
 
 
-    onPkgProgress(evt) {
+    onPkgProgress(evt, bundle) {
 
-        // We get rid of the start notification.
-        if(!this.bundles[evt.bundle].bar)
-            this.onBundleStart(evt.bundle);
+        var info;
 
-        var info = this.bundles[evt.bundle].info;
-        var bar  = this.bundles[evt.bundle].bar;
-        var egg  = this.bundles[evt.bundle].egg;
+        if (!bundle) {
+            bundle = evt.bundle;
+            info = this.bundles[bundle].info;
+            ++info.loaded; // this is not actually the number of files loaded :\
+        }
+        else {
+            info = evt;
+        }
 
-        ++info.loaded; // this is not actually the number of files loaded :\
+        if(!this.bundles[bundle].bar)
+            this.onBundleStart(bundle);
+
+        var bar  = this.bundles[bundle].bar;
+        var egg  = this.bundles[bundle].egg;
 
         var progress = Math.min(1.0, info.loaded / info.total);
         var angle    = (info.loaded * 15) % 360;
@@ -209,6 +244,12 @@ class PackageManager {
     expand() {
         this.panel.parentNode.classList.remove('collapsed');
     }
+
+    // No portable way to create EventTarget instances of our own yet;
+    // hijack the panel DOM element :\
+    dispatchEvent(evt)             { this.panel.dispatchEvent(evt); }
+    addEventListener(type, cb)     { this.panel.addEventListener(type, cb); }
+    removeEventListener(type, cb)  { this.panel.removeEventListener(type, cb); }
 }
 
 
@@ -222,12 +263,17 @@ class CoqPkgArchive {
             this.url = resource;
         else if (resource.file /* JSZip-like */)
             this.zip = resource;
+        else
+            throw new Error(`invalid resource for archive: '${resource}'`);
+
+        this.onProgress = () => {};
     }
 
     load() {
-        return this.download().then(data =>
-            JSZip.loadAsync(data)).then(zip =>
-                { this.zip = zip; return this; });
+        return this.zip ? Promise.resolve(this) :
+            this.download().then(data =>
+                JSZip.loadAsync(data)).then(zip =>
+                    { this.zip = zip; return this; });
     }
 
     download() {
@@ -236,6 +282,7 @@ class CoqPkgArchive {
             var xhr = new XMLHttpRequest();
             xhr.responseType = 'arraybuffer';
             xhr.onload = () => resolve(xhr.response);
+            xhr.onprogress = (evt) => requestAnimationFrame(() => this.onProgress(evt));
             xhr.onerror = () => reject(new Error("download failed"));
             xhr.open('GET', this.url);
             xhr.send();
@@ -279,13 +326,16 @@ class CoqPkgArchive {
         });
     }
 
-    unpack(worker) {
+    async unpack(worker) {
+        await this.load();
+
         var asyncs = [];
         this.zip.forEach((rel_path, entry) => {
-            asyncs.push(
-                entry.async('arraybuffer').then(content =>
-                    worker.put(`/lib/${rel_path}`, content))
-            );
+            if (!entry.dir)
+                asyncs.push(
+                    entry.async('arraybuffer').then(content =>
+                        worker.put(`/lib/${rel_path}`, content))
+                );
         });
         return Promise.all(asyncs);
     }
@@ -356,6 +406,10 @@ class PackageDownloader {
             .attr('src', 'ui-images/checked.png');
     }
 }
+
+
+if (typeof document !== 'undefined' && document.currentScript)
+    PackageManager.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
 
 // Local Variables:
 // js-indent-level: 4
