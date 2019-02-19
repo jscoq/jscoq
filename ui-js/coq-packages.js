@@ -63,7 +63,7 @@ class PackageManager {
 
         if (pkg_info.archive) {
             var archive = new CoqPkgArchive(this.getUrl(pkg_info.archive));
-            archive.onProgress = evt => this.onPkgProgress(evt, bname);
+            archive.onProgress = evt => this.showPackageProgress(bname, evt);
             this.bundles[bname].archive = archive;
         }
 
@@ -132,8 +132,10 @@ class PackageManager {
         }).flatten();
     }
 
-    // Loads a package from the preconfigured path.
-    // pkg_name : string - name of package (e.g., 'init', 'math-comp')
+    /**
+     * Loads a package from the preconfigured path.
+     * @param {string} pkg_name name of package (e.g., 'init', 'math-comp')
+     */
     startPackageDownload(pkg_name) {
         var bundle = this.bundles[pkg_name], promise;
 
@@ -163,72 +165,60 @@ class PackageManager {
         }
     }
 
-    // In all the three cases below, evt = progressInfo
-    // bundle : string
-    // pkg    : string
-    // loaded : int
-    // total  : int
+    /**
+     * Updates the download progress bar on the UI.
+     * @param {string} bname package bundle name
+     * @param {object} info {loaded: <number>, total: <number>}
+     */
+    showPackageProgress(bname, info) {
+        var bundle = this.bundles[bname];
+
+        if (!bundle.bar) {
+            // Add the progress bar if it does not exist already
+            bundle.bar = $('<div>').addClass('progressbar');
+            bundle.egg = $('<div>').addClass('progress-egg');
+
+            bundle.bar.append(bundle.egg);
+            $(bundle.div).append($('<div>').addClass('rel-pos').append(bundle.bar));
+        }
+
+        if (info) {
+            var progress = Math.min(1.0, info.loaded / info.total),
+                angle    = (info.loaded * 15) % 360;
+            bundle.egg.css('transform', `rotate(${angle}deg)`);
+            bundle.bar.css('width', `${progress * 100}%`);
+        }
+    }
+
+    /**
+     * Marks the package download as complete, removing the progress bar.
+     * @param {string} bname package bundle name
+     */
+    showPackageCompleted(bname) {
+        var bundle = this.bundles[bname];
+
+        $(bundle.div).find('.rel-pos').remove();
+        $(bundle.div).find('button.download-icon').addClass('checked');
+    }
 
     onBundleStart(bname) {
-
-        var div  = this.bundles[bname].div;
-        // var row  = d3.select(this.panel).selectAll('div')
-        //     .filter(pkg => pkg.desc === evt.bundle_name);
-
-        // XXX: Workaround, in case this is called multiple times, add
-        // the bar only the first time. We could be smarter.
-
-        if (! this.bundles[bname].bar ) {
-
-            var row  = $(div),
-                bar = $('<div>').addClass('progressbar'),
-                egg = $('<div>').addClass('progress-egg');
-
-            bar.append(egg);
-            row.append($('<div>').addClass('rel-pos').append(bar));
-
-            this.bundles[bname].bar = bar;
-            this.bundles[bname].egg = egg;
-        }
+        this.showPackageProgress(bname);
     }
 
+    onPkgProgress(evt) {
+        var info = this.bundles[evt.bundle].info;
+        ++info.loaded; // this is not actually the number of files loaded :\
 
-    onPkgProgress(evt, bundle) {
-
-        var info;
-
-        if (!bundle) {
-            bundle = evt.bundle;
-            info = this.bundles[bundle].info;
-            ++info.loaded; // this is not actually the number of files loaded :\
-        }
-        else {
-            info = evt;
-        }
-
-        if(!this.bundles[bundle].bar)
-            this.onBundleStart(bundle);
-
-        var bar  = this.bundles[bundle].bar;
-        var egg  = this.bundles[bundle].egg;
-
-        var progress = Math.min(1.0, info.loaded / info.total);
-        var angle    = (info.loaded * 15) % 360;
-        egg.css('transform', 'rotate(' + angle + 'deg)');
-        bar.css('width', progress * 100 + '%');
+        this.showPackageProgress(evt.bundle, info);
     }
 
-    onBundleLoad(bundle) {
+    onBundleLoad(bname) {
+        this.loaded_pkgs.push(bname);
 
-        this.loaded_pkgs.push(bundle);
-
-        var bundle = this.bundles[bundle];
+        var bundle = this.bundles[bname];
         if (bundle._resolve) bundle._resolve();
 
-        var row  = $(bundle.div);
-
-        row.find('.rel-pos').remove();
-        row.find('button.download-icon').addClass('checked');
+        this.showPackageCompleted(bname);
     }
 
     loadDeps(deps) {
