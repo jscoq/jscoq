@@ -28,7 +28,7 @@ class PackageManager {
         row.attr('data-name', bname);
         row.data('info', pkg_info);
 
-        row.append($('<img>').addClass('download-icon')
+        row.append($('<button>').addClass('download-icon')
                    .click(() => { this.startPackageDownload(pkg_info.desc); }));
 
         row.append($('<span>').text(pkg_info.desc));
@@ -182,7 +182,7 @@ class PackageManager {
 
             var row  = $(div),
                 bar = $('<div>').addClass('progressbar'),
-                egg = $('<img>').addClass('progress-egg');
+                egg = $('<div>').addClass('progress-egg');
 
             bar.append(egg);
             row.append($('<div>').addClass('rel-pos').append(bar));
@@ -228,8 +228,7 @@ class PackageManager {
         var row  = $(bundle.div);
 
         row.find('.rel-pos').remove();
-        row.find('img')
-            .addClass(['download-icon', 'checked']);
+        row.find('button.download-icon').addClass('checked');
     }
 
     loadDeps(deps) {

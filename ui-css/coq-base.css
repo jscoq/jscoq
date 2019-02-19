@@ -251,20 +251,25 @@ a, a:link, a:visited, a:active {
 }
 
 #packages-panel > div {
-  padding-bottom: 4px;
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
-#packages-panel > div > img {
+#packages-panel > div > button {
+  padding: 0;
+  border: none;
+  background: none;
+  outline: none;
   margin-right: 4px;
-  vertical-align: bottom;
+  vertical-align: middle;
   cursor: pointer;
 }
 
-img.download-icon {
+button.download-icon::after {
   content:url("../ui-images/dl.png");
 }
 
-img.download-icon.checked {
+button.download-icon.checked::after {
   content:url("../ui-images/checked.png");
 }
 
@@ -278,15 +283,17 @@ img.download-icon.checked {
   height:2px;
   border-radius: 2px;
   position:relative;
+  top: -2px;
   width:0;
 }
 
 .progress-egg {
-  content:url("../ui-images/egg.png");
+  background-image: url("../ui-images/egg.png");
   position: absolute;
-  top: -18px;
+  top: -19px;
   right: 0;
   height: 18px;
+  width: 18px;
 }
 
 /* Pretty-printing hacks */
