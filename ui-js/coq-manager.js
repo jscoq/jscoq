@@ -541,11 +541,17 @@ class CoqManager {
     coqLog(level, msg) {
 
         let rmsg = this.pprint.pp2HTML(msg);
+        
+        level = level[0];
 
-        if (this.options.debug)
-            console.log(rmsg, level[0]);
+        if (this.options.debug) {
+            if (level === 'Debug')
+                console.debug(rmsg, level)
+            else
+                console.log(rmsg, level);
+        }
 
-        this.layout.log(rmsg, level[0]);
+        this.layout.log(rmsg, level);
     }
 
     coqLibInfo(bname, bi) {
