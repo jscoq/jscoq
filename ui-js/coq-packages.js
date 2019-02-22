@@ -143,22 +143,19 @@ class PackageManager {
             if (bundle.promise) return bundle.promise; /* load issued already */
 
             if (bundle.archive) {
-                bundle.promise = promise = 
-                    this.loadDeps(bundle.info.deps)
-                    .then(() => bundle.archive.unpack(this.coq))
+                promise = 
+                    Promise.all([this.loadDeps(bundle.info.deps),
+                                 bundle.archive.unpack(this.coq)])
                     .then(() => this.onBundleLoad(pkg_name));
-
-                return promise;
             }
             else {
-                bundle.promise = promise = new Promise((resolve, reject) => 
-                    bundle._resolve = resolve
-                );
-
-                this.coq.loadPkg(this.pkg_root_path, pkg_name);
-            
-                return promise;
+                promise = 
+                    Promise.all([this.loadDeps(bundle.info.deps),
+                                 this.loadPkg(pkg_name)]);
             }
+
+            bundle.promise = promise;
+            return promise;
         }
         else {
             return Promise.reject(`bundle missing: ${pkg_name}`);
@@ -224,6 +221,15 @@ class PackageManager {
     loadDeps(deps) {
         return Promise.all(
             deps.map(pkg => this.startPackageDownload(pkg)));
+    }
+
+    loadPkg(pkg_name) {
+        var bundle = this.bundles[pkg_name];
+
+        return new Promise((resolve, reject) => {
+            bundle._resolve = resolve 
+            this.coq.loadPkg(this.pkg_root_path, pkg_name);
+        });
     }
 
     collapse() {

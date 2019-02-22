@@ -126,8 +126,7 @@ let only_once lref s =
 let rec preload_from_file ?(verb=false) out_fn base_path bundle_name =
   if only_once load_under_way bundle_name then
     parse_bundle base_path bundle_name >>= (fun bundle ->
-    (* Load deps in parallel *)
-    Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps        <&>
+    (* Load sub-packages in parallel *)
     Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
     return @@ out_fn (LibLoaded (bundle_name, bundle)))
   else
