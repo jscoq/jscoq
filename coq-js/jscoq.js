@@ -84,7 +84,7 @@ class CoqWorker {
 
         var msg = ["Put", filename, content];
         if(this.options.debug) {
-            console.log("Posting file: ", msg);
+            console.debug("Posting file: ", msg);
         }
         this.worker.postMessage(msg, [content]);
         /* Notice: ownership of the 'content' buffer is transferred to the worker 
@@ -127,7 +127,7 @@ class CoqWorker {
         var handled = false;
 
         if(this.options.debug) {
-            if (msg_tag === 'LibProgress')
+            if (msg_tag === 'LibProgress' || msg_tag === 'Log' && msg_args[0][0] === 'Debug')
                 console.debug("Coq message", msg); // too much spam :\
             else
                 console.log("Coq message", msg);
