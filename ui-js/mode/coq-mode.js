@@ -249,7 +249,7 @@
         return 'number';
       }
 
-      if ( /[+\-*&%=<>!?|]/.test(ch)) {
+      if ( /[+\-*&%=<>!?|,;:\^#@~`]/.test(ch)) {
         return 'operator';
       }
 

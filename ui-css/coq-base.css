@@ -315,6 +315,8 @@ div.Pp_box[data-margin="2"] {
   display: block;
 }
 
+/* Contextual info */
+
 #goal-panel div.contextual-info {
   position: absolute;
   bottom: 2px;
@@ -338,4 +340,21 @@ div.hint-package {
 }
 .CodeMirror-hint-active div.hint-package {
   color: #ddd;
+}
+
+/* company-coq */
+
+.company-coq-sub {
+  font-size: 80%;
+  position: relative;
+  top: 0.33em;
+  /* using position: relative prevents line-height increase */
+}
+
+.company-coq-hidden {
+  display: inline-block;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+  font-size: 1pt;
 }
