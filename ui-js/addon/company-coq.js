@@ -34,6 +34,7 @@ class Markup {
     constructor(cm) {
         this.cm = cm;
         this.special_tokens = {};
+        this.special_patterns = [];
         this.className = 'markup';
     }
     
@@ -51,7 +52,22 @@ class Markup {
                     to = {line, ch: tok.end};
                 this.markText(from, to, 
                         {replacedWith: this.mkSymbol(lit), className: this.className, 
-                         handleMouseEvents: true});
+                         handleMouseEvents: true,
+                         owner: this});
+            }
+            for (let pat of this.special_patterns) {
+                let mo = pat.re.exec(tok.string);
+                if (mo) {
+                    for (let opts of pat.make(mo)) {
+                        var from = {line, ch: tok.start + mo.index + opts.from},
+                            to = {line, ch: tok.start + mo.index + opts.to};
+                        this.markText(from, to, 
+                            {className: [this.className].concat(opts.className ? [opts.className] : []).join(' '), 
+                             replacedWith: opts.replacedWith,
+                             handleMouseEvents: true,
+                             owner: this});
+                    }
+                }
             }
         }
     }
@@ -59,7 +75,7 @@ class Markup {
     clearFromLine(line) {
         var from = {line, ch: 0},
             to = {line, ch: this.cm.getLine(line).length};
-        for (let mark of this.cm.findMarks(from, to, m => m.className == this.className))
+        for (let mark of this.cm.findMarks(from, to, m => m.owner == this))
             mark.clear();
     }
 
@@ -253,6 +269,7 @@ class AutoComplete {
 /**
  * Main CompanyCoq entry point.
  * - Creates markup and configures it with specific tokens.
+ * - Registers contextual hint trigger.
  */
 class CompanyCoq {
 
@@ -263,6 +280,11 @@ class CompanyCoq {
             'fun': 'λ', 'forall': '∀', 'exists': '∃', 
             'Real': 'ℝ', 'nat': 'ℕ'
         };
+        this.special_patterns = [
+            {re: /(?<=[^\d_])(\d+)$/, make: (mo) => [{from: 0, to: mo[0].length, className: 'company-coq-sub'}]},
+            {re: /(__)([^_].*)$/,     make: (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
+                                                     {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
+        ];
 
         this.completion = new AutoComplete();
     }
@@ -271,6 +293,7 @@ class CompanyCoq {
         this.cm = cm;
         this.markup = new Markup(cm);
         this.markup.special_tokens = this.special_tokens;
+        this.markup.special_patterns = this.special_patterns;
         this.markup.className = 'company-coq';
         this.markup.applyToDocument();
 
