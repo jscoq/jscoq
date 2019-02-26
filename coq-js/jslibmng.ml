@@ -13,6 +13,7 @@
 *)
 open Jslib
 open Lwt
+open Js_of_ocaml
 
 let verb = false
 
