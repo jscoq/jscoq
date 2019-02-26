@@ -17,7 +17,7 @@ env:
   - OPAMYES="true"
   - OPAMJOBS="2"
   - COMPILER="4.07.1+32bit"
-  - BASE_OPAM="camlp5 dune"
+  - BASE_OPAM="camlp5 dune elpi"
 
 install:
 - echo "yes" | sudo add-apt-repository ppa:ansible/bubblewrap
