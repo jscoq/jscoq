@@ -8,6 +8,7 @@
  *)
 
 open Js_of_ocaml
+open Jscoqlib
 
 (* XXX *)
 let str = Pp.str
@@ -108,18 +109,18 @@ let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
   let json_str = Yojson.Safe.to_string json_msg                        in
   (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
-  Js.Unsafe.global##.JSON##(parse (Js.string json_str))
+  Js._JSON##(parse (Js.string json_str))
 
 let answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
 type progress_info =
-  [%import: Jslibmng.progress_info]
+  [%import: Jscoqlib.Jslibmng.progress_info]
   [@@deriving yojson]
 
 type lib_event =
-  [%import: Jslibmng.lib_event]
+  [%import: Jscoqlib.Jslibmng.lib_event]
   [@@deriving yojson]
 
 let _lib_event_to_jsobj msg =

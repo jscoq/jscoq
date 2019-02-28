@@ -153,8 +153,7 @@ coq-build:
 
 coq: coq-get coq-build
 
-coq-js/jscoq.js: force
-	OCAMLPATH=$(COQDIR) dune build --profile=release coq-js/jscoq.bc.js
-	cp _build/default/coq-js/jscoq.bc.js coq-js/jscoq.js
+_build/default/coq-js/jscoq_worker.js: force
+	OCAMLPATH=$(COQDIR) dune build --profile=release coq-js/jscoq_worker.bc.js
 
-dune-build: coq-js/jscoq.js
+dune-build: _build/default/coq-js/jscoq_worker.js
