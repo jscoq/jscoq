@@ -38,11 +38,11 @@ a:hover {
 /* Coq settings */
 
 .coq-eval-ok {
-  background: rgba(0,0,0,0.15);
+  background: #ddd;
 }
 
 .coq-eval-ok.coq-highlight {
-  background: #ada;
+  background: #ccd;
 }
   
 .coq-eval-pending {
@@ -60,7 +60,7 @@ a:hover {
 }
 
 .coq-eval-ok.coq-highlight.CodeMirror-selectedtext {
-    background: #aee; 
+    background: #bbe; 
 }
 
 

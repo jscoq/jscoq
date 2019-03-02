@@ -289,6 +289,7 @@ button.download-icon.checked::after {
 
 .progress-egg {
   background-image: url("../ui-images/egg.png");
+  background-size: contain;
   position: absolute;
   top: -19px;
   right: 0;
@@ -345,10 +346,13 @@ div.hint-package {
 /* company-coq */
 
 .company-coq-sub {
-  font-size: 80%;
+  font-size: 70%;
   position: relative;
-  top: 0.33em;
+  top: 0.15em;
   /* using position: relative prevents line-height increase */
+  padding-top: 0.4em;
+  /* the padding is to align the background with the rest of the line;
+     not pixel-accurate :\ */
 }
 
 .company-coq-hidden {
