@@ -58,6 +58,7 @@ let build_pkg (pkg, deps, p_mod) =
   let p_mod  = map build_pkg p_mod                 in
   let bundle = { desc = pkg;
                  deps = deps;
+                 archive = None;
                  pkgs = p_mod;
                } in
   let json   = coq_bundle_to_yojson bundle         in
