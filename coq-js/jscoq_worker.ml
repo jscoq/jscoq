@@ -13,7 +13,7 @@ open Jser_feedback
 open Jser_feedback.Feedback
 
 
-let jscoq_version = "0.9~beta0"
+let jscoq_version = "0.9~beta2"
 
 type jscoq_options = {
   implicit_libs: bool; 
@@ -158,15 +158,6 @@ let update_loadpath (msg : lib_event) : unit =
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg ; post_lib_event msg
 
-let fbc_opt (fbc : Feedback.feedback_content) =
-  Feedback.(match fbc with
-  | Message(id,loc,msg) -> Message(id,loc,Pp.opt msg)
-  | _ -> fbc)
-  [@@warning "-4"]
-
-let fb_opt (fb : Feedback.feedback) =
-  Feedback.({ fb with contents = fbc_opt fb.contents })
-
 (* set_opts  : general options *)
 (* lib_init  : list of modules to load *)
 (* lib_path  : list of load paths *)
@@ -184,7 +175,7 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
 
   Icoq.(coq_init {
       ml_load      = Jslibmng.coq_cma_link;
-      fb_handler   = (fun fb -> post_answer (Feedback (fb_opt fb)));
+      fb_handler   = (fun fb -> post_answer (Feedback (Feedback.fb_opt fb)));
       require_libs = lib_require;
       iload_path   = List.map (fun (path_el, phys) ->
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
@@ -326,16 +317,18 @@ let jscoq_protect f =
 (* Message from the main thread *)
 let on_msg doc msg =
 
-  (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
   let json_obj = obj_to_json msg in
 
-  let log_cmd cmd = match cmd with
-  | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
-  | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
+  let log_cmd cmd = 
+    let str = match cmd with
+      | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
+      | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
+    post_answer (Log (Debug, Pp.str str))
+  in
 
   match jscoq_cmd_of_yojson json_obj with
-  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Debug, Pp.str @@ log_cmd cmd)) ;
-                                      jscoq_execute doc cmd)
+  | Result.Ok cmd  -> jscoq_protect (fun () -> log_cmd cmd ;
+                                               jscoq_execute doc cmd)
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 
@@ -351,13 +344,6 @@ let _ =
 
   let doc = ref (Obj.magic 0) in
 
-  (* Heuristic to avoid StackOverflows when we have too many incoming
-     messages. *)
-  (*
-  let on_msg obj = Lwt.(async (             fun () ->
-                        Lwt_js.yield () >>= fun () ->
-                        return @@ on_msg obj    )) in
-   *)
   let on_msg = on_msg doc  in
 
   if is_worker then  
@@ -366,4 +352,3 @@ let _ =
     Js.export "jsCoq" jsCoq;
     jsCoq##.postMessage := Js.wrap_callback on_msg ;
     jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
-      (* Js.Unsafe.fun_call Js.Unsafe.global##.console##.log [|x|]); *)

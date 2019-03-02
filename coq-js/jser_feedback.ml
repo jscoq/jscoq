@@ -164,10 +164,16 @@ module Feedback = struct
     [@@deriving yojson]
 
   type feedback =
-    [%import: Feedback.feedback
-    [@with
-      Feedback.route_id := route_id;
-    ]]
+    [%import: Feedback.feedback]
     [@@deriving yojson]
+
+  let fbc_opt (fbc : Feedback.feedback_content) =
+    match fbc with
+    | Message(id,loc,msg) -> Message(id,loc,Pp.opt msg)
+    | _ -> fbc
+    [@@warning "-4"]
+
+  let fb_opt (fb : Feedback.feedback) =
+    { fb with contents = fbc_opt fb.contents }
 
 end
