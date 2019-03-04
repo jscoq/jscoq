@@ -38,7 +38,7 @@ class CoqLayoutClassic {
         </a>
         -->
       </div> <!-- /.exits -->
-      <span id="buttons">
+      <span id="buttons" class="disabled">
         <img src="${base_path}/ui-images/up.png" width="21" height="24"
              alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/>
         <img src="${base_path}/ui-images/down.png" width="21" height="25"
@@ -125,7 +125,6 @@ class CoqLayoutClassic {
     }
 
     toggle() {
-
         if (this.toggled()) {
             this.show();
         }
@@ -138,15 +137,15 @@ class CoqLayoutClassic {
         // Enable the button actions and show them.
         this.btnEventHandler = (evt) => this.onAction(evt);
         this.buttons.addEventListener('click', this.btnEventHandler);
-        this.buttons.style.display = 'inline-block';
-        this.buttons.style.opacity = 1;
+        this.buttons.classList.remove('disabled');
+        this.ide.classList.remove('on-hold');
     }
 
     toolbarOff() {
         // Disable the button actions and dim them.
         this.buttons.removeEventListener('click', this.btnEventHandler);
-        this.buttons.style.display = 'none';
-        this.buttons.style.opacity = 0;
+        this.buttons.classList.add('disabled');
+        this.ide.classList.add('on-hold');
     }
 
     // This is still not optimal.
