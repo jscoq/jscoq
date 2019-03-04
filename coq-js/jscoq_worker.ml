@@ -213,7 +213,8 @@ let requires ast =
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
   | Add(ontop,newid,stm,resolved) ->
-      begin try
+      if ontop = Jscoq_doc.tip !doc then begin
+        try
           let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
           let requires = if resolved then None else requires ast.CAst.v in
           match requires with
@@ -228,6 +229,8 @@ let jscoq_execute =
           out_fn @@ Cancelled [newid];
           out_fn @@ exn_info
       end
+      else out_fn @@ Cancelled [newid]
+
   | Cancel sid        ->
     let can_st, ndoc = Jscoq_doc.cancel ~doc:!doc sid in
     doc := ndoc; out_fn @@ Cancelled can_st
