@@ -856,12 +856,13 @@ class CoqManager {
     }
 
     updateGoals(html) {
-        this.layout.update_goals(html);
-        this.pprint.adjustBreaks($(this.layout.proof));
-
-        /* Notice: in Pp-formatted text, line breaks are handled by
-         * FormatPrettyPrint rather than by the layout.
-         */
+        if (html) {
+            this.layout.update_goals(html);
+            this.pprint.adjustBreaks($(this.layout.proof));
+            /* Notice: in Pp-formatted text, line breaks are handled by
+            * FormatPrettyPrint rather than by the layout.
+            */
+        }
     }
 
     process_special(text) {
