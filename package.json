@@ -7,7 +7,8 @@
     "bootstrap": "^3.3.5",
     "codemirror": "^5.42.2",
     "jquery": "^3.3.1",
-    "jszip": "^3.1.5"
+    "jszip": "^3.1.5",
+    "neatjson": "^0.8.3"
   },
   "devDependencies": {},
   "repository": {
