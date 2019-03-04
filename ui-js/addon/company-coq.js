@@ -104,6 +104,18 @@ class Markup {
 var vocab = {
     lemmas: [],
     tactics: [
+    /* Terminators */
+    'assumption',
+    'by',
+    'contradiction',
+    'discriminate',
+    'easy',
+    'exact',
+    'now',
+    'omega',
+    'reflexivity',
+    'tauto',
+    /* Other tactics */
     'after', 'apply', 'assert', 'auto', 'autorewrite',
     'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
     'congr', 'cut', 'cutrewrite',
@@ -122,18 +134,7 @@ var vocab = {
     'transitivity', 'trivial', 'try',
     'unfold', 'unlock', 'using',
     'vm_compute',
-    'where', 'wlog',
-    /* Terminators */
-    'assumption',
-    'by',
-    'contradiction',
-    'discriminate',
-    'easy',
-    'exact',
-    'now',
-    'omega',
-    'reflexivity',
-    'tauto'
+    'where', 'wlog'
   ]};
 
 var kinds = {lemmas: 'lemma', tactics: 'tactic'};
@@ -290,10 +291,11 @@ class CompanyCoq {
 
     constructor() {
         this.special_tokens = {
-            '->': '→', '<-': '←', '=>': '⇒', '|-': '⊢',
+            '->': '→', '<-': '←', '<->': '↔', '=>': '⇒', '|-': '⊢',
             '/\\': '∧', '\\/': '∨',
+            '<=': '≤', '>=': '≥', '<>': '≠',
             'fun': 'λ', 'forall': '∀', 'exists': '∃', 
-            'Real': 'ℝ', 'nat': 'ℕ'
+            'Real': 'ℝ', 'nat': 'ℕ', 'Prop': 'ℙ'
         };
         this.special_patterns = [
             {re: /[^\d_](\d+)$/,   make: (mo) => [{from: 1, to: mo[0].length, className: 'company-coq-sub'}]},
