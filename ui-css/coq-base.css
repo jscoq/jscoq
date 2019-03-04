@@ -35,6 +35,10 @@ a, a:link, a:visited, a:active {
   padding-right: 0px;
 }
 
+.on-hold * {
+  cursor: progress !important;
+}
+
 #code-wrapper {
   position: absolute;
   left: 0;
@@ -45,8 +49,9 @@ a, a:link, a:visited, a:active {
   transition: padding-right 0.5s ease;
 }
 
-#code-wrapper .CodeMirror .CodeMirror-widget {
+#code-wrapper .CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
+  font-family: monospace, times, Arial Unicode MS;
 }
 
 #ide-wrapper.toggled #code-wrapper {
@@ -215,12 +220,15 @@ a, a:link, a:visited, a:active {
 }
 
 #buttons {
-  display: none;
-  opacity: 0;
+  display: inline-block;
   text-align: left;
   padding-left: 2em;
   transition: opacity 500ms ease;
   vertical-align: middle;
+}
+
+#buttons.disabled {
+  opacity: 0.15;
 }
 
 #buttons img {

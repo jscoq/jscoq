@@ -267,6 +267,7 @@ class CoqManager {
 
         this.error = [];
         this.goTarget = null;
+        this.navEnabled = false;
 
         // XXX: Hack
         this.waitForPkgs = [];
@@ -376,7 +377,6 @@ class CoqManager {
             "\nCoq worker is ready with sid = " + sid.toString() + "\n"));
             /* init libraries have already been loaded by now */
 
-        //this.feedProcessed = this.feedProcessedReady;
         this.enable();
     }
 
@@ -473,8 +473,9 @@ class CoqManager {
 
         if (pkgs_to_load.length > 0) {
             console.log("Pending: loading packages", pkgs_to_load);
+            this.disable();
             this.packages.expand();
-            cleanup = () => { this.packages.collapse(); }
+            cleanup = () => { this.packages.collapse(); this.enable(); }
         }
 
         this.packages.loadDeps(pkgs_to_load).then(() => ontop_finished)
@@ -797,9 +798,14 @@ class CoqManager {
             this.layout.toggle();
 
         // All other keybindings are prefixed by alt.
-        if (!e.altKey /*&& !e.metaKey*/) return true;
+        if (!e.altKey) return true;
 
-        // TODO disable actions when IDE is not ready
+        // When navigation is disabled, suppress keystrokes
+        if (!this.navEnabled && [13, 39, 78, 40, 80, 38].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            return true;
+        }
 
         switch (e.keyCode) {
             case 13: // ENTER
@@ -823,12 +829,14 @@ class CoqManager {
 
     // Enable the IDE.
     enable() {
+        this.navEnabled = true;
         this.layout.toolbarOn();
         this.provider.focus();
     }
 
     // Disable the IDE.
     disable() {
+        this.navEnabled = false;
         this.layout.toolbarOff();
         this.layout.proof.append(document.createTextNode(
                 "\n===> Waiting for Package load!\n"));
