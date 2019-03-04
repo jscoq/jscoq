@@ -285,7 +285,7 @@ let jscoq_execute =
     out_fn @@ CoqInfo (header1 ^ header2)
 
   | ReassureLoadPath load_path ->
-    Mltop.add_coq_path @@ Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:["/lib"] [];
+    doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
