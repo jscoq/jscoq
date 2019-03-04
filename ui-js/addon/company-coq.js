@@ -46,9 +46,9 @@ class Markup {
     applyToLine(line) {
         this.clearFromLine(line);
         for (let tok of this.cm.getLineTokens(line)) {
-            let lit = this.special_tokens[tok.string]
-            if (lit) {
-                var from = {line, ch: tok.start},
+            if (this.special_tokens.hasOwnProperty(tok.string)) {
+                let lit = this.special_tokens[tok.string],
+                    from = {line, ch: tok.start},
                     to = {line, ch: tok.end};
                 this.markText(from, to, 
                         {replacedWith: this.mkSymbol(lit), className: this.className, 
@@ -148,6 +148,8 @@ class AutoComplete {
         this.vocab = vocab;
         this.kinds = kinds;
 
+        this.max_matches = 100;  // threshold to prevent UI slowdown
+
         this.extraKeys = {
             Alt: (cm) => { this.hintZoom(cm); }
         };
@@ -202,7 +204,7 @@ class AutoComplete {
      * @param {ChangeEvent} evt document modification object
      */
     senseContext(cm, evt) {
-        if (!cm.state.completionActive && cm._isInsertAtCursor(cm, evt)) {
+        if (!cm.state.completionActive && this._isInsertAtCursor(cm, evt)) {
             var cur = cm.getCursor(), token = cm.getTokenAt(cur),
                 is_head = token.state.is_head,
                 kind = token.state.sentence_kind;
@@ -240,14 +242,15 @@ class AutoComplete {
     _matches(match, family) {
         var matching = [], kind = this.kinds[family];
     
-        this.vocab[family].map( (entry) => {
+        for (let entry of this.vocab[family]) {
             var name = entry.label || entry;
             if ( name.indexOf(match) > -1 ) {
                 matching.push({
                     text: name, label: name, kind, prefix: entry.prefix || []
                 });
+                if (matching.length > this.max_matches) break;
             }
-        });
+        }
 
         matching.sort((x, y) => (x.text.indexOf(match) - y.text.indexOf(match)) ||
                                 (x.text.length - y.text.length));
@@ -293,9 +296,9 @@ class CompanyCoq {
             'Real': 'ℝ', 'nat': 'ℕ'
         };
         this.special_patterns = [
-            {re: /(?<=[^\d_])(\d+)$/, make: (mo) => [{from: 0, to: mo[0].length, className: 'company-coq-sub'}]},
-            {re: /(__)([^_].*)$/,     make: (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
-                                                     {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
+            {re: /[^\d_](\d+)$/,   make: (mo) => [{from: 1, to: mo[0].length, className: 'company-coq-sub'}]},
+            {re: /(__)([^_].*)$/,  make: (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
+                                                  {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
         ];
 
         this.completion = new AutoComplete();
