@@ -102,7 +102,7 @@ class Markup {
 // Builtin tactics are copied from coq-mode.
 // TODO: order tactics most common first rather than alphabetically.
 var vocab = {
-    lemmas: ["andb_prop", "andb_true_intro", "and_iff_compat_l", "eq_sym", "not_eq_sym"],
+    lemmas: [],
     tactics: [
     'after', 'apply', 'assert', 'auto', 'autorewrite',
     'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
@@ -136,32 +136,33 @@ var vocab = {
     'tauto'
   ]};
 
+var kinds = {lemmas: 'lemma', tactics: 'tactic'};
+
+
 /**
  * Hints for lemma names and tactics.
  */
 class AutoComplete {
 
     constructor() {
-        this.vocab = {
-            lemmas: vocab.lemmas,
-            tactics: vocab.tactics
-        };
+        this.vocab = vocab;
+        this.kinds = kinds;
 
         this.extraKeys = {
             Alt: (cm) => { this.hintZoom(cm); }
         };
     }
 
-    lemmaHint(cm, options) { return this.hint(cm, options, 'lemmas', 'lemma'); }
-    tacticHint(cm, options) { return this.hint(cm, options, 'tactics', 'tactic'); }
+    lemmaHint(cm, options) { return this.hint(cm, options, 'lemmas'); }
+    tacticHint(cm, options) { return this.hint(cm, options, 'tactics'); }
 
-    hint(cm, _options, family, kind) {
-            var cur = cm.getCursor(), 
+    hint(cm, _options, family) {
+        var cur = cm.getCursor(), 
             [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
-            match = /^\w/.exec(token.string) ? token.string : "";
+            match = /^\w/.exec(token.string) ? token.string : undefined;
     
         // Build completion list
-        var matching = this._matches(match, family, kind);
+        var matching = match ? this._matches(match, family) : [];
 
         if (matching.length === 0) {
             cm.closeHint();
@@ -195,11 +196,13 @@ class AutoComplete {
      * Determines what kind of hint, if any, should be displayed when the
      * document is being edited.
      * Called on 'change' event; relies on coq-mode to recover context.
+     * Hint completion is invoked when typing an identifier token of two or more
+     * characters.
      * @param {CodeMirror} cm editor instance
      * @param {ChangeEvent} evt document modification object
      */
     senseContext(cm, evt) {
-        if (evt.origin === '+input' && !cm.state.completionActive) {
+        if (!cm.state.completionActive && cm._isInsertAtCursor(cm, evt)) {
             var cur = cm.getCursor(), token = cm.getTokenAt(cur),
                 is_head = token.state.is_head,
                 kind = token.state.sentence_kind;
@@ -216,6 +219,12 @@ class AutoComplete {
         }
     }
 
+    _isInsertAtCursor(cm, evt) {
+        var cur = cm.getCursor();
+        return (evt.origin === '+input' && 
+                cur.line === evt.to.line && cur.ch === evt.to.ch + 1);
+    }
+
     _adjustToken(cur, token) {
         if (token.end > cur.ch) {
             token.end = cur.ch;
@@ -228,17 +237,20 @@ class AutoComplete {
         return [token, tokenStart, tokenEnd];
     }
 
-    _matches(match, family, kind) {
-        var matching = [];
+    _matches(match, family) {
+        var matching = [], kind = this.kinds[family];
     
         this.vocab[family].map( (entry) => {
             var name = entry.label || entry;
             if ( name.indexOf(match) > -1 ) {
                 matching.push({
-                    text: name, kind, prefix: entry.prefix || []
+                    text: name, label: name, kind, prefix: entry.prefix || []
                 });
             }
         });
+
+        matching.sort((x, y) => (x.text.indexOf(match) - y.text.indexOf(match)) ||
+                                (x.text.length - y.text.length));
     
         return matching;
     }
@@ -299,7 +311,24 @@ class CompanyCoq {
 
         cm.on('change', () => this.markup.applyToDocument());
         cm.on('change', (cm, evt) => this.completion.senseContext(cm, evt));
+        cm.on('cursorActivity', (cm, evt) => this.observeIdentifier(cm));
         return this;
+    }
+
+    observeIdentifier(cm) {
+        var cur0 = cm.getCursor(), cur1 = {line: cur0.line, ch: cur0.ch + 1};
+        var tok = cm.getTokenAt(cur0);
+
+        if (tok.type != 'variable') tok = cm.getTokenAt(cur1);
+
+        var entries;
+
+        if (tok && tok.type == 'variable' &&
+            (entries = CompanyCoq._vocab_index[tok.string])) {
+            CodeMirror.signal(cm, 'hintEnter', tok, entries);
+        }
+        else
+            CodeMirror.signal(cm, 'hintOut', tok, entries);
     }
 
     static loadSymbols(symbols, replace_existing=false) {
@@ -311,11 +340,29 @@ class CompanyCoq {
                 //  instances that were already created... :\
             }
         }
+        CompanyCoq._makeVocabIndex();
+    }
+
+    static _makeVocabIndex(vocab = CompanyCoq.vocab) {
+        var kinds = CompanyCoq.kinds,
+            vindex = {};
+        
+        for (let key in vocab) {
+            for (let symb of vocab[key]) {
+                if (typeof symb === 'object')
+                    symb.kind = symb.kind || kinds[key];
+                (vindex[symb.label] = vindex[symb.label] || []).push(symb);
+            }
+        }
+        CompanyCoq._vocab_index = vindex;
     }
 
     static init() {
         CompanyCoq.vocab = vocab;
+        CompanyCoq.kinds = kinds;
         CodeMirror.CompanyCoq = CompanyCoq;
+
+        CompanyCoq._makeVocabIndex();
 
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])

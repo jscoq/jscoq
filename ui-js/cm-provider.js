@@ -25,11 +25,17 @@ class CmCoqProvider {
                        singleLineStringErrors : false
                      },
               lineNumbers       : true,
-              indentUnit        : 4,
+              indentUnit        : 2,
+              tabSize           : 2,
+              indentWithTabs    : false,
               matchBrackets     : true,
               styleSelectedText : true,
               dragDrop          : false, /* handled by CoqManager */
-              keyMap            : "emacs"
+              keyMap            : "emacs",
+              extraKeys: {
+                  'Tab': 'indentMore',
+                  'Shift-Tab': 'indentLess'
+              }
             };
 
         if (options)
@@ -61,9 +67,11 @@ class CmCoqProvider {
         this.hover = [];
 
         // Handle hint events
-        this.editor.on('hintHover',     completion => this.onTipHover(completion, false));
-        this.editor.on('hintZoom',      completion => this.onTipHover(completion, true));
-        this.editor.on('endCompletion', cm         => this.onTipOut());
+        this.editor.on('hintHover',     completion     => this.onTipHover(completion, false));
+        this.editor.on('hintZoom',      completion     => this.onTipHover(completion, true));
+        this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries[0], false));
+        this.editor.on('hintOut',       ()             => this.onTipOut());
+        this.editor.on('endCompletion', cm             => this.onTipOut());
     }
 
     focus() {

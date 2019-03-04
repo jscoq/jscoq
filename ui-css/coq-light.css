@@ -167,3 +167,7 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 .contextual-focus {
     background: rgba(80,100,0,0.15);
 }
+
+.contextual-info .message {
+    color: #888;
+}

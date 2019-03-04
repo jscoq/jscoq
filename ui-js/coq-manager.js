@@ -228,7 +228,8 @@ class CoqManager {
                                                      this.coq, this.pprint);
 
         // Setup autocomplete
-        this.loadSymbolsFrom(this.options.base_path + 'ui-js/prelude.symb.json');
+        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
+        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -311,9 +312,9 @@ class CoqManager {
         };
 
         provider.onTipHover = (entry, zoom) => {
-            var fullname = [...entry.prefix, entry.text].join('.');
+            var fullname = [...entry.prefix, entry.label].join('.');
             if (entry.kind == 'lemma')
-                this.contextual_info.showCheck(fullname);
+                this.contextual_info.showCheck(fullname, /*opaque=*/true);
         };
         provider.onTipOut = () => { this.contextual_info.hide(); };
 
@@ -340,7 +341,7 @@ class CoqManager {
      */
     loadSymbolsFrom(url) {
         $.get({url, dataType: 'json'}).done(data => { 
-            CodeMirror.CompanyCoq.loadSymbols(data, /*replace_existing=*/true); 
+            CodeMirror.CompanyCoq.loadSymbols(data, /*replace_existing=*/false); 
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -962,26 +963,30 @@ class CoqContextualInfo {
         }
     }
 
-    showCheck(name) {
-        this.focus = {identifier: name, info: 'Check'};
-        this.showQuery(`Check ${name}.`);
+    showCheck(name, opaque=false) {
+        this.focus = {identifier: name, info: 'Check', opaque};
+        this.showQuery(`Check ${name}.`, this.formatName(name));
     }
 
     showPrint(name) {
         this.focus = {identifier: name, info: 'Print'};
-        this.showQuery(`Print ${name}.`);
+        this.showQuery(`Print ${name}.`, this.formatName(name));
     }
 
     showLocate(symbol) {
         this.focus = {symbol: symbol, info: 'Locate'};
-        this.showQuery(`Locate "${symbol}".`);
+        this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
     }
 
-    showQuery(query) {
+    showQuery(query, title) {
         this.is_visible = true;
         this.coq.queryPromise(0, query).then(result => {
             if (this.is_visible)
                 this.show(this.formatMessages(result));
+        })
+        .catch(err => {
+            if (title)
+                this.show(this.formatText(title, "(not available)"));
         });
     }
 
@@ -1016,7 +1021,7 @@ class CoqContextualInfo {
 
     keyHandler(evt) {
         var name = this.focus.identifier;
-        if (name) {
+        if (name && !this.focus.opaque) {
             if (evt.altKey) this.showPrint(name);
             else            this.showCheck(name);
         }
@@ -1024,6 +1029,24 @@ class CoqContextualInfo {
 
     formatMessages(msgs) {
         return msgs.map(feedback => this.pprint.pp2HTML(feedback.msg)).join("<hr/>");
+    }
+
+    formatName(name) {
+        var comps = name.split('.'),
+            span = $('<span>');
+        for (let path_el of comps.slice(0, comps.length - 1)) {
+            span.append($('<span>').addClass('constr.path').text(path_el));
+            span.append(document.createTextNode('.'));
+        }
+        span.append($('<span>').addClass('constr.reference').text(comps.last()));
+        return span;
+    }
+
+    formatText(title, msg) {
+        return $('<div>')
+            .append(typeof title === 'string' ? $('<span>').text(title) : title)
+            .append($('<br/>'))
+            .append($('<span>').addClass('message').text("  " + msg));
     }
 
     elapse(duration) {
