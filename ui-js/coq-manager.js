@@ -518,13 +518,13 @@ class CoqManager {
         }, this);
 
         // Update goals
-        var nsid = this.doc.sentences.last().coq_sid,
-            hgoals = this.doc.goals[nsid];
+        var stm = this.doc.sentences.last(),
+            hgoals = this.doc.goals[stm.nsid];
         if (hgoals) {
             this.updateGoals(hgoals);
         }
-        else {
-            this.coq.goals(nsid); // no goals fetched for current statement, ask worker
+        else if (stm.executed) {
+            this.coq.goals(stm.nsid); // no goals fetched for current statement, ask worker
         }
     }
 
