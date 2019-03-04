@@ -42,10 +42,17 @@ class CmCoqProvider {
             copyOptions(options, cmOpts);
 
         if (typeof element === 'string' || element instanceof String) {
-            this.editor = CodeMirror.fromTextArea(document.getElementById(element), cmOpts);
-        } else {
-            this.editor = CodeMirror(element, cmOpts);
+            element = document.getElementById(element);
         }
+        if (element.tagName === 'TEXTAREA') {
+            this.editor = CodeMirror.fromTextArea(element, cmOpts);
+        } else {
+            this.editor = new CodeMirror(element, cmOpts);
+        }
+
+        this.filename = element.getAttribute('data-filename');
+
+        if (this.filename) { this.openLocal(); this.startAutoSave(); }
 
         // Event handlers (to be overridden by ProviderContainer)
         this.onInvalidate = (mark) => {};
@@ -374,6 +381,47 @@ class CmCoqProvider {
             this.editor.setValue(evt.target.result);
         };
         rdr.readAsText(file, 'utf-8');
+
+        // Create local copy on edit
+        this.filename = file.name;
+        this.startAutoSave();
+    }
+
+    openLocal(filename) {
+        filename = filename || this.filename;
+
+        if (filename) {
+            var file_store = this.getLocalFileStore();
+            file_store.getItem(filename).then((text) =>
+                    { if (text !== null) this.editor.setValue(text); } );
+            this.filename = filename;
+            // TODO clear marks and issue invalidate
+        }
+    }
+
+    saveLocal() {
+        var file_store = this.getLocalFileStore();
+
+        if (this.filename) {
+            file_store.setItem(this.filename, this.editor.getValue());
+            this.dirty = false;
+        }
+    }
+
+    startAutoSave() {
+        if (!this.autosave) {
+            this.editor.on('change', () => { this.dirty = true; });
+            this.autosave = setInterval(() => { if (this.dirty) this.saveLocal(); },
+                20000);
+            window.addEventListener('beforeunload', 
+                () => { clearInterval(this.autosave); });
+        }
+    }
+
+    getLocalFileStore() {
+        if (!CmCoqProvider.file_store)
+            CmCoqProvider.file_store = localforage.createInstance({'name': 'CmCoqProvider.file_store'});
+        return CmCoqProvider.file_store;
     }
 
 }
