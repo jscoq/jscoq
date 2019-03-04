@@ -343,7 +343,8 @@ class CmCoqProvider {
     }
 
     keyHandler(evt) {
-        if (this.hover[0])
+        /* re-issue mouse enter when modifier key is pressed or released */
+        if (this.hover[0] && (evt.key === 'Meta' || evt.key === 'Alt'))
             this.onMouseEnter(this.hover[0].stm, evt);
     }
 
