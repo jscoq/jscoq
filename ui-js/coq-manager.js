@@ -340,9 +340,9 @@ class CoqManager {
      * Reads symbols from a URL and populates CompanyCoq.vocab.
      * @param {string} url address of .symb.json resource
      */
-    loadSymbolsFrom(url) {
+    loadSymbolsFrom(url, scope="globals") {
         $.get({url, dataType: 'json'}).done(data => { 
-            CodeMirror.CompanyCoq.loadSymbols(data, /*replace_existing=*/false); 
+            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false); 
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -519,12 +519,12 @@ class CoqManager {
 
         // Update goals
         var stm = this.doc.sentences.last(),
-            hgoals = this.doc.goals[stm.nsid];
+            hgoals = this.doc.goals[stm.coq_sid];
         if (hgoals) {
             this.updateGoals(hgoals);
         }
         else if (stm.executed) {
-            this.coq.goals(stm.nsid); // no goals fetched for current statement, ask worker
+            this.coq.goals(stm.coq_sid); // no goals fetched for current statement, ask worker
         }
     }
 

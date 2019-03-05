@@ -102,40 +102,43 @@ class Markup {
 // Builtin tactics are copied from coq-mode.
 // TODO: order tactics most common first rather than alphabetically.
 var vocab = {
-    lemmas: [],
-    tactics: [
-    /* Terminators */
-    'assumption',
-    'by',
-    'contradiction',
-    'discriminate',
-    'easy',
-    'exact',
-    'now',
-    'omega',
-    'reflexivity',
-    'tauto',
-    /* Other tactics */
-    'after', 'apply', 'assert', 'auto', 'autorewrite',
-    'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
-    'congr', 'cut', 'cutrewrite',
-    'dependent', 'destruct',
-    'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
-    'field', 'firstorder', 'fold', 'fourier',
-    'generalize',
-    'have', 'hnf',
-    'induction', 'injection', 'instantiate', 'intro', 'intros', 'inversion',
-    'left',
-    'move',
-    'pattern', 'pose',
-    'refine', 'remember', 'rename', 'repeat', 'replace', 'revert', 'rewrite',
-    'right', 'ring',
-    'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
-    'transitivity', 'trivial', 'try',
-    'unfold', 'unlock', 'using',
-    'vm_compute',
-    'where', 'wlog'
-  ]};
+    globals: {
+        lemmas: [],
+        tactics: [
+            /* Terminators */
+            'assumption',
+            'by',
+            'contradiction',
+            'discriminate',
+            'easy',
+            'exact',
+            'now',
+            'omega',
+            'reflexivity',
+            'tauto',
+            /* Other tactics */
+            'after', 'apply', 'assert', 'auto', 'autorewrite',
+            'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
+            'congr', 'cut', 'cutrewrite',
+            'dependent', 'destruct',
+            'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
+            'field', 'firstorder', 'fold', 'fourier',
+            'generalize',
+            'have', 'hnf',
+            'induction', 'injection', 'instantiate', 'intro', 'intros', 'inversion',
+            'left',
+            'move',
+            'pattern', 'pose',
+            'refine', 'remember', 'rename', 'repeat', 'replace', 'revert', 'rewrite',
+            'right', 'ring',
+            'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
+            'transitivity', 'trivial', 'try',
+            'unfold', 'unlock', 'using',
+            'vm_compute',
+            'where', 'wlog'
+        ]
+    }
+};
 
 var kinds = {lemmas: 'lemma', tactics: 'tactic'};
 
@@ -243,13 +246,15 @@ class AutoComplete {
     _matches(match, family) {
         var matching = [], kind = this.kinds[family];
     
-        for (let entry of this.vocab[family]) {
-            var name = entry.label || entry;
-            if ( name.indexOf(match) > -1 ) {
-                matching.push({
-                    text: name, label: name, kind, prefix: entry.prefix || []
-                });
-                if (matching.length > this.max_matches) break;
+        for (let scope of Object.values(this.vocab)) {
+            for (let entry of scope[family]) {
+                var name = entry.label || entry;
+                if ( name.indexOf(match) > -1 ) {
+                    matching.push({
+                        text: name, label: name, kind, prefix: entry.prefix || []
+                    });
+                    if (matching.length > this.max_matches) break;
+                }
             }
         }
 
@@ -282,6 +287,47 @@ class AutoComplete {
     }
 }
 
+class ObserveIdentifier {
+
+    constructor() {
+        this.vocab = vocab;
+        this._makeVocabIndex();
+    }
+
+    underCursor(cm) {
+        var cur0 = cm.getCursor(), cur1 = {line: cur0.line, ch: cur0.ch + 1};
+        var tok = cm.getTokenAt(cur0);
+
+        if (tok.type != 'variable') tok = cm.getTokenAt(cur1);
+
+        var entries;
+
+        if (tok && tok.type == 'variable' &&
+            (entries = this._vocab_index[tok.string])) {
+            CodeMirror.signal(cm, 'hintEnter', tok, entries);
+        }
+        else
+            CodeMirror.signal(cm, 'hintOut', tok, entries);
+    }
+
+    _makeVocabIndex(vocab = this.vocab) {
+        var kinds = CompanyCoq.kinds,
+            vindex = {};
+        
+        for (let scope of Object.values(vocab)) {
+            for (let key in scope) {
+                for (let symb of scope[key]) {
+                    if (typeof symb === 'object')
+                        symb.kind = symb.kind || kinds[key];
+                    (vindex[symb.label] = vindex[symb.label] || []).push(symb);
+                }
+            }
+        }
+        this._vocab_index = vindex;
+    }
+
+}
+
 /**
  * Main CompanyCoq entry point.
  * - Creates markup and configures it with specific tokens.
@@ -304,6 +350,7 @@ class CompanyCoq {
         ];
 
         this.completion = new AutoComplete();
+        this.observe = ObserveIdentifier.instance;
     }
 
     attach(cm) {
@@ -316,58 +363,34 @@ class CompanyCoq {
 
         cm.on('change', () => this.markup.applyToDocument());
         cm.on('change', (cm, evt) => this.completion.senseContext(cm, evt));
-        cm.on('cursorActivity', (cm, evt) => this.observeIdentifier(cm));
+        cm.on('cursorActivity', (cm, evt) => this.observe.underCursor(cm));
         return this;
     }
 
-    observeIdentifier(cm) {
-        var cur0 = cm.getCursor(), cur1 = {line: cur0.line, ch: cur0.ch + 1};
-        var tok = cm.getTokenAt(cur0);
-
-        if (tok.type != 'variable') tok = cm.getTokenAt(cur1);
-
-        var entries;
-
-        if (tok && tok.type == 'variable' &&
-            (entries = CompanyCoq._vocab_index[tok.string])) {
-            CodeMirror.signal(cm, 'hintEnter', tok, entries);
-        }
-        else
-            CodeMirror.signal(cm, 'hintOut', tok, entries);
+    static mkEmptyScope() {
+        return { lemmas: [], tactics: [] };
     }
 
-    static loadSymbols(symbols, replace_existing=false) {
-        for (let key in CompanyCoq.vocab) {
+    static loadSymbols(symbols, scope, replace_existing=false) {
+        var vocab = CompanyCoq.vocab[scope] = CompanyCoq.vocab[scope] || CompanyCoq.mkEmptyScope();
+
+        for (let key in vocab) {
             if (symbols[key]) {
-                if (replace_existing) CompanyCoq.vocab[key].splice(0);
-                CompanyCoq.vocab[key].push(...symbols[key]);
+                if (replace_existing) vocab[key].splice(0);
+                vocab[key].push(...symbols[key]);
                 // It is important to modify in-place to also affect CodeMirror
                 //  instances that were already created... :\
             }
         }
-        CompanyCoq._makeVocabIndex();
-    }
 
-    static _makeVocabIndex(vocab = CompanyCoq.vocab) {
-        var kinds = CompanyCoq.kinds,
-            vindex = {};
-        
-        for (let key in vocab) {
-            for (let symb of vocab[key]) {
-                if (typeof symb === 'object')
-                    symb.kind = symb.kind || kinds[key];
-                (vindex[symb.label] = vindex[symb.label] || []).push(symb);
-            }
-        }
-        CompanyCoq._vocab_index = vindex;
+        ObserveIdentifier.instance._makeVocabIndex();
     }
 
     static init() {
         CompanyCoq.vocab = vocab;
         CompanyCoq.kinds = kinds;
+        ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         CodeMirror.CompanyCoq = CompanyCoq;
-
-        CompanyCoq._makeVocabIndex();
 
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])
