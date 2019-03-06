@@ -43,6 +43,8 @@ type coq_opts = {
   debug    : bool;
 }
 
+type 'a seq = 'a Seq.t
+
 (** [init opts] Initialize the Coq engine *)
 val coq_init : coq_opts -> Stm.doc * Stateid.t
 
@@ -51,6 +53,9 @@ val version : string * string * string * string * int
 
 (** [richpp_of_goals ()] returns a pp representing the current goals  *)
 val pp_of_goals : unit -> Pp.t (* Proof.pre_goals *)
+
+val inspect_library : ?env:Environ.env -> unit -> Names.KerName.t seq
+val inspect_locals : ?env:Environ.env -> ?mod_path:Names.ModPath.t -> unit -> Names.KerName.t seq
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit
