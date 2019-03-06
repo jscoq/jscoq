@@ -64,8 +64,12 @@ class CoqWorker {
         return rid;
     }
 
-    inspect(search_query) {
-        this.sendCommand(["Inspect", search_query]);
+    inspect(rid, search_query) {
+        if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
+        if (typeof rid == 'undefined')
+            rid = this._gen_rid = (this._gen_rid || 0) + 1;
+        this.sendCommand(["Inspect", rid, search_query]);
+        return rid;
     }
 
     loadPkg(base_path, pkg) {
@@ -113,9 +117,17 @@ class CoqWorker {
     }
 
     queryPromise(sid, rid, query) {
-        let pfr = new PromiseFeedbackRoute();
-        rid = this.query(sid, rid, query);
+        return this._wrapWithPromise(
+            rid = this.query(sid, rid, query));
+    }
 
+    inspectPromise(rid, search_query) {
+        return this._wrapWithPromise(
+            this.inspect(rid, search_query));
+    }
+
+    _wrapWithPromise(rid) {
+        let pfr = new PromiseFeedbackRoute();
         this.routes[rid] = [pfr];
         pfr.atexit = () => { delete this.routes[rid]; };
         return pfr.promise;
@@ -175,6 +187,22 @@ class CoqWorker {
         }
     }
 
+    coqSearchResults(rid, bunch) {
+        var handled = false;
+
+        for (let o of this.routes[rid] || []) {
+            var handler = o['feedSearchResults'];
+            if (handler) {
+                handler.call(o, bunch);
+                handled = true;
+            }
+        }
+
+        if (!handled) {
+            console.warn(`SearchResults not handled (route ${rid})`);
+        }
+    }
+
     feedProcessed(sid) {
         var fut = this.sids[sid];
         if (fut) { fut.resolve(); }
@@ -229,6 +257,11 @@ class PromiseFeedbackRoute extends Future {
     feedProcessed(sid) {
         this._got_processed = true;
         if (this._done) this.atexit();
+    }
+
+    feedSearchResults(bunch) {
+        this.resolve(bunch);
+        this.atexit();
     }
 }
 
