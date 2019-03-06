@@ -137,6 +137,7 @@ class CmCoqProvider {
 
         if (stm.mark) {
             let b = stm.mark.find();
+            if (!b) return;  /* mark has been deleted altogether; fail silently */
             stm.start = b.from; stm.end = b.to;
             stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
             stm.mark = null;
