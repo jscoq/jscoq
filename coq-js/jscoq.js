@@ -64,6 +64,10 @@ class CoqWorker {
         return rid;
     }
 
+    inspect(search_query) {
+        this.sendCommand(["Inspect", search_query]);
+    }
+
     loadPkg(base_path, pkg) {
         this.sendCommand(["LoadPkg", base_path, pkg]);
     }

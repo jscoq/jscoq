@@ -45,6 +45,17 @@ type coq_opts = {
 }
 
 
+type 'a seq = 'a Seq.t
+
+let rec seq_of_list l = match l with
+  | [] -> Seq.empty
+  | x :: xs -> fun () -> Seq.Cons (x, seq_of_list xs)
+
+let seq_of_opt o = match o with
+  | None -> Seq.empty
+  | Some v -> fun () -> Seq.Cons (v, Seq.empty)
+
+
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
@@ -104,6 +115,29 @@ let pp_of_goals ~doc sid : Pp.t option =
   end
   with Proof_global.NoCurrentProof -> None
 
+
+(* Inspection subroutines *)
+
+let libobj_is_leaf obj =
+  match obj with
+  | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
+
+let inspect_library ?(env=Global.env ()) () =
+  let const_map = Pre_env.((Environ.pre_env env).env_globals.env_constants) in
+  let ls = Lib.contents () in
+  Seq.flat_map (fun ((_, kn), obj) -> seq_of_opt @@
+    if libobj_is_leaf obj && Names.Cmap_env.mem (Names.Constant.make1 kn) const_map then
+      Some kn
+    else None)
+    (seq_of_list ls)
+
+let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
+
+let inspect_locals ?(env=Global.env ()) ?(mod_path=default_mod_path) () =
+  let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
+  let named_ctx = Pre_env.((Environ.pre_env env).env_named_context.env_named_ctx) in
+  seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
+    Seq.map make_kername
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

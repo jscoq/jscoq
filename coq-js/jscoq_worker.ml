@@ -11,6 +11,7 @@ open Js_of_ocaml
 
 open Jser_feedback
 open Jser_feedback.Feedback
+open Jser_names
 
 
 let jscoq_version = "0.9~beta2"
@@ -26,6 +27,14 @@ let opts = ref { implicit_libs = true; stm_debug = false; }
 
 type gvalue =
   [%import: Goptions.option_value]
+  [@@deriving yojson]
+
+type search_query =
+  | All
+  | CurrentFile
+  | ModulePrefix of string list
+  | Keyword of string
+  | Locals
   [@@deriving yojson]
 
 
@@ -45,6 +54,7 @@ type jscoq_cmd =
 
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
+  | Inspect of search_query
 
   (*            filename   content *)
   | Register of string
@@ -76,6 +86,8 @@ type jscoq_answer =
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t
   | Feedback  of feedback
+
+  | SearchResults of Names.KerName.t seq
 
   (* Low-level *)
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
@@ -254,6 +266,11 @@ let jscoq_execute =
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
     end
+
+  | Inspect _q ->
+    let env = Global.env () in
+    (* TODO query is ignored for the time being *)
+    out_fn @@ SearchResults (Icoq.inspect_library ~env ())
 
   | Register file_path  ->
     Jslibmng.register_cma ~file_path
