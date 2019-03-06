@@ -349,6 +349,15 @@ class CoqManager {
         });
     }
 
+    updateLocalSymbols() {
+        this.coq.inspectPromise(["CurrentFile"])
+        .then(bunch => {
+            CodeMirror.CompanyCoq.loadSymbols(
+                { lemmas: bunch.map(CoqIdentifier.ofKerName) }, 
+                'locals', /*replace_existing=*/true)
+        });
+    }
+
     // Feedback Processing
     feedProcessingIn(sid) {
     }
@@ -406,9 +415,11 @@ class CoqManager {
             stm.executed = true;
             this.provider.mark(stm, "ok");
 
-            // Get goals
-            if (nsid == this.doc.sentences.last().coq_sid)
+            // Get goals and active definitions
+            if (nsid == this.doc.sentences.last().coq_sid) {
                 this.coq.goals(nsid);
+                this.updateLocalSymbols();
+            }
         }
     }
 
@@ -1062,6 +1073,30 @@ class CoqContextualInfo {
     }
 }
 
+
+class CoqIdentifier {
+    constructor(prefix, label) {
+        this.prefix = prefix;
+        this.label = label;
+    }
+
+    toString() { return [...this.prefix, this.label].join('.'); }
+
+    /**
+     * Constructs an identifier from a Coq Names.KerName.t.
+     * @param {array} param0 serialized form of KerName (from SearchResults).
+     */
+    static ofKerName([kername, modpath, dirpath, label]) {
+        /**/ console.assert(kername === 'KerName') /**/
+        var modsuff = [];
+        while (modpath[0] == 'MPdot') {
+            modsuff.push(modpath[2]);
+            modpath = modpath[1];
+        }
+        /**/ console.assert(modpath[0] === 'MPfile'); /**/
+        return new CoqIdentifier(modpath[1].slice().reverse().concat(modsuff), label);
+    }
+}
 
 // Local Variables:
 // js-indent-level: 4

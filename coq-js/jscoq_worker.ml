@@ -54,7 +54,7 @@ type jscoq_cmd =
 
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of search_query
+  | Inspect of Feedback.route_id * search_query
 
   (*            filename   content *)
   | Register of string
@@ -87,7 +87,7 @@ type jscoq_answer =
   | Log       of level     * Pp.t
   | Feedback  of feedback
 
-  | SearchResults of Names.KerName.t seq
+  | SearchResults of Feedback.route_id * Names.KerName.t seq
 
   (* Low-level *)
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
@@ -169,6 +169,11 @@ let update_loadpath (msg : lib_event) : unit =
 
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg ; post_lib_event msg
+
+let rec seq_append s1 s2 =  (* use batteries?? *)
+  match s1 () with
+  | Seq.Nil -> s2
+  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
 (* set_opts  : general options *)
 (* lib_init  : list of modules to load *)
@@ -267,10 +272,12 @@ let jscoq_execute =
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
     end
 
-  | Inspect _q ->
+  | Inspect (rid, _q) ->
     let env = Global.env () in
+    let symbols = seq_append (Icoq.inspect_library ~env ())
+                             (Icoq.inspect_locals ~env ()) in
     (* TODO query is ignored for the time being *)
-    out_fn @@ SearchResults (Icoq.inspect_library ~env ())
+    out_fn @@ SearchResults (rid, symbols)
 
   | Register file_path  ->
     Jslibmng.register_cma ~file_path
