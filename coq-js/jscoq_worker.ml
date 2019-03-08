@@ -96,6 +96,8 @@ type jscoq_answer =
 
 let jsCoq = Js.Unsafe.obj [||]
 
+external coq_vm_trap : unit -> unit = "coq_vm_trap"
+
 let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t =
   let open Js.Unsafe in
   let ofresh j = json_to_obj (obj [||]) j in
@@ -179,6 +181,8 @@ let rec seq_append s1 s2 =  (* use batteries?? *)
 (* lib_init  : list of modules to load *)
 (* lib_path  : list of load paths *)
 let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path : (string list * string list) list) =
+
+  coq_vm_trap ();
 
   opts := set_opts;
   let opts = set_opts in

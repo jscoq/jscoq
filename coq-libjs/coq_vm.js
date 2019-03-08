@@ -1,5 +1,9 @@
-var v_log = true;   // Whether to log
-function ll(s, args) { if (v_log) console.warn(s, args); }
+var vm_log = false,   // whether to log calls
+    vm_trap = false;  // whether to halt on calls
+function ll(s, args) { 
+  if (vm_log) console.warn(s, args); 
+  if (vm_trap) throw new Error("vm trap: '"+ s + "' not implemented");
+}
 
 //Provides: ll
 var ll;
@@ -13,6 +17,12 @@ function init_coq_vm() {
 
 // EG: Coq VM's code is evil and performs static initialization... the
 // best option would be to disable the VM code entirely as before.
+
+// Provides: coq_vm_trap
+var vm_log, vm_trap;
+function coq_vm_trap() {    // will cause future calls to vm code to fault
+  vm_log = vm_trap = true;  // called after initialization
+}
 
 //Provides: accumulate_code
 //Requires: ll
