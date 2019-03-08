@@ -1,27 +1,35 @@
-dist: trusty
+dist: xenial
 sudo: required
-language: ocaml
+language: c
+
 cache:
   apt: true
   directories:
   - $HOME/.opam
 addons:
   apt:
-    sources:
-    - avsm
     packages:
-    - opam
-    - aspcud
     - gcc-multilib
 env:
   global:
   - NJOBS=2
-  # system is == 4.02.3
-  - COMPILER="4.06.1+32bit"
+  - OPAMROOTISOK="true"
+  - OPAMYES="true"
+  - OPAMJOBS="2"
+  - COMPILER="4.07.1+32bit"
+  - BASE_OPAM="camlp5 dune elpi"
 
 install:
-- "[ -e .opam ] || opam init -j ${NJOBS} --compiler=${COMPILER} -n -y"
-- eval $(opam config env)
+- echo "yes" | sudo add-apt-repository ppa:ansible/bubblewrap
+- sudo apt-get update -qq
+- sudo apt-get install -qq bubblewrap
+- sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux -o /usr/bin/opam
+- sudo chmod 755 /usr/bin/opam
+- opam init -c "$COMPILER"
+- opam switch set "$COMPILER"
+- eval $(opam env)
+- opam install $BASE_OPAM $EXTRA_OPAM # yojson ppx_deriving_yojson
+- opam list
 - opam update
 - opam config var root
 - ./toolchain-setup.sh

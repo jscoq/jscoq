@@ -22,9 +22,13 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/ssreflect; make; make install
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/fingroup; make; make install
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/algebra; make; make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/solvable; make; make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/field; make; make install
 
 jscoq-install:
 	mkdir -p $(MATHCOMP_DEST)
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(MATHCOMP_DEST)
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/fingroup $(MATHCOMP_DEST)
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/algebra $(MATHCOMP_DEST)
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/solvable $(MATHCOMP_DEST)
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/field $(MATHCOMP_DEST)

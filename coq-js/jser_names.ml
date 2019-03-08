@@ -54,7 +54,6 @@ module Names = struct
   type inductive = [%import: Names.inductive] [@@deriving to_yojson]
   type constructor = [%import: Names.constructor] [@@deriving to_yojson]
   type variable = [%import: Names.variable] [@@deriving to_yojson]
-  type global_reference = [%import: Names.global_reference] [@@deriving to_yojson]
 
   module MPmap = Names.MPmap
 end

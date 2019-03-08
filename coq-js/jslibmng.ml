@@ -234,7 +234,9 @@ let module_name_of_qualid qualid =
   let (dirpath, id) = Libnames.repr_qualid qualid in
   (path_of_dirpath dirpath) @ [Names.Id.to_string id]
 
+(*
 let module_name_of_reference ref =
   match ref with
   | Libnames.Ident id -> [Names.Id.to_string id]
   | Libnames.Qualid qid -> module_name_of_qualid qid
+*)

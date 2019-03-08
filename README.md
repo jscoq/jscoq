@@ -6,7 +6,8 @@ Run the Coq Proof Assistant in your browser!
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
-accessibility of the Coq platform itself. Current stable version is jsCoq 0.8b supporting Coq 8.8, try it:
+accessibility of the Coq platform itself. Current stable version is
+jsCoq v8.9+0.8c supporting Coq 8.9, try it:
 
 <https://x80.org/rhino-coq/>
 
@@ -66,7 +67,7 @@ Worker thread. While the branch is not yet ready for general use, it
 is the mandatory for developers. A preview build of jsCoq 0.9 is
 usually available at:
 
-<https://x80.org/rhino-coq/v8.8-js-worker/>
+<https://x80.org/rhino-coq/v8.9-js-worker/>
 
 Be warned that the version uploaded to the link is quite unstable. Big
 structural changes are happening in 0.9, please stop by gitter or by
@@ -83,6 +84,7 @@ Previous Coq versions can be accessed at:
 - <https://x80.org/rhino-coq/v8.6/>
 - <https://x80.org/rhino-coq/v8.7/>
 - <https://x80.org/rhino-coq/v8.8/>
+- <https://x80.org/rhino-coq/v8.9/>
 
 In the future, we may provide builds corresponding to particular git
 hashes. See below for more jsCoq versions, including one adapted to
@@ -281,6 +283,11 @@ Incomplete list of places where jsCoq has been used:
 * Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
 * School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
 * Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
+* Elpi Tutorial / Demo at CoqPL 2017 _Los Angeles_ https://lpcic.github.io/coq-elpi-www/tutorial-demo_CoqPL2018.html
+* Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
+* Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
+  https://specfun.inria.fr/amahboub/Jncf18/cours2.html
+* [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
 
 ### jsCoq in the press
 
@@ -315,9 +322,9 @@ Here are the explanations of the steps:
 
   will do the job.
 
-* Second, build a 32-bit Coq v8.8 and all the libraries to
+* Second, build a 32-bit Coq v8.9 and all the libraries to
   be installed. `make coq` should do it automatically.
-  jsCoq is compatible with vanilla Coq v8.8.
+  jsCoq is compatible with vanilla Coq v8.9.
 
 * You also need jsCoq's version of CodeMirror:
 

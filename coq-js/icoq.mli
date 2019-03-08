@@ -52,7 +52,7 @@ val coq_init : coq_opts -> Stm.doc * Stateid.t
 val version : string * string * string * string * int
 
 (** [richpp_of_goals ()] returns a pp representing the current goals  *)
-val pp_of_goals : unit -> Pp.t (* Proof.pre_goals *)
+val pp_of_goals : doc:Stm.doc -> Stateid.t -> Pp.t option
 
 val inspect_library : ?env:Environ.env -> unit -> Names.KerName.t seq
 val inspect_locals : ?env:Environ.env -> ?mod_path:Names.ModPath.t -> unit -> Names.KerName.t seq

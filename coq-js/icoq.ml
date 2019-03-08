@@ -50,10 +50,12 @@ type 'a seq = 'a Seq.t
 let rec seq_of_list l = match l with
   | [] -> Seq.empty
   | x :: xs -> fun () -> Seq.Cons (x, seq_of_list xs)
+  [@@warning "-32"]
 
 let seq_of_opt o = match o with
   | None -> Seq.empty
   | Some v -> fun () -> Seq.Cons (v, Seq.empty)
+  [@@warning "-32"]
 
 
 (**************************************************************************)
@@ -104,34 +106,49 @@ let coq_init opts =
   let ndoc, nsid = Stm.new_doc ndoc in
   ndoc, nsid
 
-let pp_of_goals () =
-  try
-    let proof = Proof_global.give_me_the_proof () in
-    Printer.pr_open_subgoals ~proof
-  with Proof_global.NoCurrentProof -> Pp.str ""
+let pp_of_proof proof : Pp.t = Printer.pr_open_subgoals ~proof
+
+let pp_of_goals ~doc sid : Pp.t option =
+  try begin
+    match Stm.state_of_id ~doc sid with
+    | `Expired | `Error _ -> None
+    | `Valid ost ->
+      Option.map (fun stm_st -> pp_of_proof Proof_global.(proof_of_state stm_st.Vernacstate.proof)) ost
+  end
+  with Proof_global.NoCurrentProof -> None
 
 (* Inspection subroutines *)
 
 let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
+  [@@warning "-32"]
 
 let inspect_library ?(env=Global.env ()) () =
-  let const_map = Pre_env.((Environ.pre_env env).env_globals.env_constants) in
+  Seq.empty
+  [@@warning "-27"]
+  (*
+  let const_map = Environ.(env.env_globals.env_constants) in
   let ls = Lib.contents () in
   Seq.flat_map (fun ((_, kn), obj) -> seq_of_opt @@
     if libobj_is_leaf obj && Names.Cmap_env.mem (Names.Constant.make1 kn) const_map then
       Some kn
     else None)
     (seq_of_list ls)
+   *)
 
 let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ?(env=Global.env ()) ?(mod_path=default_mod_path) () =
+  Seq.empty
+  [@@warning "-27"]
+  (*
   let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
   let named_ctx = Pre_env.((Environ.pre_env env).env_named_context.env_named_ctx) in
   seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername
+    *)
+
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

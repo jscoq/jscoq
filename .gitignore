@@ -18,3 +18,6 @@ Makefile.libs
 coq-external/
 node_modules/
 .DS_Store
+_build
+.merlin
+*.install

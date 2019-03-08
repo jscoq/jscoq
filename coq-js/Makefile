@@ -24,7 +24,6 @@ COQINCLUDE=-I $(COQDIR)/config     \
            -I $(COQDIR)/parsing/   \
            -I $(COQDIR)/grammar/   \
            -I $(COQDIR)/printing/  \
-           -I $(COQDIR)/intf/      \
            -I $(COQDIR)/proofs/    \
            -I $(COQDIR)/tactics/   \
            -I $(COQDIR)/vernac/    \
@@ -32,7 +31,6 @@ COQINCLUDE=-I $(COQDIR)/config     \
 
 COQOBJS=$(COQDIR)/clib/clib.cma			\
 	$(COQDIR)/lib/lib.cma			\
-	$(COQDIR)/intf/intf.cma			\
 	$(COQDIR)/kernel/kernel.cma		\
 	$(COQDIR)/library/library.cma		\
 	$(COQDIR)/engine/engine.cma	        \

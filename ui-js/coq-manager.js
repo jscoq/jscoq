@@ -541,12 +541,14 @@ class CoqManager {
 
     coqGoalInfo(sid, goals) {
 
-        var hgoals = this.pprint.pp2HTML(goals);
-        this.doc.goals[sid] = hgoals;
+        if (goals) {
+            var hgoals = this.pprint.pp2HTML(goals);
+            this.doc.goals[sid] = hgoals;
 
-        // XXX optimize!
-        // if(!this.goTarget)
-        this.updateGoals(hgoals);
+            // XXX optimize!
+            // if(!this.goTarget)
+            this.updateGoals(hgoals);
+        }
     }
 
     coqLog(level, msg) {

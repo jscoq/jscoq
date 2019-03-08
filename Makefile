@@ -1,4 +1,4 @@
-.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force coq coq-get coq-build
+.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force coq coq-get coq-build dune-build
 
 include config.mk
 
@@ -25,7 +25,7 @@ coq-tools:
 
 # XXX FIXME
 # Compile all cmo/cma in coq-pkgs
-plugin-list: force
+plugin-list: coq-pkgs force
 	find coq-pkgs \( -name *.cma -or -name *.cmo \) -fprintf plugin-list "%p.js:\n"
 
 # | cmp -s - $@ || tee plugin-list
@@ -51,7 +51,7 @@ coq-libs: Makefile.libs coq-pkgs
 coq-addons: coq-pkgs
 	COQDIR=$(COQDIR) make -f Makefile.addons $(ADDONS)
 
-coq-all-libs: coq-libs coq-addons
+coq-all-libs: coq-libs # coq-addons
 
 # All the libraries + json generation
 libs: coq-all-libs
@@ -128,7 +128,7 @@ pau:
 	rsync -avpz ~/research/jscoq pau:~/
 	rsync -avpz pau:~/jscoq/ ~/research/pau-jscoq/
 
-COQ_BRANCH=v8.8
+COQ_BRANCH=v8.9
 COQ_REPOS=https://github.com/coq/coq.git
 NJOBS=4
 
@@ -138,9 +138,10 @@ coq-get:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 	make -f coq-addons/mathcomp.addon get
 	make -f coq-addons/iris.addon get
-	make -f coq-addons/equations.addon get
+#	make -f coq-addons/equations.addon get
 	make -f coq-addons/ltac2.addon get
-	#make -f coq-addons/elpi.addon get
+	make -f coq-addons/elpi.addon get
+	make -f coq-addons/dsp.addon get
 
 COQ_MAKE_FLAGS = -j $(NJOBS)
 
@@ -152,11 +153,17 @@ endif
 
 
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && make $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
+	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) byte $(COQ_MAKE_FLAGS)
 	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
-	make -f coq-addons/equations.addon build jscoq-install
+#	make -f coq-addons/equations.addon build jscoq-install
 	make -f coq-addons/ltac2.addon build jscoq-install
-	# make -f coq-addons/elpi.addon build jscoq-install
+	make -f coq-addons/elpi.addon build jscoq-install
+	make -f coq-addons/dsp.addon jscoq-install
 
 coq: coq-get coq-build
+
+_build/default/coq-js/jscoq_worker.js: force
+	OCAMLPATH=$(COQDIR) dune build --profile=release coq-js/jscoq_worker.bc.js
+
+dune-build: _build/default/coq-js/jscoq_worker.js

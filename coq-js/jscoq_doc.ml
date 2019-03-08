@@ -68,7 +68,7 @@ let _ = CErrors.register_handler (function
 let parse ~doc ~ontop stm =
   let doc, sdoc = doc in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
-  let pa = Pcoq.Gram.parsable (Stream.of_string stm)     in
+  let pa = Pcoq.Parsable.make (Stream.of_string stm)     in
   Stm.parse_sentence ~doc ontop pa
 
 (* Main add logic; we check that the ontop state is present in the
@@ -81,7 +81,7 @@ let add ~doc ~ontop ~newid stm =
   let doc, sdoc = doc in
   let verb = false                                       in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
-  let pa = Pcoq.Gram.parsable (Stream.of_string stm)     in
+  let pa = Pcoq.Parsable.make (Stream.of_string stm)     in
   let east              = Stm.parse_sentence ~doc ontop pa            in
   let ndoc, new_st, foc = Stm.add ~doc ~ontop ~newtip:newid verb east in
   let new_sdoc    = new_st :: sdoc                       in
@@ -90,7 +90,7 @@ let add ~doc ~ontop ~newid stm =
 let query ~doc ~at ~route query =
   let doc, sdoc = doc in
   if not (List.mem at sdoc) then raise (NoSuchState at);
-  let pa = Pcoq.Gram.parsable (Stream.of_string query)     in
+  let pa = Pcoq.Parsable.make (Stream.of_string query)     in
   Stm.query ~doc ~at ~route pa
 
 (* invalid range returns a list of all the invalid stateid from

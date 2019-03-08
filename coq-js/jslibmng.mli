@@ -48,4 +48,4 @@ val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Mltop.coq_path lis
 
 val path_of_dirpath : Names.DirPath.t -> string list
 val module_name_of_qualid : Libnames.qualid -> string list
-val module_name_of_reference : Libnames.reference_r -> string list
+(*val module_name_of_reference : Libnames.reference_r -> string list*)

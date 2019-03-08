@@ -81,7 +81,7 @@ type jscoq_answer =
   | Cancelled of Stateid.t list
 
   (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t
+  | GoalInfo  of Stateid.t * Pp.t option
 
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t
@@ -220,9 +220,9 @@ let requires ast =
   match ast with
   | Vernacexpr.VernacExpr (_, Vernacexpr.VernacRequire (prefix, _export, module_refs)) ->
     let prefix_str = match prefix with
-    | Some ref -> Jslibmng.module_name_of_reference (ref.CAst.v)
+    | Some ref -> Jslibmng.module_name_of_qualid ref
     | _ -> [] in
-    let module_refs_str = List.map (fun modref -> Jslibmng.module_name_of_reference (modref.CAst.v))
+    let module_refs_str = List.map (fun modref -> Jslibmng.module_name_of_qualid modref)
                                    module_refs in
     Some ((prefix_str, module_refs_str))
   | _ -> None
@@ -258,8 +258,9 @@ let jscoq_execute =
     doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string sid))
 
   | Goals sid        ->
-    ignore(Jscoq_doc.observe ~doc:!doc sid); (* observe sid but keep the existing doc *)
-    out_fn @@ GoalInfo (sid, Pp.opt @@ Icoq.pp_of_goals ())
+    let doc = fst !doc in
+    let goal_pp = Option.map Pp.opt @@ Icoq.pp_of_goals ~doc sid in
+    out_fn @@ GoalInfo (sid, goal_pp)
 
   | Query (sid, rid, query) ->
     let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in

@@ -92,6 +92,11 @@ function coq_set_transp_value() {
   return [];
 }
 
+// Provides: coq_set_bytecode_field
+function coq_set_bytecode_field() {
+  return [0];
+}
+
 // Provides: coq_tcode_of_code
 function coq_tcode_of_code() {
   return [];

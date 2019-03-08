@@ -27,7 +27,7 @@ do_setup() {
 #eval `opam config env`
 #do_setup
 
-opam switch -j $NJOBS -y $OCAML_VER+32bit
-eval `opam config env`
+opam switch -j $NJOBS -y create $OCAML_VER+32bit
+eval `opam env`
 do_setup
 
