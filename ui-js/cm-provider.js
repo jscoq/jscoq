@@ -66,7 +66,7 @@ class CmCoqProvider {
         // Handle mouse hover events
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
-        editor_element.on('mouseout', ev => this.onCMMouseLeave(ev));
+        editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
@@ -166,15 +166,17 @@ class CmCoqProvider {
     }
 
     highlight(stm, flag) {
-        if (stm.mark) {
-            let b = stm.mark.find();
-            stm.start = b.from; stm.end = b.to;
-            var new_class = 
-                stm.mark.className.replace(/( coq-highlight)?$/, flag ? ' coq-highlight' : '')
-            if (new_class != stm.mark.className) {
-                stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
-                this.markWithClass(stm, new_class);
-            }
+        if (stm.mark && stm.coq_sid) {
+            var spans = $(this.editor.getWrapperElement())
+                        .find(`[data-coq-sid=${stm.coq_sid}]`),
+                c = 'coq-highlight';
+            /* Update the spans directly to avoid having to destroy and     */
+            /* re-create the spans.                                         */
+            /* (re-creating elements under cursor messes with mouse events) */
+            if (flag) spans.addClass(c); 
+            else      spans.removeClass(c);
+            stm.mark.className =
+                stm.mark.className.replace(/( coq-highlight)?$/, flag ? ' coq-highlight' : '');
         }
     }
 
