@@ -45,6 +45,9 @@ type coq_opts = {
 }
 
 
+external coq_vm_trap : unit -> unit = "coq_vm_trap"
+
+
 type 'a seq = 'a Seq.t
 
 let rec seq_of_list l = match l with
@@ -66,6 +69,8 @@ let coq_init opts =
     Printexc.record_backtrace true;
     Flags.debug := true;
   end;
+
+  coq_vm_trap ();
 
   (* Custom toplevel is used for bytecode-to-js dynlink  *)
   let ser_mltop : Mltop.toplevel = let open Mltop in
@@ -122,12 +127,15 @@ let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
+let has_constant env kn =
+  try
+    ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env; true
+  with Not_found -> false
+
 let inspect_library ?(env=Global.env ()) () =
-  let const_map = Pre_env.((Environ.pre_env env).env_globals.env_constants) in
   let ls = Lib.contents () in
   Seq.flat_map (fun ((_, kn), obj) -> seq_of_opt @@
-    if libobj_is_leaf obj && Names.Cmap_env.mem (Names.Constant.make1 kn) const_map then
-      Some kn
+    if libobj_is_leaf obj && has_constant env kn then Some kn
     else None)
     (seq_of_list ls)
 
@@ -135,7 +143,7 @@ let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ?(env=Global.env ()) ?(mod_path=default_mod_path) () =
   let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
-  let named_ctx = Pre_env.((Environ.pre_env env).env_named_context.env_named_ctx) in
+  let named_ctx = Environ.named_context env in
   seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername
 
