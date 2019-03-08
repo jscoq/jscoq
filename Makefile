@@ -153,7 +153,7 @@ endif
 
 
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && make $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
+	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) theories $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
 	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
 #	make -f coq-addons/equations.addon build jscoq-install
