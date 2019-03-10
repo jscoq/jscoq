@@ -23,6 +23,7 @@ type coq_bundle = {
   deps      : string list;
   archive   : string option;
   pkgs      : coq_pkg list;
+  modDeps   : Yojson.Safe.json option;
 }
 
 val to_dir  : coq_pkg -> string

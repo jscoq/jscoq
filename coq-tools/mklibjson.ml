@@ -60,6 +60,7 @@ let build_pkg (pkg, deps, p_mod) =
                  deps = deps;
                  archive = None;
                  pkgs = p_mod;
+                 modDeps = None;
                } in
   let json   = coq_bundle_to_yojson bundle         in
 

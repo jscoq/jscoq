@@ -77,10 +77,10 @@ let pkgs : (string * string list * (string list * selector) list) list=
     ; ["Coq"; "Unicode"]
     ; ["Coq"; "ssrmatching"]
     ; ["Coq"; "ssr"]
-    ; ["mathcomp"; "ssreflect"]
     ]
   ; "math-comp", [], all_of
-    [ ["mathcomp"; "algebra"]
+    [ ["mathcomp"; "ssreflect"]
+    ; ["mathcomp"; "algebra"]
     ; ["mathcomp"; "fingroup"]
     ; ["mathcomp"; "solvable"]
     ; ["mathcomp"; "field"]
@@ -98,23 +98,22 @@ let pkgs : (string * string list * (string list * selector) list) list=
     ; ["Coq"; "MSets"]
     ; ["Coq"; "Wellfounded"]
     ; ["Coq"; "Strings"]
-    ]
-  ; "coq-numbers", ["coq-base"],
+    ; ["Coq"; "Numbers"]
+    ; ["Coq"; "Numbers"; "NatInt"]
+    ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+    ; ["Coq"; "Numbers"; "Natural"; "Peano"]
+    ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
+    ] @
     [ ["Coq"; "Arith"], Only ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                               "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
-    ; ["Coq"; "Numbers"], All
-    ; ["Coq"; "Numbers"; "NatInt"], All
-    ; ["Coq"; "Numbers"; "Natural"; "Abstract"], All
-    ; ["Coq"; "Numbers"; "Natural"; "Peano"], All
-    ; ["Coq"; "Numbers"; "Integer"; "Abstract"], All
     ]
-  ; "coq-collections", ["coq-base"; "coq-numbers"], all_of
+  ; "coq-collections", ["coq-base"], all_of
     [ ["Coq"; "Lists"]
     ; ["Coq"; "Vectors"]
     ; ["Coq"; "Sets"]
     ; ["Coq"; "Sorting"]
     ]
-  ; "coq-arith", ["coq-base"; "coq-numbers"; "coq-collections"],
+  ; "coq-arith", ["coq-base"; "coq-collections"],
     [ ["Coq"; "setoid_ring"], All
     ; ["Coq"; "Arith"], Except ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                                 "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
@@ -124,15 +123,16 @@ let pkgs : (string * string list * (string list * selector) list) list=
     ; ["Coq"; "QArith"], All
     ; ["Coq"; "omega"], All
     ]
-  ; "mtac", ["coq-arith"], all_of
-    [ ["Mtac"]
-    ]
 
   ; "coq-reals", ["coq-arith"], all_of
     [ ["Coq"; "fourier"]
     ; ["Coq"; "micromega"]
     ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"] ]
+
+  ; "mtac", ["coq-arith"], all_of
+    [ ["Mtac"]
+    ]
 
   ; "coquelicot", ["coq-reals"], all_of
     [ [ "Coquelicot" ] ]
