@@ -98,24 +98,48 @@ class PackageManager {
         });
     }
 
-    searchBundleInfo(prefix, module_name) {
+    searchBundleInfo(prefix, module_name, exact=false) {
         // Look for a .vo file matching the given prefix and module name
         var suffix = module_name.slice(0, -1),
             basename = module_name.slice(-1)[0],
-            possible_filenames = [basename + '.vo', basename + '.vio'];
+            possible_filenames = ['.vo', '.vio'].map(x => basename + x);
 
         let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
         let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
 
+        let pkg_matches = exact ? pkg_id => pkg_id.equals(suffix)
+                                : pkg_id => startsWith(pkg_id, prefix) &&
+                                            endsWith(pkg_id, suffix);
+
         for (let bundle_key in this.bundles) {
             let bundle = this.bundles[bundle_key];
             for (let pkg of bundle.info.pkgs) {
-                if (startsWith(pkg.pkg_id, prefix) && 
-                    endsWith(pkg.pkg_id, suffix) &&
+                if (pkg_matches(pkg.pkg_id) &&
                     pkg.vo_files.some(entry => possible_filenames.indexOf(entry[0]) > -1))
-                    return bundle.info;
+                    return { pkg: bundle_key,
+                             info: bundle.info, 
+                             module: pkg.pkg_id.concat([basename]) };
             }
         }
+    }
+
+    searchModule(prefix, module_name, exact=false) {
+        var binfo = this.searchBundleInfo(prefix, module_name, exact),
+            lookupDeps = (binfo, key) =>
+                (binfo && binfo.info.modDeps && binfo.info.modDeps.hasOwnProperty(key))
+                    ? binfo.info.modDeps[key] : [];
+        if (binfo) {
+            var pkgs = new Set([binfo.pkg]),
+                module_deps = lookupDeps(binfo, binfo.module.join('.'));
+            this._scan(module_deps,
+                m => {
+                    var binfo = this.searchBundleInfo([], m.split('.'), true);
+                    if (binfo) pkgs.add(binfo.pkg);
+                    return lookupDeps(binfo, m);
+                });
+            binfo.deps = [...pkgs.values()];
+        }
+        return binfo;
     }
 
     getUrl(resource) {
@@ -238,6 +262,25 @@ class PackageManager {
 
     expand() {
         this.panel.parentNode.classList.remove('collapsed');
+    }
+
+    /**
+     * (auxiliary method) traverses a graph spanned by a list of roots
+     * and an adjacency functor. Implements DFS.
+     * @param {array} roots starting points
+     * @param {function} adjacent_out u => array of successors
+     */
+    _scan(roots, adjacent_out) {
+        var collect = new Set(),
+            work = roots.slice();
+        while (work.length) {
+            var u = work.pop();
+            if (!collect.has(u)) {
+                collect.add(u);
+                for (let v of adjacent_out(u)) work.push(v);
+            }
+        }
+        return collect;
     }
 
     // No portable way to create EventTarget instances of our own yet;

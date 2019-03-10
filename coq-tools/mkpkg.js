@@ -11,20 +11,19 @@ const fs = require('fs'),
 
 
 class PackageDefinition {
-    constructor(manifest, base_path) {
-        if (typeof manifest == 'string') {
-            this.manifest_filename = manifest;
-            this.manifest = JSON.parse(fs.readFileSync(manifest, 'utf-8'));
-            this.base_path = base_path || path.dirname(manifest);
-        }
-        else {
-            this.manifest_filename = undefined;
-            this.manifest = manifest;
-            this.base_path = base_path; // a required argument in this case
-        }
+    constructor(manifest, base_path, manifest_filename /*optional*/) {
+        this.manifest = manifest;
+        this.base_path = base_path;
+        this.manifest_filename = manifest_filename;
 
         this.json_format_opts = 
             { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 };
+    }
+
+    static fromFile(manifest_filename, base_path /*optional*/) {
+        var manifest = JSON.parse(fs.readFileSync(manifest_filename, 'utf-8'));
+        return new PackageDefinition(manifest, 
+            base_path || path.dirname(manifest_filename), manifest_filename);
     }
 
     listFiles() {
@@ -38,6 +37,17 @@ class PackageDefinition {
             }
         }
         return files;
+    }
+
+    listModules() {
+        var modules = [];
+        for (let pkg of this.manifest.pkgs) {
+            for (let file_entry of (pkg.vo_files || []).concat(pkg.cma_files || [])) {
+                let modlabel = file_entry[0].replace(/[.](vo|cm[oa])$/, '');
+                modules.push([...pkg.pkg_id, modlabel].join('.'));
+            }
+        }
+        return modules;
     }
 
     toZip(save_as) {
@@ -74,11 +84,16 @@ class PackageDefinition {
     }
 }
 
+
+
+module.exports = {PackageDefinition};
+
+
 // Usage:
 //  node mkpkg.js <json filenames...>
 if (module.id == '.') {
     for (let json_fn of process.argv.slice(2)) {
-        var pd = new PackageDefinition(json_fn),
+        var pd = PackageDefinition.fromFile(json_fn),
             zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
         pd.toZip(zip_fn);
         pd.manifest.archive = path.basename(zip_fn);

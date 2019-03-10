@@ -473,23 +473,25 @@ class CoqManager {
         let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
             this.coq.execPromise(ontop.coq_sid);
 
-        var pkgs_to_load = [];
+        var pkg_deps = new Set();
         for (let module_name of module_names) {
-            let binfo = this.packages.searchBundleInfo(prefix, module_name);
-            if (binfo && !binfo.loaded)
-                pkgs_to_load.push(binfo.desc);
+            let binfo = this.packages.searchModule(prefix, module_name);
+            if (binfo)
+                for (let d of binfo.deps) pkg_deps.add(d);
         }
+
+        pkg_deps = [...pkg_deps.values()];
 
         var cleanup = () => {};
 
-        if (pkgs_to_load.length > 0) {
-            console.log("Pending: loading packages", pkgs_to_load);
+        if (pkg_deps.length > 0) {
+            console.log("Pending: loading packages", pkg_deps);
             this.disable();
             this.packages.expand();
             cleanup = () => { this.packages.collapse(); this.enable(); }
         }
 
-        this.packages.loadDeps(pkgs_to_load).then(() => ontop_finished)
+        this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
             .then(() => {
                 this.coq.reassureLoadPath(this.packages.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
