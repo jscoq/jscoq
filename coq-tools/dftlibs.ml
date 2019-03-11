@@ -94,15 +94,11 @@ let pkgs : (string * string list * (string list * selector) list) list=
     ; ["Coq"; "Structures"]
     ; ["Coq"; "Relations"]
     ; ["Coq"; "Setoids"]
-    ; ["Coq"; "FSets"]
-    ; ["Coq"; "MSets"]
     ; ["Coq"; "Wellfounded"]
     ; ["Coq"; "Strings"]
     ; ["Coq"; "Numbers"]
     ; ["Coq"; "Numbers"; "NatInt"]
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
-    ; ["Coq"; "Numbers"; "Natural"; "Peano"]
-    ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
     ] @
     [ ["Coq"; "Arith"], Only ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                               "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
@@ -111,10 +107,14 @@ let pkgs : (string * string list * (string list * selector) list) list=
     [ ["Coq"; "Lists"]
     ; ["Coq"; "Vectors"]
     ; ["Coq"; "Sets"]
+    ; ["Coq"; "FSets"]
+    ; ["Coq"; "MSets"]
     ; ["Coq"; "Sorting"]
     ]
   ; "coq-arith", ["coq-base"; "coq-collections"],
-    [ ["Coq"; "setoid_ring"], All
+    [ ["Coq"; "Numbers"; "Natural"; "Peano"], All
+    ; ["Coq"; "Numbers"; "Integer"; "Abstract"], All
+    ; ["Coq"; "setoid_ring"], All
     ; ["Coq"; "Arith"], Except ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                                 "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
     ; ["Coq"; "NArith"], All
