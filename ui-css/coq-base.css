@@ -328,6 +328,10 @@ div.Pp_box[data-margin="2"] {
   margin-left: 1.5em;
 }
 
+div.Pp_box[data-mode="horizontal"] {
+  cursor: text;
+}
+
 #goal-text > div.Pp_box[data-mode="vertical"],
 #goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
   display: block;

@@ -970,24 +970,21 @@ class CoqContextualInfo {
     }
 
     showFor(dom, alt) {
+        console.log(dom, alt);
         var jdom = $(dom), name = jdom.text();
-        if (jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
+        if (jdom.hasClass('constr.variable') ||
+            jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
             if (alt) this.showPrint(name);
-            else     this.showCheck(name);
+            else     this.showCheck(name, /*opaque*/false, /*silent_fail*/true);
         }
         else if (jdom.hasClass('constr.notation')) {
             this.showLocate(name);
         }
-        else if (jdom.hasClass('constr.variable')) {
-            this.container.find('.constr\\.variable').filter(function() {
-                return $(this).text() === name;
-            }).addClass('contextual-focus');
-        }
     }
 
-    showCheck(name, opaque=false) {
+    showCheck(name, opaque=false, silent_fail=false) {
         this.focus = {identifier: name, info: 'Check', opaque};
-        this.showQuery(`Check ${name}.`, this.formatName(name));
+        this.showQuery(`Check ${name}.`, silent_fail ? null : this.formatName(name));
     }
 
     showPrint(name) {
