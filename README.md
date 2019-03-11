@@ -372,16 +372,6 @@ internal data structures, but this effort has been split to an
 independent development. See https://github.com/ejgallego/coq-serapi
 for more information.
 
-## Commit tag conventions [work in progress]:
-
-- [jscoq]: ML/Coq interface.
-- [ui]: Html/Css commit
-- [cm]: CodeMirror provider.
-- [libs]: Coq Library support and format.
-- [doc]: Documentation.
-- [addons]: Addons support.
-- [build]: Build system.
-
 ## Documents
 
 See the `etc/notes/` directory for some random notes about the project.
