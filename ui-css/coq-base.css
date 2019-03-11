@@ -16,6 +16,7 @@ body {
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   line-height: normal;
   font-size: 11pt;
+  overscroll-behavior: none;
 }
 
 a, a:link, a:visited, a:active {
@@ -29,6 +30,7 @@ a, a:link, a:visited, a:active {
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
+  overscroll-behavior: none;
 }
 
 #ide-wrapper.toggled {
@@ -47,6 +49,12 @@ a, a:link, a:visited, a:active {
   margin-left: 0px;
   padding-right: 45%;
   transition: padding-right 0.5s ease;
+  overscroll-behavior: none;
+}
+
+#code-wrapper > div:first-child:last-child {
+  height: 100%;
+  overflow: auto;
 }
 
 #code-wrapper .CodeMirror span[role=presentation] {
@@ -140,6 +148,7 @@ a, a:link, a:visited, a:active {
   /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
+  overscroll-behavior-y: contain;
 }
 
 .flex-panel.collapsed {
