@@ -439,7 +439,7 @@ class CoqManager {
         if (lvl === 'Error') {
             this.handleError(sid, loc, fmsg);
         } else {
-            this.layout.log(fmsg, lvl);
+            this.layout.log(fmsg, lvl, {'data-coq-sid': sid});
         }
     }
 

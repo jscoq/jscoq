@@ -36,3 +36,16 @@
 #query-panel.show-Notice  .Notice  { display: block; }
 #query-panel.show-Info    .Info    { display: block; }
 #query-panel.show-Debug   .Debug   { display: block; }
+
+#query-panel div.coq-sid-start:not(.coq-prev-end) {
+  border-top: 1px solid #e8e8e8;
+  margin-top: 1px;
+  padding-top: 1px;
+  background-position-y: 1px;
+}
+
+#query-panel div.coq-sid-end {
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 1px;
+  padding-bottom: 1px;
+}
