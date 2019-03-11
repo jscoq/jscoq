@@ -156,11 +156,15 @@ class CoqLayoutClassic {
     }
 
     // Add a log event received from Coq.
-    log(text, level) {
+    log(text, level, attrs={}) {
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error
-        var item = $('<div>').addClass(level).html(text);
+        var item = $('<div>').addClass(level).html(text).attr(attrs),
+            prev = $(this.query).children(':visible').last();
+
+        if (attrs['data-coq-sid'] !== undefined)
+            this.logSep(attrs['data-coq-sid'], item, prev);
 
         $(this.query).append(item);
 
@@ -176,6 +180,31 @@ class CoqLayoutClassic {
         return item;
     }
 
+    logSep(sid, item, prev) {
+        if (sid === prev.attr('data-coq-sid')) {
+            prev.removeClass('coq-sid-end');
+            item.addClass('coq-sid-end');
+        }
+        else {
+            item.addClass(['coq-sid-start', 'coq-sid-end'].concat(
+                prev.hasClass('coq-sid-end') ? ['coq-prev-end'] : []));
+        }
+    }
+
+    /**
+     * Readjusts separators for the entire log when the level changes.
+     * (called from filterLog)
+     */
+    logSepReadjust() {
+        for (let item of $(this.query).find('.coq-sid-start')) {
+            // XXX not very efficient :(
+            if ($(item).prevUntil(':visible').prev('.coq-sid-end:visible').length)
+                $(item).addClass('coq-prev-end');
+            else
+                $(item).removeClass('coq-prev-end');
+        }
+    }
+
     filterLog(level_select) {
         var i;
 
@@ -189,6 +218,11 @@ class CoqLayoutClassic {
             this.query.classList.remove(`show-${this.log_levels[i]}`);
 
         this.log_level = level_select;
+
+        requestAnimationFrame(() => {
+            this.query.scrollTo({top: this.query.scrollHeight});  // only reasonable thing to do
+            this.logSepReadjust();
+        });
     }
 
     isLogVisible(level) {
