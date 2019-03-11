@@ -57,6 +57,12 @@ coq-all-libs: coq-libs coq-addons
 libs: coq-all-libs
 	./coq-tools/mklibjson # $(ADDONS)
 
+# Bundle libs and inject dependencies
+libs-pkg:
+	node coq-tools/mkpkg.js coq-pkgs/*.json
+	node coq-tools/mkdeps.js coq-pkgs/init.json coq-pkgs/coq-*.json \
+		coq-external/coq-$(COQ_VERSION)+32bit/.vfiles.d
+
 ########################################################################
 # Dists                                                                #
 ########################################################################
@@ -67,7 +73,7 @@ DISTHTML=newide.html #mtac_tutorial.html
 BUILDOBJ=package.json index.html $(DISTHTML) coq-pkgs ui-js ui-css ui-images examples
 DISTEXT=$(addprefix ui-external/,CodeMirror-TeX-input)
 
-dist: libs
+dist:
 	ln -sf $(DISTHTML) index.html
 	mkdir -p $(BUILDDIR)
 	# Copy static files, XXX: minimize
