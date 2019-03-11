@@ -27,6 +27,7 @@
 #query-panel .Info,
 #query-panel .Debug {
   display: none;
+  background-size: 16px;
 }
 
 /* These will override the default rule for displayed items */
