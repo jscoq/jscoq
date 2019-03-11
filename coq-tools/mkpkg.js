@@ -18,6 +18,9 @@ class PackageDefinition {
 
         this.json_format_opts = 
             { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 };
+
+        this.zip_file_opts = 
+            {date: new Date("1/1/2000")}; // dummy date (otherwise, zip changes every time it is created...)
     }
 
     static fromFile(manifest_filename, base_path /*optional*/) {
@@ -51,15 +54,15 @@ class PackageDefinition {
     }
 
     toZip(save_as) {
-        var z = new JSZip();
-        z.file("coq-pkg.json", this.toJSON(this.manifest));
+        var z = new JSZip(), fopts = this.zip_file_opts;
+        z.file("coq-pkg.json", this.toJSON(this.manifest), fopts);
         for (let fn of this.listFiles()) {
             let phys = path.join(this.base_path, fn);
             if (/[.]cm[ao]$/.exec(fn))
-                z.file(fn, '') // stub the actual objects; a bit ugly but saves space
+                z.file(fn, '', fopts) // stub the actual objects; a bit ugly but saves space
             else
                 z.file(fn, fs.createReadStream(phys)
-                    .on("error", () => console.error(`error reading '${phys}'.`)));
+                    .on("error", () => console.error(`error reading '${phys}'.`)), fopts);
         }
         if (save_as) {
             return z.generateNodeStream()
