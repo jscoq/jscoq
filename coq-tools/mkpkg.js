@@ -20,7 +20,8 @@ class PackageDefinition {
             { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 };
 
         this.zip_file_opts = 
-            {date: new Date("1/1/2000")}; // dummy date (otherwise, zip changes every time it is created...)
+            {date: new Date("1/1/2000 UTC"), // dummy date (otherwise, zip changes every time it is created...)
+             createFolders: false};
     }
 
     static fromFile(manifest_filename, base_path /*optional*/) {
