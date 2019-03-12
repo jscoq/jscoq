@@ -31,13 +31,18 @@ var Pos = CodeMirror.Pos;
  */
 class Markup {
 
-    constructor(cm) {
-        this.cm = cm;
+    constructor() {
         this.special_tokens = {};
         this.special_patterns = [];
         this.className = 'markup';
     }
     
+    attach(cm) {
+        this.cm = cm;
+        this.applyToDocument();
+        cm.on('change', () => this.applyToDocument());
+    }
+
     applyToDocument() {
         for (let line = 0; line < this.cm.lineCount(); line++)
             this.applyToLine(line);
@@ -55,6 +60,7 @@ class Markup {
                          handleMouseEvents: true,
                          owner: this});
             }
+            else
             for (let pat of this.special_patterns) {
                 let mo = pat.re.exec(tok.string);
                 if (mo) {
@@ -67,6 +73,7 @@ class Markup {
                              handleMouseEvents: true,
                              owner: this});
                     }
+                    break;
                 }
             }
         }
@@ -77,6 +84,45 @@ class Markup {
             to = {line, ch: this.cm.getLine(line).length};
         for (let mark of this.cm.findMarks(from, to, m => m.owner == this))
             mark.clear();
+    }
+
+    applyToDOM(dom) {
+        this._forEachText(dom, text => this.applyToTextNode(text));
+    }
+
+    applyToTextNode(dom_text) {
+        var markup = this.tokenize(dom_text.nodeValue).map(token =>
+            this.applyToToken(token)).flatten();
+        dom_text.replaceWith(...markup);
+    }
+
+    applyToToken(token) {
+        if (this.special_tokens.hasOwnProperty(token)) {
+            return [this.mkSymbol(this.special_tokens[token])];
+        }
+        else
+        for (let pat of this.special_patterns) {
+            let mo = pat.re.exec(token);
+            if (mo) {
+                var parts = [], idx = 0;
+                // assumes opts are ordered by 'from'
+                for (let opts of pat.make(mo)) {
+                    var from = mo.index + opts.from,
+                        to = mo.index + opts.to;
+                    if (from > idx)
+                        parts.push(token.substring(idx, from));
+                    if (opts.replacedWith)
+                        parts.push(opts.replacedWith)
+                    else if (opts.className)
+                        parts.push($('<span>').text(token.substring(from, to))
+                            .addClass(opts.className)[0]);
+                    idx = to;
+                }
+                return parts;
+            }
+        }
+        
+        return [token];
     }
 
     markText(from, to, options) {
@@ -95,6 +141,28 @@ class Markup {
 
     mkSymbol(lit) {
         return document.createTextNode(lit);
+    }
+
+    tokenize(s) {
+        return s.split(/(\s+)/).filter(s => s);
+    }
+
+    /**
+     * Iterates the text nodes within a DOM element, allowing nodes to be replaced
+     * while they are being iterated.
+     * @param {Element} dom DOM element to traverse
+     * @param {function} operation will be called for every descendant text node
+     */
+    _forEachText(dom, operation) {
+        var i = document.createTreeWalker(dom, NodeFilter.SHOW_TEXT, null, false),
+            cur = i.nextNode(), prev = cur;
+        // Perform hand-over-hand scan so that iterator is not invalidated by 
+        // changes to the DOM
+        while (cur = i.nextNode()) {
+            operation(prev);
+            prev = cur;
+        }
+        if (prev) operation(prev);
     }
 
 }
@@ -157,6 +225,10 @@ class AutoComplete {
         this.extraKeys = {
             Alt: (cm) => { this.hintZoom(cm); }
         };
+    }
+
+    attach(cm) {
+        cm.on('change', (cm, evt) => this.senseContext(cm, evt));
     }
 
     lemmaHint(cm, options) { return this.hint(cm, options, 'lemmas'); }
@@ -294,6 +366,10 @@ class ObserveIdentifier {
         this._makeVocabIndex();
     }
 
+    attach(cm) {
+        cm.on('cursorActivity', (cm, evt) => this.underCursor(cm));
+    }
+
     underCursor(cm) {
         var cur0 = cm.getCursor(), cur1 = {line: cur0.line, ch: cur0.ch + 1};
         var tok = cm.getTokenAt(cur0);
@@ -349,21 +425,20 @@ class CompanyCoq {
                                                   {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
         ];
 
+        this.markup = new Markup();
         this.completion = new AutoComplete();
         this.observe = ObserveIdentifier.instance;
-    }
 
-    attach(cm) {
-        this.cm = cm;
-        this.markup = new Markup(cm);
         this.markup.special_tokens = this.special_tokens;
         this.markup.special_patterns = this.special_patterns;
         this.markup.className = 'company-coq';
-        this.markup.applyToDocument();
+    }
 
-        cm.on('change', () => this.markup.applyToDocument());
-        cm.on('change', (cm, evt) => this.completion.senseContext(cm, evt));
-        cm.on('cursorActivity', (cm, evt) => this.observe.underCursor(cm));
+    attach(cm) {
+        this.markup.attach(cm);
+        this.completion.attach(cm);
+        this.observe.attach(cm);
+
         return this;
     }
 

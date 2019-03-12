@@ -227,6 +227,10 @@ class CoqManager {
         this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                      this.coq, this.pprint);
 
+        // Setup company-coq
+        if (this.options.editor.mode && this.options.editor.mode['company-coq'])
+            this.company_coq = new CodeMirror.CompanyCoq();
+
         // Setup autocomplete
         this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
         this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
@@ -879,6 +883,10 @@ class CoqManager {
     updateGoals(html) {
         if (html) {
             this.layout.update_goals(html);
+            if (this.company_coq) {
+                this.contextual_info.pinIdentifiers();
+                this.company_coq.markup.applyToDOM(this.layout.proof);
+            }
             this.pprint.adjustBreaks($(this.layout.proof));
             /* Notice: in Pp-formatted text, line breaks are handled by
             * FormatPrettyPrint rather than by the layout.
@@ -944,16 +952,18 @@ class CoqContextualInfo {
 
         // Set up mouse events
         var r = String.raw,
-            contextual_sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
+            sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
 
-        container.on('mouseenter', contextual_sel, evt => this.onMouseEnter(evt));
-        container.on('mousedown',  contextual_sel, evt => this.onMouseDown(evt, true));
-        container.on('mouseleave', contextual_sel, evt => this.onMouseLeave(evt));
-        container.on('mouseleave',                 evt => this.onMouseLeave(evt));
-        container.on('mousedown',  evt => this.hideReq());
+        this.contextual_sel = sel;
 
-        this.el.on('mouseenter', evt => this.hideCancel());
-        this.el.on('mousedown', evt => { this.hideReq(); evt.stopPropagation(); });
+        container.on('mouseenter', sel,  evt => this.onMouseEnter(evt));
+        container.on('mousedown',  sel,  evt => this.onMouseDown(evt, true));
+        container.on('mouseleave', sel,  evt => this.onMouseLeave(evt));
+        container.on('mouseleave',       evt => this.onMouseLeave(evt));
+        container.on('mousedown',        evt => this.hideReq());
+
+        this.el.on('mouseenter',         evt => this.hideCancel());
+        this.el.on('mousedown',          evt => { this.hideReq(); evt.stopPropagation(); });
         this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
 
         this._keyHandler = this.keyHandler.bind(this);
@@ -970,8 +980,7 @@ class CoqContextualInfo {
     }
 
     showFor(dom, alt) {
-        console.log(dom, alt);
-        var jdom = $(dom), name = jdom.text();
+        var jdom = $(dom), name = jdom.attr('data-name') || jdom.text();
         if (jdom.hasClass('constr.variable') ||
             jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
             if (alt) this.showPrint(name);
@@ -1036,6 +1045,17 @@ class CoqContextualInfo {
 
     hideCancel() {
         this.request_hide = false;
+    }
+
+    /**
+     * Stores current identifier names, esp. before
+     * prettifying text with company-coq.
+     */
+    pinIdentifiers(jdom) {
+        if (!jdom) jdom = this.container;
+        for (let el of jdom.find(this.contextual_sel)) {
+            $(el).attr('data-name', $(el).text());
+        }
     }
 
     keyHandler(evt) {
