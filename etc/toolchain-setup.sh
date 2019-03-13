@@ -31,6 +31,7 @@ create_switch() {
 
 install_deps() {
 
+  opam update
   opam pin add -y -n --kind=path jscoq .
   opam install -y --deps-only $VERB -j $NJOBS jscoq
   opam pin remove jscoq
@@ -41,7 +42,7 @@ post_install() {
 
   # Brutally remove ocamlopt from the switch when building 32-bit
   # on macOS.
-  # 32-bit native compilation on macOS is broken and we found no other 
+  # 32-bit native compilation on macOS is broken and we found no other
   # way to disable it.
   # This has to take place only after install_deps.
   case `uname`/$WORD_SIZE in
