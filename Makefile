@@ -149,7 +149,7 @@ coq-get:
 	make -f coq-addons/elpi.addon get
 	make -f coq-addons/dsp.addon get
 
-COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coq_makefile
+COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
 COQ_MAKE_FLAGS = -j $(NJOBS)
 
 ifeq "${shell uname -s}" "Darwin"
