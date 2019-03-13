@@ -204,10 +204,10 @@ class PackageManager {
         }
 
         if (info) {
-            var progress = Math.min(1.0, info.loaded / info.total),
-                angle    = (info.loaded * 15) % 360;
+            var progress = info.loaded / info.total,
+                angle    = (progress * 1500) % 360;
             bundle.egg.css('transform', `rotate(${angle}deg)`);
-            bundle.bar.css('width', `${progress * 100}%`);
+            bundle.bar.css('width', `${Math.min(1.0, progress) * 100}%`);
         }
     }
 
