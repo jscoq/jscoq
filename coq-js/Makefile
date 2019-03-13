@@ -54,7 +54,7 @@ BYTEFLAGS=-rectypes -safe-string $(CAMLDEBUG) $(CAMLWARN)
 
 # We use different compile/link flags.
 JSOOCFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_import,ppx_deriving_yojson
-JSOOLFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_deriving_yojson
+JSOOLFLAGS=-package js_of_ocaml-ppx,js_of_ocaml-lwt,yojson,ppx_deriving_yojson -noautolink -no-check-prims
 
 ifeq "${shell uname -s}" "Darwin"
 # On macOS, ocamlc invokes gcc, which then complains about missing symbols from libcoqrun.
