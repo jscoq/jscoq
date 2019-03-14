@@ -9,7 +9,6 @@ or the like.
  * OPAM 2  (use binary installer from https://opam.ocaml.org/doc/Install.html)
  * m4 (`apt install m4`)
  * bubblewrap (`apt install bubblewrap`)
- * Ocaml 4.06.1+32bit (`opam switch create 4.06.1+32bit`)
  * npm (bundled with latest Nodejs, follow the [instructions](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)).
 
 ## Build steps
@@ -17,7 +16,7 @@ or the like.
 ```
 git clone --recursive git@github.com:ejgallego/jscoq.git (this repo)
 ```
- 2. Install necessary Ocaml packages.
+ 2. Install OCaml 4.07.1 (32-bit version) and required packages.
 ```
 ./toolchain-setup.sh
 ```
@@ -29,9 +28,9 @@ make coq
 ```
 ./build.sh
 ```
- 5. Prepare CodeMirror.
+ 5. Resolve JavaScript dependencies using `npm`.
 ```
-cd ui-external/CodeMirror && npm install
+npm install
 ```
 
 Now serve the files at the root directory of the project via HTTP, and navigate your browser to `http://localhost/newide.html`.

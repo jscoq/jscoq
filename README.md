@@ -306,54 +306,10 @@ $ ./toolchain-setup.sh
 $ make coq
 $ ./build.sh
 $ git submodule update --remote
-$ cd ui-external/CodeMirror && npm install
-
+$ npm install
 ```
 
-Here are the explanations of the steps:
-
-* First, let's setup a 32-bit Ocaml toolchain. Install
-  a recent opam and a multiarch gcc (`gcc-multilib` package in
-  Debian/Ubuntu), then:
-
-  ```
-  $ ./toolchain-setup.sh
-  ```
-
-  will do the job.
-
-* Second, build a 32-bit Coq v8.9 and all the libraries to
-  be installed. `make coq` should do it automatically.
-  jsCoq is compatible with vanilla Coq v8.9.
-
-* You also need jsCoq's version of CodeMirror:
-
-  ```
-  $ git submodule update --remote
-  $ cd ui-external/CodeMirror && npm install
-  ```
-
-  hopefully, the Coq mode will be merged in CodeMirror some day.
-
-* Finally:
-
-  ```
-  $ ./build.sh
-  ```
-
-  will build jsCoq. The script manages the 32/64 bit toolchain
-  switching; you can also use make directly if you want finer control
-  over the build process.
-
-* To run jsCoq locally you need to start your browser with some
-  options:
-
-  ```
-  $ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
-  ```
-
-* ?
-* Profit!
+For more detailed description and prerequisites, see docs/Build.md.
 
 ### Addon Packages:
 
