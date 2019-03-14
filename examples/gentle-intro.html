@@ -1,3 +1,9 @@
+<!--
+  This sample contains two very simple introductory exercises of
+  interactive proofs in Coq, one with natural numbers and one with lists.
+  It can be used as a gentle landing page, which requires no knowledge
+  of math-comp.
+-->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -57,13 +63,13 @@ Qed.
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
+  <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
     var jscoq_ids  = ['workspace'];
     var jscoq_opts = {
         prelude:   true,
-        base_path: './',
+        base_path: '../',
         init_pkgs: ['init'],
         all_pkgs:  ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'math-comp'],
         implicit_libs: true,
