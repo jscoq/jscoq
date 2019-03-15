@@ -34,7 +34,9 @@ type coq_pkg = {
 type coq_bundle = {
   desc      : string;
   deps      : string list;
+  archive   : string option [@default None];
   pkgs      : coq_pkg list;
+  modDeps   : Yojson.Safe.json option [@default None];
 }
 [@@deriving yojson]
 

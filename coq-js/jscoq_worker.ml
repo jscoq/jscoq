@@ -9,70 +9,73 @@
 
 open Js_of_ocaml
 
-(* XXX *)
-let str = Pp.str
-let rec pp_opt (d : Pp.t) = let open Pp in
-  let rec flatten_glue l = match l with
-    | []  -> []
-    | (Ppcmd_glue g :: l) -> flatten_glue (List.map repr g @ flatten_glue l)
-    | (Ppcmd_string s1 :: Ppcmd_string s2 :: l) -> flatten_glue (Ppcmd_string (s1 ^ s2) :: flatten_glue l)
-    | (x :: l) -> x :: flatten_glue l
-  in
-  (* let rec flatten_glue l = match l with *)
-  (*   | (Ppcmd_string s1 :: Ppcmd_string s2 :: l) -> Ppcmd_string (s1 ^ s2) :: flatten_glue l *)
-  unrepr (match repr d with
-      | Ppcmd_glue []   -> Ppcmd_empty
-      | Ppcmd_glue [x]  -> repr (pp_opt x)
-      | Ppcmd_glue l    -> Ppcmd_glue List.(map pp_opt (map unrepr (flatten_glue (map repr l))))
-      | Ppcmd_box(bt,d) -> Ppcmd_box(bt, pp_opt d)
-      | Ppcmd_tag(t, d) -> Ppcmd_tag(t,  pp_opt d)
-      | d -> d
-    )
-  [@@warning "-4"]
-
-let fbc_opt (fbc : Feedback.feedback_content) =
-  Feedback.(match fbc with
-  | Message(id,loc,msg) -> Message(id,loc,pp_opt msg)
-  | _ -> fbc)
-  [@@warning "-4"]
-
-let fb_opt (fb : Feedback.feedback) =
-  Feedback.({ fb with contents = fbc_opt fb.contents })
-
 open Jser_feedback
+open Jser_feedback.Feedback
+open Jser_names
+
+
+let jscoq_version = "0.9~beta2"
+
+type jscoq_options = {
+  implicit_libs: bool; 
+  stm_debug: bool;
+}
+[@@deriving yojson]
+
+let opts = ref { implicit_libs = true; stm_debug = false; }
+
 
 type gvalue =
   [%import: Goptions.option_value]
   [@@deriving yojson]
 
-(* Main RPC calls *)
-let jscoq_version = "0.9~beta0"
+type search_query =
+  | All
+  | CurrentFile
+  | ModulePrefix of string list
+  | Keyword of string
+  | Locals
+  [@@deriving yojson]
 
+
+(* Main RPC calls *)
 type jscoq_cmd =
   | GetInfo
   | InfoPkg of string * string list
   | LoadPkg of string * string
 
-  (*           implicit initial_imports      load paths     *)
-  | Init    of bool   * string list list   * string list list
+  (*           opts            initial_imports      load paths                      *)
+  | Init    of jscoq_options * string list list   * (string list * string list) list
 
-  (*           ontop       new      sentence                *)
-  | Add     of Stateid.t * Stateid.t * string
+  (*           ontop       new         sentence                *)
+  | Add     of Stateid.t * Stateid.t * string * bool
   | Cancel  of Stateid.t
   | Exec    of Stateid.t
 
   | Goals   of Stateid.t
+  | Query   of Stateid.t * Feedback.route_id * string
+  | Inspect of Feedback.route_id * search_query
+
+  (*            filename   content *)
+  | Register of string
+  | Put      of string  *  string
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
+
+  | ReassureLoadPath of (string list * string list) list
   [@@deriving yojson]
 
 type jscoq_answer =
-  (* XXX: Init? *)
   | CoqInfo   of string
+
+  | Ready     of Stateid.t
 
   (* Merely Informative now *)
   | Added     of Stateid.t * Loc.t option
+
+  (* Requires pkg(s)         prefix        module names    *)
+  | Pending   of Stateid.t * string list * string list list
 
   (* Main feedback *)
   | Cancelled of Stateid.t list
@@ -84,10 +87,14 @@ type jscoq_answer =
   | Log       of level     * Pp.t
   | Feedback  of feedback
 
+  | SearchResults of Feedback.route_id * Names.KerName.t seq
+
   (* Low-level *)
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
   | JsonExn   of string
-  [@@deriving yojson]
+  [@@deriving to_yojson]
+
+let jsCoq = Js.Unsafe.obj [||]
 
 let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t =
   let open Js.Unsafe in
@@ -104,14 +111,25 @@ let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t
   | `Tuple t  -> Array.(Js.array @@ map ofresh (of_list t))
   | `Variant(_,_) -> pure_js_expr "undefined"
 
-let _answer_to_jsobj msg =
-  let json_msg = jscoq_answer_to_yojson msg                            in
-  let json_str = Yojson.Safe.to_string json_msg                        in
-  (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
-  Js.Unsafe.global##.JSON##(parse (Js.string json_str))
+let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
+  let open Js in
+  let open Js.Unsafe in
+  let typeof_cobj = to_string (typeof cobj) in
+  match typeof_cobj with
+  | "string"  -> `String (to_string @@ coerce cobj)
+  | "boolean" -> `Bool (to_bool @@ coerce cobj)
+  | "number"  -> `Int (int_of_float @@ float_of_number @@ coerce cobj)
+  | _ ->
+    if instanceof cobj array_empty then
+      `List Array.(to_list @@ map obj_to_json @@ to_array @@ coerce cobj)
+    else if instanceof cobj Typed_array.arrayBuffer then
+      `String (Typed_array.String.of_arrayBuffer @@ coerce cobj)
+    else
+      let json_string = Js.to_string (Json.output cobj) in
+      Yojson.Safe.from_string json_string
 
 let answer_to_jsobj msg =
-  let json_msg = jscoq_answer_to_yojson msg                            in
+  let json_msg = jscoq_answer_to_yojson msg       in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
 type progress_info =
@@ -122,59 +140,69 @@ type lib_event =
   [%import: Jslibmng.lib_event]
   [@@deriving yojson]
 
-let _lib_event_to_jsobj msg =
-  let json_msg = lib_event_to_yojson msg                               in
-  let json_str = Yojson.Safe.to_string json_msg                        in
-  (* Workaround to avoid ml_string conversion of Json.unsafe_input     *)
-  Js.Unsafe.global##.JSON##(parse (Js.string json_str))
-
 let lib_event_to_jsobj msg =
-  let json_msg = lib_event_to_yojson msg                            in
+  let json_msg = lib_event_to_yojson msg          in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
+
+let is_worker = (Js.Unsafe.global##.onmessage != Js.undefined)
+
+let post_message : < .. > Js.t -> unit = 
+  if is_worker then Worker.post_message
+  else 
+    fun msg -> Js.Unsafe.fun_call (jsCoq##.onmessage) [|Js.Unsafe.inject msg|]
 
 (* Send messages to the main thread *)
 let post_answer (msg : jscoq_answer) : unit =
-  Worker.post_message (answer_to_jsobj msg)
+  post_message (answer_to_jsobj msg)
 
 let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
 
+(* When a new package is loaded, the library load path has to be updated *)
+let update_loadpath (msg : lib_event) : unit =
+  match msg with
+  | LibLoaded (_,bundle) ->
+    List.iter Mltop.add_coq_path
+      (Jslibmng.coqpath_of_bundle ~implicit:!opts.implicit_libs bundle)
+  | _ -> ()
+  [@@warning "-4"]
+
+let process_lib_event (msg : lib_event) : unit =
+  update_loadpath msg ; post_lib_event msg
+
+let rec seq_append s1 s2 =  (* use batteries?? *)
+  match s1 () with
+  | Seq.Nil -> s2
+  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
+
+(* set_opts  : general options *)
 (* lib_init  : list of modules to load *)
-(* lib_paths : list of paths *)
-let exec_init (lib_init : string list list) (lib_path : string list list) =
+(* lib_path  : list of load paths *)
+let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path : (string list * string list) list) =
+
+  opts := set_opts;
+  let opts = set_opts in
 
   let lib_require  = List.map (fun lp ->
-      (* Format.eprintf "u: %s, %s@\n" (to_name md) (to_dir md); *)
       String.concat "." lp, None, Some true) lib_init  in
 
   (* None       : just require            *)
   (* Some false : import but don't export *)
   (* Some true  : import and export       *)
 
-  let path_to_coqpath coq_path =
-    Mltop.{
-      path_spec = VoPath {
-          unix_path = String.concat "/" coq_path;
-          coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string coq_path);
-          has_ml = AddTopML;
-          implicit = false;
-        };
-      recursive = false;
-    }
-  in
-
   Icoq.(coq_init {
       ml_load      = Jslibmng.coq_cma_link;
-      fb_handler   = (fun fb -> post_answer (Feedback (fb_opt fb)));
+      fb_handler   = (fun fb -> post_answer (Feedback (Feedback.fb_opt fb)));
       require_libs = lib_require;
-      iload_path   = List.map path_to_coqpath lib_path;
+      iload_path   = List.map (fun (path_el, phys) ->
+                         Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
+                     ) lib_path;
       top_name     = "JsCoq";
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
                      };
-      debug    = true;
-
+      debug    = opts.stm_debug;
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -185,47 +213,94 @@ let exec_getopt on =
 
 let coq_exn_info exn =
     let (e, info) = CErrors.push exn                   in
-    let pp_exn    = pp_opt @@ CErrors.iprint (e, info) in
+    let pp_exn    = Pp.opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
+
+let requires ast =
+  match ast with
+  | Vernacexpr.VernacExpr (_, Vernacexpr.VernacRequire (prefix, _export, module_refs)) ->
+    let prefix_str = match prefix with
+    | Some ref -> Jslibmng.module_name_of_qualid ref
+    | _ -> [] in
+    let module_refs_str = List.map (fun modref -> Jslibmng.module_name_of_qualid modref) module_refs in
+    Some ((prefix_str, module_refs_str))
+  | _ -> None
+  [@@warning "-4"]
 
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
-  | Add(ontop,newid,stm) ->
-      begin try
-          let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
-          doc := ndoc; out_fn @@ Added (newid,loc)
+  | Add(ontop,newid,stm,resolved) ->
+      if ontop = Jscoq_doc.tip !doc then begin
+        try
+          let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
+          let requires = if resolved then None else requires ast.CAst.v in
+          match requires with
+          | Some ((prefix, module_names)) ->
+            out_fn @@ Pending (newid, prefix, module_names)
+          | _ ->
+            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
+            doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
-          let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn in
+          let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
           out_fn @@ Feedback { doc_id = 0; span_id = newid; route = 0; contents = Message(Error, loc, msg ) };
           out_fn @@ Cancelled [newid];
           out_fn @@ exn_info
       end
+      else out_fn @@ Cancelled [newid]
+
   | Cancel sid        ->
     let can_st, ndoc = Jscoq_doc.cancel ~doc:!doc sid in
     doc := ndoc; out_fn @@ Cancelled can_st
 
   | Exec sid          ->
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
-    doc := ndoc; out_fn @@ Log (Debug, str @@ "observe " ^ (Stateid.to_string sid))
+    doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string sid))
 
   | Goals sid        ->
     let doc = fst !doc in
-    let goal_pp = Option.map pp_opt @@ Icoq.pp_of_goals ~doc sid in
+    let goal_pp = Option.map Pp.opt @@ Icoq.pp_of_goals ~doc sid in
     out_fn @@ GoalInfo (sid, goal_pp)
+
+  | Query (sid, rid, query) ->
+    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
+    begin try
+      Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query;
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Complete }
+    with exn ->
+      let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
+      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
+    end
+
+  | Inspect (rid, _q) ->
+    let env = Global.env () in
+    let symbols = seq_append (Icoq.inspect_library ~env ())
+                             (Icoq.inspect_locals ~env ()) in
+    (* TODO query is ignored for the time being *)
+    out_fn @@ SearchResults (rid, symbols)
+
+  | Register file_path  ->
+    Jslibmng.register_cma ~file_path
+
+  | Put (filename, content) -> begin
+      try         Sys_js.create_file ~name:filename ~content
+      with _e ->  Sys_js.update_file ~name:filename ~content
+    end;
+    if Jslibmng.is_bytecode filename then 
+      Jslibmng.register_cma ~file_path:filename
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
 
-  | Init(_implicit, lib_init, lib_path) ->
-    let ndoc, iid = exec_init lib_init lib_path in
+  | Init(set_opts, lib_init, lib_path) ->
+    let ndoc, iid = exec_init set_opts lib_init lib_path in
     doc := Jscoq_doc.create ndoc;
-    out_fn @@ Log (Debug, str @@ "init " ^ (Stateid.to_string iid))
+    out_fn @@ Ready iid
 
   | InfoPkg(base, pkgs) ->
     Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
 
-  (* XXX: Must add the libs *)
   | LoadPkg(base, pkg)  ->
-    Lwt.async (fun () -> Jslibmng.load_pkg post_lib_event base pkg)
+    Lwt.async (fun () -> Jslibmng.load_pkg process_lib_event base pkg)
 
   | GetInfo             ->
     let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
@@ -235,15 +310,31 @@ let jscoq_execute =
     let header2 = Printf.sprintf
         " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
     out_fn @@ CoqInfo (header1 ^ header2)
-  [@@warning "-8"]
+
+  | ReassureLoadPath load_path ->
+    doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
+    List.iter (fun (path_el, phys) -> Mltop.add_coq_path
+      (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
+    ) load_path
 
 let setup_pseudo_fs () =
+  (* '/static' is the default working directory of jsoo *)
   Sys_js.unmount ~path:"/static";
-  Sys_js.mount ~path:"/static/" (fun ~prefix ~path -> ignore(prefix); Jslibmng.coq_vo_req path)
+  Sys_js.mount ~path:"/static/" (fun ~prefix:_ ~path -> Jslibmng.coq_vo_req path);
+  (* '/lib' is the target for Put commands *)
+  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None);
+  Sys_js.create_file ~name:"/lib/.anchor" ~content:""
+
+let put_pseudo_file ~name ~buf =
+  let str = Typed_array.String.of_arrayBuffer buf in
+  try
+    Sys_js.create_file ~name ~content:str
+  with _e ->
+    Sys_js.update_file ~name ~content:str
 
 let setup_std_printers () =
-  Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, str @@ "stdout: " ^ msg)));
-  Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, str @@ "stderr: " ^ msg)));
+  Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, Pp.str @@ "stdout: " ^ msg)));
+  Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, Pp.str @@ "stderr: " ^ msg)));
   ()
 
 let jscoq_protect f =
@@ -251,16 +342,23 @@ let jscoq_protect f =
   with | exn -> post_answer @@ coq_exn_info exn
 
 (* Message from the main thread *)
-let on_msg doc obj =
-  (* XXX: Call the GC, setTimeout to avoid stack overflows ?? *)
-  let json_string = Js.to_string (Json.output obj) in
-  let json_obj = Yojson.Safe.from_string json_string in
+let on_msg doc msg =
+
+  let json_obj = obj_to_json msg in
+
+  let log_cmd cmd = 
+    let str = match cmd with
+      | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
+      | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
+    post_answer (Log (Debug, Pp.str str))
+  in
 
   match jscoq_cmd_of_yojson json_obj with
-  | Result.Ok cmd  -> jscoq_protect (fun () -> post_answer (Log (Info, str json_string)) ;
-                                      jscoq_execute doc cmd)
+  | Result.Ok cmd  -> jscoq_protect (fun () -> log_cmd cmd ;
+                                               jscoq_execute doc cmd)
   | Result.Error s -> post_answer @@
-    JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output obj)))
+    JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
+
 
 (* This code is executed on Worker initialization *)
 let _ =
@@ -273,13 +371,11 @@ let _ =
 
   let doc = ref (Obj.magic 0) in
 
-  (* Heuristic to avoid StackOverflows when we have too many incoming
-     messages. *)
-  (*
-  let on_msg obj = Lwt.(async (             fun () ->
-                        Lwt_js.yield () >>= fun () ->
-                        return @@ on_msg obj    )) in
-   *)
-
   let on_msg = on_msg doc  in
-  Worker.set_onmessage on_msg
+
+  if is_worker then  
+    Worker.set_onmessage on_msg
+  else
+    Js.export "jsCoq" jsCoq;
+    jsCoq##.postMessage := Js.wrap_callback on_msg ;
+    jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())

@@ -21,7 +21,9 @@ type coq_pkg = {
 type coq_bundle = {
   desc      : string;
   deps      : string list;
+  archive   : string option;
   pkgs      : coq_pkg list;
+  modDeps   : Yojson.Safe.json option;
 }
 
 val to_dir  : coq_pkg -> string
@@ -38,4 +40,3 @@ val coq_pkg_of_yojson : json -> (coq_pkg, string) Result.result
 
 val coq_bundle_to_yojson : coq_bundle -> json
 val coq_bundle_of_yojson : json -> (coq_bundle, string) Result.result
-

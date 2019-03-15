@@ -30,11 +30,21 @@ Pending worker tasks:
   - [x] Static compilation of cma/cmo. (thanks @hhugo).
   - [x] Support for Coq 8.6/8.7/8.8/8.9.
   - [x] Migrated to ppx for jsoo syntax.
-  - [x] Port to Ocaml 4.06.1
-  - [x] Port to JSOO 3.1.0
+  - [x] Port to Ocaml 4.07.1.
+  - [x] Port to JSOO 3.3.0.
+  - [x] Migrate from d3 to jQuery for DOM manipulation.
   - [x] Full support for SF.
   - [x] Many small fixes.
   - [x] Goal display on hover.
+  - [x] Building with 32-bit on macOS.
+  - [x] Contextual info when hovering identifiers in goals pane.
+  - [x] Contextual info for identifier under cursor.
+  - [x] Support for adding packages from Zip files.
+  - [x] Automatic download of packages on Require.
+  - [x] Fine-grained module dependencies for Coq standard library.
+  - [x] company-coq-style symbols and subscripts.
+  - [x] Auto-completion of tactics and lemmas.
+  - [x] PoC running on Node.js.
 
   Released on: 
 

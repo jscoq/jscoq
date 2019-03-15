@@ -4,6 +4,7 @@
 *.cmo
 *.cmt
 *.cmti
+*.sw?
 .AppleDouble
 coq-js/jscoq_worker.js
 coq-tools/mklibfs
@@ -16,3 +17,4 @@ index.html
 Makefile.libs
 coq-external/
 node_modules/
+.DS_Store

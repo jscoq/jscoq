@@ -52,6 +52,10 @@ let _dump_doc doc =
 
 let create doc = doc, [Stateid.initial]
 
+let tip ser_doc =
+  let _, sdoc = ser_doc in
+  List.hd sdoc
+
 (* Sadly this is not properly exported from Stm/Vernac *)
 exception NoSuchState of Stateid.t
 
@@ -60,6 +64,12 @@ let _ = CErrors.register_handler (function
       Pp.str ("Trying to add on top of non-existent span: " ^ Stateid.to_string sid)
     | _ ->
       raise CErrors.Unhandled)
+
+let parse ~doc ~ontop stm =
+  let doc, sdoc = doc in
+  if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
+  let pa = Pcoq.Parsable.make (Stream.of_string stm) in
+  Stm.parse_sentence ~doc ontop pa
 
 (* Main add logic; we check that the ontop state is present in the
  * document, as it could well happen that the user request to add
@@ -76,6 +86,12 @@ let add ~doc ~ontop ~newid stm =
   let ndoc, new_st, foc = Stm.add ~doc ~ontop ~newtip:newid verb east in
   let new_sdoc    = new_st :: sdoc                       in
   east.CAst.loc, foc, (ndoc,new_sdoc)
+
+let query ~doc ~at ~route query =
+  let doc, sdoc = doc in
+  if not (List.mem at sdoc) then raise (NoSuchState at);
+  let pa = Pcoq.Parsable.make (Stream.of_string query) in
+  Stm.query ~doc ~at ~route pa
 
 (* invalid range returns a list of all the invalid stateid from
    can_st and the new doc _in reverse order_ *)

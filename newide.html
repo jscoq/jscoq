@@ -4,7 +4,7 @@
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
 
-    <link rel="stylesheet" href="ui-external/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
 
     <title>Use Coq in Your Browser: The Js Coq Theorem Prover Online IDE!</title>
   </head>
@@ -136,7 +136,8 @@ Qed.</textarea>
         prelude:   false,
         base_path: './',
         init_pkgs: ['init'],
-        all_pkgs:  ['init', 'math-comp', 'iris', 'elpi', 'equations', 'ltac2', 'stdpp', 'coq-base', 'coq-arith', 'coq-reals', 'sf', 'cpdt']
+        all_pkgs:  ['init', 'math-comp', 'iris', 'elpi', 'equations', 'ltac2', 'stdpp', 
+                    'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'sf', 'cpdt']
     };
 
     /* Global reference */

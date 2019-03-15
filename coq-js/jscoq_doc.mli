@@ -11,12 +11,27 @@ type ser_doc = Stm.doc * Stateid.t list
 
 val create : Stm.doc -> ser_doc
 
+val tip : ser_doc -> Stateid.t
+
+val parse : 
+  doc:ser_doc        ->
+  ontop:Stateid.t    ->
+  string             ->
+  Vernacexpr.vernac_control CAst.t
+
 val add :
   doc:ser_doc        ->
   ontop:Stateid.t    ->
   newid:Stateid.t    ->
   string             ->
   Loc.t option * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
+
+val query :
+  doc:ser_doc              ->
+  at:Stateid.t             ->
+  route:Feedback.route_id  ->
+  string                   ->
+  unit
 
 val cancel  : doc:ser_doc -> Stateid.t -> Stateid.t list * ser_doc
 

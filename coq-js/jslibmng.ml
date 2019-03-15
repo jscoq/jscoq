@@ -39,9 +39,11 @@ type progress_info = {
 type lib_event =
   | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
   | LibProgress of progress_info        (* Information about loading progress *)
-  | LibLoaded   of string               (* Bundle [pkg] is loaded *)
+  | LibLoaded   of string * coq_bundle  (* Bundle [pkg] is loaded *)
 
 type out_fn = lib_event -> unit
+
+exception DynLinkFailed of string
 
 let is_bytecode file = Filename.(check_suffix file "cma" || check_suffix file "cmo")
 
@@ -112,13 +114,23 @@ let parse_bundle base_path file : coq_bundle Lwt.t =
                             Lwt.fail (Failure s)
     )
 
+let load_under_way = ref ([])
+
+let only_once lref s =
+  if List.mem s !lref then false
+  else begin
+    lref := !lref @ [s]; true
+  end
+
 (* Load a bundle *)
-let rec preload_from_file ?(verb=false) out_fn base_path file =
-  parse_bundle base_path file >>= (fun bundle ->
-  (* Load deps in paralell *)
-  Lwt_list.iter_p (preload_from_file ~verb:verb out_fn base_path) bundle.deps           <&>
-  Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path file) bundle.pkgs  >>= fun () ->
-  return @@ out_fn (LibLoaded file))
+let rec preload_from_file ?(verb=false) out_fn base_path bundle_name =
+  if only_once load_under_way bundle_name then
+    parse_bundle base_path bundle_name >>= (fun bundle ->
+    (* Load sub-packages in parallel *)
+    Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
+    return @@ out_fn (LibLoaded (bundle_name, bundle)))
+  else
+    Lwt.return_unit
 
 let info_from_file out_fn base_path file =
   parse_bundle base_path file >>= (fun bundle ->
@@ -129,8 +141,8 @@ let info_pkg out_fn base_path pkgs =
 
 (* Hack *)
 let load_pkg out_fn base_path pkg_file =
-  preload_from_file out_fn base_path pkg_file >>= fun () ->
-  parse_bundle base_path pkg_file
+  preload_from_file out_fn base_path pkg_file (*>>= fun () ->
+  parse_bundle base_path pkg_file *)
 
 (* let _is_bad_url _ = false *)
 
@@ -169,12 +181,60 @@ let coq_cma_link cmo_file =
       eprintf "!! cache inconsistency for file %s\n%!" cmo_file;
       cmo_file
   in
+  Feedback.feedback (Feedback.FileDependency(Some cmo_file, cmo_file));
   try
-    let js_code = (Hashtbl.find file_cache cmo_file).file_content in
+    (* let js_code = (Hashtbl.find file_cache cmo_file).file_content in *)
+    let js_code = 
+      try (Hashtbl.find file_cache cmo_file).file_content
+      with Not_found -> Sys_js.read_file ~name:(cmo_file ^ ".js") in
     (* When eval'ed, the js_code will return a closure waiting for the
        jsoo global object to link the plugin.
     *)
-    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global)
+    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global);
+    Feedback.feedback (Feedback.FileLoaded(cmo_file, cmo_file));
   with
-  | Not_found ->
-    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file
+  | Sys_error _ ->
+    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file;
+    raise @@ DynLinkFailed cmo_file
+
+let register_cma ~file_path =
+  let filename = Filename.basename file_path in
+  let dir = Filename.dirname file_path in
+  Hashtbl.add cma_cache filename dir
+
+let rec last = function
+    | [] -> None
+    | [x] -> Some x
+    | _ :: t -> last t
+
+let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
+  let phys_path =  (* HACK to allow manual override of dir path *)
+    if last unix_prefix = Some "." then unix_prefix
+                                   else unix_prefix @ lib_path
+  in
+  Mltop.{
+    path_spec = VoPath {
+        unix_path = String.concat "/" phys_path;
+        coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
+        has_ml = AddTopML;
+        implicit = implicit;
+      };
+    recursive = false;
+  }
+
+let coqpath_of_bundle ?(implicit=false) bundle =
+  List.map (fun pkg ->
+    path_to_coqpath ~implicit pkg.pkg_id
+  ) bundle.pkgs
+
+let path_of_dirpath dirpath =
+  Names.(List.rev_map Id.to_string (DirPath.repr dirpath))
+
+let module_name_of_qualid qualid =
+  let (dirpath, id) = Libnames.repr_qualid qualid in
+  (path_of_dirpath dirpath) @ [Names.Id.to_string id]
+
+(* let module_name_of_reference ref =
+ *   match ref with
+ *   | Libnames.Ident id -> [Names.Id.to_string id]
+ *   | Libnames.Qualid qid -> module_name_of_qualid qid *)

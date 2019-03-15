@@ -12,8 +12,24 @@
 
 // Extra stuff:
 
-Array.prototype.last    = function() { return this[this.length-1]; };
-Array.prototype.flatten = function() { return [].concat.apply([], this); };
+Array.prototype.last     = function() { return this[this.length-1]; };
+Array.prototype.flatten  = function() { return [].concat.apply([], this); };
+Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; ) 
+                                                    if (p(r = this[--i])) return r; }
+Array.prototype.equals   = function(other) {
+    if (!other || this.length != other.length) return false;
+    for (var i = 0, l=this.length; i < l; i++) {
+        let te = this[i], oe = other[i];
+        if (!(te instanceof Array && oe instanceof Array ? te.equals(oe) : te == oe))
+            return false;
+    }
+    return true;
+}
+Object.defineProperty(Array.prototype, "last",     {enumerable: false});
+Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
+Object.defineProperty(Array.prototype, "findLast", {enumerable: false});
+Object.defineProperty(Array.prototype, "equals",   {enumerable: false});
+
 
 /***********************************************************************/
 /* A Provider Container aggregates several containers, the main deal   */
@@ -22,7 +38,9 @@ Array.prototype.flatten = function() { return [].concat.apply([], this); };
 /***********************************************************************/
 class ProviderContainer {
 
-    constructor(elms) {
+    constructor(elms, options) {
+
+        this.options = options ? options : {};
 
         // Code snippets.
         this.snippets = [];
@@ -30,11 +48,18 @@ class ProviderContainer {
         // Debug variables
         var idx = 0;
 
+        // Event handlers (to be overridden by CoqManager)
+        this.onInvalidate = (mark) => {};
+        this.onMouseEnter = (stm, ev) => {};
+        this.onMouseLeave = (stm, ev) => {};
+        this.onTipHover = (completion, zoom) => {};
+        this.onTipOut = () => {};
+
         // for (e of elms) not very covenient here due to the closure.
-        elms.forEach(function (e) {
+        elms.forEach(e => {
 
             // Init.
-            var cm = new CmCoqProvider(e);
+            var cm = new CmCoqProvider(e, this.options.editor);
             cm.idx = idx++;
             this.snippets.push(cm);
 
@@ -42,32 +67,33 @@ class ProviderContainer {
             cm.editor.on('focus', evt => { this.currentFocus = cm; });
 
             // Track invalidate
-            cm.onInvalidate = stm => { this.onInvalidate(stm); };
-            cm.onMouseEnter = stm => { this.onMouseEnter(stm); };
-            cm.onMouseLeave = stm => { this.onMouseLeave(stm); };
+            cm.onInvalidate = stm       => { this.onInvalidate(stm); };
+            cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
+            cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
-        },this);
+            cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
+            cm.onTipOut   = ()             => { this.onTipOut(); }
+        });
     }
 
     // Get the next candidate and mark it.
-    getNext(prev) {
-
-        var spr, next;
+    getNext(prev, until) {
 
         // If we have no previous element start with the first
-        // snippet, else get the current one.
-        if (!prev) {
-            spr  = this.snippets[0];
-            next = spr.getNext(null);
-        } else {
-            spr  = prev.sp;
-            next = spr.getNext(prev);
-        }
+        // snippet, else continue with the current one.
+        var spr = prev ? prev.sp : this.snippets[0];
+
+        if (until && this.snippets.indexOf(spr) > this.snippets.indexOf(until.sp))
+            return null;
+
+        var next = spr.getNext(prev, (until && until.sp === spr) ? until.pos : null);
 
         // We got a snippet!
         if (next) {
             next.sp = spr;
             return next;
+        } else if (until && until.sp === spr) {
+            return null;
         } else {
             // Try the next snippet.
             var idx = this.snippets.indexOf(spr);
@@ -90,6 +116,10 @@ class ProviderContainer {
         stm.sp.mark(stm, mark);
     }
 
+    highlight(stm, flag) {
+        stm.sp.highlight(stm, flag);
+    }
+
     // Focus and movement-related operations.
 
     // Get the point of the current focused element.
@@ -108,6 +138,11 @@ class ProviderContainer {
 
     }
 
+    getCursor() {
+        return {sp: this.currentFocus,
+                pos: this.currentFocus.getCursor()}
+    }
+
     cursorToStart(stm) {
         stm.sp.cursorToStart(stm);
     }
@@ -117,10 +152,13 @@ class ProviderContainer {
     }
 
     focus() {
-        if (this.currentFocus)
-            this.currentFocus.focus();
-        else
-            this.snippets[0].focus();
+        var sp = this.currentFocus || this.snippets[0];
+        if (sp) sp.focus();
+    }
+
+    openFile(file) {
+        var sp = this.currentFocus || this.snippets[0];
+        if (sp) sp.openFile(file);
     }
 
 }
@@ -132,10 +170,11 @@ class ProviderContainer {
 /***********************************************************************/
 
 var copyOptions = function(obj, target) {
-    if (!target) target = {};
-    for (var prop in target) {
+    if (typeof obj !== 'object' || obj instanceof Array) return obj;
+    if (typeof target !== 'object' || target instanceof Array) target = {};
+    for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
-            target[prop] = obj[prop];
+            target[prop] = copyOptions(obj[prop], target[prop]);
         }
     }
     return target;
@@ -153,11 +192,13 @@ class CoqManager {
             debug:   true,
             wrapper_id: 'ide-wrapper',
             base_path:  "./",
+            pkg_path: "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
-                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ]
+                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ],
+            editor: { /* codemirror options */ }
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
             // 'plugin-utils', 'extlib', 'mirrorcore']
@@ -170,46 +211,47 @@ class CoqManager {
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
+        this.layout.onAction = this.toolbarClickHandler.bind(this);
+
+        this.setupDragDrop();
 
         // Setup the Coq worker.
-        this.coq           = new Worker(this.options.base_path + 'coq-js/jscoq_worker.js');
-        this.coq.onmessage = evt => this.coq_handler(evt);
+        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
+        this.coq.options   = this.options;
+        this.coq.observers.push(this);
 
-        this.coq.sendCommand = msg => {
-            if(this.options.debug) {
-                console.log("Posting: ", msg);
-            }
-            this.coq.postMessage(msg);
-        };
+        // Setup pretty printer for feedback and goals
+        this.pprint = new FormatPrettyPrint();
+
+        // Setup contextual info bar
+        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+                                                     this.coq, this.pprint);
+
+        // Setup company-coq
+        if (this.options.editor.mode && this.options.editor.mode['company-coq'])
+            this.company_coq = new CodeMirror.CompanyCoq();
+
+        // Setup autocomplete
+        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
+        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
 
         // Keybindings setup
         // XXX: This should go in the panel init.
-        document.addEventListener('keydown', evt => this.keyHandler(evt));
-
-        // XXX: Depends on layout IDs.
-        document.getElementById('hide-panel')
-            .addEventListener('click', evt => this.layout.toggle() );
+        document.addEventListener('keydown', evt => this.keyHandler(evt), true);
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(this.layout.packages, this.options.base_path, this.coq);
-
-        // Info
-        this.packages.pkg_info = [];
-
-        // Packages to load
-        this.packages.pkg_init = [];
-
-        // Pre-init packages
-        this.pre_packages = [];
+        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
+                                           this.options.all_pkgs,
+                                           this.coq);
 
         // Display packages panel:
-        var pkg_panel = document.getElementById('packages-panel').parentNode;
-        pkg_panel.classList.remove('collapsed');
-        this.layout.show();
+        this.packages.expand();
+
+        requestAnimationFrame(() => this.layout.show());
 
         // Get Coq version, etc...
-        this.coq.sendCommand(["GetInfo"]);
+        this.coq.getInfo();
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -219,28 +261,29 @@ class CoqManager {
             goals:             []
         };
 
-        this.error = [];
-
         // XXX: Initial sentence == hack
         let  dummyProvider = { mark : function() {},
                                getNext: function() { return null; },
                                focus: function() { return null; }
                              };
-        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider };
+        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider, executed: true };
         this.doc.sentences = [this.doc.stm_id[1]];
+
+        this.error = [];
+        this.goTarget = null;
+        this.navEnabled = false;
 
         // XXX: Hack
         this.waitForPkgs = [];
 
         // The fun starts: Load the set of packages.
-        let bp = this.options.base_path + "../coq-pkgs/";
-        this.coq.sendCommand(["InfoPkg", bp, this.options.all_pkgs]);
+        this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
     }
 
     // Provider setup
     setupProvider(elems) {
 
-        var provider = new ProviderContainer(elems);
+        var provider = new ProviderContainer(elems, this.options);
 
         provider.onInvalidate = stm => {
 
@@ -252,51 +295,111 @@ class CoqManager {
                 this.error.splice(stm_err_idx, 1);
                 return;
             }
-
-            this.goCursor();
+            else if (stm.coq_sid) {
+                this.coq.cancel(stm.coq_sid);
+            }
         };
 
-        provider.onMouseEnter = stm => {
-            if (stm.coq_sid && this.doc.goals[stm.coq_sid])
-                this.layout.update_goals(this.doc.goals[stm.coq_sid]);
+        provider.onMouseEnter = (stm, ev) => {
+            if (stm.coq_sid && ev.altKey) {
+                if (this.doc.goals[stm.coq_sid] !== undefined)
+                    this.updateGoals(this.doc.goals[stm.coq_sid]);
+                else
+                    this.coq.goals(stm.coq_sid);  // XXX: async
+            }
+            else {
+                this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+            }
         };
 
-        provider.onMouseLeave = stm => {
-            this.layout.update_goals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+        provider.onMouseLeave = (stm, ev) => {
+            this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
         };
+
+        provider.onTipHover = (entry, zoom) => {
+            var fullname = [...entry.prefix, entry.label].join('.');
+            if (entry.kind == 'lemma')
+                this.contextual_info.showCheck(fullname, /*opaque=*/true);
+        };
+        provider.onTipOut = () => { this.contextual_info.hide(); };
 
         return provider;
+    }
+
+    setupDragDrop() {
+        $(this.layout.ide).on('dragover', (evt) => { 
+            evt.preventDefault(); 
+        });
+        $(this.layout.ide).on('drop', (evt) => { 
+            evt.preventDefault();
+            // TODO better check file type and size before
+            //  opening
+            var file = evt.originalEvent.dataTransfer.files[0];
+            if (file)
+                this.provider.openFile(file);
+        });
+    }
+
+    /**
+     * Reads symbols from a URL and populates CompanyCoq.vocab.
+     * @param {string} url address of .symb.json resource
+     */
+    loadSymbolsFrom(url, scope="globals") {
+        $.get({url, dataType: 'json'}).done(data => { 
+            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false); 
+        })
+        .fail((_, status, msg) => {
+            console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
+        });
+    }
+
+    updateLocalSymbols() {
+        this.coq.inspectPromise(["CurrentFile"])
+        .then(bunch => {
+            CodeMirror.CompanyCoq.loadSymbols(
+                { lemmas: bunch.map(CoqIdentifier.ofKerName) }, 
+                'locals', /*replace_existing=*/true)
+        });
     }
 
     // Feedback Processing
     feedProcessingIn(sid) {
     }
 
-    feedFileDependency(sid) {
+    feedFileDependency(sid, file, mod) {
+        let msg = `${mod} loading....`,
+            item = this.layout.log(msg, 'Info');
+        item.addClass('loading').data('mod', mod);
     }
 
-    feedFileLoaded(sid, file, mod) {
-        this.layout.log(file + ' loading.', 'Info');
+    feedFileLoaded(sid, mod, file) {
+        let item = [...this.layout.query.getElementsByClassName('loading')]
+                    .findLast(x => $(x).data('mod') === mod),
+            msg = `${mod} loaded.`;
+
+        if (item)
+            $(item).removeClass('loading').text(msg);
+        else
+            this.layout.log(msg, 'Info');
     }
 
     // The first state is ready.
-    feedProcessed(sid) {
+    coqReady(sid) {
 
-        this.layout.proof.textContent +=
-            "\ncoq worker is ready with sid!! " + sid.toString() +
-            "\nPlease, wait for library loading";
+        this.layout.proof.append(document.createTextNode(
+            "\nCoq worker is ready with sid = " + sid.toString() + "\n"));
+            /* init libraries have already been loaded by now */
 
-        this.feedProcessed = this.feedProcessedReady;
         this.enable();
     }
 
-    feedProcessedReady(nsid) {
+    feedProcessed(nsid) {
 
         if(this.options.debug)
             console.log('State processed', nsid);
 
         // The semantics of the stm here were a bit inconvenient: it
-        // would send `ProcessedReady` feedback message before we the
+        // would send `ProcessedReady` feedback message before the
         // `Stm.add` call has returned, thus we were not ready to
         // handle as we didn't know of their existance yet. The
         // typical example is when `Stm.add` forces an observe due to
@@ -312,216 +415,92 @@ class CoqManager {
             return;
         }
 
-        stm.executed = true;
-        this.provider.mark(stm, "clear");
-        this.provider.mark(stm, "ok");
+        if (!stm.executed) {
+            stm.executed = true;
+            this.provider.mark(stm, "ok");
 
-        // Get goals
-        this.coq.sendCommand(["Goals", nsid]);
-    }
-
-    // Simplifier to the "rich" format coq uses.
-    richpp2HTML(msg) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        var ret;
-        var tag, ct, id, att, m;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-        case "Element":
-            [id, att, m] = ct;
-            let imm = m.map(this.richpp2HTML, this);
-            ret = "".concat(...imm);
-            ret = `<span class="${id}">` + ret + `</span>`;
-            break;
-
-        // PCData contains a string
-        case "PCData":
-            ret = ct;
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
-    pp2HTML(msg) {
-
-        // Elements are ...
-        if (msg.constructor !== Array) {
-            return msg;
-        }
-
-        var ret;
-        var tag, ct;
-        [tag, ct] = msg;
-
-        switch (tag) {
-
-        // Element(tag_of_element, att (single string), list of xml)
-        case "Pp_glue":
-            let imm = ct.map(this.pp2HTML, this);
-            ret = "".concat(...imm);
-            // ret = `<span class="${id}">` + ret + `</span>`;
-            break;
-
-        // PCData contains a string
-        case "Pp_string":
-            ret = ct;
-            break;
-
-        // Pp_box is encoded as an array of 3.
-        case "Pp_box":
-            var vmode = this.breakMode || false;
-
-            switch(msg[1][0]) {
-            case "Pp_vbox":
-                this.breakMode = true;
-                break;
-            default:
-                this.breakMode = false;
+            // Get goals and active definitions
+            if (nsid == this.doc.sentences.last().coq_sid) {
+                this.coq.goals(nsid);
+                this.updateLocalSymbols();
             }
-
-            ret = this.pp2HTML(msg[2]);
-            this.breakMode = vmode;
-            break;
-
-        // Pp_tag is encoded as an array of 3.
-        case "Pp_tag":
-            ret = this.pp2HTML(msg[2]);
-            ret = `<span class="${msg[1]}">` + ret + `</span>`;
-            break;
-
-        case "Pp_force_newline":
-            ret = "</br>";
-            break;
-
-        case "Pp_print_break":
-            if (this.breakMode) {
-                ret = "</br>";
-            } else if (msg[2] > 0) {
-                ret = "</br>";
-            } else {
-                ret = " ";
-            }
-            break;
-
-        default:
-            ret = msg;
-        }
-        return ret;
-    }
-
-    // Error handler.
-    handleError(sid, loc, msg) {
-
-        let err_stm;
-
-        err_stm = this.doc.stm_id[sid];
-
-        // The sentence has already vanished! This can happen for
-        // instance if the execution of an erroneous sentence is
-        // queued twice, which is hard to avoid due to STM exec
-        // forcing on parsing.
-
-        if(!err_stm) return;
-
-        this.layout.log(msg, 'Error');
-
-        // this.error will make the cancel handler to mark the stm red
-        // instead of just clearing the mark.
-        this.error.push(err_stm);
-
-        let stm_idx       = this.doc.sentences.indexOf(err_stm);
-
-        // The stm was not deleted!
-        if (stm_idx >= 0) {
-            this.doc.sentences.splice(stm_idx, 1);
-
-            this.doc.stm_id[sid] = null;
-            this.doc.goals[sid]  = null;
-            err_stm.coq_sid = null;
-
-            this.provider.mark(err_stm, "clear");
-            this.provider.mark(err_stm, "error");
-
-            this.coq.sendCommand(['Cancel', sid]);
         }
     }
 
     feedMessage(sid, lvl, loc, msg) {
 
-        // var fmsg = this.richpp2HTML(msg);
-        // var fsmg = msg.toString();
-        var fmsg = this.pp2HTML(msg);
+        var fmsg = this.pprint.pp2HTML(msg);
 
-        // JSON encoding...
-        lvl = lvl[0];
+        lvl = lvl[0];  // JSON encoding
 
         if(this.options.debug)
             console.log('Message', sid, lvl, fmsg);
+
+        let stm = this.doc.stm_id[sid];
+        if (stm) stm.feedback.push({level: lvl, loc: loc, msg: msg})
 
         // XXX: highlight error location.
         if (lvl === 'Error') {
             this.handleError(sid, loc, fmsg);
         } else {
-            this.layout.log(fmsg, lvl);
+            this.layout.log(fmsg, lvl, {'data-coq-sid': sid});
         }
     }
 
     // Coq Message processing.
-    coqFeedback(fb) {
-
-        var feed_tag = fb.contents[0];
-
-        if(this.options.debug)
-            console.log('Feedback', fb.span_id, fb.contents);
-
-        if( this['feed'+feed_tag] ) {
-            fb.contents[0] = fb.span_id;
-            this['feed'+feed_tag].apply(this, fb.contents);
-        } else {
-            console.log('Feedback type', feed_tag, 'not handled');
-        }
-
-    }
-
     coqAdded(nsid,loc) {
 
         if(this.options.debug)
             console.log('adding: ', nsid, loc);
 
         // XXX Rewrite, the sentence could have vanished...
-        let cur_stm = this.doc.stm_id[nsid];
+        let cur_stm = this.doc.stm_id[nsid], exec = false;
 
         if (this.goTarget) {
-            // [Modulo the same old bugs, we need a position comparison op]
-            if (this.provider.getAtPoint() || this.provider.afterPoint(cur_stm) ) {
-            // if (this.provider.getAtPoint()) {
-
-                // We have reached the destination...
-                if(!cur_stm.executed) {
-                    this.coq.sendCommand(['Exec', nsid]);
-                }
-
-                this.goTarget = false;
-            } else {
-                // We have not reached the destination, continue forward.
-                this.goNext(false);
-            }
+            exec = !this.goNext(false, this.goTarget);
+            if (exec)
+                this.goTarget = null;
         } else {
-            if(!cur_stm.executed) {
-                this.coq.sendCommand(['Exec', nsid]);
-            }
+            exec = true;
         }
+
+        if (exec && !cur_stm.executed) {
+            this.coq.exec(nsid);
+        }
+    }
+
+    // Gets a request to load packages
+    coqPending(nsid, prefix, module_names) {
+        let stm = this.doc.stm_id[nsid];
+        let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1];
+
+        let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
+            this.coq.execPromise(ontop.coq_sid);
+
+        var pkg_deps = new Set();
+        for (let module_name of module_names) {
+            let binfo = this.packages.searchModule(prefix, module_name);
+            if (binfo)
+                for (let d of binfo.deps) pkg_deps.add(d);
+        }
+
+        pkg_deps = [...pkg_deps.values()];
+
+        var cleanup = () => {};
+
+        if (pkg_deps.length > 0) {
+            console.log("Pending: loading packages", pkg_deps);
+            this.disable();
+            this.packages.expand();
+            cleanup = () => { this.packages.collapse(); this.enable(); }
+        }
+
+        this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
+            .then(() => {
+                this.coq.reassureLoadPath(this.packages.getLoadPath());
+                this.coq.resolve(ontop.coq_sid, nsid, stm.text);
+                cleanup();
+            });
     }
 
     // Gets a list of cancelled sids.
@@ -536,7 +515,7 @@ class CoqManager {
             let stm_err_idx   = this.error.indexOf(stm_to_cancel);
 
             if (stm_err_idx >= 0) {
-
+                // Do not clear the mark, to keep the error indicator.
             } else {
                 let stm_idx = this.doc.sentences.indexOf(stm_to_cancel);
 
@@ -556,47 +535,46 @@ class CoqManager {
         }, this);
 
         // Update goals
-
-        this.layout.update_goals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+        var stm = this.doc.sentences.last(),
+            hgoals = this.doc.goals[stm.coq_sid];
+        if (hgoals) {
+            this.updateGoals(hgoals);
+        }
+        else if (stm.executed) {
+            this.coq.goals(stm.coq_sid); // no goals fetched for current statement, ask worker
+        }
     }
 
     coqGoalInfo(sid, goals) {
 
         if (goals) {
-            var hgoals = this.pp2HTML(goals);
+            var hgoals = this.pprint.pp2HTML(goals);
             this.doc.goals[sid] = hgoals;
 
             // XXX optimize!
             // if(!this.goTarget)
-            this.layout.update_goals(hgoals);
+            this.updateGoals(hgoals);
         }
     }
 
     coqLog(level, msg) {
 
-        let rmsg = this.pp2HTML(msg);
+        let rmsg = this.pprint.pp2HTML(msg);
+        
+        level = level[0];
 
-        if (this.options.debug)
-            console.log(rmsg, level[0]);
+        if (this.options.debug) {
+            if (level === 'Debug')
+                console.debug(rmsg, level)
+            else
+                console.log(rmsg, level);
+        }
 
-        this.layout.log(rmsg, level[0]);
+        this.layout.log(rmsg, level);
     }
 
     coqLibInfo(bname, bi) {
-
         this.packages.addBundleInfo(bname, bi);
-        this.packages.pkg_info[bname] = bi;
-
-        // Check if we want to load this package.
-        var rem_pkg = this.options.init_pkgs;
-        var idx = rem_pkg.indexOf(bname);
-
-        // Worker path is coq-js.
-        let bp = this.options.base_path + "../coq-pkgs/";
-
-        if(idx > -1) {
-            this.coq.sendCommand(['LoadPkg', bp, bname]);
-        }
     }
 
     coqLibProgress(evt) {
@@ -607,94 +585,76 @@ class CoqManager {
 
         this.packages.onBundleLoad(bname);
 
-        var rem_pkg = this.options.init_pkgs;
-        var idx = rem_pkg.indexOf(bname);
+        var wait_pkgs = this.waitForPkgs,
+            loaded_pkgs = this.packages.loaded_pkgs;
 
-        if(idx > -1) {
-
-            this.packages.pkg_init.push(bname);
-            rem_pkg.splice(idx, 1);
-
-            // All the packages have been loaded.
-            if (rem_pkg.length === 0)
-                this.coqInit();
+        if (wait_pkgs.length > 0) {
+            if (wait_pkgs.every(x => loaded_pkgs.indexOf(x) > -1)) {
+                this.enable();
+                this.packages.collapse();
+                this.waitForPkgs = [];
+            }
         }
     }
 
-    coqCoqExn(msg) {
-        // this.layout.log(msg, "Error");
-        console.log('coqExn', msg);
+    coqCoqExn(loc, sids, msg) {
+        console.error('Coq Exception', msg);
+
+        // If error has already been reported by Feedback, bail
+        if (this.error.some(stm => stm.feedback.some(x => x.msg.equals(msg))))
+            return;
+
+        var rmsg = this.pprint.pp2HTML(msg);
+        this.layout.log(rmsg, 'Error');
     }
 
     coqJsonExn(msg) {
         // this.layout.log(msg, "Error");
-        console.log('jsonExn', msg);
+        console.error('jsonExn', msg);
     }
 
     coqCoqInfo(info) {
 
-        this.layout.proof.textContent =
-               info
-            + "\nPlease wait for the libraries to load, thanks!"
-            + "\nIf you have trouble try cleaning your browser's cache.\n";
+        this.layout.proof.textContent = info;
+
+        var pkgs = this.options.init_pkgs;
+
+        if (pkgs.length > 0)
+            this.layout.proof.textContent +=
+                  "\nPlease wait for the libraries to load, thanks!"
+                + "\n(If you are having trouble, try cleaning your browser's cache.)\n";
+        
+        this.packages.waitFor(pkgs)
+        .then(() => this.packages.loadDeps(pkgs))
+        .then(() => { this.coqInit(); });
     }
 
     // Coq Init: At this point, the required libraries are loaded
     // and Coq is ready to be used.
     coqInit() {
 
-        // Hide the packages panel.
-        var pkg_panel = document.getElementById('packages-panel').parentNode;
-        pkg_panel.classList.add('collapsed');
+        this.packages.collapse();
 
-        this.layout.proof.textContent +=
-            "\n===> JsCoq filesystem initalized with success!\n" +
-            "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n";
+        this.layout.proof.append(document.createTextNode(
+            "\n===> JsCoq filesystem initialized successfully!\n" +
+            "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n"));
 
         // XXXXXX: Critical point
         var load_lib = [];
-        var init_lib = this.options.init_pkgs;
 
         if (this.options.prelude) {
             load_lib.push(["Coq", "Init", "Prelude"]);
         }
 
-        let bp = this.options.base_path + "../";
+        let set_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
+            load_path = this.packages.getLoadPath();
 
-        let load_paths = this.packages.pkg_init.map(
-            bundle => this.packages.pkg_info[bundle].pkgs
-        ).flatten().map( pkg => pkg.pkg_id );
-
-        this.coq.sendCommand(["Init", this.options.implicit_libs, load_lib, load_paths]);
-        // Done!
+        this.coq.init(set_opts, load_lib, load_path);
+        // Almost done!
     }
 
-    coq_handler(evt) {
+    goPrev(update_focus) {
 
-        var msg     = evt.data;
-        var msg_tag = msg[0];
-
-        if(this.options.debug)
-            console.log("coq_evt", msg);
-
-        // We call the corresponding coq$msg_tag(msg[1]..msg[n])
-
-        if( this['coq'+msg_tag] ) {
-            msg.shift();
-            this['coq'+msg_tag].apply(this, msg);
-        } else {
-            console.log('Message type', msg_tag, 'not handled');
-        }
-
-    }
-
-    goPrev() {
-
-        // If we didn't load the prelude, prevent unloading it to
-        // workaround a bug in Coq.
-        if (this.doc.sentences.length <= 1) return;
-
-        debugger;
         // XXX: Optimization, in case of error, but incorrect in the
         // new general framework.
         if (this.error.length > 0) {
@@ -702,10 +662,15 @@ class CoqManager {
             return;
         }
 
+        if (this.goTarget) return;
+
+        // If we didn't load the prelude, prevent unloading it to
+        // workaround a bug in Coq.
+        if (this.doc.sentences.length <= 1) return;
+
         var cur_stm  = this.doc.sentences.last();
         var prev_stm = this.doc.sentences[this.doc.sentences.length - 2];
 
-        let update_focus = true;
         if(update_focus && prev_stm) {
             this.currentFocus = prev_stm.sp;
             this.currentFocus.focus();
@@ -719,17 +684,21 @@ class CoqManager {
         this.doc.stm_id[cur_stm.coq_sid] = null;
         this.doc.goals[cur_stm.coq_sid]  = null;
         this.provider.mark(cur_stm, "clear");
-        this.coq.sendCommand(['Cancel', cur_stm.coq_sid]);
+        this.coq.cancel(cur_stm.coq_sid);
         cur_stm.coq_sid = null;
     }
 
     // Return if we had success.
-    goNext(update_focus) {
+    goNext(update_focus, until) {
+
+        if (this.goTarget && !until) return false;
+
+        this.clearErrors();
 
         let cur_stm = this.doc.sentences.last();
         let cur_sid = cur_stm.coq_sid;
 
-        let next_stm = this.provider.getNext(cur_stm);
+        let next_stm = this.provider.getNext(cur_stm, until);
 
         // We are the the end
         if(!next_stm) { return false; }
@@ -759,15 +728,15 @@ class CoqManager {
         // process special jscoq commands, for now:
         // Comment "pkg: list" will load packages.
         this.process_special(next_stm.text);
-        this.coq.sendCommand(["Add", cur_sid, next_sid, next_stm.text]);
+        this.coq.add(cur_sid, next_sid, next_stm.text);
 
         // Avoid stack overflows by doing a commit every 24
         // sentences, due to the STM co-tail recursive traversal bug?
         let so_threshold = 24;
-        if( (this.doc.number_adds++ % so_threshold) === 0 )
-            this.coq.sendCommand(['Exec', next_sid]);
+        if( (++this.doc.number_adds % so_threshold) === 0 )
+            this.coq.exec(next_sid);
 
-        return false;
+        return true;
     }
 
     goCursor() {
@@ -775,15 +744,58 @@ class CoqManager {
         var cur = this.provider.getAtPoint();
 
         if (cur) {
-            if(!cur.coq_sid) {
-                console.log("critical error, stm not registered");
-            } else {
-                this.coq.sendCommand(['Cancel', cur.coq_sid]);
+            if (cur.coq_sid) {
+                this.coq.cancel(cur.coq_sid);
+            }
+            else {
+                console.warn("in goCursor(): stm not registered");
             }
         } else {
-            this.goTarget = true;
-            this.goNext(false);
+            this.goTarget = this.provider.getCursor();
+            this.goNext(false, this.goTarget);
         }
+    }
+
+    // Error handler.
+    handleError(sid, loc, msg) {
+
+        this.goTarget = null;  // first of all, stop any pending additions
+
+        let err_stm = this.doc.stm_id[sid];
+
+        // The sentence has already vanished! This can happen for
+        // instance if the execution of an erroneous sentence is
+        // queued twice, which is hard to avoid due to STM exec
+        // forcing on parsing.
+        if(!err_stm) return;
+
+        this.layout.log(msg, 'Error');
+
+        // this.error will prevent the cancel handler from 
+        // clearing the mark.
+        this.error.push(err_stm);
+
+        let stm_idx       = this.doc.sentences.indexOf(err_stm);
+
+        // The stm was not deleted!
+        if (stm_idx >= 0) {
+            this.doc.sentences.splice(stm_idx, 1);
+
+            this.doc.stm_id[sid] = null;
+            this.doc.goals[sid]  = null;
+            err_stm.coq_sid = null;
+
+            this.provider.mark(err_stm, "error");
+
+            this.coq.cancel(sid);
+        }
+    }
+
+    clearErrors() {
+        for (let err of this.error) {
+            this.provider.mark(err, "clear");
+        }
+        this.error = [];
     }
 
     // Drops all the state!
@@ -801,53 +813,52 @@ class CoqManager {
     // Keyboard handling
     keyHandler(e) {
 
-        // All our keybindings are prefixed by alt.
         if (e.keyCode === 119) // F8
             this.layout.toggle();
 
-        if (!e.altKey && !e.metaKey) return true;
-        var btn_name;
-        switch (e.keyCode) {
-            case 13: // ENTER
-                btn_name = 'to-cursor';
-                break;
-            case 78: // N
-            case 40: // flèche en bas
-                btn_name = 'down';
-                break;
-            case 80: // P
-            case 38: // flèche en haut
-                btn_name = 'up';
-                break;
+        // All other keybindings are prefixed by alt.
+        if (!e.altKey) return true;
+
+        // When navigation is disabled, suppress keystrokes
+        if (!this.navEnabled && [13, 39, 78, 40, 80, 38].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            return true;
         }
 
-        if(btn_name) {
-            this.provider.focus();
-            this.raiseButton(btn_name);
-            e.preventDefault();
+        switch (e.keyCode) {
+            case 13: // ENTER
+            case 39: // Right arrow
+                this.goCursor();
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+            case 78: // N
+            case 40: // Down arrow
+                this.goNext(true);
+                e.preventDefault();
+                break;
+            case 80: // P
+            case 38: // Up arrow
+                this.goPrev(true);
+                e.preventDefault();
+                break;
         }
     }
 
     // Enable the IDE.
     enable() {
-
-        // XXX: Should be the task of the layout.
-        this.btnEventHandler = this.toolbarClickHandler.bind(this);
-        this.layout.buttons.addEventListener('click', this.btnEventHandler);
-        this.layout.buttons.style.display = 'inline-block';
-        this.layout.buttons.style.opacity = 1;
+        this.navEnabled = true;
+        this.layout.toolbarOn();
         this.provider.focus();
     }
 
     // Disable the IDE.
     disable() {
-
-        // Disable the buttons.
-        this.layout.buttons.removeEventListener('click', this.btnEventHandler);
-        this.layout.buttons.style.display = 'none';
-        this.layout.buttons.style.opacity = 0;
-        this.layout.proof.textContent +=
-                "\n===> Waiting for Package load!\n";
+        this.navEnabled = false;
+        this.layout.toolbarOff();
+        this.layout.proof.append(document.createTextNode(
+                "\n===> Waiting for Package load!\n"));
     }
 
     toolbarClickHandler(evt) {
@@ -860,7 +871,7 @@ class CoqManager {
             break;
 
         case 'up' :
-            this.goPrev();
+            this.goPrev(true);
             break;
 
         case 'down' :
@@ -869,21 +880,17 @@ class CoqManager {
         }
     }
 
-    raiseButton(btn_name) {
-
-        // XXX: EG: Here I disagree with the current code, it
-        // should be possible to use the coq manager without a toolbar!
-
-        // This is a bit different from most UI indeed.
-        var btns = this.layout.buttons.getElementsByTagName('img');
-        var btn  = btns.namedItem(btn_name);
-
-        if (btn) {
-            btn.dispatchEvent(new MouseEvent('click',
-                                             {'view'       : window,
-                                              'bubbles'    : true,
-                                              'cancelable' : true
-                                             }));
+    updateGoals(html) {
+        if (html) {
+            this.layout.update_goals(html);
+            if (this.company_coq) {
+                this.contextual_info.pinIdentifiers();
+                this.company_coq.markup.applyToDOM(this.layout.proof);
+            }
+            this.pprint.adjustBreaks($(this.layout.proof));
+            /* Notice: in Pp-formatted text, line breaks are handled by
+            * FormatPrettyPrint rather than by the layout.
+            */
         }
     }
 
@@ -901,13 +908,14 @@ class CoqManager {
                 let pkgs = args.split(' ');
                 console.log('Requested pkgs '); console.log(pkgs);
 
-                let pkg_panel = document.getElementById('packages-panel').parentNode;
-                pkg_panel.classList.remove('collapsed');
+                this.packages.expand();
 
                 this.disable();
                 this.waitForPkgs = pkgs;
 
-                pkgs.forEach(this.coq.add_pkg, this);
+                for (let pkg of pkgs) {
+                    this.packages.startPackageDownload(pkg);
+                }
 
                 return true;
 
@@ -917,6 +925,197 @@ class CoqManager {
             }
         }
         return false;
+    }
+}
+
+
+class CoqContextualInfo {
+    /**
+     * 
+     * @param {jQuery} container <div> element to show info in
+     * @param {CoqWorker} coq jsCoq worker for querying types and definitions
+     * @param {FormatPrettyPrint} pprint formatter for Pp data
+     */
+    constructor(container, coq, pprint) {
+        this.container = container;
+        this.coq = coq;
+        this.pprint = pprint;
+        this.el = $('<div>').addClass('contextual-info').hide();
+        this.is_visible = false;
+        this.is_sticky = false;
+        this.focus = null;
+        this.minimal_exposure = Promise.resolve();
+
+        this.MINIMAL_EXPOSURE_DURATION = 150; // ms
+
+        this.container.append(this.el);
+
+        // Set up mouse events
+        var r = String.raw,
+            sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
+
+        this.contextual_sel = sel;
+
+        container.on('mouseenter', sel,  evt => this.onMouseEnter(evt));
+        container.on('mousedown',  sel,  evt => this.onMouseDown(evt, true));
+        container.on('mouseleave', sel,  evt => this.onMouseLeave(evt));
+        container.on('mouseleave',       evt => this.onMouseLeave(evt));
+        container.on('mousedown',        evt => this.hideReq());
+
+        this.el.on('mouseenter',         evt => this.hideCancel());
+        this.el.on('mousedown',          evt => { this.hideReq(); evt.stopPropagation(); });
+        this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
+
+        this._keyHandler = this.keyHandler.bind(this);
+        this._key_bound = false;
+    }
+
+    onMouseEnter(evt) { if (!this.is_sticky) this.showFor(evt.target, evt.altKey); }
+    onMouseLeave(evt) { if (!this.is_sticky) this.hideReq(); }
+
+    onMouseDown(evt)  { 
+        this.showFor(evt.target, evt.altKey); 
+        this.is_sticky = true;
+        evt.stopPropagation();
+    }
+
+    showFor(dom, alt) {
+        var jdom = $(dom), name = jdom.attr('data-name') || jdom.text();
+        if (jdom.hasClass('constr.variable') ||
+            jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
+            if (alt) this.showPrint(name);
+            else     this.showCheck(name, /*opaque*/false, /*silent_fail*/true);
+        }
+        else if (jdom.hasClass('constr.notation')) {
+            this.showLocate(name);
+        }
+    }
+
+    showCheck(name, opaque=false, silent_fail=false) {
+        this.focus = {identifier: name, info: 'Check', opaque};
+        this.showQuery(`Check ${name}.`, silent_fail ? null : this.formatName(name));
+    }
+
+    showPrint(name) {
+        this.focus = {identifier: name, info: 'Print'};
+        this.showQuery(`Print ${name}.`, this.formatName(name));
+    }
+
+    showLocate(symbol) {
+        this.focus = {symbol: symbol, info: 'Locate'};
+        this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
+    }
+
+    showQuery(query, title) {
+        this.is_visible = true;
+        this.coq.queryPromise(0, query).then(result => {
+            if (this.is_visible)
+                this.show(this.formatMessages(result));
+        })
+        .catch(err => {
+            if (title)
+                this.show(this.formatText(title, "(not available)"));
+        });
+    }
+
+    show(html) {
+        this.el.html(html);
+        this.el.show();
+        this.is_visible = true;
+        this.minimal_exposure = this.elapse(this.MINIMAL_EXPOSURE_DURATION);
+        if (!this._key_bound) {
+            this._key_bound = true;
+            $(document).on('keydown keyup', this._keyHandler);
+        }
+    }
+
+    hide() {
+        this.container.find('.contextual-focus').removeClass('contextual-focus');
+        this.el.hide();
+        this.is_visible = false;
+        this.is_sticky = false;
+        $(document).off('keydown keyup', this._keyHandler);
+        this._key_bound = false;
+    }
+
+    hideReq() {
+        this.request_hide = true;
+        this.minimal_exposure.then(() => { if (this.request_hide) this.hide() });
+    }
+
+    hideCancel() {
+        this.request_hide = false;
+    }
+
+    /**
+     * Stores current identifier names, esp. before
+     * prettifying text with company-coq.
+     */
+    pinIdentifiers(jdom) {
+        if (!jdom) jdom = this.container;
+        for (let el of jdom.find(this.contextual_sel)) {
+            $(el).attr('data-name', $(el).text());
+        }
+    }
+
+    keyHandler(evt) {
+        var name = this.focus.identifier;
+        if (name && !this.focus.opaque) {
+            if (evt.altKey) this.showPrint(name);
+            else            this.showCheck(name);
+        }
+    }
+
+    formatMessages(msgs) {
+        return msgs.map(feedback => this.pprint.pp2HTML(feedback.msg)).join("<hr/>");
+    }
+
+    formatName(name) {
+        var comps = name.split('.'),
+            span = $('<span>');
+        for (let path_el of comps.slice(0, comps.length - 1)) {
+            span.append($('<span>').addClass('constr.path').text(path_el));
+            span.append(document.createTextNode('.'));
+        }
+        span.append($('<span>').addClass('constr.reference').text(comps.last()));
+        return span;
+    }
+
+    formatText(title, msg) {
+        return $('<div>')
+            .append(typeof title === 'string' ? $('<span>').text(title) : title)
+            .append($('<br/>'))
+            .append($('<span>').addClass('message').text("  " + msg));
+    }
+
+    elapse(duration) {
+        return new Promise((resolve, reject) =>
+            setTimeout(resolve, duration));
+    }
+}
+
+
+class CoqIdentifier {
+    constructor(prefix, label) {
+        this.prefix = prefix;
+        this.label = label;
+    }
+
+    toString() { return [...this.prefix, this.label].join('.'); }
+
+    /**
+     * Constructs an identifier from a Coq Names.KerName.t.
+     * @param {array} param0 serialized form of KerName (from SearchResults).
+     */
+    static ofKerName([kername, modpath, dirpath, label]) {
+        /**/ console.assert(kername === 'KerName') /**/
+        var modsuff = [];
+        while (modpath[0] == 'MPdot') {
+            modsuff.push(modpath[2]);
+            modpath = modpath[1];
+        }
+        /**/ console.assert(modpath[0] === 'MPfile'); /**/
+        return new CoqIdentifier(modpath[1].slice().reverse().concat(modsuff), label);
     }
 }
 

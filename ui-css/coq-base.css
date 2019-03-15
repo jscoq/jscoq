@@ -16,6 +16,7 @@ body {
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   line-height: normal;
   font-size: 11pt;
+  overscroll-behavior: none;
 }
 
 a, a:link, a:visited, a:active {
@@ -25,14 +26,19 @@ a, a:link, a:visited, a:active {
 #ide-wrapper {
   /*padding-left: 0;*/
   padding-right: 45%;
-  transition: all 0.5s ease;
+  /*transition: all 0.5s ease;*/
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
+  overscroll-behavior: none;
 }
 
 #ide-wrapper.toggled {
   padding-right: 0px;
+}
+
+.on-hold * {
+  cursor: progress !important;
 }
 
 #code-wrapper {
@@ -42,7 +48,18 @@ a, a:link, a:visited, a:active {
   height: 100%;
   margin-left: 0px;
   padding-right: 45%;
-  transition: all 0.5s ease;
+  transition: padding-right 0.5s ease;
+  overscroll-behavior: none;
+}
+
+#code-wrapper > div:first-child:last-child {
+  height: 100%;
+  overflow: auto;
+}
+
+#code-wrapper .CodeMirror span[role=presentation] {
+  line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
+  font-family: monospace, times, Arial Unicode MS;
 }
 
 #ide-wrapper.toggled #code-wrapper {
@@ -81,21 +98,25 @@ a, a:link, a:visited, a:active {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 35px);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .flex-panel {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #9f9f9f;
   flex: 1000 1;
-  overflow: auto;
-  transition: all 0.5s ease-in-out;
+  overflow: hidden;
+  transition: flex 0.5s ease-in-out;
 }
 
 .flex-panel > .caption {
+  flex-shrink: 0;
   background: #c4c4c4;
+  font-size: 11px;
   height: 20px;
   padding: 3px 10px 0 10px;
-  position: absolute;
+  position: relative;
   z-index: 3;
   width: 100%;
   cursor: pointer;
@@ -111,15 +132,23 @@ a, a:link, a:visited, a:active {
   top: 1px;
   right: 7px;
   transform: rotate(-90deg);
-  transition: all 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
+}
+
+.flex-panel > .caption select {
+  font-size: 8px;
+  margin-left: 1em;
+  position: relative;
+  top: -1px;
 }
 
 .flex-panel > .content {
-  margin: 22px 4px 4px 4px;
-  transition: all 0.5s ease-in-out;
+  flex: 1000 1;
+  padding: 2px 4px 4px 4px;
+  /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
-  height: fit-content;
+  overscroll-behavior-y: contain;
 }
 
 .flex-panel.collapsed {
@@ -129,13 +158,14 @@ a, a:link, a:visited, a:active {
 .flex-panel.collapsed > .caption:after {
   transform: none;
 }
-
+/*
 .flex-panel.collapsed > .content {
   opacity: 0;
 }
-
+*/
 #goal-panel {
   flex: 2000 1;
+  position: relative;
 }
 
 #goal-panel.collapsed {
@@ -144,7 +174,6 @@ a, a:link, a:visited, a:active {
 
 #goal-text {
   border: 0;
-  padding: 0;
   white-space: pre;
 }
 
@@ -168,6 +197,8 @@ a, a:link, a:visited, a:active {
 #toolbar {
   white-space: nowrap;
   border-bottom: 1px solid #ddd;
+  position: relative;
+  overflow: hidden;
   /*height: 36px;*/
 }
 
@@ -175,29 +206,44 @@ a, a:link, a:visited, a:active {
   white-space: nowrap;
   display: inline-block;
   vertical-align: top;
+  padding-left: .5em;
+}
+
+#toolbar .exits.right {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  transition: opacity 620ms ease-in;
+}
+
+#ide-wrapper.toggled #toolbar .exits.right {
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+
+#at-github {
+  height: 24px;
+  vertical-align: middle;
+  padding-bottom: 5px;
+  box-sizing: content-box;
 }
 
 #buttons {
-  display: none;
-  opacity: 0;
+  display: inline-block;
   text-align: left;
   padding-left: 2em;
-  width: 100%;
   transition: opacity 500ms ease;
   vertical-align: middle;
-  width: 100%;
+}
+
+#buttons.disabled {
+  opacity: 0.15;
 }
 
 #buttons img {
   margin: 0 2px;
   margin-top: 5px;
   cursor: pointer;
-}
-
-#query-panel > div {
-  line-height: 1.25em;
-  padding-left: 18px;
-  white-space: pre;
 }
 
 /* overloads */
@@ -222,13 +268,26 @@ a, a:link, a:visited, a:active {
 }
 
 #packages-panel > div {
-  padding-bottom: 4px;
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
-#packages-panel > div > img {
+#packages-panel > div > button {
+  padding: 0;
+  border: none;
+  background: none;
+  outline: none;
   margin-right: 4px;
-  vertical-align: bottom;
+  vertical-align: middle;
   cursor: pointer;
+}
+
+button.download-icon::after {
+  content:url("../ui-images/dl.png");
+}
+
+button.download-icon.checked::after {
+  content:url("../ui-images/checked.png");
 }
 
 .rel-pos {
@@ -241,11 +300,86 @@ a, a:link, a:visited, a:active {
   height:2px;
   border-radius: 2px;
   position:relative;
+  top: -2px;
   width:0;
 }
 
 .progress-egg {
+  background-image: url("../ui-images/egg.png");
+  background-size: contain;
   position: absolute;
-  top: -18px;
+  top: -19px;
   right: 0;
+  height: 18px;
+  width: 18px;
+}
+
+/* Pretty-printing hacks */
+
+div.Pp_box {
+  display: inline;
+}
+
+div.Pp_box[data-margin="1"] {
+  margin-left: 0.75em;
+}
+
+div.Pp_box[data-margin="2"] {
+  margin-left: 1.5em;
+}
+
+div.Pp_box[data-mode="horizontal"] {
+  cursor: text;
+}
+
+#goal-text > div.Pp_box[data-mode="vertical"],
+#goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
+  display: block;
+}
+
+/* Contextual info */
+
+#goal-panel div.contextual-info {
+  position: absolute;
+  bottom: 2px;
+  left: 3px;
+  background: rgba(255, 255, 255, 0.9);
+  font-family: monospace;
+  font-size: 9pt;
+  border-top: 1px solid rgba(0,0,0,0.25);
+  white-space: pre-wrap;
+  max-height: 60%;
+  overflow-y: auto;
+}
+
+div.hint-package {
+  float: right;
+  margin-left: 1em;
+  color: #aaa;
+  font-size: 90%;
+  position: relative;
+  top: 1px;  /* this is safer than padding or margin, for floats */
+}
+.CodeMirror-hint-active div.hint-package {
+  color: #ddd;
+}
+
+/* company-coq */
+
+.company-coq-sub {
+  font-size: 70%;
+  position: relative;
+  top: 0.15em;
+  /* using position: relative prevents line-height increase */
+  padding-top: 0.4em;
+  /* the padding is to align the background with the rest of the line;
+     not pixel-accurate :\ */
+}
+
+.company-coq-hidden {
+  display: inline-block;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+  font-size: 1pt;
 }
