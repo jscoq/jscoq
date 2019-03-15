@@ -31,7 +31,7 @@ Pending worker tasks:
   - [x] Support for Coq 8.6/8.7/8.8/8.9.
   - [x] Migrated to ppx for jsoo syntax.
   - [x] Port to Ocaml 4.07.1.
-  - [x] Port to JSOO 3.2.0.
+  - [x] Port to JSOO 3.3.0.
   - [x] Migrate from d3 to jQuery for DOM manipulation.
   - [x] Full support for SF.
   - [x] Many small fixes.
