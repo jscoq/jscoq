@@ -86,9 +86,13 @@ class CoqWorker {
 
     put(filename, content) {
         /* Access ArrayBuffer behind Node.js Buffer */
-        if (content.buffer && 
-            content.byteOffset === 0 && content.byteLength === content.buffer.byteLength)
-            content = content.buffer;
+        if (content.buffer) {
+            content = (content.byteOffset === 0 && 
+                       content.byteLength === content.buffer.byteLength) ?
+                content.buffer :
+                content.buffer.slice(content.byteOffset, 
+                                     content.byteOffset + content.byteLength);
+        }
 
         var msg = ["Put", filename, content];
         if(this.options.debug) {
