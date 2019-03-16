@@ -30,9 +30,10 @@ License: CC-BY 3.0
 Comment: Kirill Kazachek, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
 
 ui-images/log-error.png
-License: CC-BY 3.0
-Comment: Abhishek Pipalva, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
-         Made lines thicker and resized to 32x32.
+License: SIL OFL
+Comment: Dave Gandy (Font Awesome), via iconfinder [https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL]
+         DinosoftLabs, via iconfinder (free for commercial use).
+         Combined into a single 32x32 image.
 
 ui-images/log-warn.png
 License: CC-BY 2.5
