@@ -194,3 +194,13 @@ function realloc_coq_global_data() {
   vm_ll('realloc_coq_global_data', arguments);
   return;
 }
+
+// Provides: coq_interprete_byte
+// Requires: vm_ll
+function coq_interprete_byte()    { vm_ll('coq_interprete_byte', arguments); }
+// Provides: coq_set_drawinstr
+// Requires: vm_ll
+function coq_set_drawinstr()      { vm_ll('coq_set_drawinstr', arguments); }
+// Provides: coq_tcode_array
+// Requires: vm_ll
+function coq_tcode_array()        { vm_ll('coq_tcode_array', arguments); }
