@@ -1,4 +1,4 @@
-.PHONY: clean all jscoq32 jscoq64
+.PHONY: clean all bytecode_bin javascript_bin
 
 include ../config.mk
 
@@ -90,7 +90,7 @@ jscoq_worker.byte: $(COQDEPS) jscoq_worker.cmo
 	   $(JSOOLFLAGS) $(COQOBJS)                                               \
            +nums.cma jslib.cmo icoq.cmo jslibmng.cmo jscoq_doc.cmo jser_feedback.cmo jser_names.cmo jscoq_worker.cmo -o jscoq_worker.byte
 
-jscoq32: jscoq_worker.byte
+bytecode_bin: jscoq_worker.byte
 
 ########################################################################
 # Compilation to JS
@@ -113,7 +113,7 @@ endif
 jscoq_worker.js: jscoq_worker.byte $(JSFILES)
 	js_of_ocaml $(JSOO_OPTS) +nat.js +dynlink.js +toplevel.js $(JSFILES) jscoq_worker.byte
 
-jscoq64: jscoq_worker.js
+javascript_bin: jscoq_worker.js
 
 clean:
 	$(RM) *.cmi *.cmo *.cma *.cmt *.cmti *.o *.ml.d *.mli.d jscoq_worker.byte jscoq_worker.js
