@@ -2,6 +2,13 @@ dist: xenial
 sudo: required
 language: c
 
+branches:
+  only:
+  - v8.8
+  - v8.9
+  - v8.9+worker
+  - v8.10
+
 cache:
   apt: true
   directories:
@@ -19,16 +26,15 @@ env:
   - COMPILER="4.07.1+32bit"
   - BASE_OPAM="camlp5 dune elpi"
 
+before_install: |
+  sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/bin/opam
+  sudo chmod 755 /usr/bin/opam
+
 install:
-- echo "yes" | sudo add-apt-repository ppa:ansible/bubblewrap
-- sudo apt-get update -qq
-- sudo apt-get install -qq bubblewrap
-- sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.2/opam-2.0.2-x86_64-linux -o /usr/bin/opam
-- sudo chmod 755 /usr/bin/opam
-- opam init -c "$COMPILER"
+- opam init -c "$COMPILER" --disable-sandboxing
 - opam switch set "$COMPILER"
 - eval $(opam env)
-- opam install $BASE_OPAM $EXTRA_OPAM # yojson ppx_deriving_yojson
+- opam install $BASE_OPAM
 - opam list
 - opam update
 - opam config var root
@@ -41,5 +47,5 @@ script:
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
 - ./build.sh
 - git submodule update --remote
-- cd ui-external/CodeMirror && npm install
+- npm install
 - echo -en 'travis_fold:end:jscoq.build\\r'
