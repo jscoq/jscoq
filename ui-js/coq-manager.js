@@ -14,7 +14,7 @@
 
 Array.prototype.last     = function() { return this[this.length-1]; };
 Array.prototype.flatten  = function() { return [].concat.apply([], this); };
-Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; ) 
+Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; )
                                                     if (p(r = this[--i])) return r; }
 Array.prototype.equals   = function(other) {
     if (!other || this.length != other.length) return false;
@@ -196,7 +196,7 @@ class CoqManager {
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
-                        'coq-base', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
+                        'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
                         'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ],
             editor: { /* codemirror options */ }
             // Disabled on 8.6
@@ -249,9 +249,6 @@ class CoqManager {
         this.packages.expand();
 
         requestAnimationFrame(() => this.layout.show());
-
-        // Get Coq version, etc...
-        this.coq.getInfo();
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -327,10 +324,10 @@ class CoqManager {
     }
 
     setupDragDrop() {
-        $(this.layout.ide).on('dragover', (evt) => { 
-            evt.preventDefault(); 
+        $(this.layout.ide).on('dragover', (evt) => {
+            evt.preventDefault();
         });
-        $(this.layout.ide).on('drop', (evt) => { 
+        $(this.layout.ide).on('drop', (evt) => {
             evt.preventDefault();
             // TODO better check file type and size before
             //  opening
@@ -345,8 +342,8 @@ class CoqManager {
      * @param {string} url address of .symb.json resource
      */
     loadSymbolsFrom(url, scope="globals") {
-        $.get({url, dataType: 'json'}).done(data => { 
-            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false); 
+        $.get({url, dataType: 'json'}).done(data => {
+            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -357,7 +354,7 @@ class CoqManager {
         this.coq.inspectPromise(["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
-                { lemmas: bunch.map(CoqIdentifier.ofKerName) }, 
+                { lemmas: bunch.map(CoqIdentifier.ofKerName) },
                 'locals', /*replace_existing=*/true)
         });
     }
@@ -560,7 +557,7 @@ class CoqManager {
     coqLog(level, msg) {
 
         let rmsg = this.pprint.pp2HTML(msg);
-        
+
         level = level[0];
 
         if (this.options.debug) {
@@ -613,6 +610,14 @@ class CoqManager {
         console.error('jsonExn', msg);
     }
 
+    // This is received only after all the info for the packages has
+    // been delivered. At first, I purposely avoided to have the
+    // package manager implemented in JS due to this, but I've changed
+    // the protocol so the JS-side package manager will have the
+    // information it needs before we get this event.
+    //
+    // Usually, writing this stuff in OCaml is quite more compact than
+    // the corresponding JS-version (not to speak of types)
     coqCoqInfo(info) {
 
         this.layout.proof.textContent = info;
@@ -623,7 +628,7 @@ class CoqManager {
             this.layout.proof.textContent +=
                   "\nPlease wait for the libraries to load, thanks!"
                 + "\n(If you are having trouble, try cleaning your browser's cache.)\n";
-        
+
         this.packages.waitFor(pkgs)
         .then(() => this.packages.loadDeps(pkgs))
         .then(() => { this.coqInit(); });
@@ -771,7 +776,7 @@ class CoqManager {
 
         this.layout.log(msg, 'Error');
 
-        // this.error will prevent the cancel handler from 
+        // this.error will prevent the cancel handler from
         // clearing the mark.
         this.error.push(err_stm);
 
@@ -889,8 +894,8 @@ class CoqManager {
             }
             this.pprint.adjustBreaks($(this.layout.proof));
             /* Notice: in Pp-formatted text, line breaks are handled by
-            * FormatPrettyPrint rather than by the layout.
-            */
+             * FormatPrettyPrint rather than by the layout.
+             */
         }
     }
 
@@ -931,7 +936,6 @@ class CoqManager {
 
 class CoqContextualInfo {
     /**
-     * 
      * @param {jQuery} container <div> element to show info in
      * @param {CoqWorker} coq jsCoq worker for querying types and definitions
      * @param {FormatPrettyPrint} pprint formatter for Pp data
@@ -973,8 +977,8 @@ class CoqContextualInfo {
     onMouseEnter(evt) { if (!this.is_sticky) this.showFor(evt.target, evt.altKey); }
     onMouseLeave(evt) { if (!this.is_sticky) this.hideReq(); }
 
-    onMouseDown(evt)  { 
-        this.showFor(evt.target, evt.altKey); 
+    onMouseDown(evt)  {
+        this.showFor(evt.target, evt.altKey);
         this.is_sticky = true;
         evt.stopPropagation();
     }

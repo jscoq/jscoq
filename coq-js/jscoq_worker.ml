@@ -17,7 +17,7 @@ open Jser_names
 let jscoq_version = "0.9~beta2"
 
 type jscoq_options = {
-  implicit_libs: bool; 
+  implicit_libs: bool;
   stm_debug: bool;
 }
 [@@deriving yojson]
@@ -40,7 +40,6 @@ type search_query =
 
 (* Main RPC calls *)
 type jscoq_cmd =
-  | GetInfo
   | InfoPkg of string * string list
   | LoadPkg of string * string
 
@@ -146,9 +145,9 @@ let lib_event_to_jsobj msg =
 
 let is_worker = (Js.Unsafe.global##.onmessage != Js.undefined)
 
-let post_message : < .. > Js.t -> unit = 
+let post_message : < .. > Js.t -> unit =
   if is_worker then Worker.post_message
-  else 
+  else
     fun msg -> Js.Unsafe.fun_call (jsCoq##.onmessage) [|Js.Unsafe.inject msg|]
 
 (* Send messages to the main thread *)
@@ -286,7 +285,7 @@ let jscoq_execute =
       try         Sys_js.create_file ~name:filename ~content
       with _e ->  Sys_js.update_file ~name:filename ~content
     end;
-    if Jslibmng.is_bytecode filename then 
+    if Jslibmng.is_bytecode filename then
       Jslibmng.register_cma ~file_path:filename
 
   | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
@@ -296,20 +295,20 @@ let jscoq_execute =
     doc := Jscoq_doc.create ndoc;
     out_fn @@ Ready iid
 
-  | InfoPkg(base, pkgs) ->
-    Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
-
   | LoadPkg(base, pkg)  ->
     Lwt.async (fun () -> Jslibmng.load_pkg process_lib_event base pkg)
 
-  | GetInfo             ->
-    let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
-    let header1 = Printf.sprintf
-        " JsCoq (%s), Coq %s/%4d (%s),\n   compiled on %s\n Ocaml %s"
-        jscoq_version coqv cmag coqd ccd ccv                    in
-    let header2 = Printf.sprintf
-        " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
-    out_fn @@ CoqInfo (header1 ^ header2)
+  | InfoPkg(base, pkgs) ->
+    Lwt.(async (fun () ->
+        let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
+        let header1 = Printf.sprintf
+            " JsCoq (%s), Coq %s/%4d (%s),\n   compiled on %s\n Ocaml %s"
+            jscoq_version coqv cmag coqd ccd ccv                    in
+        let header2 = Printf.sprintf
+            " Js_of_ocaml version %s\n" Sys_js.js_of_ocaml_version  in
+        Jslibmng.info_pkg post_lib_event base pkgs                  >>= fun () ->
+        return @@ out_fn @@ CoqInfo (header1 ^ header2)
+      ))
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
@@ -346,7 +345,7 @@ let on_msg doc msg =
 
   let json_obj = obj_to_json msg in
 
-  let log_cmd cmd = 
+  let log_cmd cmd =
     let str = match cmd with
       | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
       | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
@@ -373,7 +372,7 @@ let _ =
 
   let on_msg = on_msg doc  in
 
-  if is_worker then  
+  if is_worker then
     Worker.set_onmessage on_msg
   else
     Js.export "jsCoq" jsCoq;

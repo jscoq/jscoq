@@ -1,7 +1,7 @@
 "use strict";
 
-
 class CoqWorker {
+
     constructor(scriptPath) {
         this.options = {
             debug: false
@@ -10,8 +10,8 @@ class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        // Create actual worker. Ideally, CoqWorker would extend Worker, but this is
-        // not supported at the moment.
+        // Create actual worker. Ideally, CoqWorker would extend
+        // Worker, but this is not supported at the moment.
         this.worker = new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
         this.worker.onmessage = evt => this.coq_handler(evt);
 
@@ -99,7 +99,7 @@ class CoqWorker {
             console.debug("Posting file: ", msg);
         }
         this.worker.postMessage(msg, [content]);
-        /* Notice: ownership of the 'content' buffer is transferred to the worker 
+        /* Notice: ownership of the 'content' buffer is transferred to the worker
          * (for efficiency)
          */
     }
@@ -112,7 +112,7 @@ class CoqWorker {
 
     execPromise(sid) {
         this.exec(sid);
-        
+
         if (!this.sids[sid]) {
             console.warn(`exec'd sid=${sid} that was not added (or was cancelled)`);
             this.sids[sid] = new Future();
@@ -161,7 +161,7 @@ class CoqWorker {
                 handled = true;
             }
          }
-         
+
          if (!handled) {
             console.warn('Message ', msg, ' not handled');
         }
@@ -192,6 +192,7 @@ class CoqWorker {
     }
 
     coqSearchResults(rid, bunch) {
+
         var handled = false;
 
         for (let o of this.routes[rid] || []) {
@@ -257,7 +258,7 @@ class PromiseFeedbackRoute extends Future {
         this._done = true;
         if (this._got_processed) this.atexit();
     }
-    
+
     feedProcessed(sid) {
         this._got_processed = true;
         if (this._done) this.atexit();
@@ -275,3 +276,7 @@ if (typeof document !== 'undefined' && document.currentScript)
 
 if (typeof module !== 'undefined')
     module.exports = {CoqWorker}
+
+// Local Variables:
+// js-indent-level: 4
+// End:

@@ -33,4 +33,8 @@ make coq
 npm install
 ```
 
-Now serve the files at the root directory of the project via HTTP, and navigate your browser to `http://localhost/newide.html`.
+Now serve the files at the root directory of the project via HTTP, and
+navigate your browser to `http://localhost/newide.html`, or run them locally:
+```
+ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
+```
