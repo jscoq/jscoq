@@ -222,9 +222,10 @@ THE SOFTWARE.
 </h2>
 </div>
 <div><textarea id='coq-ta-5'>
-Require Import SF.Maps.
-Require Import SF.Smallstep.
-Require Import SF.Types.
+Set Warnings "-notation-overridden,-parsing".
+From Coq Require Import Strings.String.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
 
 Module STLC.
 </textarea></div>
@@ -245,12 +246,12 @@ Inductive ty : Type :=
 </div>
 <div><textarea id='coq-ta-7'>
 Inductive tm : Type :=
-  | tvar : id -> tm
-  | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
-  | ttrue : tm
-  | tfalse : tm
-  | tif : tm -> tm -> tm -> tm.
+  | var : string -> tm
+  | app : tm -> tm -> tm
+  | abs : string -> ty -> tm -> tm
+  | tru : tm
+  | fls : tm
+  | test : tm -> tm -> tm -> tm.
 
 </textarea></div>
 <div><p>
@@ -261,9 +262,13 @@ Note that an abstraction <tt>λ x:T.t</tt> (formally, <tt>tabs</tt> <tt>x</tt> <
     not considering type inference here, to keep things simple. <p>
  Some examples... </div>
 <div><textarea id='coq-ta-8'>
-Definition x := (Id 0).
-Definition y := (Id 1).
-Definition z := (Id 2).
+Definition x := "x".
+Definition y := "y".
+Definition z := "z".
+
+Hint Unfold x.
+Hint Unfold y.
+Hint Unfold z.
 </textarea></div>
 <div><p>
 <tt>idB</tt> <tt>=</tt> <tt>λ x:Bool.</tt> <tt>x</tt> </div>
@@ -943,18 +948,21 @@ End STLC.
   <script type="text/javascript">
    var coq;
 
-   loadJsCoq('../')
-       .then(loadJs("../ui-external/CodeMirror/addon/runmode/runmode"))
-       .then(loadJs("../ui-external/CodeMirror/addon/runmode/colorize"))
+   var jscoq_opts = {
+       base_path: '../',
+       init_pkgs: ['init', 'plf']
+   };
+
+   loadJsCoq(jscoq_opts.base_path)
+       .then(loadJs("../node_modules/codemirror/addon/runmode/runmode"))
+       .then(loadJs("../node_modules/codemirror/addon/runmode/colorize"))
        .then( function () {
            var coqInline = document.getElementsByClassName("inline-coq");
            CodeMirror.colorize(coqInline);
            return; })
        .then( function () {
-           coq = new CoqManager (coqdoc_ids,
-                                 { base_path: '../', init_pkgs: ['init', 'sf'] }
-           );
-       });
+           coq = new CoqManager (coqdoc_ids, jscoq_opts) } );
+
   </script>
 
 </body>

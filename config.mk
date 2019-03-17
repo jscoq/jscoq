@@ -23,7 +23,7 @@ endif
 
 # Addons to build
 # Working on coq-8.9:
-ADDONS = mathcomp iris ltac2 elpi equations dsp
+ADDONS = mathcomp iris ltac2 elpi equations dsp sf
 # Working on coq-8.8:
 # ADDONS = mathcomp iris ltac2 elpi dsp equations
 # Working on coq-8.7:
