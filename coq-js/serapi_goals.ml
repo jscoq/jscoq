@@ -25,9 +25,10 @@ module CDC = Context.Compacted.Declaration
 type cdcl = Constr.compacted_declaration
 
 let to_tuple ppx : cdcl -> (Names.Id.t list * 'pc option * 'pc) =
+  let open Context in
   let open CDC in function
-    | LocalAssum(idl, tm)   -> (idl, None, ppx tm)
-    | LocalDef(idl,tdef,tm) -> (idl, Some (ppx tdef), ppx tm)
+    | LocalAssum(idl, tm)   -> (List.map binder_name idl, None, ppx tm)
+    | LocalDef(idl,tdef,tm) -> (List.map binder_name idl, Some (ppx tdef), ppx tm)
 
 (** gets a hypothesis *)
 let get_hyp (ppx : Constr.t -> 'pc)

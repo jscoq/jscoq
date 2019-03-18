@@ -9,6 +9,7 @@
 (rule
  (targets coq-pkgs)
  (deps
+   (package coq)
    (source_tree coq-addons)
    ; (source_tree coq-external))
  )
@@ -50,4 +51,4 @@
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
     (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQDIR=}/.vfiles.d"))))
 
-(dirs (:standard \ coq-external))
+; (dirs (:standard \ coq-external))
