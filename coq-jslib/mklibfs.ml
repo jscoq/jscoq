@@ -18,10 +18,11 @@ let output_librule fmt bpath path =
   let name    = Dl.to_name path                                in
   (* Strip "Coq" suffix *)
   let dir     = List.tl path                                   in
-  let coqdir  = Dl.to_dir ("$(COQDIR)" :: bpath :: dir)        in
+  let coqdir  = "$(COQDIR)/../../_build/4.07.1+32bit/coq-external/coq-v8.10+32bit/" in
+  let coqdir  = Dl.to_dir (coqdir :: bpath :: dir)        in
   let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
-  let cma_pat = Dl.to_dir [coqdir; "*_plugin.cmo"]             in
+  let cma_pat = Dl.to_dir [coqdir; "*_plugin.cma"]             in
   (* Rule for the dir *)
   fprintf fmt "%s:\n\t@mkdir -p %s\n" outdir outdir;
   (* Pattern expansion *)

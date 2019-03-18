@@ -38,20 +38,17 @@ install:
 - opam list
 - opam update
 - opam config var root
-- ./toolchain-setup.sh
+- ./etc/toolchain-setup.sh
 - opam list
 - git submodule update --remote
 
 script:
+- set -e
 - echo 'Building Coq...' && echo -en 'travis_fold:start:coq.build\\r'
 - make coq-get
-- make coq-build
 - echo -en 'travis_fold:end:coq.build\\r'
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
-- ./build.sh
+- make jscoq
 - echo -en 'travis_fold:end:jscoq.build\\r'
 - echo 'Building Addons...' && echo -en 'travis_fold:start:addons.build\\r'
-- make addons-get
-- make addons-build
-- ./build.sh  # rebuild with addons
 - echo -en 'travis_fold:end:addons.build\\r'

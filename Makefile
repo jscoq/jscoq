@@ -3,7 +3,7 @@
 .PHONY: dist dist-upload dist-release
 
 # Coq Version
-COQ_VERSION:=v8.9
+COQ_VERSION:=v8.10
 JSCOQ_BRANCH:=
 
 JSCOQ_VERSION:=$(COQ_VERSION)
@@ -25,7 +25,7 @@ export NJOBS
 export COQDIR
 export ADDONS_PATH
 
-ADDONS = mathcomp iris ltac2 elpi equations dsp
+ADDONS = mathcomp # iris ltac2 elpi equations dsp
 
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
@@ -39,12 +39,10 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 
 jscoq: force
-	ADDONS="$(ADDONS)" OCAMLPATH=$(COQDIR) \
-        dune build @jscoq
+	ADDONS="$(ADDONS)" dune build @jscoq
 
 libs-pkg: force
-	ADDONS="$(ADDONS)" OCAMLPATH=$(COQDIR) \
-	dune build @libs-pkg
+	ADDONS="$(ADDONS)" dune build @libs-pkg
 
 links:
 	ln -s _build/default/node_modules/ || true
@@ -102,7 +100,7 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-build
 
-COQ_BRANCH=v8.9
+COQ_BRANCH=master
 COQ_REPOS=https://github.com/coq/coq.git
 
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
@@ -120,10 +118,13 @@ coq-get:
 	  cd $(COQDIR) && \
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
-	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
+	dune build @vodeps
+	cd $(COQDIR) && dune exec ./tools/coq_dune.exe --context="4.07.1+32bit" $(current_dir)/_build/"4.07.1+32bit"/coq-external/coq-v8.10+32bit/.vfiles.d
 
+# Coq should be now be built by composition with the Dune setup
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
+	true
 
 coq: coq-get coq-build
 
