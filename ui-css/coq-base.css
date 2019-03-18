@@ -337,6 +337,11 @@ div.Pp_box[data-mode="horizontal"] {
   display: block;
 }
 
+div.Pp_box hr {
+  margin: 0.5em 0;
+  border: 1px inset;
+}
+
 /* Contextual info */
 
 #goal-panel div.contextual-info {
