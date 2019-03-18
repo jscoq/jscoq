@@ -13,7 +13,7 @@ val create : Stm.doc -> ser_doc
 
 val tip : ser_doc -> Stateid.t
 
-val parse : 
+val parse :
   doc:ser_doc        ->
   ontop:Stateid.t    ->
   string             ->

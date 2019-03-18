@@ -101,7 +101,7 @@ let coq_init opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  let sertop_dp = DirPath.make [Id.of_string opts.top_name] in
+  let sertop_dp = Stm.TopLogical DirPath.(make [Id.of_string opts.top_name]) in
   let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp;
                require_libs = opts.require_libs;
                iload_path = opts.iload_path;
@@ -142,7 +142,7 @@ let inspect_library ?(env=Global.env ()) () =
 let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ?(env=Global.env ()) ?(mod_path=default_mod_path) () =
-  let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
+  let make_kername id = Names.KerName.make mod_path (Names.Label.of_id id) in
   let named_ctx = Environ.named_context env in
   seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername

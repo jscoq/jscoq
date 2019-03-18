@@ -38,7 +38,7 @@ install:
 - opam list
 - opam update
 - opam config var root
-- ./toolchain-setup.sh
+- ./etc/toolchain-setup.sh
 - opam list
 - make coq-get
 - make coq-build

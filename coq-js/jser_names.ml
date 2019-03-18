@@ -31,10 +31,10 @@ module Names = struct
   end
   module KerName = struct
     include Names.KerName
-    type _t = KerName of ModPath.t * DirPath.t * Label.t [@@deriving to_yojson]
+    type _t = KerName of ModPath.t * Label.t [@@deriving to_yojson]
     let to_yojson x = 
-      let (mp, dp, l) = repr x in
-      _t_to_yojson @@ KerName (mp, dp, l)
+      let mp, l = repr x in
+      _t_to_yojson @@ KerName (mp, l)
   end
   module Constant = struct 
     include Names.Constant

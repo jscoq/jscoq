@@ -3,7 +3,7 @@
 .PHONY: dist dist-upload dist-release
 
 # Coq Version
-COQ_VERSION:=v8.9
+COQ_VERSION:=v8.10
 JSCOQ_BRANCH:=
 
 JSCOQ_VERSION:=$(COQ_VERSION)
@@ -25,7 +25,7 @@ export NJOBS
 export COQDIR
 export ADDONS_PATH
 
-ADDONS = mathcomp iris ltac2 elpi equations dsp
+ADDONS = mathcomp # iris ltac2 elpi equations dsp
 
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
@@ -96,7 +96,7 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-build
 
-COQ_BRANCH=v8.9
+COQ_BRANCH=master
 COQ_REPOS=https://github.com/coq/coq.git
 
 coq-get:
@@ -105,7 +105,7 @@ coq-get:
 	  cd $(COQDIR) && \
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
-	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
 	for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
 
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
@@ -118,7 +118,7 @@ COQ_MAKE_FLAGS += BEST=byte
 endif
 
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
-	for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install; done
+	# cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
+	COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install; done
 
 coq: coq-get coq-build
