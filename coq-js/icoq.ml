@@ -98,7 +98,7 @@ let coq_init opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  let sertop_dp = DirPath.make [Id.of_string opts.top_name] in
+  let sertop_dp = Stm.TopLogical DirPath.(make [Id.of_string opts.top_name]) in
   let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp;
                require_libs = opts.require_libs;
                iload_path = opts.iload_path;
@@ -107,12 +107,8 @@ let coq_init opts =
   ndoc, nsid
 
 let context_of_st m = match m with
-  | `Valid (Some st) ->
-    begin try
-        Pfedit.get_current_context ~p:(Proof_global.proof_of_state st.Vernacstate.proof) ()
-      with Proof_global.NoCurrentProof ->
-        Pfedit.get_current_context ()
-    end
+  | `Valid (Some { Vernacstate.proof = Some pstate ; _ } ) ->
+    Pfedit.get_current_context pstate
   | _ ->
     let env = Global.env () in Evd.from_env env, env
 
@@ -131,9 +127,10 @@ let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
+(* ejgallego: this is the identity *)
 let kn_sibling kn id =
-  let (mp, dp, _) = Names.KerName.repr kn in
-  Names.KerName.make mp dp (Names.Label.of_id id)
+  let mp, dp = Names.KerName.repr kn in
+  Names.KerName.make mp dp
 
 let lookup_constant env kn =
   try
@@ -161,7 +158,7 @@ let inspect_library ~env () =
 let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ~env ?(mod_path=default_mod_path) () =
-  let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
+  let make_kername id = Names.KerName.make mod_path (Names.Label.of_id id) in
   let named_ctx = Environ.named_context env in
   List.to_seq (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername

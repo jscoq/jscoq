@@ -69,7 +69,8 @@ let parse ~doc ~ontop stm =
   let doc, sdoc = doc in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
   let pa = Pcoq.Parsable.make (Stream.of_string stm) in
-  Stm.parse_sentence ~doc ontop pa
+  let entry = Pvernac.main_entry in
+  Option.get @@ Stm.parse_sentence ~doc ~entry ontop pa
 
 (* Main add logic; we check that the ontop state is present in the
  * document, as it could well happen that the user request to add
@@ -82,9 +83,10 @@ let add ~doc ~ontop ~newid stm =
   let verb = false                                       in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
   let pa = Pcoq.Parsable.make (Stream.of_string stm)     in
-  let east              = Stm.parse_sentence ~doc ontop pa            in
+  let entry = Pvernac.main_entry in
+  let east = Option.get Stm.(parse_sentence ~doc ~entry ontop pa) in
   let ndoc, new_st, foc = Stm.add ~doc ~ontop ~newtip:newid verb east in
-  let new_sdoc    = new_st :: sdoc                       in
+  let new_sdoc = new_st :: sdoc in
   east.CAst.loc, foc, (ndoc,new_sdoc)
 
 let query ~doc ~at ~route query =

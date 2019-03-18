@@ -81,7 +81,7 @@ type jscoq_answer =
   | Cancelled of Stateid.t list
 
   (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t reified_goal pre_goals option
+  | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
 
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t

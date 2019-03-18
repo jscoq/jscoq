@@ -9,6 +9,7 @@
 (rule
  (targets coq-pkgs)
  (deps
+   (package coq)
    (source_tree coq-addons)
    ; (source_tree coq-external))
  )
@@ -17,7 +18,7 @@
    (run mkdir -p coq-pkgs)
    (run make -f %{dep:Makefile.libs} libs-auto)
    (bash "for i in %{env:ADDONS=}; do make -sf coq-addons/$i.addon jscoq-install; done")
-   ; This always rebuilds :(
+   ; This always rebuilds due to the cleaning of the target dir :(
    (bash "for i in $(find coq-pkgs \\( -name *.cmo -or -name *.cma \\)); do if [ $i -nt $i.js ]; then js_of_ocaml --wrap-with-fun= -o $i.js $i; fi; done")
    (run mklibjson))))
 
@@ -50,4 +51,4 @@
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
     (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQDIR=}/.vfiles.d"))))
 
-(dirs (:standard \ coq-external))
+; (dirs (:standard \ coq-external))

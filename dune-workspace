@@ -1,6 +1,6 @@
 (lang dune 1.6)
 
-(profile release)
-
-; Has to wait until we use Coq 8.10
-; (context (opam (switch 4.07.1+32bit)))
+(context
+ (opam (switch 4.07.1+32bit)
+  (profile release)
+  (merlin)))
