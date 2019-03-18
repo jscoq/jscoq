@@ -2,7 +2,7 @@
 JOBS=8
 
 COQ_VERSION:=v8.9
-JSCOQ_BRANCH:=js-worker
+JSCOQ_BRANCH:=
 
 JSCOQ_VERSION:=$(COQ_VERSION)
 
@@ -19,7 +19,7 @@ COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
 # Addons to build
 # Working on coq-8.9:
-ADDONS = mathcomp iris ltac2 elpi dsp #equations
+ADDONS = mathcomp iris ltac2 elpi equations dsp
 # Working on coq-8.8:
 # ADDONS = mathcomp iris ltac2 elpi dsp equations
 # Working on coq-8.7:

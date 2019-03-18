@@ -1,14 +1,25 @@
-.PHONY: clean upload all libs coq-tools jscoq32 jscoq64 dist dist-upload dist-release dist-hott force coq coq-get coq-build
+.PHONY: all clean upload all libs coq-tools
+.PHONY: bytecode_bin javascript_bin
+.PHONY: dist dist-upload dist-release dist-hott force
+.PHONY: coq coq-get coq-build
 
 include config.mk
 
-all: jscoq32 jscoq64
+all:
+	@echo "Welcome to jsCoq makefile. Targets are:"
+	@echo ""
+	@echo "  - bytecode_bin:   build jscoq's bytecode"
+	@echo "  - javascript_bin: build jscoq's javascript"
+	@echo "  - coq-get:        download Coq and libraries"
+	@echo "  - coq-build:      build Coq and libraries"
+	@echo "  - coq:            download and build Coq and libraries"
+	@echo "  - coq-tools:      to be removed by the Dune-based build"
 
-jscoq32:
-	$(MAKE) -C coq-js jscoq32
+bytecode_bin:
+	$(MAKE) -C coq-js bytecode_bin
 
-jscoq64:
-	$(MAKE) -C coq-js jscoq64
+javascript_bin:
+	$(MAKE) -C coq-js javascript_bin
 
 coq-tools:
 	$(MAKE) -C coq-tools
@@ -60,8 +71,7 @@ libs: coq-all-libs
 # Bundle libs and inject dependencies
 libs-pkg:
 	node coq-tools/mkpkg.js coq-pkgs/*.json
-	node coq-tools/mkdeps.js coq-pkgs/init.json coq-pkgs/coq-*.json \
-		coq-external/coq-$(COQ_VERSION)+32bit/.vfiles.d
+	node coq-tools/mkdeps.js coq-pkgs/init.json coq-pkgs/coq-*.json $(COQDIR)/.vfiles.d
 
 ########################################################################
 # Dists                                                                #
@@ -84,6 +94,8 @@ dist:
 	cp -a coq-js/jscoq.js coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
 	# Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
+	# Node stuff
+	cd $(BUILDDIR) && npm install
 
 BUILDDIR_HOTT=$(BUILDDIR)-hott
 
@@ -121,10 +133,10 @@ clean:
 hott-upload: dist-hott
 	rsync -avzp --delete dist-hott/ $(HOTT_RELEASE)
 
-dist-upload: all
+dist-upload: dist
 	rsync -avzp --delete dist/ $(WEB_DIR)
 
-dist-release: all
+dist-release: dist
 	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git dist/ $(RELEASE_DIR)
 
 # all-dist: dist dist-hott dist-release dist-upload hott-upload
@@ -140,11 +152,14 @@ NJOBS=4
 
 coq-get:
 	mkdir -p coq-external coq-pkgs
-	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) coq-external/coq-$(COQ_VERSION)+32bit || true
-	cd coq-external/coq-$(COQ_VERSION)+32bit && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
+	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
+	  cd $(COQDIR) && \
+          patch -p1 < $(current_dir)/coq-patches/avoid-vm.patch && \
+          patch -p1 < $(current_dir)/coq-patches/trampoline.patch ) || true
+	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 	make -f coq-addons/mathcomp.addon get
 	make -f coq-addons/iris.addon get
-#	make -f coq-addons/equations.addon get
+	make -f coq-addons/equations.addon get
 	make -f coq-addons/ltac2.addon get
 	make -f coq-addons/elpi.addon get
 	make -f coq-addons/dsp.addon get
@@ -163,9 +178,9 @@ coq-build:
 	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
 	make -f coq-addons/mathcomp.addon build jscoq-install
 	make -f coq-addons/iris.addon build jscoq-install
-#	make -f coq-addons/equations.addon build jscoq-install
+	make -f coq-addons/equations.addon build jscoq-install
 	make -f coq-addons/ltac2.addon build jscoq-install
 	make -f coq-addons/elpi.addon build jscoq-install
-	make -f coq-addons/dsp.addon jscoq-install
+	make -f coq-addons/dsp.addon build jscoq-install
 
 coq: coq-get coq-build
