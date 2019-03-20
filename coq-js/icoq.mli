@@ -54,6 +54,7 @@ val version : string * string * string * string * int
 (** [pp_of_goals ~doc sid] returns a pp representing the current goals  *)
 val pp_of_goals : doc:Stm.doc -> Stateid.t -> Pp.t option
 
+val inspect_globals : ?env:Environ.env -> unit -> Names.KerName.t seq
 val inspect_library : ?env:Environ.env -> unit -> Names.KerName.t seq
 val inspect_locals : ?env:Environ.env -> ?mod_path:Names.ModPath.t -> unit -> Names.KerName.t seq
 

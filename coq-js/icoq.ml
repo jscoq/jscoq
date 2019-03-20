@@ -123,6 +123,11 @@ let pp_of_goals ~doc sid : Pp.t option =
 
 (* Inspection subroutines *)
 
+let inspect_globals ?(env=Global.env ()) () =
+  let global_consts = seq_of_list @@
+      Environ.fold_constants (fun name _ l -> name :: l) env [] in
+  global_consts |> Seq.map Names.Constant.user
+
 let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
