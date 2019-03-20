@@ -46,7 +46,7 @@ class PackageDefinition {
     listModules() {
         var modules = [];
         for (let pkg of this.manifest.pkgs) {
-            for (let file_entry of (pkg.vo_files || []).concat(pkg.cma_files || [])) {
+            for (let file_entry of (pkg.vo_files || [])) {
                 let modlabel = file_entry[0].replace(/[.](vo|cm[oa])$/, '');
                 modules.push([...pkg.pkg_id, modlabel].join('.'));
             }

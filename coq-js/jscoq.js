@@ -2,7 +2,7 @@
 
 class CoqWorker {
 
-    constructor(scriptPath) {
+    constructor(scriptPath, worker) {
         this.options = {
             debug: false
         };
@@ -12,10 +12,11 @@ class CoqWorker {
 
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
-        this.worker = new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
+        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
         this.worker.onmessage = evt => this.coq_handler(evt);
 
-        window.addEventListener('unload', () => this.worker.terminate());
+        if (typeof window !== 'undefined')
+            window.addEventListener('unload', () => this.worker.terminate());
     }
 
     sendCommand(msg) {
