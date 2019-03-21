@@ -1123,6 +1123,9 @@ class CoqIdentifier {
     }
 }
 
+if (typeof module !== 'undefined')
+    module.exports = {CoqManager, CoqIdentifier}
+
 // Local Variables:
 // js-indent-level: 4
 // End:
