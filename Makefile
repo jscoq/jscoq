@@ -2,6 +2,7 @@
 .PHONY: bytecode_bin javascript_bin
 .PHONY: dist dist-upload dist-release dist-hott force
 .PHONY: coq coq-get coq-build
+.PHONY: addons addons-get addons-build addon-%-get addon-%-build
 
 include config.mk
 
@@ -29,17 +30,10 @@ coq-tools:
 ########################################################################
 
 %.cma.js: %.cma
-	js_of_ocaml --wrap-with-fun= -o $<.js $<
+	js_of_ocaml $(JSOO_OPTS) --wrap-with-fun= -o $<.js $<
 
 %.cmo.js: %.cmo
-	js_of_ocaml --wrap-with-fun= -o $<.js $<
-
-# XXX FIXME
-# Compile all cmo/cma in coq-pkgs
-plugin-list: force
-	find coq-pkgs \( -name *.cma -or -name *.cmo \) -fprintf plugin-list "%p.js:\n"
-
-# | cmp -s - $@ || tee plugin-list
+	js_of_ocaml $(JSOO_OPTS) --wrap-with-fun= -o $<.js $<
 
 plugin-comp: $(addsuffix .js,$(shell find coq-pkgs \( -name *.cma -or -name *.cmo \)))
 
@@ -99,7 +93,8 @@ dist:
 	mkdir -p $(BUILDDIR)/coq-js/
 	cp -a coq-js/jscoq.js coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
 	# Externals
-	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
+	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' \
+	       --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
 	# Node stuff
 	cd $(BUILDDIR) && npm install
 
@@ -156,37 +151,33 @@ COQ_BRANCH=v8.9
 COQ_REPOS=https://github.com/coq/coq.git
 NJOBS=4
 
-coq-get:
-	mkdir -p coq-external coq-pkgs
-	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
-	  cd $(COQDIR) && \
-          patch -p1 < $(current_dir)/coq-patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/coq-patches/trampoline.patch ) || true
-	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
-	make -f coq-addons/mathcomp.addon get
-	make -f coq-addons/iris.addon get
-	make -f coq-addons/equations.addon get
-	make -f coq-addons/ltac2.addon get
-	make -f coq-addons/elpi.addon get
-	make -f coq-addons/dsp.addon get
-
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
 COQ_MAKE_FLAGS = -j $(NJOBS)
 
-ifeq "${shell uname -s}" "Darwin"
+ifeq (${shell uname -s}, Darwin)
 # Coq cannot be built natively on macOS with 32-bit.
 # At least not unless plugins are linked statically.
 COQ_MAKE_FLAGS += BEST=byte
 endif
 
+coq-get:
+	mkdir -p coq-external coq-pkgs
+	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) || true
+	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 
 coq-build:
-	cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
-	make -f coq-addons/mathcomp.addon build jscoq-install
-	make -f coq-addons/iris.addon build jscoq-install
-	make -f coq-addons/equations.addon build jscoq-install
-	make -f coq-addons/ltac2.addon build jscoq-install
-	make -f coq-addons/elpi.addon build jscoq-install
-	make -f coq-addons/dsp.addon build jscoq-install
+	cd $(COQDIR) && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
 
 coq: coq-get coq-build
+	
+
+addon-%-get:
+	make -f coq-addons/$*.addon get
+
+addon-%-build:
+	make -f coq-addons/$*.addon build
+
+addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
+addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
+
+addons: addons-get addons-build
