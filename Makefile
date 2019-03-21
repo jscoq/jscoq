@@ -1,4 +1,4 @@
-.PHONY: all clean upload all libs coq-tools
+.PHONY: all clean upload all libs libs-pkg libs-symb coq-tools
 .PHONY: bytecode_bin javascript_bin
 .PHONY: dist dist-upload dist-release dist-hott force
 .PHONY: coq coq-get coq-build
@@ -72,6 +72,12 @@ libs: coq-all-libs
 libs-pkg:
 	node coq-tools/mkpkg.js coq-pkgs/*.json
 	node coq-tools/mkdeps.js coq-pkgs/init.json coq-pkgs/coq-*.json $(COQDIR)/.vfiles.d
+
+# Build symbol database files for autocomplete
+coq-pkgs/%.symb: coq-pkgs/%.json
+	node --max-old-space-size=2048 ui-js/coq-cli.js --require-pkg $< --inspect $@
+
+libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
 
 ########################################################################
 # Dists                                                                #

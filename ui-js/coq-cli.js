@@ -60,13 +60,17 @@ class HeadlessCoqManager {
         this.options = {
             prelude: false,
             implicit_libs: true,
-            pkg_path: "./coq-pkgs/",  // this is awkward: package path is relative to cwd
+            pkg_path: undefined,  /* default: automatic */
             inspect: false
         };
 
         this.doc = [];
+    }
 
+    start() {
         // Configure load path
+        this.options.pkg_path = this.options.pkg_path || this.findPackageDir();
+
         this.project = new CoqProject();
 
         this.project.addRecursive(`${this.options.pkg_path}/Coq`, 'Coq');
@@ -74,9 +78,8 @@ class HeadlessCoqManager {
         for (let fn of this.project.cmos) {
             this.coq.register(fn);
         }
-    }
 
-    start() {
+        // Initialize Coq
         let set_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
             init_libs = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [],
             load_path = this.project.path;
@@ -100,13 +103,21 @@ class HeadlessCoqManager {
 
     finished() {
         console.log("Finished.");
-        if (this.options.inspect) {
-            this.coq.inspectPromise(["All"]).then(results => {
-                var json = results.map(kn => coq_manager.CoqIdentifier.ofKerName(kn)),
-                    out_fn = this.options.inspect_filename || 'symb.json';
-                fs.writeFileSync(out_fn, JSON.stringify(json));
-            });
-        }
+        var inspect = this.options.inspect;
+        if (inspect) this.performInspect(inspect);
+    }
+
+    performInspect(inspect) {
+        var out_fn = inspect.filename || 'inspect.symb',
+            query_filter = inspect.modules ? 
+                (id => inspect.modules.some(m => this._identifierWithin(id, m)))
+              : (id =>true);
+        this.coq.inspectPromise(0, ["All"]).then(results => {
+            var symbols = results.map(kn => coq_manager.CoqIdentifier.ofKerName(kn))
+                            .filter(query_filter);
+            fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
+            console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
+        });
     }
 
     coqReady() {
@@ -158,6 +169,26 @@ class HeadlessCoqManager {
         console.log('-'.repeat(60));
     }
 
+    findPackageDir(dirname = 'coq-pkgs') {
+        for (let path_el of module.paths) {
+            for (let dir of [path.join(path_el, dirname), 
+                             path.join(path_el, '..', dirname)])
+                if (this._isDirectory(dir))
+                    return dir;
+        }
+        return path.join('.', dirname);
+    }
+
+    _isDirectory(path) {
+        try { return fs.lstatSync(path).isDirectory(); }
+        catch { return false; }
+    }
+
+    _identifierWithin(id, modpath) {
+        var prefix = (typeof modpath === 'string') ? modpath.split('.') : modpath;
+        return id.prefix.slice(0, prefix.length).equals(prefix);
+    }
+
 }
 
 /**
@@ -191,7 +222,7 @@ class QueueCoqProvider {
 
 
 if (module && module.id == '.') {
-    var requires, require_pkgs = [],
+    var requires = [], require_pkgs = [],
         opts = require('commander')
         .option('--noinit', 'start without loading the Init library')
         .option('--require <path>', 'load Coq library path and import it (Require Import path.)')
@@ -204,22 +235,30 @@ if (module && module.id == '.') {
 
     var coq = new HeadlessCoqManager();
 
-    for (let json_fn of load_requires) {
+    var modules = requires.slice();
+
+    for (let modul of requires)
+        coq.provider.enqueue(`Require ${modul}.`);
+
+    for (let json_fn of require_pkgs) {
         var bundle = mkpkg.PackageDefinition.fromFile(json_fn);
 
         for (let modul of bundle.listModules()) {
             coq.provider.enqueue(`Require ${modul}.`);
+            modules.push(modul);
         }
     }
 
-    if (opts.prelude) coq.options.prelude = true;
+    if (!opts.noinit) coq.options.prelude = true;
 
     if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
 
     if (opts.inspect) {
-        coq.options.inspect = true;
+        coq.options.inspect = {};
         if (typeof opts.inspect === 'string')
-            coq.options.inspect_filename = opts.inspect;
+            coq.options.inspect.filename = opts.inspect;
+        if (modules.length > 0)
+            coq.options.inspect.modules = modules;
     }
 
     coq.start();
