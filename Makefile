@@ -52,14 +52,8 @@ Makefile.libs: coq-tools/mklibfs
 coq-libs: Makefile.libs coq-pkgs
 	COQDIR=$(COQDIR) make -f Makefile.libs libs-auto
 
-# Build extra libraries
-coq-addons: coq-pkgs
-	COQDIR=$(COQDIR) make -f Makefile.addons $(ADDONS)
-
-coq-all-libs: coq-libs coq-addons
-
 # All the libraries + json generation
-libs: coq-all-libs
+libs: coq-libs
 	./coq-tools/mklibjson # $(ADDONS)
 
 # Bundle libs and inject dependencies
