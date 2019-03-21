@@ -351,7 +351,7 @@ class CoqManager {
     }
 
     updateLocalSymbols() {
-        this.coq.inspectPromise(["CurrentFile"])
+        this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
                 { lemmas: bunch.map(CoqIdentifier.ofKerName) },

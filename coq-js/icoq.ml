@@ -120,8 +120,26 @@ let pp_of_goals ~doc sid : Pp.t option =
   end
   with Proof_global.NoCurrentProof -> None
 
+let context_of_st m = match m with
+  | `Valid (Some st) ->
+    begin try
+        Pfedit.get_current_context ~p:(Proof_global.proof_of_state st.Vernacstate.proof) ()
+      with Proof_global.NoCurrentProof ->
+        Pfedit.get_current_context ()
+    end
+  | _ ->
+    let env = Global.env () in Evd.from_env env, env
+
+let context_of_stm ~doc sid =
+  let st = Stm.state_of_id ~doc sid in
+  context_of_st st
 
 (* Inspection subroutines *)
+
+let inspect_globals ~env () =
+  let global_consts = seq_of_list @@
+      Environ.fold_constants (fun name _ l -> name :: l) env [] in
+  global_consts |> Seq.map Names.Constant.user
 
 let libobj_is_leaf obj =
   match obj with
@@ -132,7 +150,7 @@ let has_constant env kn =
     ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env; true
   with Not_found -> false
 
-let inspect_library ?(env=Global.env ()) () =
+let inspect_library ~env () =
   let ls = Lib.contents () in
   Seq.flat_map (fun ((_, kn), obj) -> seq_of_opt @@
     if libobj_is_leaf obj && has_constant env kn then Some kn
@@ -141,7 +159,7 @@ let inspect_library ?(env=Global.env ()) () =
 
 let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
-let inspect_locals ?(env=Global.env ()) ?(mod_path=default_mod_path) () =
+let inspect_locals ~env ?(mod_path=default_mod_path) () =
   let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
   let named_ctx = Environ.named_context env in
   seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>

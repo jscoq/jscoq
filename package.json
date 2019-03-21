@@ -6,10 +6,12 @@
   "dependencies": {
     "bootstrap": "^3.4.1",
     "codemirror": "^5.42.2",
+    "find": "^0.3.0",
     "jquery": "^3.3.1",
     "jszip": "^3.1.5",
     "localforage": "^1.7.3",
-    "neatjson": "^0.8.3"
+    "neatjson": "^0.8.3",
+    "path": "^0.12.7"
   },
   "devDependencies": {},
   "repository": {
