@@ -53,7 +53,7 @@ type jscoq_cmd =
 
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of Feedback.route_id * search_query
+  | Inspect of Stateid.t * Feedback.route_id * search_query
 
   (*            filename   content *)
   | Register of string
@@ -321,8 +321,9 @@ let jscoq_execute =
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
     end
 
-  | Inspect (rid, q) ->
-    let env = Global.env () in  (* TODO use local env, when in proof state? *)
+  | Inspect (sid, rid, q) ->
+    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
+    let _, env = Icoq.context_of_stm ~doc:(fst !doc) sid in
     let symbols = symbols_for q env in
     let results = Seq.filter (filter_by q) symbols in
     out_fn @@ SearchResults (rid, results)

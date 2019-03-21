@@ -64,11 +64,11 @@ class CoqWorker {
         return rid;
     }
 
-    inspect(rid, search_query) {
+    inspect(sid, rid, search_query) {
         if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
         if (typeof rid == 'undefined')
             rid = this._gen_rid = (this._gen_rid || 0) + 1;
-        this.sendCommand(["Inspect", rid, search_query]);
+        this.sendCommand(["Inspect", sid, rid, search_query]);
         return rid;
     }
 
@@ -125,9 +125,9 @@ class CoqWorker {
             rid = this.query(sid, rid, query));
     }
 
-    inspectPromise(rid, search_query) {
+    inspectPromise(sid, rid, search_query) {
         return this._wrapWithPromise(
-            this.inspect(rid, search_query));
+            this.inspect(sid, rid, search_query));
     }
 
     _wrapWithPromise(rid) {
