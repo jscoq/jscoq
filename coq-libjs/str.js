@@ -33,7 +33,7 @@ function re_partial_match()          { str_ll('re_partial_match', arguments);   
 //Provides: re_replacement_text
 //Requires: str_ll
 // external re_replacement_text: string -> int array -> string -> string
-function re_replacement_text(_,_,s)  { str_ll('re_replacement_text', arguments);  return s; }
+function re_replacement_text(r,a,s)  { str_ll('re_replacement_text', arguments);  return s; }
 //Provides: re_search_backward
 //Requires: str_ll
 // external re_search_backward: regexp -> string -> int -> int array
