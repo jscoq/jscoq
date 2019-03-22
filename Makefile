@@ -170,6 +170,7 @@ addon-%-get:
 
 addon-%-build:
 	make -f coq-addons/$*.addon build
+	make -f coq-addons/$*.addon jscoq-install
 
 addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
 addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}

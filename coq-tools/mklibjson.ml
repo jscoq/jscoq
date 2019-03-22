@@ -84,6 +84,9 @@ let build_bundle (pkg, deps, p_mod) =
   fprintf ofmt "%s\n" @@ pretty_to_string json;
   close_out out
 
+let seq_eprint s =
+  Seq.iter (fun el -> eprintf "@ %s" el) s
+
 let seq_join sep s =
   let l = Seq.fold_left (fun l el -> el :: l) [] s in
   String.concat sep l
@@ -98,9 +101,12 @@ let _ =
   let pkgs_complete = Seq.filter (fun (_pkg, stats) -> stats.total_pkgs > 0 && stats.found_pkgs = stats.total_pkgs) pkgs in
   let pkgs_partial = Seq.filter (fun (_pkg, stats) -> stats.total_pkgs > stats.found_pkgs && stats.found_pkgs > 0) pkgs in
   let pkgs_missing = Seq.filter (fun (_pkg, stats) -> stats.total_pkgs > 0 && stats.found_pkgs = 0) pkgs in
-  eprintf "Complete packages:\n   [%s]\n%!" (seq_join " " (Seq.map fst pkgs_complete));
-  if (not @@ seq_is_empty pkgs_missing) then
-    eprintf "Missing packages: \n   [%s]\n%!" (seq_join " " (Seq.map fst pkgs_missing));
-  if (not @@ seq_is_empty pkgs_partial) then
-    eprintf "Partially available packages:\n   [%s]\n%!"
-      (seq_join " " (Seq.map (fun (pkg, stats) -> sprintf "%s(%d/%d)" pkg stats.found_pkgs stats.total_pkgs) pkgs_partial));
+  eprintf "\n%!";
+  eprintf "Complete packages:\n%!   [@[<b 1>"; seq_eprint (Seq.map fst pkgs_complete); eprintf "@] ]\n%!";
+  if (not @@ seq_is_empty pkgs_missing) then begin
+    eprintf "Missing packages:\n%!   [@[<b 1>"; seq_eprint (Seq.map fst pkgs_missing); eprintf "@] ]\n%!" end;
+  if (not @@ seq_is_empty pkgs_partial) then begin
+    eprintf "Partially available packages:\n   [@[<b 1>";
+      (seq_eprint (Seq.map (fun (pkg, stats) -> sprintf "%s(%d/%d)" pkg stats.found_pkgs stats.total_pkgs) pkgs_partial));
+    eprintf "@] ]\n%!" end;
+  eprintf "\n%!"
