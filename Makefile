@@ -9,17 +9,21 @@ include config.mk
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
-	@echo "  - bytecode_bin:   build jscoq's bytecode"
-	@echo "  - javascript_bin: build jscoq's javascript"
-	@echo "  - coq-get:        download Coq and libraries"
-	@echo "  - coq-build:      build Coq and libraries"
-	@echo "  - coq:            download and build Coq and libraries"
-	@echo "  - coq-tools:      to be removed by the Dune-based build"
+	@echo "  - bytecode        build jsCoq's bytecode"
+	@echo "  - js              build jsCoq's javascript"
+	@echo "  - coq-get         download Coq ($(COQ_VERSION))"
+	@echo "  - coq-build       build Coq and its standard library"
+	@echo "  - coq             download and build Coq and standard library"
+	@echo "  - coq-tools       [to be removed by the Dune-based build]"
+	@echo "  - addons          download and build extra libraries"
+	@echo "                    ($(ADDONS))"
+	@echo "  - libs            create package bundles in coq-pkgs"
+	@echo
 
-bytecode_bin:
+bytecode:
 	$(MAKE) -C coq-js bytecode_bin
 
-javascript_bin:
+js:
 	$(MAKE) -C coq-js javascript_bin
 
 coq-tools:
@@ -35,7 +39,7 @@ coq-tools:
 %.cmo.js: %.cmo
 	js_of_ocaml $(JSOO_OPTS) --wrap-with-fun= -o $<.js $<
 
-plugin-comp: $(addsuffix .js,$(shell find coq-pkgs \( -name *.cma -or -name *.cmo \)))
+plugin-comp: $(addsuffix .js,$(shell find coq-pkgs \( -name *.cma -or -name *.cmo \) 2>/dev/null))
 
 ########################################################################
 # Library building                                                     #
