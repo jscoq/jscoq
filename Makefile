@@ -160,7 +160,10 @@ endif
 
 coq-get:
 	mkdir -p coq-external coq-pkgs
-	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) || true
+	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
+	  cd $(COQDIR) && \
+          patch -p1 < $(current_dir)/coq-patches/avoid-vm.patch && \
+          patch -p1 < $(current_dir)/coq-patches/trampoline.patch ) || true
 	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 
 coq-build:
