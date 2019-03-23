@@ -28,13 +28,15 @@ make coq
 ```
 ./build.sh
 ```
- 5. Resolve JavaScript dependencies using `npm`.
+ 5. (Optional step)
+    If you want to also build the extra libraries bundled with jsCoq (mathcomp, iris, ltac2, elpi, equations, dsp):
 ```
-npm install
+make addons
+./build.sh
 ```
 
 Now serve the files at the root directory of the project via HTTP, and
 navigate your browser to `http://localhost/newide.html`, or run them locally:
 ```
- google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" index.html
+ google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" newide.html
 ```

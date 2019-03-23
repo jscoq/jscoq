@@ -17,6 +17,10 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 ADDONS_PATH := $(current_dir)/coq-external
 COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
 
+ifeq "${JSCOQ_DEBUG}" "yes"
+JSOO_OPTS+= --pretty --noinline --disable shortvar --debug-info
+endif
+
 # Addons to build
 # Working on coq-8.9:
 ADDONS = mathcomp iris ltac2 elpi equations dsp

@@ -101,11 +101,7 @@ JSFILES=$(addprefix $(JSDIR),mutex.js unix.js str.js coq_vm.js)
 # the --toplevel was previously used, but --dynlink option seems to
 # work equally fine, which one should we use? What about --nocmis,
 # does it have any effect without --toplevel?
-JSOO_OPTS = --dynlink # --nocmis
-
-ifeq "${JSCOQ_DEBUG}" "yes"
-JSOO_OPTS+= --pretty --noinline --disable shortvar --debug-info
-endif
+JSOO_OPTS += --dynlink # --nocmis
 
 # No significant effect appreciated
 # JSOO_OPTS+=-opt 3

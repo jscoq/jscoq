@@ -8,7 +8,7 @@ set -e
 opam switch $OCAML_VER+32bit
 eval `opam config env`
 
-make -j $NJOBS bytecode_bin
+make -j $NJOBS bytecode
 
 # In previous versions of jsoo we needed to use a 64 jsoo due to high
 # memory demands. This is fixed in jsoo 2.8.1
@@ -16,7 +16,7 @@ make -j $NJOBS bytecode_bin
 # opam switch $OCAML_VER
 # eval `opam config env`
 
-make -j $NJOBS javascript_bin
+make -j $NJOBS js
 
 # coq-tools must be built in 32 bits too
 # opam switch $OCAML_VER+32bit
