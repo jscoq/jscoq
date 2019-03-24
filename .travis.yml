@@ -8,6 +8,7 @@ branches:
   - v8.9
   - v8.9+worker
   - v8.10
+  - v8.10+64bit
 
 cache:
   apt: true
@@ -23,7 +24,7 @@ env:
   - OPAMROOTISOK="true"
   - OPAMYES="true"
   - OPAMJOBS="2"
-  - COMPILER="4.07.1+32bit"
+  - COMPILER="4.07.1"
   - BASE_OPAM="camlp5 dune elpi"
 
 before_install: |
@@ -40,11 +41,13 @@ install:
 - opam config var root
 - ./etc/toolchain-setup.sh
 - opam list
+- echo 'Building Coq 8.10...' && echo -en 'travis_fold:start:coq.build\\r'
 - make coq-get
 - make coq-build
+- echo -en 'travis_fold:end:coq.build\\r'
 
 script:
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
 - git submodule update --remote
-- ./build.sh
+- make jscoq
 - echo -en 'travis_fold:end:jscoq.build\\r'
