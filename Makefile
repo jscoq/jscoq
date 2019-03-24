@@ -19,6 +19,14 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 ADDONS_PATH := $(current_dir)/coq-external
 COQDIR := coq-external/coq-$(COQ_VERSION)/
 
+# Find where dune places coq build artifacts
+_COQBUILDDIR = ${wildcard $(current_dir)/_build/*/$(COQDIR)}
+COQBUILDDIR = ${if ${filter 1,${words $(_COQBUILDDIR)}}, $(_COQBUILDDIR), \
+	${error error: exactly one Coq build should be active; found ${words $(_COQBUILDDIR)} [$(_COQBUILDDIR)]}}
+
+# Find where dune places coq build artifacts
+COQPKGDIR = ${patsubst %/$(COQDIR),%/coq-pkgs,$(COQBUILDDIR)}
+
 NJOBS=4
 
 export NJOBS
@@ -47,12 +55,11 @@ libs-pkg: force
 	dune build @libs-pkg
 
 links:
-	ln -s _build/default/node_modules/ || true
-	ln -s _build/default/coq-pkgs/ || true
-	ln -s ../_build/default/coq-js/jscoq_worker.bc.js coq-js || true
+	ln -sf ${wildcard _build/*/coq-pkgs/} . || true
+	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js || true
 
 links-clean:
-	rm node_modules coq-pkgs coq-js/jscoq_worker.bc.js
+	rm coq-pkgs coq-js/jscoq_worker.bc.js
 
 ########################################################################
 # Clean                                                                #
@@ -107,7 +114,7 @@ coq-get:
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch && \
 		  patch -p1 < $(current_dir)/etc/patches/coerce-32bit.patch ) || true
 	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
-	#for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
+	for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
 
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
 COQ_MAKE_FLAGS = -j $(NJOBS)
@@ -121,6 +128,12 @@ endif
 coq-build:
 	./build-theories.sh
 	# cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
-	# COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install; done
+	# COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit 
+
+addons-build:
+	@printf 'Using Coq from:\n - %s\n\n' '$(COQBUILDDIR)'
+	@printf 'Installing to:\n - %s\n\n' '$(COQPKGDIR)'
+	for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install COQDIR=$(COQBUILDDIR); done
+	rsync -va coq-pkgs/ $(COQPKGDIR)/
 
 coq: coq-get coq-build

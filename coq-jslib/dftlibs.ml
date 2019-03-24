@@ -18,7 +18,7 @@ let plugin_list =
   ; ["Coq"; "setoid_ring"]
   ; ["Coq"; "extraction"]
   ; ["Coq"; "funind"]
-  ; ["Coq"; "quote"]
+  ; ["Coq"; "btauto"]
 
   ; ["Coq"; "fourier"]
   ; ["Coq"; "omega"]
@@ -71,7 +71,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "firstorder"]
     ; ["Coq"; "extraction"]
     ; ["Coq"; "funind"]
-    ; ["Coq"; "quote"]
+    ; ["Coq"; "btauto"]
     ; ["Coq"; "Init"]
     ; ["Coq"; "Bool"]
     ; ["Coq"; "Unicode"]
