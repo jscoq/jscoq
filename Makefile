@@ -77,19 +77,17 @@ libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq
 
 BUILDDIR=dist
 
-DISTHTML=newide.html #mtac_tutorial.html
-BUILDOBJ=package.json index.html $(DISTHTML) coq-pkgs ui-js ui-css ui-images examples
+BUILDOBJ=package.json index.html coq-pkgs ui-js ui-css ui-images examples
 DISTEXT=$(addprefix ui-external/,CodeMirror-TeX-input)
 
 dist:
-	ln -sf $(DISTHTML) index.html
 	mkdir -p $(BUILDDIR)
 	# Copy static files, XXX: minimize
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='.jshintrc' --exclude='*.cmo' \
 	      --delete-excluded $(BUILDOBJ) $(BUILDDIR)
 	# The monster
 	mkdir -p $(BUILDDIR)/coq-js/
-	cp -a coq-js/jscoq.js coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
+	cp -a coq-js/jscoq_worker.js $(BUILDDIR)/coq-js/
 	# Externals
 	rsync -avp --delete --exclude='*~' --exclude='.git' --exclude='node_modules' \
 	       --delete-excluded $(DISTEXT) $(BUILDDIR)/ui-external
@@ -162,15 +160,14 @@ coq-get:
 	mkdir -p coq-external coq-pkgs
 	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
 	  cd $(COQDIR) && \
-          patch -p1 < $(current_dir)/coq-patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/coq-patches/trampoline.patch ) || true
+          patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
+          patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
 	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 
 coq-build:
 	cd $(COQDIR) && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
 
 coq: coq-get coq-build
-	
 
 addon-%-get:
 	make -f coq-addons/$*.addon get

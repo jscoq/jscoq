@@ -1,22 +1,19 @@
 # -*- mode: makefile -*-
+# jscoq addon: dsp
 
-include config.mk
-
-# From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+include coq-addons/common.mk
 
 DSP_HOME=$(ADDONS_PATH)/dsp
 DSP_DEST=coq-pkgs/Dsp
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 
 get:
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME); make
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME); $(MAKE)
 
 jscoq-install:
 	mkdir -p $(DSP_DEST)

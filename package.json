@@ -2,7 +2,7 @@
   "name": "jscoq",
   "version": "0.9.2",
   "description": "Run the Coq Proof Assistant in your browser!",
-  "main": "newide.html",
+  "main": "index.html",
   "dependencies": {
     "bootstrap": "^3.4.1",
     "codemirror": "^5.42.2",

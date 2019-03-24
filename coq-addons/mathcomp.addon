@@ -1,17 +1,14 @@
 # -*- mode: makefile -*-
 # jscoq addon: mathcomp
 
-include config.mk
+include coq-addons/common.mk
 
 # From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
-
 MATHCOMP_GIT=https://github.com/ejgallego/math-comp.git
 MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
 MATHCOMP_DEST=coq-pkgs/mathcomp
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 
