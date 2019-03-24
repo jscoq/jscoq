@@ -1,8 +1,8 @@
 diff --git a/engine/logic_monad.ml b/engine/logic_monad.ml
-index 4afa817..557bb0d 100644
+index e0c24f0..1431174 100644
 --- a/engine/logic_monad.ml
 +++ b/engine/logic_monad.ml
-@@ -143,6 +143,17 @@ type ('a, 'b, 'e) list_view =
+@@ -145,6 +145,17 @@ type ('a, 'b, 'e) list_view =
    | Nil of 'e
    | Cons of 'a * ('e -> 'b)
  
@@ -20,7 +20,7 @@ index 4afa817..557bb0d 100644
  module BackState =
  struct
  
-@@ -179,11 +190,11 @@ struct
+@@ -181,11 +192,11 @@ struct
  
    type ('a, 'i, 'o, 'e) t =
        { iolist : 'r. 'i -> ('e -> 'r NonLogical.t) ->
@@ -35,7 +35,7 @@ index 4afa817..557bb0d 100644
  
    let (>>=) m f =
      { iolist = fun s nil cons ->
-@@ -197,16 +208,16 @@ struct
+@@ -199,16 +210,16 @@ struct
      { iolist = fun s nil cons -> m.iolist s nil (fun x s next -> cons (f x) s next) }
  
    let zero e =
@@ -55,7 +55,7 @@ index 4afa817..557bb0d 100644
  
    (** State related *)
  
-@@ -245,30 +256,31 @@ struct
+@@ -247,30 +258,31 @@ struct
      { iolist = fun s0 nil cons ->
        let next = function
        | Nil e -> nil e
@@ -96,7 +96,7 @@ index 4afa817..557bb0d 100644
  
    let repr x = x
  end
-@@ -348,7 +360,7 @@ struct
+@@ -350,7 +362,7 @@ struct
        writer) and efficiency. *)
  
    let get =
@@ -105,7 +105,7 @@ index 4afa817..557bb0d 100644
  
    let set (sstate : P.s) =
      { iolist = fun s nil cons -> cons () { s with sstate } nil }
-@@ -377,8 +389,8 @@ struct
+@@ -379,8 +391,8 @@ struct
      let rnil e = NonLogical.return (Nil e) in
      let rcons x s l =
        let p = (x, s.sstate, s.wstate, s.ustate) in
