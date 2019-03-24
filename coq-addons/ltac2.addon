@@ -1,11 +1,7 @@
 # -*- mode: makefile -*-
-# jscoq addon: equations
+# jscoq addon: ltac2
 
-include config.mk
-
-# From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+include coq-addons/common.mk
 
 LTAC2_GIT=https://github.com/ppedrot/ltac2
 LTAC2_BRANCH=v8.9
@@ -14,7 +10,7 @@ LTAC2_DEST=coq-pkgs/Ltac2
 
 export COQBIN=$(COQDIR)/bin/
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 
@@ -22,10 +18,9 @@ get:
 	[ -d $(LTAC2_HOME) ] || git clone -b $(LTAC2_BRANCH) --depth=1 $(LTAC2_GIT) $(LTAC2_HOME)
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(LTAC2_HOME); coq_makefile -f _CoqProject -o Makefile; make byte; make; make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(LTAC2_HOME); coq_makefile -f _CoqProject -o Makefile; $(MAKE) byte; $(MAKE); $(MAKE) install
 
 jscoq-install:
 	mkdir -p $(LTAC2_DEST)
 	$(SYNC) $(LTAC2_HOME)/src/ltac2_plugin.cma $(LTAC2_DEST)
 	$(SYNCVO) $(LTAC2_HOME)/theories/ $(LTAC2_DEST)
-

@@ -1,11 +1,7 @@
 # -*- mode: makefile -*-
-# jscoq addon: mathcomp
+# jscoq addon: elpi
 
-include config.mk
-
-# From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+include coq-addons/common.mk
 
 ELPI_GIT=https://github.com/LPCIC/coq-elpi.git
 ELPI_BRANCH=coq-v8.9
@@ -14,7 +10,7 @@ ELPI_DEST=coq-pkgs/elpi
 
 export COQBIN=$(COQDIR)/bin/
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 
@@ -22,7 +18,7 @@ get:
 	[ -d $(ELPI_HOME) ] || git clone --depth=1 -b $(ELPI_BRANCH) $(ELPI_GIT) $(ELPI_HOME)
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(ELPI_HOME); make; make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(ELPI_HOME); $(MAKE); $(MAKE) install
 
 jscoq-install:
 	mkdir -p $(ELPI_DEST)

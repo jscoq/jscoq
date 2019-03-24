@@ -1,8 +1,6 @@
 # -*- mode: makefile -*-
 # jscoq addon: odd-order
 
-include config.mk
-
 # From addons
 SYNC=rsync -avq
 SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
@@ -11,7 +9,7 @@ MATHCOMP_FULL_GIT=https://github.com/math-comp/math-comp.git
 MATHCOMP_FULL_HOME=$(ADDONS_PATH)/math-comp-full
 MATHCOMP_FULL_DEST=coq-pkgs/math-comp-full
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 

@@ -95,7 +95,7 @@ bytecode_bin: jscoq_worker.byte
 ########################################################################
 # Compilation to JS
 
-JSDIR=../coq-libjs/
+JSDIR=js_stub/
 JSFILES=$(addprefix $(JSDIR),mutex.js unix.js str.js coq_vm.js)
 
 # the --toplevel was previously used, but --dynlink option seems to
