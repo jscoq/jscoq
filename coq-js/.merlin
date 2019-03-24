@@ -3,9 +3,8 @@ FLG -rectypes -thread
 S .
 B .
 
-S ../coq-external/coq-v8.8+32bit/**
-B ../coq-external/coq-v8.8+32bit/**
+S ../coq-external/coq-v8.9+32bit/**
+B ../coq-external/coq-v8.9+32bit/**
 
-PKG lwt js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt yojson
+PKG lwt js_of_ocaml js_of_ocaml-ppx js_of_ocaml-lwt ppx_import yojson ppx_deriving_yojson
 EXT lwt
-
