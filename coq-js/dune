@@ -16,7 +16,8 @@
     js_stub/mutex.js
     js_stub/unix.js
     js_stub/str.js
-    js_stub/coq_vm.js)
+    js_stub/coq_vm.js
+    js_stub/marshal32.js)
   (flags :standard --dynlink +nat.js +dynlink.js +toplevel.js))
   ; (flags :standard --pretty --noinline --disable shortvar --debug-info +nat.js +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)

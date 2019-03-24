@@ -17,7 +17,7 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
-COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
+COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)/
 
 NJOBS=4
 
@@ -104,9 +104,10 @@ coq-get:
 	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
 	  cd $(COQDIR) && \
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
-	cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
-	for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
+          patch -p1 < $(current_dir)/etc/patches/trampoline.patch && \
+		  patch -p1 < $(current_dir)/etc/patches/coerce-32bit.patch ) || true
+	#cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
+	#for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
 
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
 COQ_MAKE_FLAGS = -j $(NJOBS)
