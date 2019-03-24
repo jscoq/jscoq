@@ -197,7 +197,7 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
-                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ],
+                        'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
             editor: { /* codemirror options */ }
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
