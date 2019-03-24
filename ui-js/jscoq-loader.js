@@ -69,7 +69,7 @@ var loadJsCoq;
                      node_modules_path + 'jszip/dist/jszip.min',
                      node_modules_path + 'localforage/dist/localforage.min',
                      base_path + 'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
-                     base_path + 'coq-js/jscoq',
+                     base_path + 'ui-js/jscoq',
                      base_path + 'ui-js/mode/coq-mode',
                      base_path + 'ui-js/addon/company-coq',
                      base_path + 'ui-js/cm-provider',

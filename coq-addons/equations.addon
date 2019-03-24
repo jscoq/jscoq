@@ -1,11 +1,8 @@
 # -*- mode: makefile -*-
 # jscoq addon: equations
 
-include config.mk
-
 # From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+include coq-addons/common.mk
 
 EQUATIONS_GIT=https://github.com/mattam82/Coq-Equations
 EQUATIONS_HOME=$(ADDONS_PATH)/Coq-Equations
@@ -14,7 +11,7 @@ EQUATIONS_BRANCH=8.9
 
 export COQBIN=$(COQDIR)/bin/
 
-.PHONY: nothing get build install
+.PHONY: nothing get build jscoq-install
 
 nothing:
 

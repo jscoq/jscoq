@@ -142,7 +142,7 @@ let pkgs : (string * string list * (string list * selector) list) list=
     ; [ "Flocq" ; "Appli" ]
     ; [ "Flocq" ; "Calc" ]
     ; [ "Flocq" ; "Translate" ]
-    ; [ "Flocq" ; "Prop" ] ] 
+    ; [ "Flocq" ; "Prop" ] ]
 
   ; "tlc", ["coq-reals"], all_of
     [ ["TLC"] ]

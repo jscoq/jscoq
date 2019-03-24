@@ -155,7 +155,7 @@ where `$path` is the path the jsCoq distribution, `$list_of_ids` is
 the list of textareas that will form the Coq document. See below for
 available `$options`.
 
-The jsCoq (landing webpage)[newide.html] is a good actually running example.
+The jsCoq (landing webpage)[index.html] is a good actually running example.
 
 ### Options
 
