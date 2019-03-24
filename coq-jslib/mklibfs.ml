@@ -18,18 +18,19 @@ let output_librule fmt bpath path =
   let name    = Dl.to_name path                                in
   (* Strip "Coq" suffix *)
   let dir     = List.tl path                                   in
-  let coqdir  = "$(COQDIR)/../../_build/4.07.1+32bit/coq-external/coq-v8.10+32bit/" in
+  let coqdir  = "$(COQDIR)" in
   let coqdir  = Dl.to_dir (coqdir :: bpath :: dir)        in
   let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
   let cma_pat = Dl.to_dir [coqdir; "*_plugin.cma"]             in
   (* Rule for the dir *)
-  fprintf fmt "%s:\n\t@mkdir -p %s\n" outdir outdir;
+(*  fprintf fmt "_ := ${error COQDIR = $(COQDIR)}\n"; *)
+  fprintf fmt "%s:\n\t@mkdir -p %s\n\n" outdir outdir;
   (* Pattern expansion *)
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;
   (* Copy rule *)
-  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\t$(shell for i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done)\n\t$(shell for i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done)\n\n"
+  fprintf fmt "%s: %s $(%s_VO) $(%s_CMA)\n\tfor i in $(%s_VO);  do cp -a $$i %s/`basename $$i`; done\n\tfor i in $(%s_CMA); do cp -a $$i %s/`basename $$i`; done\n\n"
     name outdir name name name outdir name outdir
 (*
   COQ_SETOIDS=$(COQTDIR)/Setoids/*.vo

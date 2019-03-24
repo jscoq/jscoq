@@ -17,7 +17,7 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
-COQDIR := $(ADDONS_PATH)/coq-$(COQ_VERSION)/
+COQDIR := coq-external/coq-$(COQ_VERSION)/
 
 NJOBS=4
 
@@ -106,7 +106,7 @@ coq-get:
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch && \
 		  patch -p1 < $(current_dir)/etc/patches/coerce-32bit.patch ) || true
-	#cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 	#for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
 
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
@@ -119,7 +119,8 @@ COQ_MAKE_FLAGS += BEST=byte
 endif
 
 coq-build:
+	./build-theories.sh
 	# cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
-	COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install; done
+	# COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install; done
 
 coq: coq-get coq-build
