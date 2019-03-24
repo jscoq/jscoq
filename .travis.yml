@@ -51,3 +51,7 @@ script:
 - git submodule update --remote
 - make jscoq
 - echo -en 'travis_fold:end:jscoq.build\\r'
+- echo -en 'travis_fold:start:addons.build\\r'
+- make addons-build
+- make jscoq  # rebuild with addons
+- echo -en 'travis_fold:end:addons.build\\r'
