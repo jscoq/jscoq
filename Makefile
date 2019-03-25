@@ -54,6 +54,12 @@ libs-pkg: force
 	ADDONS="$(ADDONS)" OCAMLPATH=$(COQDIR) \
 	dune build @libs-pkg
 
+# Build symbol database files for autocomplete
+coq-pkgs/%.symb: coq-pkgs/%.json
+	node --max-old-space-size=2048 ui-js/coq-cli.js --require-pkg $< --inspect $@
+
+libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
+
 links:
 	ln -sf ${wildcard _build/*/coq-pkgs/} . || true
 	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js || true
@@ -106,34 +112,42 @@ all-dist: dist dist-release dist-upload
 COQ_BRANCH=master
 COQ_REPOS=https://github.com/coq/coq.git
 
-coq-get:
-	mkdir -p coq-external coq-pkgs
-	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
-	  cd $(COQDIR) && \
-          patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/etc/patches/trampoline.patch && \
-		  patch -p1 < $(current_dir)/etc/patches/coerce-32bit.patch ) || true
-	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
-	for i in $(ADDONS); do make -f coq-addons/$$i.addon get; done
-
 COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
 COQ_MAKE_FLAGS = -j $(NJOBS)
 
-ifeq "${shell uname -s}" "Darwin"
+ifeq (${shell uname -s}, Darwin)
 # Coq cannot be built natively on macOS with 32-bit.
 # At least not unless plugins are linked statically.
 COQ_MAKE_FLAGS += BEST=byte
 endif
 
+coq-get:
+	mkdir -p coq-external
+	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
+	  cd $(COQDIR) && \
+          patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
+          patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
+	cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
+	dune build @vodeps
+	cd $(COQDIR) && dune exec ./tools/coq_dune.exe --context="4.07.1+32bit" $(current_dir)/_build/"4.07.1+32bit"/coq-external/coq-v8.10+32bit/.vfiles.d
+
+# Coq should be now be built by composition with the Dune setup
 coq-build:
 	./build-theories.sh
-	# cd coq-external/coq-$(COQ_VERSION)+32bit && $(MAKE) $(COQ_TARGETS) $(COQ_MAKE_FLAGS) && $(MAKE) byte $(COQ_MAKE_FLAGS)
-	# COQDIR=/home/egallego/research/jscoq/_build/install/4.07.1+32bit 
-
-addons-build:
-	@printf 'Using Coq from:\n - %s\n\n' '$(COQBUILDDIR)'
-	@printf 'Installing to:\n - %s\n\n' '$(COQPKGDIR)'
-	for i in $(ADDONS); do make -f coq-addons/$$i.addon build jscoq-install COQDIR=$(COQBUILDDIR); done
-	rsync -va coq-pkgs/ $(COQPKGDIR)/
 
 coq: coq-get coq-build
+
+addon-%-get:
+	make -f coq-addons/$*.addon get
+
+addon-%-build:
+	@printf "\nBuilding addon `$*`\n"
+	@printf 'Using Coq from:\n - %s\n\n' '$(COQBUILDDIR)'
+	@printf 'Installing to:\n - %s\n\n' '$(COQPKGDIR)'
+	make -f coq-addons/$*.addon build jscoq-install COQDIR=$(COQBUILDDIR)
+	rsync -va coq-pkgs/ $(COQPKGDIR)/
+
+addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
+addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
+
+addons: addons-get addons-build

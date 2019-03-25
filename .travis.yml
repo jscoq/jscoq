@@ -47,6 +47,10 @@ install:
 - echo -en 'travis_fold:end:coq.build\\r'
 
 script:
+- set -e
+- echo 'Building Coq...' && echo -en 'travis_fold:start:coq.build\\r'
+- make coq-get
+- echo -en 'travis_fold:end:coq.build\\r'
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
 - git submodule update --remote
 - make jscoq

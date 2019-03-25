@@ -2,7 +2,7 @@
 
 class CoqWorker {
 
-    constructor(scriptPath) {
+    constructor(scriptPath, worker) {
         this.options = {
             debug: false
         };
@@ -12,10 +12,11 @@ class CoqWorker {
 
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
-        this.worker = new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.bc.js"))
+        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.bc.js"))
         this.worker.onmessage = evt => this.coq_handler(evt);
 
-        window.addEventListener('unload', () => this.worker.terminate());
+        if (typeof window !== 'undefined')
+            window.addEventListener('unload', () => this.worker.terminate());
     }
 
     sendCommand(msg) {
@@ -64,11 +65,11 @@ class CoqWorker {
         return rid;
     }
 
-    inspect(rid, search_query) {
+    inspect(sid, rid, search_query) {
         if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
         if (typeof rid == 'undefined')
             rid = this._gen_rid = (this._gen_rid || 0) + 1;
-        this.sendCommand(["Inspect", rid, search_query]);
+        this.sendCommand(["Inspect", sid, rid, search_query]);
         return rid;
     }
 
@@ -125,9 +126,9 @@ class CoqWorker {
             rid = this.query(sid, rid, query));
     }
 
-    inspectPromise(rid, search_query) {
+    inspectPromise(sid, rid, search_query) {
         return this._wrapWithPromise(
-            this.inspect(rid, search_query));
+            this.inspect(sid, rid, search_query));
     }
 
     _wrapWithPromise(rid) {

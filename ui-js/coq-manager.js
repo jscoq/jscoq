@@ -351,7 +351,7 @@ class CoqManager {
     }
 
     updateLocalSymbols() {
-        this.coq.inspectPromise(["CurrentFile"])
+        this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
                 { lemmas: bunch.map(CoqIdentifier.ofKerName) },
@@ -1122,6 +1122,9 @@ class CoqIdentifier {
         return new CoqIdentifier(modpath[1].slice().reverse().concat(modsuff), label);
     }
 }
+
+if (typeof module !== 'undefined')
+    module.exports = {CoqManager, CoqIdentifier}
 
 // Local Variables:
 // js-indent-level: 4

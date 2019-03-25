@@ -23,4 +23,3 @@ do_setup() {
 opam switch -j $NJOBS -y create $OCAML_VER
 eval `opam env`
 do_setup
-

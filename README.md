@@ -1,7 +1,7 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=js-worker)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.9%2Bworker)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!

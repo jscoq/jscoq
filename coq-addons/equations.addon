@@ -2,8 +2,7 @@
 # jscoq addon: equations
 
 # From addons
-SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+include coq-addons/common.mk
 
 EQUATIONS_GIT=https://github.com/mattam82/Coq-Equations
 EQUATIONS_HOME=$(ADDONS_PATH)/Coq-Equations

@@ -54,7 +54,7 @@ type jscoq_cmd =
 
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of Feedback.route_id * search_query
+  | Inspect of Stateid.t * Feedback.route_id * search_query
 
   (*            filename   content *)
   | Register of string
@@ -176,11 +176,6 @@ let update_loadpath (msg : lib_event) : unit =
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg ; post_lib_event msg
 
-let rec seq_append s1 s2 =  (* use batteries?? *)
-  match s1 () with
-  | Seq.Nil -> s2
-  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
-
 (* set_opts  : general options *)
 (* lib_init  : list of modules to load *)
 (* lib_path  : list of load paths *)
@@ -222,6 +217,8 @@ let coq_exn_info exn =
     let pp_exn    = Pp.opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
+(* -- Used by Add command -- *)
+
 let requires ast =
   match ast with
   | Vernacexpr.VernacExpr (_, Vernacexpr.VernacRequire (prefix, _export, module_refs)) ->
@@ -232,6 +229,59 @@ let requires ast =
     Some ((prefix_str, module_refs_str))
   | _ -> None
   [@@warning "-4"]
+
+(* -- Used by Inspect command --*)
+
+let string_contains s1 s2 =  (* from Rosetta Code *)
+  let len1 = String.length s1
+  and len2 = String.length s2 in
+  if len1 < len2 then false else
+    let rec aux i =
+      (i >= 0) && ((String.sub s1 i len2 = s2) || aux (pred i))
+    in
+    aux (len1 - len2)
+
+let rec list_take n list =
+  if n > 0 then
+    match list with
+    | [] -> []
+    | x :: xs -> x :: (list_take (n - 1) xs)
+  else []
+  
+let list_starts_with l1 l2 = list_take (List.length l2) l1 = l2
+
+let rec seq_append s1 s2 =  (* use batteries?? *)
+  match s1 () with
+  | Seq.Nil -> s2
+  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
+
+let rec prefix_of_modpath mp =
+  match mp with
+  | Names.ModPath.MPfile dp ->
+    List.rev_map Names.Id.to_string (Names.DirPath.repr dp) 
+  | Names.ModPath.MPdot (mp, last) ->
+    prefix_of_modpath mp @ [Names.Label.to_string last]
+  | Names.ModPath.MPbound _ -> [] (* XXX *)
+
+let modpath_starts_with mp prefix =
+  list_starts_with (prefix_of_modpath mp) prefix
+
+let is_within kn prefix =
+  modpath_starts_with (Names.KerName.modpath kn) prefix
+
+let symbols_for (q : search_query) env =
+    match q with
+    | Locals       -> Icoq.inspect_locals  ~env ()
+    | CurrentFile  -> seq_append (Icoq.inspect_library ~env ())
+                                 (Icoq.inspect_locals  ~env ())
+    | _            -> Icoq.inspect_globals ~env () 
+    [@@warning "-4"]
+
+let rec filter_by (q : search_query) =
+  match q with
+  | All | CurrentFile | Locals -> (fun _ -> true)
+  | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
+  | Keyword s -> (fun nm -> string_contains (Names.KerName.to_string nm) s)
 
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
@@ -278,12 +328,12 @@ let jscoq_execute =
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
     end
 
-  | Inspect (rid, _q) ->
-    let env = Global.env () in
-    let symbols = seq_append (Icoq.inspect_library ~env ())
-                             (Icoq.inspect_locals ~env ()) in
-    (* TODO query is ignored for the time being *)
-    out_fn @@ SearchResults (rid, symbols)
+  | Inspect (sid, rid, q) ->
+    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
+    let _, env = Icoq.context_of_stm ~doc:(fst !doc) sid in
+    let symbols = symbols_for q env in
+    let results = Seq.filter (filter_by q) symbols in
+    out_fn @@ SearchResults (rid, results)
 
   | Register file_path  ->
     Jslibmng.register_cma ~file_path
