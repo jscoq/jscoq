@@ -30,6 +30,10 @@
  (action (run npm install)))
 
 (alias
+ (name coq)
+ (deps (package coq)))
+
+(alias
  (name jscoq)
  (deps
    (source_tree ui-js)
@@ -40,6 +44,12 @@
    index.html
    coq-pkgs
    node_modules
+   coq-js/jscoq_worker.bc.js))
+
+; Just the worker
+(alias
+ (name jscoq_worker)
+ (deps
    coq-js/jscoq_worker.bc.js))
 
 (alias

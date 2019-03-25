@@ -61,8 +61,8 @@ coq-pkgs/%.symb: coq-pkgs/%.json
 libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
 
 links:
-	ln -sf ${wildcard _build/*/coq-pkgs/} . || true
-	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js || true
+	ln -sf ${wildcard _build/*/coq-pkgs/} .
+	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js
 
 links-clean:
 	rm coq-pkgs coq-js/jscoq_worker.bc.js
@@ -136,7 +136,9 @@ coq-get:
 # Theories and plugins have to be built explicitly (for now)
 coq-build:
 	cd $(COQDIR) && dune exec coq_dune $(COQBUILDDIR)/.vfiles.d
-	dune build $(COQDIR)
+	dune build @coq
+	# Frugal "install" for use in addon builds
+	./etc/scripts/frugal.sh
 
 coq: coq-get coq-build
 
@@ -148,7 +150,7 @@ addon-%-build:
 	@printf 'Using Coq from:\n - %s\n\n' '$(COQBUILDDIR)'
 	@printf 'Installing to:\n - %s\n\n' '$(COQPKGDIR)'
 	make -f coq-addons/$*.addon build jscoq-install COQDIR=$(COQBUILDDIR)
-	rsync -va coq-pkgs/ $(COQPKGDIR)/
+	rsync -va coq-pkgs/* $(COQPKGDIR)/
 
 addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
 addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}

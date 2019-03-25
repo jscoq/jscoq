@@ -1,5 +1,6 @@
 # General ignores
 *~
+/cycle.sh
 
 # Externals
 coq-external/
