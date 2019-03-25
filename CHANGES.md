@@ -4,18 +4,14 @@
   - [ ] Automatic parsing mode.
   - [ ] Execution gutters.
   - [ ] Move to sertop.
-  - [ ] UI layout.
-  - [x] Worker support.
-  - [_] Use Dune as build system
+  - [ ] Support for UI layouts.
+  - [_] Use Dune as build system (@ejgallego)
 
 Pending worker tasks:
 
-+ Race: we cancel, then add before the cancelled arrives. Review and
-  factorize code.
-+ don't reexec states, as this brings back the parser to an improper
-  state.
-+ Better printing.
-+ Library tweaks.
++ A race: we cancel, then add before the cancelled message arrives.
+  Review and factorize code here.
++ don't reexec states, this brings back the parser to an improper state.
 + quick prev/next creates problems in long commands.
 + we are reusing span_ids and this is not ok for the STM.
 
@@ -24,27 +20,26 @@ Pending worker tasks:
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
-  - [ ] Support for UI layouts.
-  - [_] Use Dune as build system
-  - [x] Support for Coq 8.9
-  - [x] Static compilation of cma/cmo. (thanks @hhugo).
-  - [x] Support for Coq 8.6/8.7/8.8/8.9.
-  - [x] Migrated to ppx for jsoo syntax.
-  - [x] Port to Ocaml 4.07.1.
-  - [x] Port to JSOO 3.3.0.
-  - [x] Migrate from d3 to jQuery for DOM manipulation.
-  - [x] Full support for SF.
-  - [x] Many small fixes.
-  - [x] Goal display on hover.
-  - [x] Building with 32-bit on macOS.
-  - [x] Contextual info when hovering identifiers in goals pane.
-  - [x] Contextual info for identifier under cursor.
-  - [x] Support for adding packages from Zip files.
-  - [x] Automatic download of packages on Require.
-  - [x] Fine-grained module dependencies for Coq standard library.
-  - [x] company-coq-style symbols and subscripts.
-  - [x] Auto-completion of tactics and lemmas.
-  - [x] PoC running on Node.js.
+  - [x] JsCoq now runs as a worker (@ejgallego @corwin-of-amber).
+  - [x] Support for Coq 8.6/8.7/8.8/8.9. (@ejgallego)
+  - [x] Port to Ocaml 4.07.1. (@ejgallego)
+  - [x] Port to JSOO 3.3.0. (@ejgallego)
+  - [x] Static compilation of cma/cmo. (@ejgallego, thanks @hhugo).
+  - [x] Migrated to ppx for jsoo syntax. (@ejgallego)
+  - [x] Native rendering of Coq's Pp type. (@corwin-of-amber)
+  - [x] Migrate from d3 to jQuery for DOM manipulation. (@corwin-of-amber)
+  - [x] Full support for Software Foundations. (@ejgallego)
+  - [x] Many small fixes. (@ejgallego @corwin-of-amber)
+  - [x] Goal display on hover. (@ejgallego @corwin-of-amber)
+  - [x] Building with 32-bit on macOS. (@corwin-of-amber)
+  - [x] Contextual info when hovering identifiers in goals pane. (@corwin-of-amber)
+  - [x] Contextual info for identifier under cursor. (@corwin-of-amber)
+  - [x] Support for adding packages from Zip files. (@corwin-of-amber)
+  - [x] Automatic download of packages on Require. (@corwin-of-amber)
+  - [x] Fine-grained module dependencies for Coq standard library. (@corwin-of-amber)
+  - [x] company-coq-style symbols and subscripts. (@corwin-of-amber)
+  - [x] Auto-completion of tactics and lemmas. (@corwin-of-amber)
+  - [x] PoC running on Node.js. (@corwin-of-amber)
 
   Released on: 
 
