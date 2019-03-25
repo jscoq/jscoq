@@ -21,7 +21,7 @@ COQDIR := coq-external/coq-$(COQ_VERSION)/
 
 # Find where dune places coq build artifacts
 _COQBUILDDIR = ${wildcard $(current_dir)/_build/*/$(COQDIR)}
-COQBUILDDIR = ${if ${filter 1,${words $(_COQBUILDDIR)}}, $(_COQBUILDDIR), \
+COQBUILDDIR = ${if ${filter 1,${words $(_COQBUILDDIR)}},$(_COQBUILDDIR), \
 	${error error: exactly one Coq build should be active; found ${words $(_COQBUILDDIR)} [$(_COQBUILDDIR)]}}
 
 # Find where dune places coq build artifacts
@@ -126,14 +126,17 @@ coq-get:
 	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
 	  cd $(COQDIR) && \
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
-	cd $(COQDIR) && ./configure -prefix _build/install/4.07.1+32bit/ -native-compiler no -bytecode-compiler no -coqide no
+          patch -p1 < $(current_dir)/etc/patches/trampoline.patch && \
+		  patch -p1 < $(current_dir)/etc/patches/coerce-32bit.patch ) || true
+	# Preparation steps
+	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 	dune build @vodeps
-	cd $(COQDIR) && dune exec ./tools/coq_dune.exe --context="4.07.1+32bit" $(current_dir)/_build/"4.07.1+32bit"/coq-external/coq-v8.10+32bit/.vfiles.d
 
 # Coq should be now be built by composition with the Dune setup
+# Theories and plugins have to be built explicitly (for now)
 coq-build:
-	./build-theories.sh
+	cd $(COQDIR) && dune exec coq_dune $(COQBUILDDIR)/.vfiles.d
+	dune build $(COQDIR)
 
 coq: coq-get coq-build
 
