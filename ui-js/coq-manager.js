@@ -474,12 +474,15 @@ class CoqManager {
         let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
             this.coq.execPromise(ontop.coq_sid);
 
+        // Collect package dependencies
         var pkg_deps = new Set();
         for (let module_name of module_names) {
             let binfo = this.packages.searchModule(prefix, module_name);
             if (binfo)
                 for (let d of binfo.deps) pkg_deps.add(d);
         }
+
+        for (let d of this.packages.loaded_pkgs) pkd_deps.delete(d);
 
         pkg_deps = [...pkg_deps.values()];
 
