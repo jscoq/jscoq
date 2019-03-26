@@ -546,17 +546,8 @@ class CoqManager {
 
         if (goals) {
 
-            var hgoals;
+            var hgoals = this.pprint.goals2DOM(goals);
 
-            if (!goals.fg_goals[0]) {
-                hgoals = "No more goals";
-            } else {
-                let fg_goal = goals.fg_goals[0];
-                let hyps = fg_goal.hyp.reverse().map(h => '<div>' + h[0] + " : " + this.pprint.pp2HTML(h[2])) + '</div>';
-                let hhyps = "".concat(...hyps);
-                let hgoal = this.pprint.pp2HTML(fg_goal.ty);
-                hgoals = '<div style="margin-left: 1em; margin-top: 1em;">' + hhyps + '<hr/>' + hgoal + "</div>";
-            }
 
             this.doc.goals[sid] = hgoals;
             // Don't update goals on trasient when go to point.

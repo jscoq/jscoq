@@ -337,9 +337,43 @@ div.Pp_box[data-mode="horizontal"] {
   display: block;
 }
 
-div.Pp_box hr {
+#goal-text p.num-goals {
+  margin-top: .2em;
+  margin-bottom: 1em;
+}
+
+#goal-text .coq-env {
+  padding-left: 1.25em;
+}
+
+.coq-hypothesis > label::after {
+  content: ":";
+  margin: 0 .5em;
+}
+
+.coq-env hr {
   margin: 0.5em 0;
   border: 1px inset;
+}
+
+.coq-subgoal-pending {
+  margin: 1em 0;
+}
+
+.coq-subgoal-pending > label {
+  display: block;
+  margin-bottom: .2em;
+  color: #777;
+}
+.coq-subgoal-pending > label::before {
+  content: "subgoal ";
+}
+.coq-subgoal-pending > label::after {
+  content: " is:"
+}
+
+.coq-subgoal-pending > .Pp_box {
+  margin-left: .8em;
 }
 
 /* Contextual info */
