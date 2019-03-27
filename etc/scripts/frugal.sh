@@ -11,7 +11,7 @@ COQDIR=coq-external/coq-$COQVER
 
 frugal_symlink() { echo "$2 -> $1"; rm -f $2; ln -sf $1 $2; }
 
-for d in _build/*/$COQDIR; do
+for d in $COQDIR _build/*/$COQDIR; do
     mkdir -p $d/bin
     frugal_symlink   ../topbin/coqtop_bin.exe     $d/bin/coqtop
     frugal_symlink   ../topbin/coqc_bin.exe       $d/bin/coqc
