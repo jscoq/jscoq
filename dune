@@ -3,10 +3,6 @@
  (release (flags :standard -rectypes)))
 
 (rule
- (targets Makefile.libs)
- (action (with-stdout-to %{targets} (run mklibfs))))
-
-(rule
  (targets coq-pkgs)
  (deps
    (package coq)
@@ -15,8 +11,7 @@
  )
  (action
   (progn
-   (run mkdir -p coq-pkgs)
-   (run make -f %{dep:Makefile.libs} libs-auto)
+   (run mklibfs coq-external/coq-v8.10+32bit)
    (bash "for i in %{env:ADDONS=};
           do if [ -d coq-external/$i ]; then make -sf coq-addons/$i.addon jscoq-install; fi; done")
    ; This always rebuilds due to the cleaning of the target dir :(
