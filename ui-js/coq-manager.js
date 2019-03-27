@@ -545,10 +545,12 @@ class CoqManager {
     coqGoalInfo(sid, goals) {
 
         if (goals) {
-            var hgoals = this.pprint.pp2HTML(goals);
-            this.doc.goals[sid] = hgoals;
 
-            // XXX optimize!
+            var hgoals = this.pprint.goals2DOM(goals);
+
+
+            this.doc.goals[sid] = hgoals;
+            // Don't update goals on trasient when go to point.
             // if(!this.goTarget)
             this.updateGoals(hgoals);
         }

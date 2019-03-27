@@ -69,11 +69,13 @@ jslib.cmo: jslib.cmi
 icoq.cmo: icoq.cmi
 
 jslibmng.cmi: jslib.cmi
-jslibmng.cmo: icoq.cmo jslib.cmo jslibmng.cmi
+jslibmng.cmo: icoq.cmi jslib.cmi jslibmng.cmi
 jscoq_doc.cmo: jscoq_doc.cmi
+serapi_goals.cmo: serapi_goals.cmi
+jser_goals.cmo: serapi_goals.cmi
 
 # Main file
-jscoq_worker.cmo: jser_feedback.cmo jser_names.cmo jslibmng.cmo jscoq_doc.cmo
+jscoq_worker.cmo: jser_feedback.cmo jser_names.cmo jser_goals.cmo jslib.cmo jslibmng.cmo jscoq_doc.cmo serapi_goals.cmo icoq.cmo
 
 # We need to override due to
 # "/home/egallego/external/coq-git/lib/lib.cma(Errors) and
@@ -88,7 +90,7 @@ jscoq_worker.byte: $(COQDEPS) jscoq_worker.cmo
 	ocamlfind ocamlc $(BYTEFLAGS) $(WOVR) -linkall -linkpkg -thread -verbose  \
 	   -package str,dynlink,threads,camlp5,camlp5.gramlib                     \
 	   $(JSOOLFLAGS) $(COQOBJS)                                               \
-           +nums.cma jslib.cmo icoq.cmo jslibmng.cmo jscoq_doc.cmo jser_feedback.cmo jser_names.cmo jscoq_worker.cmo -o jscoq_worker.byte
+           +nums.cma jslib.cmo icoq.cmo jslibmng.cmo jscoq_doc.cmo jser_feedback.cmo jser_names.cmo serapi_goals.cmo jser_goals.cmo jscoq_worker.cmo -o jscoq_worker.byte
 
 bytecode_bin: jscoq_worker.byte
 

@@ -12,7 +12,7 @@ open Js_of_ocaml
 open Jser_feedback
 open Jser_feedback.Feedback
 open Jser_names
-
+open Jser_goals
 
 let jscoq_version = "0.9~beta2"
 
@@ -55,9 +55,9 @@ type jscoq_cmd =
   | Query   of Stateid.t * Feedback.route_id * string
   | Inspect of Stateid.t * Feedback.route_id * search_query
 
-  (*            filename   content *)
+  (*            filename content *)
   | Register of string
-  | Put      of string  *  string
+  | Put      of string * string
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
@@ -80,7 +80,7 @@ type jscoq_answer =
   | Cancelled of Stateid.t list
 
   (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t option
+  | GoalInfo  of Stateid.t * Pp.t reified_goal pre_goals option
 
   | CoqOpt    of gvalue
   | Log       of level     * Pp.t
@@ -267,7 +267,7 @@ let symbols_for (q : search_query) env =
     | Locals       -> Icoq.inspect_locals  ~env ()
     | CurrentFile  -> seq_append (Icoq.inspect_library ~env ())
                                  (Icoq.inspect_locals  ~env ())
-    | _            -> Icoq.inspect_globals ~env () 
+    | _            -> Icoq.inspect_globals ~env ()
     [@@warning "-4"]
 
 let rec filter_by (q : search_query) =
@@ -307,7 +307,7 @@ let jscoq_execute =
 
   | Goals sid        ->
     let doc = fst !doc in
-    let goal_pp = Option.map Pp.opt @@ Icoq.pp_of_goals ~doc sid in
+    let goal_pp = Serapi_goals.pp_of_goals ~doc sid in
     out_fn @@ GoalInfo (sid, goal_pp)
 
   | Query (sid, rid, query) ->

@@ -40,6 +40,7 @@ Pending worker tasks:
   - [x] company-coq-style symbols and subscripts. (@corwin-of-amber)
   - [x] Auto-completion of tactics and lemmas. (@corwin-of-amber)
   - [x] PoC running on Node.js. (@corwin-of-amber)
+  - [x] Improved goal display (@ejgallego)
 
   Released on: 
 
