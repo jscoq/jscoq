@@ -1,11 +1,11 @@
 const fs = require('fs'),
       find = require('find'),
       path = require('path'),
-      jscoq = require('../coq-js/jscoq'),
-      jscoq_worker = require('../coq-js/jscoq_worker'),
+      jscoq = require('../ui-js/jscoq'),
+      jscoq_worker = require('../coq-js/jscoq_worker.bc'),
       coq_manager = require('./coq-manager'),
       format_pprint = require('./format-pprint'),
-      mkpkg = require('../coq-tools/mkpkg');
+      mkpkg = require('../coq-jslib/mkpkg');
 
 
 
@@ -38,7 +38,7 @@ class CoqProject {
         }
     }
     _cmoFiles(dir) {
-        return fs.readdirSync(dir).map(fn => /[.]cmo$/.exec(fn) && path.join(dir, fn))
+        return fs.readdirSync(dir).map(fn => /[.]cm[oa]$/.exec(fn) && path.join(dir, fn))
             .filter(x => x);
     }
     _prefix(name) {
