@@ -24,7 +24,7 @@ let output_librule fmt bpath path =
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
   let cma_pat = Dl.to_dir [coqdir; "*_plugin.cma"]             in
   (* Rule for the dir *)
-  fprintf fmt "%s:\n\t@mkdir -p %s\n\n" outdir outdir;
+  fprintf fmt "%s:\n\t@mkdir -p %s\n" outdir outdir;
   (* Pattern expansion *)
   fprintf fmt "%s_VO:=$(wildcard %s)\n"  name vo_pat;
   fprintf fmt "%s_CMA:=$(wildcard %s)\n" name cma_pat;

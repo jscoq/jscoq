@@ -106,13 +106,15 @@ let preload_pkg ?(verb=false) out_fn base_path bundle pkg : unit Lwt.t =
 let parse_bundle base_path file : coq_bundle Lwt.t =
   let open Lwt_xmlHttpRequest in
   let file_url = base_path ^ file ^ ".json" in
-  get file_url >>= (fun res ->
-      match Jslib.coq_bundle_of_yojson
-              (Yojson.Safe.from_string res.content) with
-      | Result.Ok bundle -> return bundle
-      | Result.Error s   -> Format.eprintf "JSON error in preload_from_file\n%!";
-                            Lwt.fail (Failure s)
-    )
+  get file_url >>= fun res ->
+  match Jslib.coq_bundle_of_yojson (Yojson.Safe.from_string res.content) with
+  | Result.Ok bundle -> return bundle
+  | Result.Error s   ->
+    Format.eprintf "JSON parsing error in parse_bundle: %s\n%!" file;
+    Lwt.fail (Failure s)
+  | exception Yojson.Json_error s ->
+    Format.eprintf "JSON conversion error in parse_bundle: %s\n%!" file;
+    Lwt.fail (Failure s)
 
 let load_under_way = ref ([])
 
@@ -125,16 +127,24 @@ let only_once lref s =
 (* Load a bundle *)
 let rec preload_from_file ?(verb=false) out_fn base_path bundle_name =
   if only_once load_under_way bundle_name then
-    parse_bundle base_path bundle_name >>= (fun bundle ->
-    (* Load sub-packages in parallel *)
-    Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
-    return @@ out_fn (LibLoaded (bundle_name, bundle)))
+    try%lwt
+      parse_bundle base_path bundle_name >>= fun bundle ->
+      (* Load sub-packages in parallel *)
+      Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
+      return @@ out_fn (LibLoaded (bundle_name, bundle))
+    with
+    | Failure _ ->
+    Lwt.return_unit
   else
     Lwt.return_unit
 
 let info_from_file out_fn base_path file =
-  parse_bundle base_path file >>= (fun bundle ->
-  return @@ out_fn (LibInfo (file, bundle)))
+  try%lwt
+    parse_bundle base_path file >>= fun bundle ->
+    return @@ out_fn (LibInfo (file, bundle))
+  with
+  | Failure _ ->
+    Lwt.return_unit
 
 let info_pkg out_fn base_path pkgs =
   Lwt_list.iter_p (info_from_file out_fn base_path) pkgs

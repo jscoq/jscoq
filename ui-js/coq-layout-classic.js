@@ -149,10 +149,10 @@ class CoqLayoutClassic {
     }
 
     // This is still not optimal.
-    update_goals(str) {
+    update_goals(content) {
         // TODO: Add diff/history of goals.
         // XXX: should send a message.
-        this.proof.innerHTML = str;
+        $(this.proof).html(content);
     }
 
     // Add a log event received from Coq.

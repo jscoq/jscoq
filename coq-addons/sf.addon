@@ -1,0 +1,31 @@
+# -*- mode: makefile -*-
+# jscoq addon: lf
+
+include coq-addons/common.mk
+
+LF_URL=https://www.cis.upenn.edu/~bcpierce/sf/lf-current/lf.tgz
+LF_HOME=$(ADDONS_PATH)/lf
+LF_DEST=coq-pkgs/LF
+
+PLF_URL=https://www.cis.upenn.edu/~bcpierce/sf/plf-current/plf.tgz
+PLF_HOME=$(ADDONS_PATH)/plf
+PLF_DEST=coq-pkgs/PLF
+
+.PHONY: nothing get build jscoq-install
+
+nothing:
+
+get:
+	[ -d $(LF_HOME)  ] || wget -qO- $(LF_URL)  | tar xvz -C $(ADDONS_PATH)
+	[ -d $(PLF_HOME) ] || wget -qO- $(PLF_URL) | tar xvz -C $(ADDONS_PATH)
+
+build:
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(LF_HOME);  $(MAKE) clean; $(MAKE)
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(PLF_HOME); $(MAKE) clean; $(MAKE)
+
+jscoq-install:
+	mkdir -p $(LF_DEST)
+	$(SYNCVO) $(LF_HOME)/ $(LF_DEST)
+	mkdir -p $(PLF_DEST)
+	$(SYNCVO) $(PLF_HOME)/ $(PLF_DEST)
+

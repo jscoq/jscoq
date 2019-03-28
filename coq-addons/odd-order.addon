@@ -3,7 +3,7 @@
 
 # From addons
 SYNC=rsync -avq
-SYNCVO=echo "Updating $<" && rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
+SYNCVO=rsync -avq --filter='+ */' --filter='+ **.vo' --filter='- *' --prune-empty-dirs
 
 MATHCOMP_FULL_GIT=https://github.com/math-comp/math-comp.git
 MATHCOMP_FULL_HOME=$(ADDONS_PATH)/math-comp-full

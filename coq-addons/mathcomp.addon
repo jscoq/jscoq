@@ -3,7 +3,6 @@
 
 include coq-addons/common.mk
 
-# From addons
 MATHCOMP_GIT=https://github.com/ejgallego/math-comp.git
 MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
 MATHCOMP_DEST=coq-pkgs/mathcomp
@@ -16,7 +15,7 @@ get:
 	[ -d $(MATHCOMP_HOME) ] || git clone --depth=1 -b fast-load $(MATHCOMP_GIT) $(MATHCOMP_HOME)
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install
 
 jscoq-install:
 	mkdir -p $(MATHCOMP_DEST)

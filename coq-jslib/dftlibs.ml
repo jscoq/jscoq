@@ -146,8 +146,13 @@ let pkgs : (string * string list * (string list * selector) list) list =
 
   ; "tlc", ["coq-reals"], all_of
     [ ["TLC"] ]
-  ; "sf", ["coq-reals"], all_of
-    [ ["SF"] ]
+
+  ; "lf", ["coq-reals"], all_of
+    [ ["LF"] ]
+
+  ; "plf", ["lf"], all_of
+    [ ["PLF"] ]
+
   ; "cpdt", ["coq-reals"], all_of
     [ ["Cpdt"] ]
 

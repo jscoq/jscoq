@@ -109,17 +109,6 @@ let coq_init opts =
   let ndoc, nsid = Stm.new_doc ndoc in
   ndoc, nsid
 
-let pp_of_proof proof : Pp.t = Printer.pr_open_subgoals ~proof
-
-let pp_of_goals ~doc sid : Pp.t option =
-  try begin
-    match Stm.state_of_id ~doc sid with
-    | `Expired | `Error _ -> None
-    | `Valid ost ->
-      Option.map (fun stm_st -> pp_of_proof Proof_global.(proof_of_state stm_st.Vernacstate.proof)) ost
-  end
-  with Proof_global.NoCurrentProof -> None
-
 let context_of_st m = match m with
   | `Valid (Some st) ->
     begin try

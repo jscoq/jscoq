@@ -197,7 +197,7 @@ class CoqManager {
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
-                        'coquelicot', 'flocq', 'sf', 'cpdt', 'color' ],
+                        'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
             editor: { /* codemirror options */ }
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
@@ -548,10 +548,12 @@ class CoqManager {
     coqGoalInfo(sid, goals) {
 
         if (goals) {
-            var hgoals = this.pprint.pp2HTML(goals);
-            this.doc.goals[sid] = hgoals;
 
-            // XXX optimize!
+            var hgoals = this.pprint.goals2DOM(goals);
+
+
+            this.doc.goals[sid] = hgoals;
+            // Don't update goals on trasient when go to point.
             // if(!this.goTarget)
             this.updateGoals(hgoals);
         }
