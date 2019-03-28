@@ -30,6 +30,7 @@ make coq-tools
 
 make libs
 make plugin-comp
-make libs-pkg
 
 npm install
+
+make libs-pkg
