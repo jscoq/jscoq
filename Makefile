@@ -12,6 +12,8 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
+OCAML_CONTEXT = 4.07.1+32bit
+
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -46,12 +48,11 @@ libs-pkg: force
 	ADDONS="$(ADDONS)" dune build @libs-pkg
 
 links:
-	ln -s _build/default/node_modules/ || true
-	ln -s _build/default/coq-pkgs/ || true
-	ln -s ../_build/default/coq-js/jscoq_worker.bc.js coq-js || true
+	ln -sf ${wildcard _build/*/coq-pkgs/} .
+	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js
 
 links-clean:
-	rm node_modules coq-pkgs coq-js/jscoq_worker.bc.js
+	rm coq-pkgs coq-js/jscoq_worker.bc.js
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb: coq-pkgs/%.json
@@ -103,15 +104,6 @@ all-dist: dist dist-release dist-upload
 
 COQ_BRANCH=master
 COQ_REPOS=https://github.com/coq/coq.git
-
-COQ_TARGETS = theories plugins bin/coqc bin/coqtop bin/coqdep bin/coq_makefile
-COQ_MAKE_FLAGS = -j $(NJOBS)
-
-ifeq (${shell uname -s}, Darwin)
-# Coq cannot be built natively on macOS with 32-bit.
-# At least not unless plugins are linked statically.
-COQ_MAKE_FLAGS += BEST=byte
-endif
 
 coq-get:
 	mkdir -p coq-external
