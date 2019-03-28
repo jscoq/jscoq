@@ -48,8 +48,8 @@ libs-pkg: force
 	ADDONS="$(ADDONS)" dune build @libs-pkg
 
 links:
-	ln -sf ${wildcard _build/*/coq-pkgs/} .
-	ln -sf ../${wildcard _build/*/coq-js/jscoq_worker.bc.js} coq-js
+	ln -sf _build/$(OCAML_CONTEXT)/coq-pkgs .
+	ln -sf ../_build/$(OCAML_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js
 
 links-clean:
 	rm coq-pkgs coq-js/jscoq_worker.bc.js
@@ -71,7 +71,7 @@ clean:
 # Dists                                                                #
 ########################################################################
 
-BUILDDIR=_build/default
+BUILDDIR=_build/$(OCAML_CONTEXT)
 BUILDOBJ=$(addprefix $(BUILDDIR)/./, index.html node_modules coq-js/jscoq_worker.bc.js coq-pkgs ui-js ui-css ui-images examples ui-external/CodeMirror-TeX-input)
 DISTDIR=_build/dist
 
