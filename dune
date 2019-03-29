@@ -44,6 +44,12 @@
    node_modules
    coq-js/jscoq_worker.bc.js))
 
+; Just the worker
+(alias
+  (name jscoq_worker)
+  (deps
+    coq-js/jscoq_worker.bc.js))
+
 (alias
  (name libs-pkg)
  (deps coq-pkgs)
@@ -51,6 +57,6 @@
    (progn
     ; Pending on proper support for globs inside directory targets
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
-    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQDIR=}/.vfiles.d"))))
+    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR=}/.vfiles.d"))))
 
 ; (dirs (:standard \ coq-external))
