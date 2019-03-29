@@ -17,9 +17,16 @@
     js_stub/unix.js
     js_stub/str.js
     js_stub/coq_vm.js)
-  (flags :standard --dynlink +nat.js +dynlink.js +toplevel.js))
-  ; (flags :standard --pretty --noinline --disable shortvar --debug-info +nat.js +dynlink.js +toplevel.js))
+  (flags :standard (:include .extraflags) --dynlink +nat.js +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
  (libraries jscoqlib))
 
+; Set debug flags if JSCOQ_DEBUG environment variable is set.
+; (ugly, but there are no conditional expressions in Dune)
+(rule  
+ (targets .extraflags)
+ (deps (env_var JSCOQ_DEBUG))
+ (action (with-stdout-to %{targets} 
+    (bash "echo '(' ${JSCOQ_DEBUG+ --pretty --noinline --disable shortvar --debug-info} ')'")))
+)

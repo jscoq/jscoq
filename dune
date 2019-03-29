@@ -21,7 +21,9 @@
           do if [ -d coq-external/$i ]; then make -sf coq-addons/$i.addon jscoq-install; fi; done")
    ; This always rebuilds due to the cleaning of the target dir :(
    (bash "for i in $(find coq-pkgs \\( -name *.cmo -or -name *.cma \\)); 
-          do if [ $i -nt $i.js ]; then js_of_ocaml --wrap-with-fun= -o $i.js $i; fi; done")
+          do if [ $i -nt $i.js ]; 
+          then js_of_ocaml ${JSCOQ_DEBUG+ --pretty --noinline --disable shortvar --debug-info}
+                           --wrap-with-fun= -o $i.js $i; fi; done")
    (run mklibjson))))
 
 (rule
