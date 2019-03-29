@@ -26,6 +26,7 @@ NJOBS=4
 
 export NJOBS
 export COQDIR
+export COQBUILDDIR
 export ADDONS_PATH
 
 ADDONS = mathcomp # iris ltac2 elpi equations dsp
