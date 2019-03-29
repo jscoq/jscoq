@@ -20,7 +20,10 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 # Directory where the coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
 COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
-COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)/
+
+# Directories where Dune builds and installs Coq
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)+32bit
+COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
 NJOBS=4
 
