@@ -12,7 +12,7 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
-OCAML_CONTEXT = 4.07.1+32bit
+BUILD_CONTEXT = 4.07.1+32bit
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -20,7 +20,7 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 # Directory where the coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
 COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
-COQDIR := $(current_dir)/_build/install/4.07.1+32bit/
+COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)/
 
 NJOBS=4
 
@@ -49,8 +49,8 @@ libs-pkg: force
 	ADDONS="$(ADDONS)" dune build @libs-pkg
 
 links:
-	ln -sf _build/$(OCAML_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(OCAML_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js
+	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
+	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js
 
 links-clean:
 	rm coq-pkgs coq-js/jscoq_worker.bc.js
@@ -72,7 +72,7 @@ clean:
 # Dists                                                                #
 ########################################################################
 
-BUILDDIR=_build/$(OCAML_CONTEXT)
+BUILDDIR=_build/$(BUILD_CONTEXT)
 BUILDOBJ=$(addprefix $(BUILDDIR)/./, index.html node_modules coq-js/jscoq_worker.bc.js coq-pkgs ui-js ui-css ui-images examples ui-external/CodeMirror-TeX-input)
 DISTDIR=_build/dist
 
@@ -98,7 +98,7 @@ dist-release: dist
 all-dist: dist dist-release dist-upload
 
 ########################################################################
-# External's
+# Externals
 ########################################################################
 
 .PHONY: coq coq-get coq-build
@@ -114,7 +114,7 @@ coq-get:
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 	dune build @vodeps
-	cd $(COQSRC) && dune exec ./tools/coq_dune.exe --context="4.07.1+32bit" $(current_dir)/_build/"4.07.1+32bit"/coq-external/coq-v8.10+32bit/.vfiles.d
+	cd $(COQSRC) && dune exec ./tools/coq_dune.exe --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
 
 # Coq should be now be built by composition with the Dune setup
 coq-build:
