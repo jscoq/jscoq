@@ -50,9 +50,10 @@ external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
 type 'a seq = 'a Seq.t
 
-let rec seq_of_list l = match l with
-  | [] -> Seq.empty
-  | x :: xs -> fun () -> Seq.Cons (x, seq_of_list xs)
+let rec seq_append s1 s2 =  (* use batteries?? *)
+  match s1 () with
+  | Seq.Nil -> s2
+  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
 
 (**************************************************************************)
@@ -122,7 +123,7 @@ let context_of_stm ~doc sid =
 (* Inspection subroutines *)
 
 let inspect_globals ~env () =
-  let global_consts = seq_of_list @@
+  let global_consts = List.to_seq @@
       Environ.fold_constants (fun name _ l -> name :: l) env [] in
   global_consts |> Seq.map Names.Constant.user
 
@@ -130,31 +131,39 @@ let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
-let has_constant env kn =
-  try
-    ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env; true
-  with Not_found -> false
+let kn_sibling kn id =
+  let (mp, dp, _) = Names.KerName.repr kn in
+  Names.KerName.make mp dp (Names.Label.of_id id)
 
-let has_inductive env kn =
+let lookup_constant env kn =
   try
-    ignore @@ Environ.lookup_mind (Names.MutInd.make1 kn) env; true
-  with Not_found -> false
+    ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env;
+    Seq.return kn
+  with Not_found -> Seq.empty
 
-let has_definition env kn = has_constant env kn || has_inductive env kn
+let lookup_inductive env kn =
+  let open Declarations in
+  try
+    let defn_body = Environ.lookup_mind (Names.MutInd.make1 kn) env in
+    Array.to_seq defn_body.mind_packets
+      |> Seq.map (fun p -> kn_sibling kn (p.mind_typename))
+  with Not_found -> Seq.empty
+
+let find_definitions env kn = seq_append (lookup_constant env kn) (lookup_inductive env kn)
 
 let inspect_library ~env () =
   let ls = Lib.contents () in
-  Seq.filter_map (fun ((_, kn), obj) ->
-    if libobj_is_leaf obj && has_definition env kn then Some kn
-    else None)
-    (seq_of_list ls)
+  Seq.flat_map (fun ((_, kn), obj) ->
+    if libobj_is_leaf obj then find_definitions env kn
+    else Seq.empty)
+    (List.to_seq ls)
 
 let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ~env ?(mod_path=default_mod_path) () =
   let make_kername id = Names.KerName.make2 mod_path (Names.Label.of_id id) in
   let named_ctx = Environ.named_context env in
-  seq_of_list (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
+  List.to_seq (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername
 
 (** [set_debug t] enables/disables debug mode  *)
