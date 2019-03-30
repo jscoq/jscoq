@@ -1121,8 +1121,24 @@ class CoqIdentifier {
             modpath = modpath[1];
         }
         /**/ console.assert(modpath[0] === 'MPfile'); /**/
-        return new CoqIdentifier(modpath[1].slice().reverse().concat(modsuff), label);
+        return new CoqIdentifier(modpath[1].slice().reverse()
+                                 .concat(modsuff).concat(dirpath), label);
     }
+
+    dequalify(dirpaths) {
+        for (let prefix of dirpaths) {
+            if (this.prefix.slice(0, prefix.length).equals(prefix))
+                return this.ltrunc(prefix.length)
+        }
+        return this;
+    }
+
+    ltrunc(n) {
+        var d = new CoqIdentifier(this.prefix.slice(n), this.label);
+        d.tags = this.tags;
+        return d;
+    }
+  
 }
 
 if (typeof module !== 'undefined')

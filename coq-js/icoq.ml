@@ -54,10 +54,6 @@ let rec seq_of_list l = match l with
   | [] -> Seq.empty
   | x :: xs -> fun () -> Seq.Cons (x, seq_of_list xs)
 
-let seq_of_opt o = match o with
-  | None -> Seq.empty
-  | Some v -> fun () -> Seq.Cons (v, Seq.empty)
-
 
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
@@ -139,10 +135,17 @@ let has_constant env kn =
     ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env; true
   with Not_found -> false
 
+let has_inductive env kn =
+  try
+    ignore @@ Environ.lookup_mind (Names.MutInd.make1 kn) env; true
+  with Not_found -> false
+
+let has_definition env kn = has_constant env kn || has_inductive env kn
+
 let inspect_library ~env () =
   let ls = Lib.contents () in
-  Seq.flat_map (fun ((_, kn), obj) -> seq_of_opt @@
-    if libobj_is_leaf obj && has_constant env kn then Some kn
+  Seq.filter_map (fun ((_, kn), obj) ->
+    if libobj_is_leaf obj && has_definition env kn then Some kn
     else None)
     (seq_of_list ls)
 

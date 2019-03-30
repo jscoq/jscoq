@@ -170,6 +170,7 @@ class Markup {
 // Builtin tactics are copied from coq-mode.
 // TODO: order tactics most common first rather than alphabetically.
 var vocab = {
+    locals: {lemmas: [], tactics: []},  /* keep locals before globals */
     globals: {
         lemmas: [],
         tactics: [
