@@ -4,7 +4,7 @@
  (modules :standard \ jscoq_worker jslog)
  (preprocess (staged_pps lwt_ppx js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
- (libraries num js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm jslib))
+ (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm jslib))
 
 (executable
  (name jscoq_worker)
@@ -20,7 +20,7 @@
   (flags :standard (:include .extraflags) --dynlink +nat.js +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
- (libraries jscoqlib))
+ (libraries num jscoqlib))
 
 ; Set debug flags if JSCOQ_DEBUG environment variable is set.
 ; (ugly, but there are no conditional expressions in Dune)
