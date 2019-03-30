@@ -481,6 +481,8 @@ class CoqManager {
                 for (let d of binfo.deps) pkg_deps.add(d);
         }
 
+        for (let d of this.packages.loaded_pkgs) pkg_deps.delete(d);
+
         pkg_deps = [...pkg_deps.values()];
 
         var cleanup = () => {};
