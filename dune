@@ -11,7 +11,7 @@
  )
  (action
   (progn
-   (run mklibfs coq-external/coq-v8.10+32bit)
+   (run mklibfs %{env:COQBUILDDIR=})
    (bash "for i in %{env:ADDONS=};
           do if [ -d coq-external/$i ]; then make -sf coq-addons/$i.addon jscoq-install; fi; done")
    ; This always rebuilds due to the cleaning of the target dir :(

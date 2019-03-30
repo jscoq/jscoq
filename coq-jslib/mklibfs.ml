@@ -31,6 +31,8 @@ module Fileutils = struct
       match els with | [] -> el | x :: xs -> mkdir_p ((el ^ "/" ^ x) :: xs) perm
 end
 
+let (/) = Filename.concat
+let cd cur ch = if Filename.is_relative ch then cur / ch else ch
 
 (* Determines which files are copied over *)
 let include_pat fn =
@@ -45,7 +47,7 @@ let copy_subdir coqdir basepath dirpath =
 
   let copy_single_file fn =
     try
-      Fileutils.file_copy (indir ^ "/" ^ fn) (outdir ^ "/" ^ fn)
+      Fileutils.file_copy (indir / fn) (outdir / fn)
     with Sys_error e ->
       eprintf " * @[failed to copy:@ %s/%s@]\n%!" desc fn
   in
@@ -64,5 +66,5 @@ let make_libfs coqdir =
 
 let _ =
   let coqdir = ref @@ "." in
-  Arg.parse [] (fun s -> coqdir := !coqdir ^ "/" ^ s) "" ;
+  Arg.parse [] (fun s -> coqdir := cd !coqdir s) "" ;
   make_libfs !coqdir
