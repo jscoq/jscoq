@@ -277,7 +277,7 @@ let symbols_for (q : search_query) env =
     | _            -> Icoq.inspect_globals ~env ()
     [@@warning "-4"]
 
-let rec filter_by (q : search_query) =
+let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
   | ModulePrefix prefix -> (fun nm -> is_within nm prefix)

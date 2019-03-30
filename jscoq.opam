@@ -19,8 +19,10 @@ depends: [
   "yojson"              { >= "1.5.0"            }
   "ppx_deriving_yojson" { >= "3.3"              }
   "ppx_import"          { build & >= "1.5-3"    }
+  "lwt_ppx"             { >= "1.2.1"            }
   # We build a local, patched Coq, but however it is still a dep
   # "coq"                 { >= "8.9.0" & < "8.10" }
+  "num"
 ]
 
 build: [ "dune" "build" "-p" name "-j" jobs ]

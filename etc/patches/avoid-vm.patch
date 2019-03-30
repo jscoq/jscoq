@@ -1,8 +1,8 @@
 diff --git a/interp/notation.ml b/interp/notation.ml
-index 854ae85..26b1e69 100644
+index bc68d97..b398e5c 100644
 --- a/interp/notation.ml
 +++ b/interp/notation.ml
-@@ -428,8 +428,13 @@ module Numeral = struct
+@@ -610,8 +610,13 @@ module PrimTokenNotation = struct
  
  let eval_constr env sigma (c : Constr.t) =
    let c = EConstr.of_constr c in

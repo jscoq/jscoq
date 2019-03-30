@@ -49,6 +49,10 @@ script:
 - echo -en 'travis_fold:end:coq.build\\r'
 - echo 'Building JsCoq...' && echo -en 'travis_fold:start:jscoq.build\\r'
 - make jscoq
+- make libs-pkg
 - echo -en 'travis_fold:end:jscoq.build\\r'
 - echo 'Building Addons...' && echo -en 'travis_fold:start:addons.build\\r'
+- make addons
+- make jscoq
+- make libs-pkg
 - echo -en 'travis_fold:end:addons.build\\r'

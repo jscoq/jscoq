@@ -17,9 +17,13 @@
   (progn
    (run mkdir -p coq-pkgs)
    (run make -f %{dep:Makefile.libs} libs-auto)
-   (bash "for i in %{env:ADDONS=}; do make -sf coq-addons/$i.addon jscoq-install; done")
+   (bash "for i in %{env:ADDONS=};
+          do if [ -d coq-external/$i ]; then make -sf coq-addons/$i.addon jscoq-install; fi; done")
    ; This always rebuilds due to the cleaning of the target dir :(
-   (bash "for i in $(find coq-pkgs \\( -name *.cmo -or -name *.cma \\)); do if [ $i -nt $i.js ]; then js_of_ocaml --wrap-with-fun= -o $i.js $i; fi; done")
+   (bash "for i in $(find coq-pkgs \\( -name *.cmo -or -name *.cma \\)); 
+          do if [ $i -nt $i.js ]; 
+          then js_of_ocaml ${JSCOQ_DEBUG+ --pretty --noinline --disable shortvar --debug-info} \
+                           --wrap-with-fun= -o $i.js $i; fi; done")
    (run mklibjson))))
 
 (rule
@@ -42,6 +46,12 @@
    node_modules
    coq-js/jscoq_worker.bc.js))
 
+; Just the worker
+(alias
+  (name jscoq_worker)
+  (deps
+    coq-js/jscoq_worker.bc.js))
+
 (alias
  (name libs-pkg)
  (deps coq-pkgs)
@@ -49,6 +59,6 @@
    (progn
     ; Pending on proper support for globs inside directory targets
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
-    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQDIR=}/.vfiles.d"))))
+    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR=}/.vfiles.d"))))
 
 ; (dirs (:standard \ coq-external))
