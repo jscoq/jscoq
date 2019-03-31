@@ -18,7 +18,7 @@ let plugin_list =
   ; ["Coq"; "setoid_ring"]
   ; ["Coq"; "extraction"]
   ; ["Coq"; "funind"]
-  ; ["Coq"; "quote"]
+  ; ["Coq"; "btauto"]
 
   ; ["Coq"; "fourier"]
   ; ["Coq"; "omega"]
@@ -59,6 +59,10 @@ let coq_theory_list =
   ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
   ; ["Coq"; "Numbers"; "Natural"; "Peano"]
   ; ["Coq"; "Numbers"; "Integer"; "Abstract"]
+  ; ["Coq"; "Numbers"; "Cyclic"; "Abstract"]
+  ; ["Coq"; "Numbers"; "Cyclic"; "Int31"]
+  ; ["Coq"; "Numbers"; "Cyclic"; "Int63"]
+  ; ["Coq"; "Numbers"; "Cyclic"; "ZModulo"]
   ]
 
 (* Packages: name, deps, modules *)
@@ -71,7 +75,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "firstorder"]
     ; ["Coq"; "extraction"]
     ; ["Coq"; "funind"]
-    ; ["Coq"; "quote"]
+    ; ["Coq"; "btauto"]
     ; ["Coq"; "Init"]
     ; ["Coq"; "Bool"]
     ; ["Coq"; "Unicode"]
@@ -113,6 +117,10 @@ let pkgs : (string * string list * (string list * selector) list) list =
   ; "coq-arith", ["coq-base"; "coq-collections"],
     [ ["Coq"; "Numbers"; "Natural"; "Peano"], All
     ; ["Coq"; "Numbers"; "Integer"; "Abstract"], All
+    ; ["Coq"; "Numbers"; "Cyclic"; "Abstract"], All
+    ; ["Coq"; "Numbers"; "Cyclic"; "Int31"], All
+    ; ["Coq"; "Numbers"; "Cyclic"; "Int63"], All
+    ; ["Coq"; "Numbers"; "Cyclic"; "ZModulo"], All
     ; ["Coq"; "setoid_ring"], All
     ; ["Coq"; "Arith"], Except ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                                 "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
