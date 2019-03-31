@@ -127,10 +127,9 @@ let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
-(* ejgallego: this is the identity *)
 let kn_sibling kn id =
-  let mp, dp = Names.KerName.repr kn in
-  Names.KerName.make mp dp
+  let mp, _ = Names.KerName.repr kn in
+  Names.KerName.make mp (Names.Label.of_id id)
 
 let lookup_constant env kn =
   try
