@@ -127,9 +127,34 @@ let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
+let mp_empty = Names.ModPath.MPfile Names.DirPath.empty
+
+let rec mp_first_rest mp =
+  match mp with
+  | Names.ModPath.MPdot (m, d) -> begin
+    match mp_first_rest m with
+    | Some (x, xs) -> Some (x, Names.ModPath.MPdot(xs, d))
+    | None -> Some(Names.Label.to_id d, mp_empty)
+    end
+  | Names.ModPath.MPfile dp -> begin
+    match Names.DirPath.repr dp with
+    | x :: xs -> Some(x, Names.ModPath.MPfile (Names.DirPath.make xs))
+    | [] -> None
+    end
+  | Names.ModPath.MPbound mb -> Some (Names.MBId.to_id mb, mp_empty)
+
+let rec mp_strip mp prefix =
+  match mp_first_rest mp, mp_first_rest prefix with
+  | Some (x, xs), Some (y, ys) -> if x = y then mp_strip xs ys else mp
+  | _, _ -> mp
+
 let kn_sibling kn id =
   let mp, _ = Names.KerName.repr kn in
   Names.KerName.make mp (Names.Label.of_id id)
+
+let kn_strip kn prefix =
+  let mp, l = Names.KerName.repr kn in
+  Names.KerName.make (mp_strip mp prefix) l
 
 let lookup_constant env kn =
   try
@@ -148,13 +173,15 @@ let lookup_inductive env kn =
 let find_definitions env kn = seq_append (lookup_constant env kn) (lookup_inductive env kn)
 
 let inspect_library ~env () =
+  let lib_prefix = Lib.current_mp () in
   let ls = Lib.contents () in
   Seq.flat_map (fun ((_, kn), obj) ->
     if libobj_is_leaf obj then find_definitions env kn
     else Seq.empty)
     (List.to_seq ls)
+    |> Seq.map (fun kn -> kn_strip kn lib_prefix)
 
-let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
+let default_mod_path = mp_empty
 
 let inspect_locals ~env ?(mod_path=default_mod_path) () =
   let make_kername id = Names.KerName.make mod_path (Names.Label.of_id id) in

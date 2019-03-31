@@ -1115,7 +1115,7 @@ class CoqIdentifier {
      * Constructs an identifier from a Coq Names.KerName.t.
      * @param {array} param0 serialized form of KerName (from SearchResults).
      */
-    static ofKerName([kername, modpath, dirpath, label]) {
+    static ofKerName([kername, modpath, label]) {
         /**/ console.assert(kername === 'KerName') /**/
         var modsuff = [];
         while (modpath[0] == 'MPdot') {
@@ -1124,7 +1124,7 @@ class CoqIdentifier {
         }
         /**/ console.assert(modpath[0] === 'MPfile'); /**/
         return new CoqIdentifier(modpath[1].slice().reverse()
-                                 .concat(modsuff).concat(dirpath), label);
+                                 .concat(modsuff), label);
     }
 
     dequalify(dirpaths) {
