@@ -56,7 +56,7 @@ links:
 	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js
 
 links-clean:
-	rm coq-pkgs coq-js/jscoq_worker.bc.js
+	rm -f coq-pkgs coq-js/jscoq_worker.bc.js
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb: coq-pkgs/%.json

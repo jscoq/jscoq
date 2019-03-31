@@ -18,7 +18,7 @@ let output_librule fmt bpath path =
   let name    = Dl.to_name path                                in
   (* Strip "Coq" suffix *)
   let dir     = List.tl path                                   in
-  let coqdir  = "$(COQDIR)/../../4.07.1+32bit/coq-external/coq-v8.10+32bit/" in
+  let coqdir  = "$(COQBUILDDIR)"                               in
   let coqdir  = Dl.to_dir (coqdir :: bpath :: dir)             in
   let outdir  = Dl.to_dir (Dl.prefix :: (List.hd path) :: dir) in
   let vo_pat  = Dl.to_dir [coqdir; "*.vo"]                     in
