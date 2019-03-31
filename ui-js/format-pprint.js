@@ -270,21 +270,20 @@ class FormatPrettyPrint {
     /**
      * Formats the current proof state.
      * @param {object} goals a record of proof goals 
-     *                       ({fg_goals, bg_goals, given_up_goals, shelved_goals})
+     *                       ({goals, stack, shelf, given_up})
      */
     goals2DOM(goals) {
-        console.log(goals);
-        if (goals.fg_goals.length == 0) {
+        if (goals.goals.length == 0) {
             return $(document.createTextNode("No more goals"));
         } 
         else {
-            let ngoals = goals.fg_goals.length;
+            let ngoals = goals.goals.length;
             let head = $('<p>').addClass('num-goals')
                 .text(ngoals === 1 ? `1 goal.` : `${ngoals} goals`);
 
-            let focused_goal = this.goal2DOM(goals.fg_goals[0]);
+            let focused_goal = this.goal2DOM(goals.goals[0]);
 
-            let pending_goals = goals.fg_goals.slice(1).map((goal, i) =>
+            let pending_goals = goals.goals.slice(1).map((goal, i) =>
                 $('<div>').addClass('coq-subgoal-pending')
                     .append($('<label>').text(i + 2))
                     .append(this.pp2DOM(goal.ty)));
