@@ -8,6 +8,12 @@ open Format
 module Dl = Dftlibs
 
 
+let (/) = Filename.concat
+let cd cur ch = if Filename.is_relative ch then cur / ch else ch
+
+let option_map_default f d = function | Some x -> f x | None -> d
+
+
 (* use `fileutils`? *)
 module Fileutils = struct
   open Unix
@@ -15,28 +21,34 @@ module Fileutils = struct
   let buffer_size = 8192
   let buffer = Bytes.create buffer_size
 
-  let file_copy input_name output_name =
-    let fd_in = openfile input_name [O_RDONLY] 0 in
-    let fd_out = openfile output_name [O_WRONLY; O_CREAT; O_TRUNC] 0o666 in
+  let file_copy source_filename target_filename mode =
+    let fd_in = openfile source_filename [O_RDONLY] 0 in
+    let fd_out = openfile target_filename [O_WRONLY; O_CREAT; O_TRUNC] mode in
     let rec copy_loop () = match read fd_in buffer 0 buffer_size with
       |  0 -> ()
       | r -> ignore (write fd_out buffer 0 r); copy_loop ()
     in
     copy_loop ();  close fd_in;  close fd_out
 
+  let file_update source_filename target_filename =
+    let source_stats = lstat source_filename in
+    let target_stats = try Some (lstat target_filename) 
+                       with Unix.Unix_error _ -> None in
+    let needs_update = option_map_default 
+      (fun ts -> source_stats.st_mtime > ts.st_mtime) true target_stats in
+    if needs_update then
+      file_copy source_filename target_filename source_stats.st_perm
+
   let rec mkdir_p dirpath perm =
     match dirpath with
     | [] -> "."
     | el :: els -> if (not @@ Sys.file_exists el) then Unix.mkdir el perm;
-      match els with | [] -> el | x :: xs -> mkdir_p ((el ^ "/" ^ x) :: xs) perm
+      match els with | [] -> el | x :: xs -> mkdir_p ((el / x) :: xs) perm
 end
-
-let (/) = Filename.concat
-let cd cur ch = if Filename.is_relative ch then cur / ch else ch
 
 (* Determines which files are copied over *)
 let include_pat fn =
-  Filename.(check_suffix fn ".vo" || check_suffix fn "_plugin.cma")
+  Filename.(check_suffix fn ".vo" || check_suffix fn ".cma")
 
 
 let copy_subdir coqdir basepath dirpath =
@@ -47,7 +59,7 @@ let copy_subdir coqdir basepath dirpath =
 
   let copy_single_file fn =
     try
-      Fileutils.file_copy (indir / fn) (outdir / fn)
+      Fileutils.file_update (indir / fn) (outdir / fn)
     with Sys_error e ->
       eprintf " * @[failed to copy:@ %s/%s@]\n%!" desc fn
   in
