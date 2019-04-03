@@ -109,12 +109,12 @@ all-dist: dist dist-release dist-upload
 COQ_BRANCH=master
 COQ_REPOS=https://github.com/coq/coq.git
 
-coq-get:
+$(COQSRC):
 	mkdir -p coq-external
-	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQSRC) && \
-	  cd $(COQSRC) && \
-          patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
-          patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
+	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
+	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch
+
+coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 	dune build @vodeps
 	cd $(COQSRC) && dune exec ./tools/coq_dune.exe --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
