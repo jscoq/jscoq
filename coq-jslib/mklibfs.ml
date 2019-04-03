@@ -25,7 +25,7 @@ module Fileutils = struct
     let fd_in = openfile source_filename [O_RDONLY] 0 in
     let fd_out = openfile target_filename [O_WRONLY; O_CREAT; O_TRUNC] mode in
     let rec copy_loop () = match read fd_in buffer 0 buffer_size with
-      |  0 -> ()
+      | 0 -> ()
       | r -> ignore (write fd_out buffer 0 r); copy_loop ()
     in
     copy_loop ();  close fd_in;  close fd_out
@@ -60,14 +60,14 @@ let copy_subdir coqdir basepath dirpath =
   let copy_single_file fn =
     try
       Fileutils.file_update (indir / fn) (outdir / fn)
-    with Sys_error e ->
+    with Sys_error _ ->
       eprintf " * @[failed to copy:@ %s/%s@]\n%!" desc fn
   in
 
   try
     Sys.readdir indir |> Array.to_seq 
       |> Seq.filter include_pat |> Seq.iter copy_single_file
-  with Sys_error e ->
+  with Sys_error _ ->
     eprintf " * @[missing subdirectory:@ %s@]\n%!" 
             (Dl.to_dir (basepath :: (List.tl dirpath)))
 

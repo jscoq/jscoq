@@ -19,14 +19,15 @@ let plugin_list =
   ; ["Coq"; "extraction"]
   ; ["Coq"; "funind"]
   ; ["Coq"; "btauto"]
+  ; ["Coq"; "rtauto"]  (* TODO add this to one of the bundles *)
 
   ; ["Coq"; "fourier"]
   ; ["Coq"; "omega"]
   ; ["Coq"; "micromega"]
-  ; ["Coq"; "romega"]
   ; ["Coq"; "nsatz"]
   ; ["Coq"; "ssrmatching"]
   ; ["Coq"; "ssr"]
+  ; ["Coq"; "derive"]  (* TODO add this to one of the bundles *)
   ]
 
 let coq_theory_list =
@@ -145,8 +146,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     [ [ "Coquelicot" ] ]
 
   ; "flocq", ["coq-reals"], all_of
-    [ [ "Coq"   ; "romega"]
-    ; [ "Flocq" ; "Core" ]
+    [ [ "Flocq" ; "Core" ]
     ; [ "Flocq" ; "Appli" ]
     ; [ "Flocq" ; "Calc" ]
     ; [ "Flocq" ; "Translate" ]
