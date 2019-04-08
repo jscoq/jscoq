@@ -33,7 +33,7 @@ type gvalue =
 type search_query =
   | All
   | CurrentFile
-  | ModulePrefix of string list
+  | ModulePrefix of Names.DirPath.t
   | Keyword of string
   | Locals
   [@@deriving yojson]
@@ -87,7 +87,7 @@ type jscoq_answer =
   | Log       of level     * Pp.t
   | Feedback  of feedback
 
-  | SearchResults of Feedback.route_id * Names.KerName.t seq
+  | SearchResults of Feedback.route_id * Libnames.full_path seq
 
   (* Low-level *)
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
@@ -240,34 +240,15 @@ let string_contains s1 s2 =  (* from Rosetta Code *)
       (i >= 0) && ((String.sub s1 i len2 = s2) || aux (pred i))
     in
     aux (len1 - len2)
-
-let rec list_take n list =
-  if n > 0 then
-    match list with
-    | [] -> []
-    | x :: xs -> x :: (list_take (n - 1) xs)
-  else []
   
-let list_starts_with l1 l2 = list_take (List.length l2) l1 = l2
-
 let rec seq_append s1 s2 =  (* use batteries?? *)
   match s1 () with
   | Seq.Nil -> s2
   | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
-let rec prefix_of_modpath mp =
-  match mp with
-  | Names.ModPath.MPfile dp ->
-    List.rev_map Names.Id.to_string (Names.DirPath.repr dp) 
-  | Names.ModPath.MPdot (mp, last) ->
-    prefix_of_modpath mp @ [Names.Label.to_string last]
-  | Names.ModPath.MPbound _ -> [] (* XXX *)
-
-let modpath_starts_with mp prefix =
-  list_starts_with (prefix_of_modpath mp) prefix
-
-let is_within kn prefix =
-  modpath_starts_with (Names.KerName.modpath kn) prefix
+let is_within path prefix =
+  let dp, _ = Libnames.repr_path path in
+  Libnames.is_dirpath_prefix_of prefix dp
 
 let symbols_for (q : search_query) env =
     match q with
@@ -281,7 +262,7 @@ let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
   | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
-  | Keyword s -> (fun nm -> string_contains (Names.KerName.to_string nm) s)
+  | Keyword s -> (fun nm -> string_contains (Libnames.string_of_path nm) s)
 
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function

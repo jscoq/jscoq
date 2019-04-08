@@ -119,30 +119,31 @@ let context_of_stm ~doc sid =
 
 (* Inspection subroutines *)
 
+let full_path_of_kn kn =
+  let mp, l = Names.KerName.repr kn in
+  Libnames.make_path (Lib.dp_of_mp mp) (Names.Label.to_id l)
+
+let full_path_of_constant c = full_path_of_kn (Names.Constant.user c)
+
 let inspect_globals ~env () =
   let global_consts = List.to_seq @@
       Environ.fold_constants (fun name _ l -> name :: l) env [] in
-  global_consts |> Seq.map Names.Constant.user
+  Seq.map full_path_of_constant global_consts
 
 
 let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
-let kn_sibling kn id =
-  let mp, _ = Names.KerName.repr kn in
-  Names.KerName.make mp (Names.Label.of_id id)
+let full_path_sibling path id =
+  Libnames.make_path (Libnames.dirpath path) id  
 
-let kn_of_full_path path =
-  let dirpath, basename = Libnames.repr_path path in
-  Names.KerName.make (Names.ModPath.MPfile dirpath) (Names.Label.of_id basename)
-
-let lookup_inductive env kn =
+let lookup_inductive env path mi =
   let open Declarations in
   try
-    let defn_body = Environ.lookup_mind (Names.MutInd.make1 kn) env in
+    let defn_body = Environ.lookup_mind mi env in
     Array.to_seq defn_body.mind_packets
-      |> Seq.map (fun p -> kn_sibling kn (p.mind_typename))
+      |> Seq.map (fun p -> full_path_sibling path (p.mind_typename))
     (* TODO include constructors *)
   with Not_found -> Seq.empty
 
@@ -150,10 +151,10 @@ let find_definitions env obj_path =
   let open Names.GlobRef in
   try
     match Nametab.global_of_path obj_path with
-    | ConstRef c -> Seq.return @@ Names.Constant.user c
-    | IndRef (mi,_) -> lookup_inductive env (Names.MutInd.canonical mi)
+    | ConstRef _ -> Seq.return obj_path
+    | IndRef (mi,_) -> lookup_inductive env obj_path mi
     | _ -> Seq.empty
-  with Not_found -> Seq.empty (*return @@ kn_of_full_path obj_path*)
+  with Not_found -> Seq.empty
 
 let inspect_library ~env () =
   let ls = Lib.contents () in
@@ -163,13 +164,10 @@ let inspect_library ~env () =
     (List.to_seq ls)
 
 
-let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
-
-let inspect_locals ~env ?(mod_path=default_mod_path) () =
-  let make_kername id = Names.KerName.make mod_path (Names.Label.of_id id) in
+let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
   let named_ctx = Environ.named_context env in
   List.to_seq (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
-    Seq.map make_kername
+    Seq.map (Libnames.make_path dir_path)
 
 
 (** [set_debug t] enables/disables debug mode  *)

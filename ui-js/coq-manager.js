@@ -354,7 +354,7 @@ class CoqManager {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
-                { lemmas: bunch.map(CoqIdentifier.ofKerName) },
+                { lemmas: bunch.map(CoqIdentifier.ofFullPath) },
                 'locals', /*replace_existing=*/true)
         });
     }
@@ -1113,7 +1113,7 @@ class CoqIdentifier {
 
     /**
      * Constructs an identifier from a Coq Names.KerName.t.
-     * @param {array} param0 serialized form of KerName (from SearchResults).
+     * @param {array} param0 serialized form of KerName.
      */
     static ofKerName([kername, modpath, label]) {
         /**/ console.assert(kername === 'KerName') /**/
@@ -1125,6 +1125,14 @@ class CoqIdentifier {
         /**/ console.assert(modpath[0] === 'MPfile'); /**/
         return new CoqIdentifier(modpath[1].slice().reverse()
                                  .concat(modsuff), label);
+    }
+
+    /**
+     * Constructs an identifier from a Libnames.full_path.
+     * @param {array} param0 serialized form of full_path (from SearchResults).
+     */
+    static ofFullPath([dirpath, basename]) {
+        return new CoqIdentifier(dirpath.slice().reverse(), basename);
     }
 
     dequalify(dirpaths) {

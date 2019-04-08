@@ -1,8 +1,12 @@
+open Ppx_deriving_yojson_runtime
+
+
 
 module Names = struct
   module Id = struct
     include Names.Id
     let to_yojson x = `String (Names.Id.to_string x)
+    let of_yojson j = [%of_yojson: string] j >|= of_string
   end
   module Name = struct
     include Names.Name
@@ -12,6 +16,7 @@ module Names = struct
   module DirPath = struct
     include Names.DirPath
     let to_yojson x = `List (List.map Id.to_yojson (repr x))
+    let of_yojson j = [%of_yojson: Id.t list] j >|= make
   end
   module MBId = struct
     include Names.MBId
@@ -57,6 +62,13 @@ module Names = struct
   (* type global_reference = [%import: Names.global_reference] [@@deriving to_yojson] *)
 
   module MPmap = Names.MPmap
+end
+
+module Libnames = struct
+  include Libnames
+  let full_path_to_yojson path =
+    let dp, id = Libnames.repr_path path in
+    [%to_yojson: Names.DirPath.t * Names.Id.t] (dp, id)
 end
 
 
