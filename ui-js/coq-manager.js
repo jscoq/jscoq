@@ -436,11 +436,11 @@ class CoqManager {
         let stm = this.doc.stm_id[sid];
         if (stm) stm.feedback.push({level: lvl, loc: loc, msg: msg})
 
+        this.layout.log(fmsg, lvl, {'data-coq-sid': sid});
+
         // XXX: highlight error location.
         if (lvl === 'Error') {
             this.handleError(sid, loc, fmsg);
-        } else {
-            this.layout.log(fmsg, lvl, {'data-coq-sid': sid});
         }
     }
 
@@ -750,6 +750,8 @@ class CoqManager {
 
     goCursor() {
 
+        this.clearErrors();
+
         var cur = this.provider.getAtPoint();
 
         if (cur) {
@@ -761,7 +763,8 @@ class CoqManager {
             }
         } else {
             this.goTarget = this.provider.getCursor();
-            this.goNext(false, this.goTarget);
+            if (!this.goNext(false, this.goTarget))
+                this.goTarget = null;
         }
     }
 
@@ -777,8 +780,6 @@ class CoqManager {
         // queued twice, which is hard to avoid due to STM exec
         // forcing on parsing.
         if(!err_stm) return;
-
-        this.layout.log(msg, 'Error');
 
         // this.error will prevent the cancel handler from
         // clearing the mark.
