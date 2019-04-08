@@ -216,7 +216,7 @@ class CoqManager {
         this.setupDragDrop();
 
         // Setup the Coq worker.
-        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
+        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
         this.coq.options   = this.options;
         this.coq.observers.push(this);
 

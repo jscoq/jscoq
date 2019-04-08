@@ -2,7 +2,7 @@
 *~
 
 # Externals
-coq-external/
+/coq-external/
 
 # Dune stuff
 _build
@@ -12,7 +12,7 @@ _build
 # Links for in-place serving
 node_modules
 coq-pkgs
-coq-js/jscoq_worker.bc.js
+/coq-js/jscoq_worker.js
 
 # Apple-stuff
 .DS_Store
