@@ -56,6 +56,7 @@ val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
 val inspect_globals : env:Environ.env -> unit -> Names.KerName.t seq
 val inspect_library : env:Environ.env -> unit -> Names.KerName.t seq
 val inspect_locals  : env:Environ.env -> ?mod_path:Names.ModPath.t -> unit -> Names.KerName.t seq
+(* TODO return full_path values from inspect_* instead of KerName.t *)
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit

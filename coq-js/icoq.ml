@@ -116,6 +116,7 @@ let context_of_stm ~doc sid =
   let st = Stm.state_of_id ~doc sid in
   context_of_st st
 
+
 (* Inspection subroutines *)
 
 let inspect_globals ~env () =
@@ -123,44 +124,18 @@ let inspect_globals ~env () =
       Environ.fold_constants (fun name _ l -> name :: l) env [] in
   global_consts |> Seq.map Names.Constant.user
 
+
 let libobj_is_leaf obj =
   match obj with
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
-
-let mp_empty = Names.ModPath.MPfile Names.DirPath.empty
-
-let rec mp_first_rest mp =
-  match mp with
-  | Names.ModPath.MPdot (m, d) -> begin
-    match mp_first_rest m with
-    | Some (x, xs) -> Some (x, Names.ModPath.MPdot(xs, d))
-    | None -> Some(Names.Label.to_id d, mp_empty)
-    end
-  | Names.ModPath.MPfile dp -> begin
-    match Names.DirPath.repr dp with
-    | x :: xs -> Some(x, Names.ModPath.MPfile (Names.DirPath.make xs))
-    | [] -> None
-    end
-  | Names.ModPath.MPbound mb -> Some (Names.MBId.to_id mb, mp_empty)
-
-let rec mp_strip mp prefix =
-  match mp_first_rest mp, mp_first_rest prefix with
-  | Some (x, xs), Some (y, ys) -> if x = y then mp_strip xs ys else mp
-  | _, _ -> mp
 
 let kn_sibling kn id =
   let mp, _ = Names.KerName.repr kn in
   Names.KerName.make mp (Names.Label.of_id id)
 
-let kn_strip kn prefix =
-  let mp, l = Names.KerName.repr kn in
-  Names.KerName.make (mp_strip mp prefix) l
-
-let lookup_constant env kn =
-  try
-    ignore @@ Environ.lookup_constant (Names.Constant.make1 kn) env;
-    Seq.return kn
-  with Not_found -> Seq.empty
+let kn_of_full_path path =
+  let dirpath, basename = Libnames.repr_path path in
+  Names.KerName.make (Names.ModPath.MPfile dirpath) (Names.Label.of_id basename)
 
 let lookup_inductive env kn =
   let open Declarations in
@@ -168,26 +143,34 @@ let lookup_inductive env kn =
     let defn_body = Environ.lookup_mind (Names.MutInd.make1 kn) env in
     Array.to_seq defn_body.mind_packets
       |> Seq.map (fun p -> kn_sibling kn (p.mind_typename))
+    (* TODO include constructors *)
   with Not_found -> Seq.empty
 
-let find_definitions env kn = seq_append (lookup_constant env kn) (lookup_inductive env kn)
+let find_definitions env obj_path =
+  let open Names.GlobRef in
+  try
+    match Nametab.global_of_path obj_path with
+    | ConstRef c -> Seq.return @@ Names.Constant.user c
+    | IndRef (mi,_) -> lookup_inductive env (Names.MutInd.canonical mi)
+    | _ -> Seq.empty
+  with Not_found -> Seq.empty (*return @@ kn_of_full_path obj_path*)
 
 let inspect_library ~env () =
-  let lib_prefix = Lib.current_mp () in
   let ls = Lib.contents () in
-  Seq.flat_map (fun ((_, kn), obj) ->
-    if libobj_is_leaf obj then find_definitions env kn
+  Seq.flat_map (fun ((obj_path, _), obj) ->
+    if libobj_is_leaf obj then find_definitions env obj_path
     else Seq.empty)
     (List.to_seq ls)
-    |> Seq.map (fun kn -> kn_strip kn lib_prefix)
 
-let default_mod_path = mp_empty
+
+let default_mod_path = Names.ModPath.MPfile Names.DirPath.empty
 
 let inspect_locals ~env ?(mod_path=default_mod_path) () =
   let make_kername id = Names.KerName.make mod_path (Names.Label.of_id id) in
   let named_ctx = Environ.named_context env in
   List.to_seq (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map make_kername
+
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =
