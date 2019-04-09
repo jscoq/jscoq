@@ -5,6 +5,10 @@
   white-space: pre;
 }
 
+#query-panel > div.text-only {
+  white-space: normal;
+}
+
 #query-panel .Error {
   background: url('../ui-images/log-error.png') no-repeat;
 }
