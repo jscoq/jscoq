@@ -321,7 +321,7 @@ class FormatPrettyPrint {
 
     adjustBreaks(jdom) {
         var width = jdom.width(),
-            hboxes = jdom.find('.Pp_box[data-mode="horizontal"]');
+            hboxes = jdom.add(jdom.find('.Pp_box[data-mode="horizontal"]'));
 
         for (let el of hboxes) {
             let hbox = $(el);
@@ -337,6 +337,9 @@ class FormatPrettyPrint {
                 }
             }
         }
+
+        if (jdom.children().length == 0)
+            jdom.addClass("text-only");
     }
 
 }
