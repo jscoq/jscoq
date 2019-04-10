@@ -324,18 +324,17 @@ class FormatPrettyPrint {
             hboxes = jdom.add(jdom.find('.Pp_box[data-mode="horizontal"]'));
 
         for (let el of hboxes) {
-            let hbox = $(el);
-            if (hbox.position().left + hbox.width() > width) {
-                var brk;
-                for (let el of hbox.children('.Pp_break')) {
-                    let t = $(el);
-                    if (t.position().left < width) brk = t;
-                    else break;
+            let hbox = $(el),
+                brks = hbox.children('.Pp_break');
+            var prev = null;
+            for (let brk of brks) {
+                if (prev && $(brk).position().left >= width) {
+                  prev.html("<br/>");
                 }
-                if (brk) {
-                    brk.html("<br/>");
-                }
+                prev = $(brk);
             }
+            if (prev && hbox.position().left + hbox.width() > width)
+                prev.html("<br/>");
         }
 
         if (jdom.children().length == 0)
