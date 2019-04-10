@@ -170,6 +170,18 @@ let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
     Seq.map (Libnames.make_path dir_path)
 
 
+(* Compilation *)
+
+let compile_vo ~doc =
+  ignore(Stm.join ~doc);
+  let tmp_vo_fn = "/static/._JsCoq.vo" in
+  let dirp = Lib.library_dp () in
+  let frz = Lib.freeze ~marshallable:false in
+  Library.save_library_to ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
+  Lib.unfreeze frz;
+  Js_of_ocaml.Sys_js.read_file ~name:tmp_vo_fn
+	
+
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =
   Backtrace.record_backtrace debug;

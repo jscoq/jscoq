@@ -16,7 +16,8 @@
     js_stub/mutex.js
     js_stub/unix.js
     js_stub/str.js
-    js_stub/coq_vm.js)
+    js_stub/coq_vm.js
+    js_stub/marshal.js)
   (flags :standard (:include .extraflags) --dynlink +nat.js +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
