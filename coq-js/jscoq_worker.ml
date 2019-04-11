@@ -129,10 +129,14 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
       let json_string = Js.to_string (Json.output cobj) in
       Yojson.Safe.from_string json_string
 
+(* This is an internal js_of_ocaml primitive... *)
+external string_bytes : string -> Typed_array.uint8Array Js.t = "caml_array_of_string"
+
+(* (following is a reference implementation)
 let string_bytes s : Typed_array.uint8Array Js.t =
-	  let ta = new%js Typed_array.uint8Array (String.length s) in
-	  String.iteri (fun i c -> Typed_array.set ta i (Char.code c)) s;
-	  ta
+  let ta = new%js Typed_array.uint8Array (String.length s) in
+  String.iteri (fun i c -> Typed_array.set ta i (Char.code c)) s;
+  ta *)
 
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in

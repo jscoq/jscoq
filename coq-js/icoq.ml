@@ -176,6 +176,8 @@ let compile_vo ~doc =
   ignore(Stm.join ~doc);
   let tmp_vo_fn = "/static/._JsCoq.vo" in
   let dirp = Lib.library_dp () in
+  (* freeze and un-freeze to keep the library name after compilation *)
+  (*  (Lib.end_compilation clears it)  *)
   let frz = Lib.freeze ~marshallable:false in
   Library.save_library_to ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
   Lib.unfreeze frz;
