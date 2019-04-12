@@ -174,13 +174,13 @@ let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
 
 let compile_vo ~doc =
   ignore(Stm.join ~doc);
-  let tmp_vo_fn = "/static/._JsCoq.vo" in
+  let tmp_vo_fn = "/static/._JsCoq.vo" in   (* save to fake fs *)
   let dirp = Lib.library_dp () in
-  (* freeze and un-freeze to keep the library name after compilation *)
-  (*  (Lib.end_compilation clears it)  *)
-  let frz = Lib.freeze ~marshallable:false in
+  (* freeze and un-freeze to to allow "snapshot" compilation *)
+  (*  (normally, save_library_to closes the lib)             *)
+  let frz = Vernacstate.freeze_interp_state ~marshallable:false in
   Library.save_library_to ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
-  Lib.unfreeze frz;
+  Vernacstate.unfreeze_interp_state frz;
   Js_of_ocaml.Sys_js.read_file ~name:tmp_vo_fn
 	
 
