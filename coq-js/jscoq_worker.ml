@@ -17,13 +17,14 @@ open Jser_goals
 
 let jscoq_version = "0.9~beta2"
 
-type jscoq_options = {
-  implicit_libs: bool;
-  stm_debug: bool;
-}
-[@@deriving yojson]
+type jscoq_options = 
+  { top_name: string      [@default "JsCoq"]
+  ; implicit_libs: bool   [@default true]
+  ; stm_debug: bool       [@default false]
+  }
+  [@@deriving yojson]
 
-let opts = ref { implicit_libs = true; stm_debug = false; }
+let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; }
 
 
 type gvalue =
@@ -228,7 +229,7 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
       iload_path   = List.map (fun (path_el, phys) ->
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
                      ) lib_path;
-      top_name     = "JsCoq";
+      top_name     = set_opts.top_name;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;

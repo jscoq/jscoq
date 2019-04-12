@@ -98,7 +98,9 @@ let coq_init opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  let sertop_dp = Stm.TopLogical DirPath.(make [Id.of_string opts.top_name]) in
+  let top_name = Str.(split (regexp "[.]") opts.top_name) in
+  let sertop_dp = Stm.TopLogical
+      (DirPath.make (List.rev_map Id.of_string top_name)) in
   let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp;
                require_libs = opts.require_libs;
                iload_path = opts.iload_path;
