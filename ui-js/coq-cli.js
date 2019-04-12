@@ -2,7 +2,6 @@ const fs = require('fs'),
       find = require('find'),
       path = require('path'),
       jscoq = require('../ui-js/jscoq'),
-      jscoq_worker = require('../coq-js/jscoq_worker.bc'),
       coq_manager = require('./coq-manager'),
       format_pprint = require('./format-pprint'),
       mkpkg = require('../coq-jslib/mkpkg');
@@ -11,7 +10,7 @@ const fs = require('fs'),
 
 class HeadlessCoqWorker extends jscoq.CoqWorker {
     constructor() {
-        super(null, jscoq_worker.jsCoq);
+        super(null, require('../coq-js/jscoq_worker').jsCoq);
         this.worker.onmessage = evt => {
             process.nextTick(() => this.coq_handler({data: evt}));
         };
@@ -105,6 +104,20 @@ class HeadlessCoqManager {
         console.log("Finished.");
         var inspect = this.options.inspect;
         if (inspect) this.performInspect(inspect);
+        if (this.options.compile) {
+            this.coq.sendCommand(['Compile']);
+        }
+    }
+
+    require(module_name) {
+        this.provider.enqueue(`Require ${module_name}.`);
+    }
+
+    load(vernac_filename) {
+        // Relative paths must start with './' for Load command
+        if (!path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
+            vernac_filename = `./${vernac_filename}`;
+        this.provider.enqueue(`Load "${vernac_filename}".`);
     }
 
     performInspect(inspect) {
@@ -150,8 +163,14 @@ class HeadlessCoqManager {
         var last_stm = this.doc[this.doc.length - 1];
         if (last_stm && last_stm.coq_sid === sid && !last_stm.executed) {
             last_stm.executed = true;
-            if (!this.goNext(sid)) this.finished();
+            this.goNext(sid) || process.nextTick(() => this.finished());
         }
+    }
+
+    coqGot(_, buf) {
+        var compile_vo = this.options.compile;
+        if (compile_vo)
+            fs.writeFileSync(compile_vo, buf);
     }
 
     coqCoqExn(loc, _, msg) {
@@ -224,11 +243,15 @@ class QueueCoqProvider {
 if (module && module.id == '.') {
     var requires = [], require_pkgs = [],
         opts = require('commander')
-        .option('--noinit', 'start without loading the Init library')
-        .option('--require <path>', 'load Coq library path and import it (Require Import path.)')
-        .option('--require-pkg <json>', 'load a package and Require all modules included in it')
-        .option('--inspect [filename]', 'Inspect global symbols and serialize to file')
-        .option('-e [command]', 'Run a vernacular command')
+        .version('0.9.2', '-v, --version')
+        .option('--noinit',                                 'start without loading the Init library')
+        .option('--require <path>',                         'load Coq library path and import it (Require Import path.)')
+        .option('--require-pkg <json>',                     'load a package and Require all modules included in it')
+        .option('-l, --load-vernac-source <f.v>',           'load Coq file f.v.')
+        .option('--compile <f.v>',                          'compile Coq file f.v')
+        .option('-o <f.vo>',                                'use f.vo as output file name')
+        .option('--inspect <f.symb.json>',                  'inspect global symbols and serialize to file')
+        .option('-e <command>',                             'run a vernacular command')
         .on('option:require',     path => { requires.push(path); })
         .on('option:require-pkg', json => { require_pkgs.push(json); })
         .parse(process.argv);
@@ -250,6 +273,12 @@ if (module && module.id == '.') {
     }
 
     if (!opts.noinit) coq.options.prelude = true;
+
+    if (opts.loadVernacSource) coq.load(opts.loadVernacSource);
+    if (opts.compile) { 
+        coq.load(opts.compile); 
+        coq.options.compile = opts.O || `${opts.compile}o`; 
+    }
 
     if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
 

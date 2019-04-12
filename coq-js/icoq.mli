@@ -57,5 +57,7 @@ val inspect_globals : env:Environ.env -> unit -> Libnames.full_path seq
 val inspect_library : env:Environ.env -> unit -> Libnames.full_path seq
 val inspect_locals  : env:Environ.env -> ?dir_path:Names.DirPath.t -> unit -> Libnames.full_path seq
 
+val compile_vo : doc:Stm.doc -> string
+
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit

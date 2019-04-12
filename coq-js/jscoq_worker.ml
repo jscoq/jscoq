@@ -64,6 +64,7 @@ type jscoq_cmd =
   | GetOpt  of string list
 
   | ReassureLoadPath of (string list * string list) list
+  | Compile
   [@@deriving yojson]
 
 type jscoq_answer =
@@ -128,6 +129,24 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
       let json_string = Js.to_string (Json.output cobj) in
       Yojson.Safe.from_string json_string
 
+(* This is an internal js_of_ocaml primitive... *)
+external string_bytes : string -> Typed_array.uint8Array Js.t = "caml_array_of_string"
+
+(* (following is a reference implementation)
+let string_bytes s : Typed_array.uint8Array Js.t =
+  let ta = new%js Typed_array.uint8Array (String.length s) in
+  String.iteri (fun i c -> Typed_array.set ta i (Char.code c)) s;
+  ta *)
+
+let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :| *)
+  let open Js.Unsafe in
+  let buffer = array##.buffer in
+  if array##.byteOffset == 0 && array##.byteLength == buffer##.byteLength then
+    array, buffer
+  else
+    let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
+    new%js Typed_array.uint8Array_fromBuffer buffer, buffer
+
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
   let json_str = Yojson.Safe.to_string json_msg                        in
@@ -163,6 +182,17 @@ let post_answer (msg : jscoq_answer) : unit =
 
 let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
+
+let post_file filename content : unit =
+  let open Js.Unsafe in
+  let array, buf = buffer_of_uint8array (string_bytes content) in
+  let msg = Js.array [|inject @@ Js.string "Got";
+                       inject @@ Js.string filename;
+                       inject @@ array|] in
+  if is_worker then
+    Js.Unsafe.global##postMessage msg (Js.array [|buf|])  (* use `transfer` *)
+  else
+    post_message msg
 
 (* When a new package is loaded, the library load path has to be updated *)
 let update_loadpath (msg : lib_event) : unit =
@@ -353,6 +383,8 @@ let jscoq_execute =
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
+  | Compile ->
+    post_file "JsCoq.vo" (Icoq.compile_vo ~doc:(fst !doc))
 
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)
