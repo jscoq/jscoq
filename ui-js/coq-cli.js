@@ -1,8 +1,8 @@
 const fs = require('fs'),
-      find = require('find'),
       path = require('path'),
       jscoq = require('../ui-js/jscoq'),
-      coq_manager = require('./coq-manager'),
+      {CoqIdentifier} = require('./coq-manager'),
+      {CoqProject, CoqDep} = require('./coq-build'),
       format_pprint = require('./format-pprint'),
       mkpkg = require('../coq-jslib/mkpkg');
 
@@ -14,34 +14,6 @@ class HeadlessCoqWorker extends jscoq.CoqWorker {
         this.worker.onmessage = evt => {
             process.nextTick(() => this.coq_handler({data: evt}));
         };
-    }
-}
-
-/**
- * List package directories and .cmo files for configuring the load path.
- */
-class CoqProject {
-    constructor() {
-        this.path = [];
-        this.cmos = [];
-    }
-    add(base_dir, base_name) {
-        this.path.push([this._prefix(base_name), [base_dir, '.']]);
-        this.cmos.push(...this._cmoFiles(base_dir));
-    }
-    addRecursive(base_dir, base_name) {
-        var prefix = this._prefix(base_name);
-        for (let dir of find.dirSync(base_dir)) {
-            var pkg = prefix.concat(path.relative(base_dir, dir).split('/'));
-            this.add(dir, pkg);
-        }
-    }
-    _cmoFiles(dir) {
-        return fs.readdirSync(dir).map(fn => /[.]cm[oa]$/.exec(fn) && path.join(dir, fn))
-            .filter(x => x);
-    }
-    _prefix(name) {
-        return (typeof name === 'string') ? name.split('.') : name;
     }
 }
 
@@ -58,6 +30,7 @@ class HeadlessCoqManager {
 
         this.options = {
             prelude: false,
+            top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
             pkg_path: undefined,  /* default: automatic */
             inspect: false
@@ -79,7 +52,9 @@ class HeadlessCoqManager {
         }
 
         // Initialize Coq
-        let set_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
+        let set_opts = {top_name: this.options.top_name,
+                        implicit_libs: this.options.implicit_libs,
+                        stm_debug: false},
             init_libs = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [],
             load_path = this.project.path;
 
@@ -126,7 +101,7 @@ class HeadlessCoqManager {
                 (id => inspect.modules.some(m => this._identifierWithin(id, m)))
               : (id =>true);
         this.coq.inspectPromise(0, ["All"]).then(results => {
-            var symbols = results.map(kn => coq_manager.CoqIdentifier.ofKerName(kn))
+            var symbols = results.map(fp => CoqIdentifier.ofFullPath(fp))
                             .filter(query_filter);
             fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
             console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
@@ -252,6 +227,7 @@ if (module && module.id == '.') {
         .option('-o <f.vo>',                                'use f.vo as output file name')
         .option('--inspect <f.symb.json>',                  'inspect global symbols and serialize to file')
         .option('-e <command>',                             'run a vernacular command')
+        .option('--project <dir>',                          'build project at dir (must contain a _CoqProject file)')
         .on('option:require',     path => { requires.push(path); })
         .on('option:require-pkg', json => { require_pkgs.push(json); })
         .parse(process.argv);
@@ -288,6 +264,17 @@ if (module && module.id == '.') {
             coq.options.inspect.filename = opts.inspect;
         if (modules.length > 0)
             coq.options.inspect.modules = modules;
+    }
+
+    if (opts.project) {
+        let proj = CoqProject.fromFileText(
+            fs.readFileSync(path.join(opts.project, '_CoqProject'), 'utf-8'),
+            opts.project);
+        let build_plan = new CoqDep().processProject(proj).buildPlan(proj);
+        // TODO: wip; currently builds only the first file :P
+        coq.load(build_plan[0].input);
+        coq.options.top_name = build_plan[0].dirpath.join('.');
+        coq.options.compile = `${build_plan[0].dirpath.join('/')}.vo`;
     }
 
     coq.start();

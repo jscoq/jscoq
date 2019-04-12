@@ -79,7 +79,7 @@ if (typeof module !== 'undefined' && module.id == '.') {
         coqdep = process.argv.slice(2).filter(x => /[.]d$/.exec(x)),
         loadpath = [['Coq', 'theories'], ['Coq', 'plugins']];
 
-    if (coqdep.length === 0) coqdep = ['coq-external/coq-v8.9+32bit/.vfiles.d'];
+    if (coqdep.length === 0) coqdep = ['coq-external/coq-v8.10+32bit/.vfiles.d'];
 
     var md = new ModuleDeps(loadpath).fromFiles(coqdep);
 
