@@ -138,6 +138,15 @@ let string_bytes s : Typed_array.uint8Array Js.t =
   String.iteri (fun i c -> Typed_array.set ta i (Char.code c)) s;
   ta *)
 
+let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :| *)
+  let open Js.Unsafe in
+  let buffer = array##.buffer in
+  if array##.byteOffset == 0 && array##.byteLength == buffer##.byteLength then
+    array, buffer
+  else
+    let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
+    new%js Typed_array.uint8Array_fromBuffer buffer, buffer
+
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
   let json_str = Yojson.Safe.to_string json_msg                        in
@@ -175,11 +184,15 @@ let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
 
 let post_file filename content : unit =
-  post_message @@ Js.array [|
-    Js.Unsafe.inject @@ Js.string "Got";
-    Js.Unsafe.inject @@ Js.string filename;
-    Js.Unsafe.inject @@ string_bytes content
-  |]
+  let open Js.Unsafe in
+  let array, buf = buffer_of_uint8array (string_bytes content) in
+  let msg = Js.array [|inject @@ Js.string "Got";
+                       inject @@ Js.string filename;
+                       inject @@ array|] in
+  if is_worker then
+    Js.Unsafe.global##postMessage msg (Js.array [|buf|])  (* use `transfer` *)
+  else
+    post_message msg
 
 (* When a new package is loaded, the library load path has to be updated *)
 let update_loadpath (msg : lib_event) : unit =
