@@ -171,3 +171,21 @@ function caml_ml_seek_out_64(chanid,pos){
 }
 
 */
+
+/**
+ * This monkey-patch is an optimization for loading .vo files using UInt8Array.
+ * The original implementation has a bug where it converts the result to a string.
+ * 
+ * A patch has been submitted upstream. Remove this (and the call in icoq.ml)
+ * once it has been published.
+ */
+
+//Provides: MlFakeDevice_monkeypatch
+//Requires: MlFakeDevice, MlFakeFile, caml_new_string
+MlFakeDevice.prototype.lookup = function(name) {
+  if(!this.content[name] && this.lookupFun) {
+    var res = this.lookupFun(caml_new_string(this.root), caml_new_string(name));
+    if(res/* != 0 */) this.content[name]=new MlFakeFile(res[1]);   // <------------------------
+  }
+}
+function MlFakeDevice_monkeypatch() { }
