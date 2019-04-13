@@ -42,12 +42,7 @@ a, a:link, a:visited, a:active {
 }
 
 #code-wrapper {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 100%;
   margin-left: 0px;
-  padding-right: 45%;
   transition: padding-right 0.5s ease;
   overscroll-behavior: none;
 }
@@ -79,6 +74,7 @@ a, a:link, a:visited, a:active {
 }
 
 #panel-wrapper {
+  top: 0;
   right: 0;
   padding: 0;
   position: fixed;
@@ -97,7 +93,7 @@ a, a:link, a:visited, a:active {
 .flex-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 35px);
+  height: calc(100% - 36px);  /* 36px = height of toolbar */
   overflow: hidden;
 }
 
@@ -199,7 +195,7 @@ a, a:link, a:visited, a:active {
   border-bottom: 1px solid #ddd;
   position: relative;
   overflow: hidden;
-  /*height: 36px;*/
+  height: 36px;
 }
 
 #toolbar .exits {
