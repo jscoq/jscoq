@@ -28,8 +28,7 @@ class CoqProject {
         }
     }
     _cmoFiles(dir) {
-        return fs.readdirSync(dir).map(fn => /[.]cm[oa]$/.exec(fn) && path.join(dir, fn))
-            .filter(x => x);
+        return glob.sync('*.cm[oa]', {cwd: dir}).map(fn => path.join(dir, fn));
     }
     _prefix(name) { return this._module_name(name); }
 
@@ -148,7 +147,7 @@ class CoqDep {
             if (mo) {
                 var [_, prefix, import_export, modnames] = mo;
                 modnames = modnames.split(/\s+/);
-                console.log(prefix, modnames);
+
                 for (let modname of modnames) {
                     let lu = this.search_path.searchModule(prefix || [], modname);
                     if (lu) 

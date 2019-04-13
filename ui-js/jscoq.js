@@ -276,7 +276,7 @@ if (typeof document !== 'undefined' && document.currentScript)
     CoqWorker.scriptDir = document.currentScript.attributes.src.value.replace(/[^/]*$/, '');
 
 if (typeof module !== 'undefined')
-    module.exports = {CoqWorker}
+    module.exports = {CoqWorker, Future, PromiseFeedbackRoute}
 
 // Local Variables:
 // js-indent-level: 4

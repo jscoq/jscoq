@@ -1,6 +1,6 @@
 const fs = require('fs'),
       path = require('path'),
-      jscoq = require('../ui-js/jscoq'),
+      {CoqWorker, Future} = require('../ui-js/jscoq'),
       {CoqIdentifier} = require('./coq-manager'),
       {CoqProject, CoqDep} = require('./coq-build'),
       format_pprint = require('./format-pprint'),
@@ -8,7 +8,7 @@ const fs = require('fs'),
 
 
 
-class HeadlessCoqWorker extends jscoq.CoqWorker {
+class HeadlessCoqWorker extends CoqWorker {
     constructor() {
         super(null, require('../coq-js/jscoq_worker').jsCoq);
         this.worker.onmessage = evt => {
@@ -28,22 +28,25 @@ class HeadlessCoqManager {
         this.provider = new QueueCoqProvider();
         this.pprint = new format_pprint.FormatPrettyPrint();
 
+        this.project = new CoqProject();
+
         this.options = {
             prelude: false,
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
             pkg_path: undefined,  /* default: automatic */
-            inspect: false
+            inspect: false,
+            log_debug: false
         };
 
         this.doc = [];
+
+        this.when_done = new Future();
     }
 
     start() {
         // Configure load path
         this.options.pkg_path = this.options.pkg_path || this.findPackageDir();
-
-        this.project = new CoqProject();
 
         this.project.addRecursive(`${this.options.pkg_path}/Coq`, 'Coq');
 
@@ -80,8 +83,10 @@ class HeadlessCoqManager {
         var inspect = this.options.inspect;
         if (inspect) this.performInspect(inspect);
         if (this.options.compile) {
-            this.coq.sendCommand(['Compile']);
+            this.coq.sendCommand(['Compile', this.options.compile]);
         }
+
+        this.when_done.resolve();
     }
 
     require(module_name) {
@@ -93,6 +98,21 @@ class HeadlessCoqManager {
         if (!path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
             vernac_filename = `./${vernac_filename}`;
         this.provider.enqueue(`Load "${vernac_filename}".`);
+    }
+
+    spawn() {
+        var c = new HeadlessCoqManager();
+        c.provider = this.provider.clone();
+        c.project = this.project;
+        c.options = {};
+        for (let k in this.options) c.options[k] = this.options[k];
+        return c;
+    }
+
+    retract() {
+        let first_stm = this.doc[0];
+        if (first_stm && first_stm.coq_sid)
+            this.coq.cancel(first_stm.coq_sid);
     }
 
     performInspect(inspect) {
@@ -114,7 +134,8 @@ class HeadlessCoqManager {
     }
 
     coqLog([lvl], msg) { 
-        console.log(`[${lvl}] ${this.pprint.pp2Text(msg)}`);
+        if (lvl != 'Debug' || this.options.log_debug)
+            console.log(`[${lvl}] ${this.pprint.pp2Text(msg)}`);
     }
 
     coqPending(sid) {
@@ -142,11 +163,13 @@ class HeadlessCoqManager {
         }
     }
 
-    coqGot(_, buf) {
+    coqGot(filename, buf) {
         var compile_vo = this.options.compile;
         if (compile_vo)
-            fs.writeFileSync(compile_vo, buf);
+            this.coq.put(filename, buf);
     }
+
+    coqCancelled() { }
 
     coqCoqExn(loc, _, msg) {
         console.error(`[Exception] ${this.pprint.pp2Text(msg)}`);
@@ -171,6 +194,31 @@ class HeadlessCoqManager {
                     return dir;
         }
         return path.join('.', dirname);
+    }
+
+    /**
+     * Compiles a .v file, producing a .vo file and placing it in the worker's
+     * '/lib/'.
+     * Multiple jobs are processed sequentially.
+     * @param {array or object} entries a compilation job with fields 
+     *   {input, dirpath}, or an array of them.
+     */
+    batchCompile(entries) {
+        if (entries.length) {
+            return entries.reduce(
+                (promise, entry) => promise.then(() => coq.batchCompile(entry)),
+                Promise.resolve());
+        }
+        else {
+            var entry = entries;
+            console.log("Compiling: ", entry.input);
+            var coqc = this.spawn()
+            coqc.load(entry.input);
+            coqc.options.top_name = entry.dirpath.join('.');
+            coqc.options.compile = `/lib/${entry.dirpath.join('/')}.vo`;
+            coqc.start();
+            return coqc.when_done.promise.then(() => coqc.retract());
+        }
     }
 
     _isDirectory(path) {
@@ -209,6 +257,12 @@ class QueueCoqProvider {
         }
 
         return undefined;
+    }
+
+    clone() {
+        var c = new QueueCoqProvider();
+        c.queue = this.queue.slice();
+        return c;
     }
 
 }
@@ -271,12 +325,13 @@ if (module && module.id == '.') {
             fs.readFileSync(path.join(opts.project, '_CoqProject'), 'utf-8'),
             opts.project);
         let build_plan = new CoqDep().processProject(proj).buildPlan(proj);
-        // TODO: wip; currently builds only the first file :P
-        coq.load(build_plan[0].input);
-        coq.options.top_name = build_plan[0].dirpath.join('.');
-        coq.options.compile = `${build_plan[0].dirpath.join('/')}.vo`;
-    }
 
-    coq.start();
+        for (let [logical_path, _] of proj.path)
+            coq.project.add(`/lib/${logical_path.join('/')}`, logical_path);
+        
+        coq.batchCompile(build_plan);
+    }
+    else
+        coq.start();
 }
 

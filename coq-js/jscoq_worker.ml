@@ -65,7 +65,7 @@ type jscoq_cmd =
   | GetOpt  of string list
 
   | ReassureLoadPath of (string list * string list) list
-  | Compile
+  | Compile of string
   [@@deriving yojson]
 
 type jscoq_answer =
@@ -384,8 +384,8 @@ let jscoq_execute =
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
-  | Compile ->
-    post_file "JsCoq.vo" (Icoq.compile_vo ~doc:(fst !doc))
+  | Compile filename ->
+    post_file filename (Icoq.compile_vo ~doc:(fst !doc))
 
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)
