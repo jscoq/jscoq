@@ -1,20 +1,23 @@
 function str_ll(s, args) { if (str_ll.log) console.warn(s, args); }
-str_ll.log = true;
+str_ll.log = false;
 
 //Provides: str_ll
 var str_ll;
 
 //Provides: re_string_match
-//Requires: re_match
+//Requires: str_ll, re_match
 function re_string_match(re, s, pos) {
-  // external re_string_match : regexp -> string -> int -> bool
-  return re_match(re, s, pos, 0).length > 1;
+  // external re_string_match : regexp -> string -> int -> int array
+  str_ll('re_string_match', arguments); 
+  var res = re_match(re, s, pos, 0);
+  return (res === 0) ? [0] : res;
 }
 
 //Provides: re_search_forward
-//Requires: re_search_forward_naive
+//Requires: str_ll, re_search_forward_naive
 function re_search_forward(re, s, pos) {
   // external re_search_forward: regexp -> string -> int -> int array
+  str_ll('re_search_forward', arguments); 
   return re_search_forward_naive(re, s, pos);
 }
 
