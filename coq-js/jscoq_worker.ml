@@ -65,6 +65,7 @@ type jscoq_cmd =
   | GetOpt  of string list
 
   | ReassureLoadPath of (string list * string list) list
+  | Load    of string
   | Compile of string
   [@@deriving yojson]
 
@@ -384,6 +385,13 @@ let jscoq_execute =
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
+  | Load filename ->
+    let vernac_state = Vernac.State.
+      { doc = fst !doc; sid = Jscoq_doc.tip !doc; proof = None; time = false } in
+    ignore(
+      Vernac.load_vernac ~echo:false ~check:false ~interactive:false
+                         ~state:vernac_state filename)
+    (* TODO update document tip instead of ignoring *)
   | Compile filename ->
     post_file filename (Icoq.compile_vo ~doc:(fst !doc))
 
@@ -392,8 +400,7 @@ let setup_pseudo_fs () =
   Sys_js.unmount ~path:"/static";
   Sys_js.mount ~path:"/static/" (fun ~prefix:_ ~path -> Jslibmng.coq_vo_req path);
   (* '/lib' is the target for Put commands *)
-  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None);
-  Sys_js.create_file ~name:"/lib/.anchor" ~content:""
+  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None)
 
 let put_pseudo_file ~name ~buf =
   let str = Typed_array.String.of_arrayBuffer buf in

@@ -78,15 +78,18 @@ class HeadlessCoqManager {
         else return false;
     }
 
-    finished() {
-        console.log("Finished.");
+    eof() {
         var inspect = this.options.inspect;
         if (inspect) this.performInspect(inspect);
         if (this.options.compile) {
-            this.coq.sendCommand(['Compile', this.options.compile]);
+            let input = this.options.compile.input,
+                output = this.options.compile.output || '._JsCoq.vo';
+            if (input)
+                this.coq.sendCommand(['Load', input])
+            this.coq.sendCommand(['Compile', output]);
         }
-
-        this.when_done.resolve();
+        else
+            this.when_done.resolve();
     }
 
     require(module_name) {
@@ -113,6 +116,15 @@ class HeadlessCoqManager {
         let first_stm = this.doc[0];
         if (first_stm && first_stm.coq_sid)
             this.coq.cancel(first_stm.coq_sid);
+        else
+            this.coq.cancel(1);  // XXX
+    }
+
+    terminate() {
+        this.retract();
+        let idx = this.coq.observers.indexOf(this);
+        if (idx > -1)
+            this.coq.observers.splice(idx, 1);
     }
 
     performInspect(inspect) {
@@ -130,7 +142,7 @@ class HeadlessCoqManager {
 
     coqReady() {
         console.log("Coq worker ready.")
-        this.goNext();
+        this.goNext() || process.nextTick(() => this.eof());
     }
 
     coqLog([lvl], msg) { 
@@ -156,23 +168,28 @@ class HeadlessCoqManager {
     }
 
     feedProcessed(sid) {
+        console.log("Processed",sid);
         var last_stm = this.doc[this.doc.length - 1];
         if (last_stm && last_stm.coq_sid === sid && !last_stm.executed) {
             last_stm.executed = true;
-            this.goNext(sid) || process.nextTick(() => this.finished());
+            this.goNext(sid) || process.nextTick(() => this.eof());
         }
     }
 
     coqGot(filename, buf) {
-        var compile_vo = this.options.compile;
-        if (compile_vo)
-            this.coq.put(filename, buf);
+        this.coq.put(filename, buf);
+        console.log(` > ${filename}`);
+        this.when_done.resolve();
     }
 
-    coqCancelled() { }
+    coqCancelled(sid) {
+        if (this.options.log_debug)
+            console.log('Canceled', sid);
+    }
 
     coqCoqExn(loc, _, msg) {
         console.error(`[Exception] ${this.pprint.pp2Text(msg)}`);
+        this.when_done.reject(msg);
     }
 
     feedFileLoaded() { }
@@ -213,11 +230,11 @@ class HeadlessCoqManager {
             var entry = entries;
             console.log("Compiling: ", entry.input);
             var coqc = this.spawn()
-            coqc.load(entry.input);
             coqc.options.top_name = entry.dirpath.join('.');
-            coqc.options.compile = `/lib/${entry.dirpath.join('/')}.vo`;
+            coqc.options.compile = {input: entry.input,
+                                    output: `/lib/${entry.dirpath.join('/')}.vo`};
             coqc.start();
-            return coqc.when_done.promise.then(() => coqc.retract());
+            return coqc.when_done.promise.then(() => coqc.terminate());
         }
     }
 
@@ -306,8 +323,8 @@ if (module && module.id == '.') {
 
     if (opts.loadVernacSource) coq.load(opts.loadVernacSource);
     if (opts.compile) { 
-        coq.load(opts.compile); 
-        coq.options.compile = opts.O || `${opts.compile}o`; 
+        coq.options.compile = {input:  opts.compile,
+                               output: opts.O || `${opts.compile}o`}; 
     }
 
     if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
@@ -326,12 +343,18 @@ if (module && module.id == '.') {
             opts.project);
         let build_plan = new CoqDep().processProject(proj).buildPlan(proj);
 
-        for (let [logical_path, _] of proj.path)
-            coq.project.add(`/lib/${logical_path.join('/')}`, logical_path);
+        for (let [logical_path, _] of proj.path) {
+            let dir = `/lib/${logical_path.join('/')}`;
+            coq.coq.put(`${dir}/.anchor`, new Buffer(''));
+            coq.project.add(dir, logical_path);
+        }
         
-        coq.batchCompile(build_plan);
+        coq.batchCompile(build_plan)
+        .catch(() => console.log("Aborted."));
     }
-    else
-        coq.start();
+    else {
+        coq.start()
+        coq.when_done.promise.catch(() => console.log("Aborted."));
+    }
 }
 
