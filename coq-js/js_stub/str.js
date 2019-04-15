@@ -73,7 +73,7 @@ var re_match = function(){
   
       var backtrack = function () {
           while (stack.length) {
-              var item = stack.pop();
+              var item = stack.pop(), obj, prop;
               if (item.undo) {
                   [obj, prop] = item.undo.loc;
                   obj[prop] = item.undo.value;
@@ -160,11 +160,11 @@ var re_match = function(){
                   push({pos: {pc: pc + sarg, txt: pos}});
                   break;
               case opcodes.SETMARK:
-                  push({undo: {loc: [re_registers, uarg], value: re_registers[uarg]}});
-                  re_registers[uarg] = pos;
+                  push({undo: {loc: [re_register, uarg], value: re_register[uarg]}});
+                  re_register[uarg] = pos;
                   break;
               case opcodes.CHECKPROGRESS:
-                  if (re_register[uarg] === pos) bracktrack();
+                  if (re_register[uarg] === pos) backtrack();
                   break;
   
               default:
