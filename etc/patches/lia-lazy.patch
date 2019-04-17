@@ -1,0 +1,249 @@
+diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
+index ef6af16..e564101 100644
+--- a/plugins/micromega/coq_micromega.ml
++++ b/plugins/micromega/coq_micromega.ml
+@@ -432,7 +432,7 @@ struct
+   let rec dump_nat x =
+    match x with
+     | Mc.O -> Lazy.force coq_O
+-    | Mc.S p -> EConstr.mkApp(Lazy.force coq_S,[| dump_nat p |])
++    | Mc.S p -> ignore(Lazy.force coq_S); EConstr.mkApp(Lazy.force coq_S,[| dump_nat p |])
+ 
+   let rec parse_positive sigma term =
+    let (i,c) = get_left_construct sigma term in
+@@ -445,15 +445,15 @@ struct
+   let rec dump_positive x =
+    match x with
+     | Mc.XH -> Lazy.force coq_xH
+-    | Mc.XO p -> EConstr.mkApp(Lazy.force coq_xO,[| dump_positive p |])
+-    | Mc.XI p -> EConstr.mkApp(Lazy.force coq_xI,[| dump_positive p |])
++    | Mc.XO p -> ignore(Lazy.force coq_xO); EConstr.mkApp(Lazy.force coq_xO,[| dump_positive p |])
++    | Mc.XI p -> ignore(Lazy.force coq_xI); EConstr.mkApp(Lazy.force coq_xI,[| dump_positive p |])
+ 
+   let pp_positive o x = Printf.fprintf o "%i" (CoqToCaml.positive x)
+ 
+   let dump_n x =
+    match x with
+     | Mc.N0 -> Lazy.force coq_N0
+-    | Mc.Npos p -> EConstr.mkApp(Lazy.force coq_Npos,[| dump_positive p|])
++    | Mc.Npos p -> ignore(Lazy.force coq_Npos); EConstr.mkApp(Lazy.force coq_Npos,[| dump_positive p|])
+ 
+   (** [is_ground_term env sigma term] holds if the term [term]
+       is an instance of the typeclass [DeclConstant.GT term]
+@@ -482,16 +482,18 @@ struct
+   let dump_z x =
+    match x with
+     | Mc.Z0 ->Lazy.force coq_ZERO
+-    | Mc.Zpos p -> EConstr.mkApp(Lazy.force coq_POS,[| dump_positive p|])
+-    | Mc.Zneg p -> EConstr.mkApp(Lazy.force coq_NEG,[| dump_positive p|])
++    | Mc.Zpos p -> ignore(Lazy.force coq_POS); EConstr.mkApp(Lazy.force coq_POS,[| dump_positive p|])
++    | Mc.Zneg p -> ignore(Lazy.force coq_NEG); EConstr.mkApp(Lazy.force coq_NEG,[| dump_positive p|])
+ 
+   let pp_z o x = Printf.fprintf o "%s" (Big_int.string_of_big_int (CoqToCaml.z_big_int x))
+ 
+   let dump_q q =
++   ignore(Lazy.force coq_Qmake);
+    EConstr.mkApp(Lazy.force coq_Qmake,
+                  [| dump_z q.Micromega.qnum ; dump_positive q.Micromega.qden|])
+ 
+   let parse_q sigma term =
++    ignore(Lazy.force coq_Qmake);
+      match EConstr.kind sigma term with
+        | App(c, args) -> if EConstr.eq_constr sigma c (Lazy.force coq_Qmake) then
+              {Mc.qnum = parse_z sigma args.(0) ; Mc.qden = parse_positive sigma args.(1) }
+@@ -517,23 +519,23 @@ struct
+     match cst with
+       | Mc.C0 -> Lazy.force coq_C0 
+       | Mc.C1 ->  Lazy.force coq_C1
+-      | Mc.CQ q ->  EConstr.mkApp(Lazy.force coq_CQ, [| dump_q q |])
+-      | Mc.CZ z -> EConstr.mkApp(Lazy.force coq_CZ, [| dump_z z |])
+-      | Mc.CPlus(x,y) -> EConstr.mkApp(Lazy.force coq_CPlus, [| dump_Rcst x ; dump_Rcst y |])
+-      | Mc.CMinus(x,y) -> EConstr.mkApp(Lazy.force coq_CMinus, [| dump_Rcst x ; dump_Rcst y |])
+-      | Mc.CMult(x,y) -> EConstr.mkApp(Lazy.force coq_CMult, [| dump_Rcst x ; dump_Rcst y |])
+-      | Mc.CPow(x,y)  -> EConstr.mkApp(Lazy.force coq_CPow, [| dump_Rcst x ;
++      | Mc.CQ q -> ignore(Lazy.force coq_CQ);  EConstr.mkApp(Lazy.force coq_CQ, [| dump_q q |])
++      | Mc.CZ z -> ignore(Lazy.force coq_CZ); EConstr.mkApp(Lazy.force coq_CZ, [| dump_z z |])
++      | Mc.CPlus(x,y) -> ignore(Lazy.force coq_CPlus); EConstr.mkApp(Lazy.force coq_CPlus, [| dump_Rcst x ; dump_Rcst y |])
++      | Mc.CMinus(x,y) -> ignore(Lazy.force coq_CMinus); EConstr.mkApp(Lazy.force coq_CMinus, [| dump_Rcst x ; dump_Rcst y |])
++      | Mc.CMult(x,y) -> ignore(Lazy.force coq_CMult); EConstr.mkApp(Lazy.force coq_CMult, [| dump_Rcst x ; dump_Rcst y |])
++      | Mc.CPow(x,y)  -> ignore(Lazy.force coq_CPow); EConstr.mkApp(Lazy.force coq_CPow, [| dump_Rcst x ;
+                                                                match y with
+-                                                               | Mc.Inl z -> EConstr.mkApp(Lazy.force coq_Inl,[| Lazy.force coq_Z ; Lazy.force coq_nat; dump_z z|])
+-                                                               | Mc.Inr n -> EConstr.mkApp(Lazy.force coq_Inr,[| Lazy.force coq_Z ; Lazy.force coq_nat; dump_nat n|])
++                                                               | Mc.Inl z -> ignore(Lazy.force coq_Z); ignore(Lazy.force coq_nat); EConstr.mkApp(Lazy.force coq_Inl,[| Lazy.force coq_Z ; Lazy.force coq_nat; dump_z z|])
++                                                               | Mc.Inr n -> ignore(Lazy.force coq_Inr); ignore(Lazy.force coq_nat); EConstr.mkApp(Lazy.force coq_Inr,[| Lazy.force coq_Z ; Lazy.force coq_nat; dump_nat n|])
+                                                             |])
+-      | Mc.CInv t -> EConstr.mkApp(Lazy.force coq_CInv, [| dump_Rcst t |])
+-      | Mc.COpp t -> EConstr.mkApp(Lazy.force coq_COpp, [| dump_Rcst t |])
++      | Mc.CInv t -> ignore(Lazy.force coq_CInv); EConstr.mkApp(Lazy.force coq_CInv, [| dump_Rcst t |])
++      | Mc.COpp t -> ignore(Lazy.force coq_COpp); EConstr.mkApp(Lazy.force coq_COpp, [| dump_Rcst t |])
+ 
+   let rec dump_list typ dump_elt l =
+    match l with
+     | [] -> EConstr.mkApp(Lazy.force coq_nil,[| typ |])
+-    | e :: l -> EConstr.mkApp(Lazy.force coq_cons,
++    | e :: l -> ignore(Lazy.force coq_cons); EConstr.mkApp(Lazy.force coq_cons,
+                                 [| typ; dump_elt e;dump_list typ dump_elt l|])
+ 
+   let pp_list op cl elt o l =
+@@ -549,17 +551,17 @@ struct
+   let dump_expr typ dump_z e =
+    let rec dump_expr  e =
+    match e with
+-    | Mc.PEX n -> EConstr.mkApp(Lazy.force coq_PEX,[| typ; dump_var n |])
+-    | Mc.PEc z -> EConstr.mkApp(Lazy.force coq_PEc,[| typ ; dump_z z |])
+-    | Mc.PEadd(e1,e2) -> EConstr.mkApp(Lazy.force coq_PEadd,
++    | Mc.PEX n -> ignore(Lazy.force coq_PEX); EConstr.mkApp(Lazy.force coq_PEX,[| typ; dump_var n |])
++    | Mc.PEc z -> ignore(Lazy.force coq_PEc); EConstr.mkApp(Lazy.force coq_PEc,[| typ ; dump_z z |])
++    | Mc.PEadd(e1,e2) -> ignore(Lazy.force coq_PEadd); EConstr.mkApp(Lazy.force coq_PEadd,
+                                        [| typ; dump_expr e1;dump_expr e2|])
+-    | Mc.PEsub(e1,e2) -> EConstr.mkApp(Lazy.force coq_PEsub,
++    | Mc.PEsub(e1,e2) -> ignore(Lazy.force coq_PEsub); EConstr.mkApp(Lazy.force coq_PEsub,
+                                        [| typ; dump_expr  e1;dump_expr  e2|])
+-    | Mc.PEopp e -> EConstr.mkApp(Lazy.force coq_PEopp,
++    | Mc.PEopp e -> ignore(Lazy.force coq_PEopp); EConstr.mkApp(Lazy.force coq_PEopp,
+                                   [| typ; dump_expr  e|])
+-    | Mc.PEmul(e1,e2) ->  EConstr.mkApp(Lazy.force coq_PEmul,
++    | Mc.PEmul(e1,e2) -> ignore(Lazy.force coq_PEmul);  EConstr.mkApp(Lazy.force coq_PEmul,
+                                         [| typ; dump_expr  e1;dump_expr e2|])
+-    | Mc.PEpow(e,n) ->  EConstr.mkApp(Lazy.force coq_PEpow,
++    | Mc.PEpow(e,n) ->  ignore(Lazy.force coq_PEpow); EConstr.mkApp(Lazy.force coq_PEpow,
+                                       [| typ; dump_expr  e; dump_n  n|])
+       in
+     dump_expr e
+@@ -1052,9 +1054,10 @@ struct
+      | Mc.FF     -> app_ctor coq_FF []
+      | Mc.Cj(x,y) -> app_ctor coq_And [xdump x ; xdump y]
+      | Mc.D(x,y) -> app_ctor coq_Or [xdump x ; xdump y]
+-     | Mc.I(x,_,y) -> app_ctor coq_Impl [xdump x ; EConstr.mkApp(Lazy.force coq_None,[|Lazy.force coq_unit|]); xdump y]
+-     | Mc.N(x)     -> app_ctor coq_Neg [xdump x]
+-     | Mc.A(x,_) -> app_ctor coq_Atom [dump_atom x;Lazy.force coq_tt]
++     | Mc.I(x,_,y) -> ignore(Lazy.force coq_None); ignore(Lazy.force coq_unit);
++                      app_ctor coq_Impl [xdump x ; EConstr.mkApp(Lazy.force coq_None,[|Lazy.force coq_unit|]); xdump y]
++     | Mc.N(x)     -> ignore(Lazy.force coq_Neg); app_ctor coq_Neg [xdump x]
++     | Mc.A(x,_) ->  ignore(Lazy.force coq_tt);  app_ctor coq_Atom [dump_atom x;Lazy.force coq_tt]
+      | Mc.X(t) -> app_ctor coq_X [t]  in
+    xdump f
+ 
+@@ -1138,19 +1141,20 @@ let rec dump_Rcst_as_R cst =
+   match cst with
+   | Mc.C0 -> Lazy.force coq_R0 
+   | Mc.C1 ->  Lazy.force coq_R1
+-  | Mc.CQ q ->  EConstr.mkApp(Lazy.force coq_IQR, [| dump_q q |])
+-  | Mc.CZ z -> EConstr.mkApp(Lazy.force coq_IZR, [| dump_z z |])
+-  | Mc.CPlus(x,y) -> EConstr.mkApp(Lazy.force coq_Rplus, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
+-  | Mc.CMinus(x,y) -> EConstr.mkApp(Lazy.force coq_Rminus, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
+-  | Mc.CMult(x,y) -> EConstr.mkApp(Lazy.force coq_Rmult, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
++  | Mc.CQ q -> ignore(Lazy.force coq_IQR); EConstr.mkApp(Lazy.force coq_IQR, [| dump_q q |])
++  | Mc.CZ z -> ignore(Lazy.force coq_IZR); EConstr.mkApp(Lazy.force coq_IZR, [| dump_z z |])
++  | Mc.CPlus(x,y) -> ignore(Lazy.force coq_Rplus); EConstr.mkApp(Lazy.force coq_Rplus, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
++  | Mc.CMinus(x,y) -> ignore(Lazy.force coq_Rminus); EConstr.mkApp(Lazy.force coq_Rminus, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
++  | Mc.CMult(x,y) -> ignore(Lazy.force coq_Rmult); EConstr.mkApp(Lazy.force coq_Rmult, [| dump_Rcst_as_R x ; dump_Rcst_as_R y |])
+   | Mc.CPow(x,y)  ->
++           ignore(Lazy.force coq_powerZR); ignore(Lazy.force coq_Rpower);
+      begin
+        match y with
+        | Mc.Inl z -> EConstr.mkApp(Lazy.force coq_powerZR,[| dump_Rcst_as_R x ; dump_z z|])
+        | Mc.Inr n -> EConstr.mkApp(Lazy.force coq_Rpower,[| dump_Rcst_as_R x ; dump_nat n|])
+      end
+-  | Mc.CInv t -> EConstr.mkApp(Lazy.force coq_Rinv, [| dump_Rcst_as_R t |])
+-  | Mc.COpp t -> EConstr.mkApp(Lazy.force coq_Ropp, [| dump_Rcst_as_R t |])
++  | Mc.CInv t -> ignore(Lazy.force coq_Rinv); EConstr.mkApp(Lazy.force coq_Rinv, [| dump_Rcst_as_R t |])
++  | Mc.COpp t -> ignore(Lazy.force coq_Ropp); EConstr.mkApp(Lazy.force coq_Ropp, [| dump_Rcst_as_R t |])
+ 
+ 
+ let dump_rexpr = lazy
+@@ -1218,6 +1222,7 @@ let make_goal_of_formula gl dexpr form =
+       try
+         EConstr.mkApp(List.assoc op dexpr.dump_op, [| e1; e2|])
+       with Not_found ->
++           ignore(Lazy.force coq_Eq);
+         EConstr.mkApp(Lazy.force coq_Eq,[|dexpr.interp_typ ; e1 ;e2|]) in
+     
+   let dump_cstr i { Mc.flhs ; Mc.fop ; Mc.frhs } =
+@@ -1227,10 +1232,10 @@ let make_goal_of_formula gl dexpr form =
+     match f with
+     | Mc.TT  -> Lazy.force coq_True
+     | Mc.FF  -> Lazy.force coq_False
+-    | Mc.Cj(x,y) -> EConstr.mkApp(Lazy.force coq_and,[|xdump pi xi x ; xdump pi xi y|])
+-    | Mc.D(x,y) -> EConstr.mkApp(Lazy.force coq_or,[| xdump pi xi x ; xdump pi xi y|])
++    | Mc.Cj(x,y) -> ignore(Lazy.force coq_and); EConstr.mkApp(Lazy.force coq_and,[|xdump pi xi x ; xdump pi xi y|])
++    | Mc.D(x,y) -> ignore(Lazy.force coq_or); EConstr.mkApp(Lazy.force coq_or,[| xdump pi xi x ; xdump pi xi y|])
+     | Mc.I(x,_,y) -> EConstr.mkArrow (xdump pi xi x) Sorts.Relevant (xdump (pi+1) (xi+1) y)
+-    | Mc.N(x) -> EConstr.mkArrow (xdump pi xi x) Sorts.Relevant (Lazy.force coq_False)
++    | Mc.N(x) -> ignore(Lazy.force coq_False); EConstr.mkArrow (xdump pi xi x) Sorts.Relevant (Lazy.force coq_False)
+     | Mc.A(x,_) -> dump_cstr xi x
+     | Mc.X(t) -> let idx = Env.get_rank props t in
+               EConstr.mkRel (pi+idx) in 
+@@ -1293,6 +1298,7 @@ let rec dump_varmap typ m =
+   | Mc.Empty -> EConstr.mkApp(Lazy.force coq_Empty,[| typ |])
+   | Mc.Elt v -> EConstr.mkApp(Lazy.force coq_Elt,[| typ; v|])
+   | Mc.Branch(l,o,r) ->
++          ignore(Lazy.force coq_Branch);
+     EConstr.mkApp (Lazy.force coq_Branch, [| typ; dump_varmap typ l; o ; dump_varmap typ r |])
+ 
+ 
+@@ -1306,12 +1312,15 @@ let vm_of_list env =
+ let rec dump_proof_term = function
+   | Micromega.DoneProof -> Lazy.force coq_doneProof
+   | Micromega.RatProof(cone,rst) ->
++           ignore(Lazy.force coq_ratProof);
+     EConstr.mkApp(Lazy.force coq_ratProof, [| dump_psatz coq_Z dump_z cone; dump_proof_term rst|])
+  | Micromega.CutProof(cone,prf) ->
++          ignore(Lazy.force coq_cutProof);
+     EConstr.mkApp(Lazy.force coq_cutProof,
+ 	      [| dump_psatz coq_Z dump_z cone ;
+ 		 dump_proof_term prf|])
+  | Micromega.EnumProof(c1,c2,prfs) ->
++          ignore(Lazy.force coq_enumProof); ignore(Lazy.force coq_proofTerm);
+     EConstr.mkApp (Lazy.force coq_enumProof,
+ 	           [|  dump_psatz coq_Z dump_z c1 ; dump_psatz coq_Z dump_z c2 ;
+ 		       dump_list (Lazy.force coq_proofTerm) dump_proof_term prfs |])
+@@ -1420,16 +1429,19 @@ let pre_processZ mt f =
+        let z = Mc.XI (Mc.Coq_Pos.add fr p) in
+        let tag = Tag.from (- x0 (x0 ip)) in
+        let constr = Mc.mk_eq_pos p y z in
++        ignore(Lazy.force coq_Z);
+        (tag, dump_cstr (Lazy.force coq_Z) dump_z constr)
+     | Some false ->
+        let y = Mc.XO (Mc.Coq_Pos.add fr p) in
+        let tag    = Tag.from (- x0 (x1 ip)) in
+        let constr = Mc.bound_var (Mc.XO y) in
++        ignore(Lazy.force coq_Z);
+        (tag, dump_cstr (Lazy.force coq_Z) dump_z constr)
+     | Some true ->
+        let z = Mc.XI (Mc.Coq_Pos.add fr p) in
+        let tag    = Tag.from (- x1 (x1 ip)) in
+        let constr = Mc.bound_var (Mc.XI z) in
++        ignore(Lazy.force coq_Z);
+        (tag, dump_cstr (Lazy.force coq_Z) dump_z constr) in
+ 
+    Mc.bound_problem_fr tag_of_var  mt f
+@@ -1597,15 +1609,15 @@ let abstract_formula hyps f =
+       | A(a,(t,term)) -> if TagSet.mem t hyps then A(a,(t,term)) else X(term)
+       | Cj(f1,f2) ->
+ 	  (match xabs f1 , xabs f2 with
+-	    |   X a1    ,  X a2   -> X (EConstr.mkApp(Lazy.force coq_and, [|a1;a2|]))
++	    |   X a1    ,  X a2   -> ignore(Lazy.force coq_and); X (EConstr.mkApp(Lazy.force coq_and, [|a1;a2|]))
+             |    f1     , f2      -> Cj(f1,f2) )
+       | D(f1,f2) ->
+ 	  (match xabs f1 , xabs f2 with
+-	    |   X a1    ,  X a2   -> X (EConstr.mkApp(Lazy.force coq_or, [|a1;a2|]))
++	    |   X a1    ,  X a2   -> ignore(Lazy.force coq_or); X (EConstr.mkApp(Lazy.force coq_or, [|a1;a2|]))
+ 	    |    f1     , f2      -> D(f1,f2) )
+       | N(f) ->
+ 	  (match xabs f with
+-	    |   X a    -> X (EConstr.mkApp(Lazy.force coq_not, [|a|]))
++	    |   X a    -> ignore(Lazy.force coq_not); X (EConstr.mkApp(Lazy.force coq_not, [|a|]))
+ 	    |     f     -> N f)
+       | I(f1,hyp,f2) ->
+ 	  (match xabs f1 , hyp, xabs f2 with
+@@ -1943,7 +1955,7 @@ let require_csdp =
+ let really_call_csdpcert : provername -> micromega_polys -> Sos_types.positivstellensatz option  =
+   fun provername poly ->
+ 
+-  Lazy.force require_csdp;
++  ignore(Lazy.force require_csdp);
+ 
+   let cmdname =
+     List.fold_left Filename.concat (Envars.coqlib ())
