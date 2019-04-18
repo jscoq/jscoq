@@ -87,6 +87,8 @@ let coq_init opts =
   (* Core Coq initialization *)
   Lib.init();
   Global.set_engagement Declarations.PredicativeSet;
+  Global.set_VM false;
+  Global.set_native_compiler false;
 
   (**************************************************************************)
   (* Feedback setup                                                         *)
