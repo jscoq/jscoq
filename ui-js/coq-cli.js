@@ -2,7 +2,7 @@ const fs = require('fs'),
       path = require('path'),
       {CoqWorker, Future} = require('../ui-js/jscoq'),
       {CoqIdentifier} = require('./coq-manager'),
-      {CoqProject, CoqDep} = require('./coq-build'),
+      {CoqProject, CoqDep, CoqC} = require('./coq-build'),
       format_pprint = require('./format-pprint'),
       mkpkg = require('../coq-jslib/mkpkg');
 
@@ -141,7 +141,9 @@ class HeadlessCoqManager {
     }
 
     coqReady() {
-        console.log("Coq worker ready.")
+        if (this.log_debug)
+            console.log("Coq worker ready.")
+
         this.goNext() || process.nextTick(() => this.eof());
     }
 
@@ -168,7 +170,9 @@ class HeadlessCoqManager {
     }
 
     feedProcessed(sid) {
-        console.log("Processed",sid);
+        if (this.log_debug)
+            console.log("Processed",sid);
+
         var last_stm = this.doc[this.doc.length - 1];
         if (last_stm && last_stm.coq_sid === sid && !last_stm.executed) {
             last_stm.executed = true;
@@ -197,6 +201,8 @@ class HeadlessCoqManager {
 
     feedProcessingIn() { }
 
+    feedAddedAxiom() { }
+
     feedMessage(sid, [lvl], loc, msg) { 
         console.log('-'.repeat(60));
         console.log(`[${lvl}] ${this.pprint.pp2Text(msg).replace('\n', '\n         ')}`); 
@@ -211,31 +217,6 @@ class HeadlessCoqManager {
                     return dir;
         }
         return path.join('.', dirname);
-    }
-
-    /**
-     * Compiles a .v file, producing a .vo file and placing it in the worker's
-     * '/lib/'.
-     * Multiple jobs are processed sequentially.
-     * @param {array or object} entries a compilation job with fields 
-     *   {input, dirpath}, or an array of them.
-     */
-    batchCompile(entries) {
-        if (entries.length) {
-            return entries.reduce(
-                (promise, entry) => promise.then(() => coq.batchCompile(entry)),
-                Promise.resolve());
-        }
-        else {
-            var entry = entries;
-            console.log("Compiling: ", entry.input);
-            var coqc = this.spawn()
-            coqc.options.top_name = entry.dirpath.join('.');
-            coqc.options.compile = {input: entry.input,
-                                    output: `/lib/${entry.dirpath.join('/')}.vo`};
-            coqc.start();
-            return coqc.when_done.promise.then(() => coqc.terminate());
-        }
     }
 
     _isDirectory(path) {
@@ -299,6 +280,7 @@ if (module && module.id == '.') {
         .option('--inspect <f.symb.json>',                  'inspect global symbols and serialize to file')
         .option('-e <command>',                             'run a vernacular command')
         .option('--project <dir>',                          'build project at dir (must contain a _CoqProject file)')
+        .option('--continue',                               'continue a previous project compilation from where it was stopped')
         .on('option:require',     path => { requires.push(path); })
         .on('option:require-pkg', json => { require_pkgs.push(json); })
         .parse(process.argv);
@@ -338,10 +320,9 @@ if (module && module.id == '.') {
     }
 
     if (opts.project) {
-        let proj = CoqProject.fromFileText(
-            fs.readFileSync(path.join(opts.project, '_CoqProject'), 'utf-8'),
-            opts.project);
-        let build_plan = new CoqDep().processProject(proj).buildPlan(proj);
+        let proj = CoqProject.fromFile(path.join(opts.project, '_CoqProject')),
+            out_pkg = opts.O || 'a.coq-pkg',
+            build_plan = new CoqDep().processProject(proj).buildPlan(proj);
 
         for (let [logical_path, _] of proj.path) {
             let dir = `/lib/${logical_path.join('/')}`;
@@ -349,8 +330,16 @@ if (module && module.id == '.') {
             coq.project.add(dir, logical_path);
         }
         
-        coq.batchCompile(build_plan)
-        .catch(() => console.log("Aborted."));
+        let coqc = new CoqC(coq);
+
+        let starting_point = opts.continue ? coqc.continueFrom(out_pkg) 
+                                           : Promise.resolve();
+
+        starting_point.then(() => 
+            coqc.batchCompile(build_plan)
+            .catch(()   => console.log("Aborted."))
+            .finally(() => coqc.toZip(out_pkg)))
+        .catch((e)      => { console.error(e); console.log("Aborted.") });
     }
     else {
         coq.start()
