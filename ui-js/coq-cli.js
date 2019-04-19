@@ -1,7 +1,7 @@
 const fs = require('fs'),
       find = require('find'),
       path = require('path'),
-      jscoq = require('../coq-js/jscoq'),
+      jscoq = require('./jscoq'),
       jscoq_worker = require('../coq-js/jscoq_worker'),
       coq_manager = require('./coq-manager'),
       format_pprint = require('./format-pprint'),
