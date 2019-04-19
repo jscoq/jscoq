@@ -34,7 +34,8 @@ class CmCoqProvider {
               keyMap            : "emacs",
               extraKeys: {
                   'Tab': 'indentMore',
-                  'Shift-Tab': 'indentLess'
+                  'Shift-Tab': 'indentLess',
+                  'Ctrl-Space': 'autocomplete'
               }
             };
 
