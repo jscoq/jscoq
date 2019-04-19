@@ -112,7 +112,8 @@ COQ_REPOS=https://github.com/coq/coq.git
 $(COQSRC):
 	mkdir -p coq-external
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch
+	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch \
+	                   $(current_dir)/etc/patches/lazy-noinline.patch
 
 coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
