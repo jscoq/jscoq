@@ -17,13 +17,14 @@ open Jser_goals
 
 let jscoq_version = "0.9~beta2"
 
-type jscoq_options = {
-  implicit_libs: bool;
-  stm_debug: bool;
-}
-[@@deriving yojson]
+type jscoq_options = 
+  { top_name: string      [@default "JsCoq"]
+  ; implicit_libs: bool   [@default true]
+  ; stm_debug: bool       [@default false]
+  }
+  [@@deriving yojson]
 
-let opts = ref { implicit_libs = true; stm_debug = false; }
+let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; }
 
 
 type gvalue =
@@ -64,7 +65,8 @@ type jscoq_cmd =
   | GetOpt  of string list
 
   | ReassureLoadPath of (string list * string list) list
-  | Compile
+  | Load    of string
+  | Compile of string
   [@@deriving yojson]
 
 type jscoq_answer =
@@ -228,7 +230,7 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
       iload_path   = List.map (fun (path_el, phys) ->
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
                      ) lib_path;
-      top_name     = "JsCoq";
+      top_name     = set_opts.top_name;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
@@ -383,16 +385,22 @@ let jscoq_execute =
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
-  | Compile ->
-    post_file "JsCoq.vo" (Icoq.compile_vo ~doc:(fst !doc))
+  | Load filename ->
+    let vernac_state = Vernac.State.
+      { doc = fst !doc; sid = Jscoq_doc.tip !doc; proof = None; time = false } in
+    ignore(
+      Vernac.load_vernac ~echo:false ~check:false ~interactive:false
+                         ~state:vernac_state filename)
+    (* TODO update document tip instead of ignoring *)
+  | Compile filename ->
+    post_file filename (Icoq.compile_vo ~doc:(fst !doc))
 
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)
   Sys_js.unmount ~path:"/static";
   Sys_js.mount ~path:"/static/" (fun ~prefix:_ ~path -> Jslibmng.coq_vo_req path);
   (* '/lib' is the target for Put commands *)
-  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None);
-  Sys_js.create_file ~name:"/lib/.anchor" ~content:""
+  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None)
 
 let put_pseudo_file ~name ~buf =
   let str = Typed_array.String.of_arrayBuffer buf in

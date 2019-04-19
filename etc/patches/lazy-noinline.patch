@@ -1,0 +1,30 @@
+diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
+index ef6af16..6ef5a9f 100644
+--- a/plugins/micromega/coq_micromega.ml
++++ b/plugins/micromega/coq_micromega.ml
+@@ -26,6 +26,10 @@ open Constr
+ open Context
+ open Tactypes
+ 
++module Lazy = struct          (* disable inlining of Lazy.force due to bug in jsoo *)
++  let force c = Lazy.force c  (* https://github.com/ocsigen/js_of_ocaml/issues/772 *)
++end
++
+ (**
+   * Debug flag 
+   *)
+diff --git a/plugins/omega/coq_omega.ml b/plugins/omega/coq_omega.ml
+index 4802608..fa2c9e8 100644
+--- a/plugins/omega/coq_omega.ml
++++ b/plugins/omega/coq_omega.ml
+@@ -37,6 +37,10 @@ module NamedDecl = Context.Named.Declaration
+ module OmegaSolver = Omega.MakeOmegaSolver (Bigint)
+ open OmegaSolver
+ 
++module Lazy = struct          (* disable inlining of Lazy.force due to bug in jsoo *)
++  let force c = Lazy.force c  (* https://github.com/ocsigen/js_of_ocaml/issues/772 *)
++end
++
+ (* Added by JCF, 09/03/98 *)
+ 
+ let elim_id id = simplest_elim (mkVar id)

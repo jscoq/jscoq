@@ -56,6 +56,9 @@ let rec seq_append s1 s2 =  (* use batteries?? *)
   | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
 
+let feedback_id = ref None
+
+
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
@@ -84,13 +87,16 @@ let coq_init opts =
   (* Core Coq initialization *)
   Lib.init();
   Global.set_engagement Declarations.PredicativeSet;
+  Global.set_VM false;
+  Global.set_native_compiler false;
 
   (**************************************************************************)
   (* Feedback setup                                                         *)
   (**************************************************************************)
 
   (* Initialize logging. *)
-  ignore(Feedback.add_feeder opts.fb_handler);
+  Option.iter Feedback.del_feeder !feedback_id;
+  feedback_id := Some (Feedback.add_feeder opts.fb_handler);
 
   (**************************************************************************)
   (* Start the STM!!                                                        *)
@@ -98,7 +104,7 @@ let coq_init opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  let sertop_dp = Stm.TopLogical DirPath.(make [Id.of_string opts.top_name]) in
+  let sertop_dp = Stm.TopLogical (Libnames.dirpath_of_string opts.top_name) in
   let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp;
                require_libs = opts.require_libs;
                iload_path = opts.iload_path;
