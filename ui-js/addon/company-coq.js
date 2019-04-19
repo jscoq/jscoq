@@ -238,10 +238,10 @@ class AutoComplete {
     hint(cm, _options, family) {
         var cur = cm.getCursor(), 
             [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
-            match = /^\w/.exec(token.string) ? token.string : undefined;
+            match = token.string.trim();
     
         // Build completion list
-        var matching = match ? this._matches(match, family) : [];
+        var matching = this._matches(match, family);
 
         if (matching.length === 0) {
             cm.closeHint();
@@ -279,21 +279,23 @@ class AutoComplete {
      * characters.
      * @param {CodeMirror} cm editor instance
      * @param {ChangeEvent} evt document modification object
+     *   (if omitted, shows hints unconditionally)
      */
     senseContext(cm, evt) {
-        if (!cm.state.completionActive && this._isInsertAtCursor(cm, evt)) {
+        if (!evt || !cm.state.completionActive && this._isInsertAtCursor(cm, evt)) {
             var cur = cm.getCursor(), token = cm.getTokenAt(cur),
-                is_head = token.state.is_head,
+                is_head = token.state.is_head || token.state.begin_sentence,
                 kind = token.state.sentence_kind;
 
-            if ((is_head || kind === 'tactic' || kind === 'terminator') && 
-                /^[a-zA-Z_]./.exec(token.string)) {
+            if (!evt || ((is_head || kind === 'tactic' || kind === 'terminator') &&
+                         /^[a-zA-Z_]./.exec(token.string))) {
                 var hint = is_head ? this.tacticHint : this.lemmaHint;
-                cm.showHint({
-                    hint: (cm, options) => hint.call(this, cm, options), 
-                    completeSingle: false, 
-                    extraKeys: this.extraKeys
-                });
+                requestAnimationFrame(() =>
+                    cm.showHint({
+                        hint: (cm, options) => hint.call(this, cm, options),
+                        completeSingle: false,
+                        extraKeys: this.extraKeys
+                    }));
             }
         }
     }
@@ -443,6 +445,13 @@ class CompanyCoq {
         return this;
     }
 
+    static autocomplete(cm) {
+        if (cm.company_coq)
+            cm.company_coq.completion.senseContext(cm);
+        else
+            cm.showHint(); // fall back to default implementation
+    }
+
     static mkEmptyScope() {
         return { lemmas: [], tactics: [] };
     }
@@ -467,6 +476,8 @@ class CompanyCoq {
         CompanyCoq.kinds = kinds;
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         CodeMirror.CompanyCoq = CompanyCoq;
+
+        CodeMirror.commands.autocomplete = CompanyCoq.autocomplete; // override showHint
 
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])
