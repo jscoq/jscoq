@@ -72,7 +72,7 @@ icoq.cmo: icoq.cmi
 jslibmng.cmi: jslib.cmi
 jslibmng.cmo: icoq.cmi jslib.cmi jslibmng.cmi
 jscoq_doc.cmo: jscoq_doc.cmi
-serapi_goals.cmo: serapi_goals.cmi
+serapi_goals.cmo: serapi_goals.cmi jser_feedback.cmo
 jser_goals.cmo: serapi_goals.cmi
 
 # Main file
