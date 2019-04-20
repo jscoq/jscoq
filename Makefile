@@ -12,17 +12,17 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
-BUILD_CONTEXT = 4.07.1+32bit
+BUILD_CONTEXT = default
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# Directory where the coq sources and developments are.
+# Directory where the Coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
-COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
+COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)+32bit
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
 NJOBS=4
@@ -113,6 +113,7 @@ $(COQSRC):
 	mkdir -p coq-external
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
 	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch \
+		               $(current_dir)/etc/patches/coerce-32bit.patch \
 	                   $(current_dir)/etc/patches/lazy-noinline.patch
 
 coq-get: $(COQSRC)
