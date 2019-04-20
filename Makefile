@@ -161,6 +161,7 @@ coq-get:
 	( git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $(COQDIR) && \
 	  cd $(COQDIR) && \
           patch -p1 < $(current_dir)/etc/patches/avoid-vm.patch && \
+          patch -p1 < $(current_dir)/etc/patches/lazy-noinline.patch && \
           patch -p1 < $(current_dir)/etc/patches/trampoline.patch ) || true
 	cd $(COQDIR) && ./configure -local -native-compiler no -bytecode-compiler no -coqide no
 
