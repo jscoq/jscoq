@@ -119,7 +119,7 @@ dist-hott:
 clean:
 	$(MAKE) -C coq-js       clean
 	$(MAKE) -C coq-tools    clean
-	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs index.html
+	rm -f *.cmi *.cmo *.ml.d *.mli.d Makefile.libs
 	rm -rf coq-pkgs
 	rm -rf $(BUILDDIR) $(BUILDDIR_HOTT)
 
