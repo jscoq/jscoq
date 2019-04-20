@@ -2,6 +2,8 @@
 .PHONY: jscoq libs-pkg links links-clean
 .PHONY: dist dist-upload dist-release
 
+include ./config.inc
+
 # Coq Version
 COQ_VERSION:=v8.10
 JSCOQ_BRANCH:=
@@ -12,7 +14,13 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
+ifeq ($(WORD_SIZE),64)
 BUILD_CONTEXT = default
+DUNE_WORKSPACE = $(current_dir)/dune-workspace-64
+else
+BUILD_CONTEXT = 4.07.1+32bit
+VARIANT = +32bit
+endif
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -22,8 +30,10 @@ ADDONS_PATH := $(current_dir)/coq-external
 COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)$(VARIANT)
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
+
+DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
 NJOBS=4
 
@@ -46,10 +56,10 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 
 jscoq: force
-	ADDONS="$(ADDONS)" dune build @jscoq
+	ADDONS="$(ADDONS)" dune build @jscoq $(DUNE_FLAGS)
 
 libs-pkg: force
-	ADDONS="$(ADDONS)" dune build @libs-pkg
+	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
@@ -118,8 +128,8 @@ $(COQSRC):
 
 coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
-	dune build @vodeps
-	cd $(COQSRC) && dune exec ./tools/coq_dune.exe --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
+	dune build @vodeps $(DUNE_FLAGS)
+	cd $(COQSRC) && dune exec ./tools/coq_dune.exe $(DUNE_FLAGS) --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
 
 # Coq should be now be built by composition with the Dune setup
 coq-build:

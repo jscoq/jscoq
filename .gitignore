@@ -1,5 +1,9 @@
 # General ignores
 *~
+.*.swp
+
+# Config
+/config.inc
 
 # Externals
 /coq-external/

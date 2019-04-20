@@ -18,11 +18,16 @@
     js_stub/str.js
     js_stub/coq_vm.js
     js_stub/marshal.js
-    js_stub/marshal32.js)
+    marshal-arch.js)
   (flags :standard (:include .extraflags) --dynlink +nat.js +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
  (libraries num jscoqlib))
+
+(rule
+ (targets marshal-arch.js)
+ (action
+  (copy js_stub/marshal%{ocaml-config:word_size}.js %{targets})))
 
 ; Link jscoq_worker.js => jscoq_worker.bc.js
 ; This is done to allow serving from either build or source tree the same way.

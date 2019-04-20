@@ -20,6 +20,11 @@ do_setup() {
 
 }
 
-# opam switch -j $NJOBS -y create $OCAML_VER+32bit
-# eval `opam env`
+if [ -e config.inc ] ; then . config.inc ; fi
+
+if [ "$WORD_SIZE" != 64 ] ; then
+  opam switch -j $NJOBS -y create $OCAML_VER+32bit
+  eval `opam env`
+fi
+
 do_setup

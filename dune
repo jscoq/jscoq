@@ -4,6 +4,7 @@
 
 (rule
  (targets coq-pkgs)
+ (mode promote)
  (deps
    (package coq)
    (source_tree coq-addons)
