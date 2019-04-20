@@ -1,12 +1,10 @@
+//Provides: unix_ll
 function unix_ll(s, args) { 
-  if (unix_ll.log) console.warn(s, args); 
+  if (unix_ll.log) joo_global_object.console.warn(s, args); 
   if (unix_ll.trap) throw new Error("unix trap: '"+ s + "' not implemented");
 }
 unix_ll.log = true;       // whether to log calls
 unix_ll.trap = false;     // whether to halt on calls
-
-//Provides: unix_ll
-var unix_ll;
 
 //Provides: caml_raise_unix_error
 //Requires: caml_named_value, caml_raise_with_arg, caml_new_string
