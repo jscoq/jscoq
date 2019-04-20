@@ -1,13 +1,11 @@
+// Provides: vm_ll
 function vm_ll(s, args) { 
-  if (vm_ll.log) console.warn(s, args); 
+  if (vm_ll.log) joo_global_object.console.warn(s, args); 
   if (vm_ll.trap) throw new Error("vm trap: '"+ s + "' not implemented");
 }
 
 vm_ll.log = false;     // whether to log calls
 vm_ll.trap = false;    // whether to halt on calls
-
-// Provides: vm_ll
-var vm_ll;
 
 // Provides: init_coq_vm
 // Requires: vm_ll

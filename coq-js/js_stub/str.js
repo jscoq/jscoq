@@ -1,8 +1,6 @@
-function str_ll(s, args) { if (str_ll.log) console.warn(s, args); }
-str_ll.log = true;
-
 //Provides: str_ll
-var str_ll;
+function str_ll(s, args) { if (str_ll.log) joo_global_object.console.warn(s, args); }
+str_ll.log = false;
 
 //Provides: re_string_match
 //Requires: str_ll
