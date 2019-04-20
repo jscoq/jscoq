@@ -1,13 +1,14 @@
 .PHONY: clean all bytecode_bin javascript_bin
 
-include ../config.mk
-
 ########################################################################
 # jsCoq specific options                                               #
 ########################################################################
 
 # Enable/disable debug compilation
 JSCOQ_DEBUG=no
+
+# This has to be included _after_ the debug variable.
+include ../config.mk
 
 # Empty default auction
 all:
