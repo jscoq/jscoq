@@ -41,6 +41,7 @@ Pending worker tasks:
   - [x] Auto-completion of tactics and lemmas. (@corwin-of-amber)
   - [x] PoC running on Node.js. (@corwin-of-amber)
   - [x] Improved goal display (@ejgallego)
+  - [x] Port to JSOO 3.4.0. (@ejgallego @corwin-of-amber)
 
   Released on: 
 
