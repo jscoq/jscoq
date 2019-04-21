@@ -106,7 +106,7 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-build
 
-COQ_BRANCH=master
+COQ_BRANCH=v8.10
 COQ_REPOS=https://github.com/coq/coq.git
 
 $(COQSRC):

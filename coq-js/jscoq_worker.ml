@@ -15,9 +15,9 @@ open Jser_feedback.Feedback
 open Jser_names
 open Jser_goals
 
-let jscoq_version = "0.9.3"
+let jscoq_version = "0.10.0~beta1"
 
-type jscoq_options = 
+type jscoq_options =
   { top_name: string      [@default "JsCoq"]
   ; implicit_libs: bool   [@default true]
   ; stm_debug: bool       [@default false]
@@ -25,7 +25,6 @@ type jscoq_options =
   [@@deriving yojson]
 
 let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; }
-
 
 type gvalue =
   [%import: Goptions.option_value]
@@ -272,7 +271,7 @@ let string_contains s1 s2 =  (* from Rosetta Code *)
       (i >= 0) && ((String.sub s1 i len2 = s2) || aux (pred i))
     in
     aux (len1 - len2)
-  
+
 let rec seq_append s1 s2 =  (* use batteries?? *)
   match s1 () with
   | Seq.Nil -> s2

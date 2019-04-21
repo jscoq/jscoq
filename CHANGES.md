@@ -1,11 +1,19 @@
 # JsCoq 0.10 ((())((()()(()))((()()))))
 ---------------------------------------
 
+  - Use Dune as build system (@ejgallego)
+  - Port to Coq 8.10 (@ejgallego)
+  - Miscellaneous improvements on the build system (@corwin-of-amber)
+  - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
+  - Improvements on printing of feedback messages (@corwin-of-amber)
+  - Preliminary support for .vo compilation (@corwin-of-amber)
+  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
+  - Workaround JSOO problem with `Lazy` (@corwin-of-amber)
+
   - [ ] Automatic parsing mode.
   - [ ] Execution gutters.
-  - [ ] Move to sertop.
+  - [ ] Use sertop / serlib
   - [ ] Support for UI layouts.
-  - [x] Use Dune as build system (@ejgallego)
 
 Pending worker tasks:
 
