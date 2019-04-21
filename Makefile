@@ -2,7 +2,7 @@
 .PHONY: jscoq libs-pkg links links-clean
 .PHONY: dist dist-upload dist-release
 
-include ./config.inc
+-include ./config.inc
 
 # Coq Version
 COQ_VERSION:=v8.10
@@ -13,6 +13,8 @@ JSCOQ_VERSION:=$(COQ_VERSION)
 ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
+
+WORD_SIZE ?= 32
 
 ifeq ($(WORD_SIZE),64)
 BUILD_CONTEXT = default
@@ -27,7 +29,7 @@ current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the Coq sources and developments are.
 ADDONS_PATH := $(current_dir)/coq-external
-COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)/
+COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)$(VARIANT)/
 
 # Directories where Dune builds and installs Coq
 COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)$(VARIANT)
@@ -119,12 +121,20 @@ all-dist: dist dist-release dist-upload
 COQ_BRANCH=v8.10
 COQ_REPOS=https://github.com/coq/coq.git
 
+COQ_PATCHES = trampoline lazy-noinline
+
+ifeq ($(WORD_SIZE),64)
+	COQ_PATCHES += coerce-32bit
+endif
+
+ifeq (${shell uname}/$(WORD_SIZE),Darwin/32)
+	COQ_PATCHES += byte-only
+endif
+
 $(COQSRC):
 	mkdir -p coq-external
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch \
-		               $(current_dir)/etc/patches/coerce-32bit.patch \
-	                   $(current_dir)/etc/patches/lazy-noinline.patch
+	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
