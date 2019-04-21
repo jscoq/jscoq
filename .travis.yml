@@ -24,7 +24,7 @@ env:
   - OPAMYES="true"
   - OPAMJOBS="2"
   - COMPILER="4.07.1+32bit"
-  - BASE_OPAM="num camlp5 dune elpi"
+  - BASE_OPAM="num camlp5 dune elpi.1.1.1"
 
 before_install: |
   sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/bin/opam

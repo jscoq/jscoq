@@ -15,7 +15,7 @@ open Jser_feedback.Feedback
 open Jser_names
 open Jser_goals
 
-let jscoq_version = "0.9~beta2"
+let jscoq_version = "0.9.3"
 
 type jscoq_options = 
   { top_name: string      [@default "JsCoq"]
