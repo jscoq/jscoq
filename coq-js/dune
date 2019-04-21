@@ -10,7 +10,7 @@
  (name jscoq_worker)
  (modules jscoq_worker)
  (modes byte)
- (preprocess (staged_pps js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
+ (preprocess (staged_pps lwt_ppx js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
   (javascript_files
     js_stub/mutex.js
