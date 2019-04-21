@@ -39,13 +39,13 @@
    index.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.bc.js))
+   coq-js/jscoq_worker.js))
 
 ; Just the worker
 (alias
   (name jscoq_worker)
   (deps
-    coq-js/jscoq_worker.bc.js))
+    coq-js/jscoq_worker.js))
 
 (alias
  (name libs-pkg)
