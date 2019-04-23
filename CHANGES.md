@@ -1,19 +1,19 @@
 # JsCoq 0.10 ((())((()()(()))((()()))))
 ---------------------------------------
 
-  - Use Dune as build system (@ejgallego)
-  - Port to Coq 8.10 (@ejgallego)
-  - Miscellaneous improvements on the build system (@corwin-of-amber)
-  - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
-  - Improvements on printing of feedback messages (@corwin-of-amber)
-  - Preliminary support for .vo compilation (@corwin-of-amber)
-  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
-  - Workaround JSOO problem with `Lazy` (@corwin-of-amber)
+ - Use Dune as build system (@ejgallego)
+ - Port to Coq 8.10 (@ejgallego)
+ - Miscellaneous improvements on the build system (@corwin-of-amber)
+ - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
+ - Improvements on printing of feedback messages (@corwin-of-amber)
+ - Preliminary support for .vo compilation (@corwin-of-amber)
+ - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
+ - Workaround JSOO problem with `Lazy` (@corwin-of-amber)
 
-  - [ ] Automatic parsing mode.
-  - [ ] Execution gutters.
-  - [ ] Use sertop / serlib
-  - [ ] Support for UI layouts.
+ - [ ] Automatic parsing mode.
+ - [ ] Execution gutters.
+ - [ ] Use sertop / serlib
+ - [ ] Support for UI layouts.
 
 Pending worker tasks:
 
@@ -51,7 +51,11 @@ Pending worker tasks:
   - [x] Port to JSOO 3.4.0. (@ejgallego @corwin-of-amber)
   - [x] Workaround https://github.com/ocsigen/js_of_ocaml/issues/772 (@corwin-of-amber)
 
+<<<<<<< HEAD
   Released on: 2019/04/22
+=======
+  Released on: 2019/04/23
+>>>>>>> v8.9+worker
 
 # JsCoq 0.8 "The most inefficient programming language ever designed"
 -------------------------------------

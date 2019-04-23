@@ -7,7 +7,7 @@ jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq v8.9+0.8c supporting Coq 8.9, try it:
+jsCoq v8.9+0.9.3 supporting Coq 8.9, try it:
 
 <https://x80.org/rhino-coq/>
 
@@ -61,18 +61,13 @@ We recommend Chrome just for jsCoq, _not for other uses_.
 
 ## Development Version
 
-Development for jsCoq 0.9 takes place in the `js-worker` branch. This
-branch provides significant advantages due to Coq being ran in a
-Worker thread. While the branch is not yet ready for general use, it
-is the mandatory for developers. A preview build of jsCoq 0.9 is
-usually available at:
+Development for jsCoq 0.9 takes place in the `v8.9+worker`
+branch. This branch provides significant advantages due to Coq being
+ran in a Worker thread. While the branch is not yet ready for general
+use, it is the mandatory for developers. A preview build of jsCoq 0.9
+is usually available at:
 
-<https://x80.org/rhino-coq/v8.9-js-worker/>
-
-Be warned that the version uploaded to the link is quite unstable. Big
-structural changes are happening in 0.9, please stop by gitter or by
-the mailing list if you would to contribute. See below for build
-instructions.
+<https://x80.org/rhino-coq/v8.9/>
 
 jsCoq is easy to develop using the Chrome developer tools; the jsCoq
 object has a `debug` flag, and it is possible to compile Coq with
@@ -178,7 +173,11 @@ an online version is at: https://x80.org/rhino-hott/
 The main page includes a proof of the infinitude of primes by
 G. Gonthier. We provide some more examples as a showcase of the tool:
 
-- dft.v: https://x80.org/rhino-coq/v8.6/examples/dft.html
+- The Logical Foundations suite:
+  + https://x80.org/rhino-coq/v8.9/examples/lf/
+  + https://x80.org/rhino-coq/v8.9/examples/plf/
+
+- dft.v: https://x80.org/rhino-coq/v8.9/examples/dft.html
 
   A small development of the theory of the Fourier Transform following
   Julius Orion Smith III's "The Mathematics of the Discrete Fourier
@@ -186,7 +185,9 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 - The IRIS program logic, by Robbert Krebbers et al.
 
-  https://x80.org/rhino-coq/v8.7/examples/iris.html
+  https://x80.org/rhino-coq/v8.9/examples/iris.html
+
+### Outdated examples [but still working]
 
 - Mtac: The Mtac tutorial by Beta Zilliani:
 
@@ -288,6 +289,7 @@ Incomplete list of places where jsCoq has been used:
 * Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
   https://specfun.inria.fr/amahboub/Jncf18/cours2.html
 * [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
+* Coq Winter School 2018-2019 (SSReflect & MathComp)  https://team.inria.fr/marelle/en/coq-winter-school-2018-2019-ssreflect-mathcomp/
 
 ### jsCoq in the press
 
