@@ -1,22 +1,3 @@
-# JsCoq 1.0 ((())((()()(()))((()()))))
---------------------------------------
-
-  - [ ] Automatic parsing mode.
-  - [ ] Execution gutters.
-  - [ ] Move to sertop.
-  - [ ] Support for UI layouts.
-  - [_] Use Dune as build system (@ejgallego)
-
-Pending worker tasks:
-
-+ A race: we cancel, then add before the cancelled message arrives.
-  Review and factorize code here.
-+ don't reexec states, this brings back the parser to an improper state.
-+ quick prev/next creates problems in long commands.
-+ we are reusing span_ids and this is not ok for the STM.
-
-  Released on: 
-
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
 
@@ -42,8 +23,9 @@ Pending worker tasks:
   - [x] PoC running on Node.js. (@corwin-of-amber)
   - [x] Improved goal display (@ejgallego)
   - [x] Port to JSOO 3.4.0. (@ejgallego @corwin-of-amber)
+  - [x] Workaround https://github.com/ocsigen/js_of_ocaml/issues/772 (@corwin-of-amber)
 
-  Released on: 
+  Released on: 2019/04/23
 
 # JsCoq 0.8 "The most inefficient programming language ever designed"
 -------------------------------------
@@ -52,7 +34,7 @@ Pending worker tasks:
   - Fast package loading using TypedArrays. (thanks @gasche @hhugo).
   - Many small fixes.
 
-  Released on: 13/06/2016
+  Released on: 2016/06/13
 
 # JsCoq 0.7 "Hott"
 --------------------------------
