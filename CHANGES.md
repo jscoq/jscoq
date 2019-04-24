@@ -9,6 +9,7 @@
  - Preliminary support for .vo compilation (@corwin-of-amber)
  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
  - Workaround JSOO problem with `Lazy` (@corwin-of-amber)
+ - [bugfix] Contention in autocomplete between company-coq and Tex-input (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
