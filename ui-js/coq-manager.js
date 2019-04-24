@@ -849,11 +849,13 @@ class CoqManager {
             case 40: // Down arrow
                 this.goNext(true);
                 e.preventDefault();
+                e.stopPropagation();
                 break;
             case 80: // P
             case 38: // Up arrow
                 this.goPrev(true);
                 e.preventDefault();
+                e.stopPropagation();
                 break;
         }
     }
