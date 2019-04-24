@@ -39,6 +39,8 @@ install:
 - opam update
 - opam config var root
 - ./etc/toolchain-setup.sh
+- eval $(opam env)
+- opam switch
 - opam list
 - git submodule update --remote
 
