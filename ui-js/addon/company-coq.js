@@ -222,10 +222,6 @@ class AutoComplete {
         this.kinds = kinds;
 
         this.max_matches = 100;  // threshold to prevent UI slowdown
-
-        this.extraKeys = {
-            Alt: (cm) => { this.hintZoom(cm); }
-        };
     }
 
     attach(cm) {
@@ -293,11 +289,25 @@ class AutoComplete {
                 requestAnimationFrame(() =>
                     cm.showHint({
                         hint: (cm, options) => hint.call(this, cm, options),
-                        completeSingle: false,
-                        extraKeys: this.extraKeys
+                        completeSingle: false
                     }));
             }
         }
+    }
+
+    /**
+     * Called by 'showHint' on 'autocomplete' command.
+     * (There is some overlap with senseContext functionality, but seems
+     * unavoidable.)
+     * @param {CodeMirror} cm editor instance
+     * @param {object} options showHint options object
+     */
+    getCompletions(cm, options) {
+        var cur = cm.getCursor(), token = cm.getTokenAt(cur),
+            is_head = token.state.is_head || token.state.begin_sentence;
+
+        var hint = is_head ? this.tacticHint : this.lemmaHint;
+        return hint.call(this, cm, options);
     }
 
     _isInsertAtCursor(cm, evt) {
@@ -445,11 +455,9 @@ class CompanyCoq {
         return this;
     }
 
-    static autocomplete(cm) {
+    static hint(cm, options) {
         if (cm.company_coq)
-            cm.company_coq.completion.senseContext(cm);
-        else
-            cm.showHint(); // fall back to default implementation
+            return cm.company_coq.completion.getCompletions(cm, options);
     }
 
     static mkEmptyScope() {
@@ -477,12 +485,14 @@ class CompanyCoq {
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         CodeMirror.CompanyCoq = CompanyCoq;
 
-        CodeMirror.commands.autocomplete = CompanyCoq.autocomplete; // override showHint
-
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])
                 cm.company_coq = new CompanyCoq().attach(cm);
         });
+
+        CodeMirror.registerGlobalHelper("hint", "company-coq",
+            (mode, cm) => mode.name === 'coq' && !!cm.company_coq, 
+            CompanyCoq.hint);
     }
 }
 
