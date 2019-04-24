@@ -13,27 +13,12 @@ jsCoq v8.10+0.10.0~beta supporting Coq 8.10, try it:
 
 JsCoq is written in ES2015, thus any recent standard-compliant browser
 should work. jsCoq also runs in my 8-year old Galaxy Nexus. Browser
-performance is quite variable these days, see the [Browser
-Optimization](#Browser-Tips-and-Tricks) section if you have problems.
+performance is quite variable these days, see the [Troubleshooting](#Troubleshooting) section if you have problems.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
 We want to _strongly thank_ the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
-
-### Browser Tips and Tricks
-
-Browser performance is very variable these days, it is the case that
-some jsCoq workloads work better in Firefox and some others work
-better in Chrome. Browser performance seems to get better at every
-iteration so we are hopeful about the future.
-
-**Are you getting a `StackOverflow` exception?** Unfortunately these
-are a hard-to-avoid problem. In the past using the
-`--js-flags="--harmony-tailcalls"` and
-[chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
-flags in Google Chrome helped; Firefox is sometime better, sometimes
-worse. YMMV.
 
 ## Development Version
 
@@ -69,8 +54,7 @@ proceedings. The recommended citation is:
   year      = {2017},
   title     = {{jsCoq}: Towards Hybrid Theorem Proving Interfaces},
   editor    = {Autexier, Serge and Quaresma, Pedro},
-  booktitle = {{\rmfamily Proceedings of the 12th Workshop on}
-               User Interfaces for Theorem Provers,
+  booktitle = {{\rmfamily Proceedings of the 12th Workshop on} User Interfaces for Theorem Provers,
                {\rmfamily Coimbra, Portugal, 2nd July 2016}},
   series    = {Electronic Proceedings in Theoretical Computer Science},
   volume    = {239},
@@ -88,16 +72,18 @@ Some further ideas behind jsCoq are also discussed in
 
 A small pastebin-like server based on haste is available at
 https://x80.org/collacoq
-
-Note that this is totally experimental, and data loss is guaranteed.
+Note that this service is totally experimental, data loss is guaranteed.
 
 See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
-
 Help with Collacoq is very welcome!
 
-## Troubleshooting ##
+## Troubleshooting
+
+**Are you getting a `StackOverflow` exception?** Unfortunately these
+are hard to fix; you may be stuck with them for a while.
 
 * Clearing the browser cache usually solves lots of issues.
+* Change browser, if using Firefox try Chrome, if using Chrome try Firerox.
 * Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
 * Use the `--js-flags="--harmony-tailcalls"` command line flag.
 * Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
@@ -119,7 +105,7 @@ where `$path` is the path the jsCoq distribution, `$list_of_ids` is
 the list of textareas that will form the Coq document. See below for
 available `$options`.
 
-The jsCoq (landing webpage)[index.html] is a good actually running example.
+The jsCoq [landing webpage](index.html) is a good actually running example.
 
 ### Options
 
@@ -131,11 +117,6 @@ the constructor:
 * `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
 * `prelude: bool`: Whether to load Coq's prelude or not.
 * `implicit_libs`: Whether to make the initial libraries path implicit (that is to say, no `From Coq` etc... required)
-
-## Homotopy Type Theory
-
-jsCoq supports the HoTT library which requires a special build of Coq,
-an online version is at: https://x80.org/rhino-hott/
 
 ## Examples
 
@@ -181,17 +162,12 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 ## CoqDoc
 
-A coqdoc replacement that is better suited to produce jsCoq output
+A `coqdoc` replacement that is better suited to produce jsCoq output
 while (mostly) remaining compatible is being developed at
 https://github.com/ejgallego/udoc
 
-It works kind of OK for converting coqdoc files, but it produces some
-artifacts and omits some declarations.
-
-There also is a superseded experimental version of coqdoc outputting
-jsCoq at https://github.com/ejgallego/coq/tree/coqdoc
-
-Just build coqdoc normally and use the option `--backend=jscoq`.
+It works OK for converting `coqdoc` files, but it may produce some
+artifacts and have bugs.
 
 ## Mailing List ##
 
@@ -265,22 +241,19 @@ Incomplete list of places where jsCoq has been used:
 - http://www.mines-paristech.fr/Actualites/jsCoq-ou-Coq-dans-un-navigateur/2118
 - https://news.ycombinator.com/item?id=9836900
 
-## How to Install/Build ##
+## How to Install/Build
 
 You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
-instructions to build JsCoq yourself, it is reasonably easy.
-
-Short instructions:
+instructions to build JsCoq yourself, it is reasonably easy:
 ```shell
-$ ./toolchain-setup.sh
-$ make coq
-$ ./build.sh
 $ git submodule update --remote
-$ npm install
+$ ./etc/toolchain-setup.sh
+$ make coq
+$ make jscoq
 ```
 
-For more detailed description and prerequisites, see docs/Build.md.
+For more detailed description and prerequisites, see [docs/Build.md](./docs/Build.md).
 
 ### Addon Packages:
 
@@ -290,8 +263,7 @@ For more detailed description and prerequisites, see docs/Build.md.
   use one of the existing files as a model.
 
   Also, you need to define a jsCoq package by editing the
-  `coq-tools/dftlibs.ml` file. Once that is done, calling `build.sh`
-  and `make coq` should build your package.
+  `coq-jslib//dftlibs.ml` file. Once that is done, calling `make jscoq` agian.
 
 ## Serialization
 
