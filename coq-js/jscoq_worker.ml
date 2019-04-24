@@ -14,7 +14,7 @@ open Jser_feedback.Feedback
 open Jser_names
 open Jser_goals
 
-let jscoq_version = "0.9.3"
+let jscoq_version = "0.9.4~pre"
 
 type jscoq_options = {
   implicit_libs: bool;
