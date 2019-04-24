@@ -1,40 +1,25 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.9%2Bworker)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.10)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq v8.9+0.9.3 supporting Coq 8.9, try it:
+jsCoq v8.10+0.10.0~beta supporting Coq 8.10, try it:
 
-<https://x80.org/rhino-coq/>
+<https://x80.org/rhino-coq/v8.10>
 
-JsCoq is written in ES2015, thus any standard-compliant browser should
-work. Chrome (>= 48) and Firefox (>= 45) are reported to work OK,
-jsCoq also runs in my 5-year old Galaxy Nexus.  Browser performance
-is greatly variable these days, see the [Browser
-Optimization](#Browser-Tips-and-Tricks) section if you have browser
-problems.
+JsCoq is written in ES2015, thus any recent standard-compliant browser
+should work. jsCoq also runs in my 8-year old Galaxy Nexus. Browser
+performance is quite variable these days, see the [Browser
+Optimization](#Browser-Tips-and-Tricks) section if you have problems.
 
 Coq is compiled to javascript using the `js_of_ocaml` compiler. No
 servers or external programs are needed.
 We want to _strongly thank_ the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
-
-**Note:** By default, the Coq standard libraries are qualified in jsCoq, thus
-you need to prefix your imports:
-
-```coq
-Require Import Lists.
-(* should become *)
-From Coq Require Import Lists.
-```
-
-You should be able to tweak this behavior using an option, however,
-due to the large number of packages bundled we recommend you write
-qualified Coq imports.
 
 ### Browser Tips and Tricks
 
@@ -43,31 +28,19 @@ some jsCoq workloads work better in Firefox and some others work
 better in Chrome. Browser performance seems to get better at every
 iteration so we are hopeful about the future.
 
-**Are you getting a `StackOverflow` exception?** We recommend
-using the `--js-flags="--harmony-tailcalls"` command line flag in
-Google Chrome; this setup greatly alleviates the problem. Firefox may
-work better in this regard. Fiferox also seems to do better when
-loading a lot of libraries is involved.
-
-Older Google Chrome versions that don't use the Ignition engine
-usually require the
+**Are you getting a `StackOverflow` exception?** Unfortunately these
+are a hard-to-avoid problem. In the past using the
+`--js-flags="--harmony-tailcalls"` and
 [chrome://flags/#enable-javascript-harmony](chrome://flags/#enable-javascript-harmony)
-flag enabled for heavy workloads.
-
-**Warning for Chrome users:** be aware of privacy/DRM issues in Chrome
-[bug
-page](https://bugs.chromium.org/p/chromium/issues/detail?id=686430).
-We recommend Chrome just for jsCoq, _not for other uses_.
+flags in Google Chrome helped; Firefox is sometime better, sometimes
+worse. YMMV.
 
 ## Development Version
 
-Development for jsCoq 0.9 takes place in the `v8.9+worker`
-branch. This branch provides significant advantages due to Coq being
-ran in a Worker thread. While the branch is not yet ready for general
-use, it is the mandatory for developers. A preview build of jsCoq 0.9
-is usually available at:
+Development for jsCoq 0.10 takes place in the `v8.10` branch. A
+preview build of jsCoq 0.10 is usually available at:
 
-<https://x80.org/rhino-coq/v8.9/>
+<https://x80.org/rhino-coq/v8.10/>
 
 jsCoq is easy to develop using the Chrome developer tools; the jsCoq
 object has a `debug` flag, and it is possible to compile Coq with
@@ -75,21 +48,17 @@ debug information by setting the makefile variable `JSCOQ_DEBUG=yes`.
 
 Previous Coq versions can be accessed at:
 
-- <https://x80.org/rhino-coq/v8.5/>
-- <https://x80.org/rhino-coq/v8.6/>
-- <https://x80.org/rhino-coq/v8.7/>
-- <https://x80.org/rhino-coq/v8.8/>
+- <https://x80.org/rhino-coq/v8.10/>
 - <https://x80.org/rhino-coq/v8.9/>
-
-In the future, we may provide builds corresponding to particular git
-hashes. See below for more jsCoq versions, including one adapted to
-HoTT.
+- <https://x80.org/rhino-coq/v8.8/>
+- <https://x80.org/rhino-coq/v8.7/>
+- <https://x80.org/rhino-coq/v8.6/>
+- <https://x80.org/rhino-coq/v8.5/>
 
 ## Publications
 
-A paper describing the ideas behind jsCoq 0.9 has been published in
-the proceeding of the
-[UITP 2016 workshop](http://www.informatik.uni-bremen.de/uitp/current/). The
+A paper describing the ideas behind jsCoq has been published in the
+proceeding of the [UITP 2016 workshop](http://www.informatik.uni-bremen.de/uitp/current/). The
 paper is available from the open access
 [EPTCS](http://eptcs.web.cse.unsw.edu.au/paper.cgi?UITP2016.2)
 proceedings. The recommended citation is:
