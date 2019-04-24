@@ -4,15 +4,19 @@ OCAML_VER=4.07.1
 NJOBS=4
 VERB= # -vv
 
-do_setup() {
+WORD_SIZE=32
 
-  # jsoo_repo=https://github.com/ocsigen/js_of_ocaml.git
+WRITE_CONFIG=no
 
-  # Pinning of js_of_ocaml
-  # for pkg in js_of_ocaml{-ppx,-lwt,-compiler,}
-  # do
-  #   opam pin add -y ${VERB} ${pkg} ${jsoo_repo}
-  # done
+for i in "$@"; do
+    case $i in
+        --32) WORD_SIZE=32; WRITE_CONFIG=yes ;;
+        --64) WORD_SIZE=64; WRITE_CONFIG=yes ;;
+        *) echo unknown option "'$i'". ; exit ;;
+    esac
+done
+
+install_deps() {
 
   opam pin add -y -n --kind=path jscoq .
   opam install -y --deps-only $VERB -j $NJOBS jscoq
@@ -20,11 +24,16 @@ do_setup() {
 
 }
 
-if [ -e config.inc ] ; then . config.inc ; fi
+if [ -e config.inc ] ; then . config.inc
+else WRITE_CONFIG=yes ; fi
 
-if [ "$WORD_SIZE" != 64 ] ; then
-  opam switch -j $NJOBS -y create $OCAML_VER+32bit
-  eval `opam env`
-fi
+if [ $WRITE_CONFIG == yes ] ; then echo "WORD_SIZE=$WORD_SIZE" > config.inc ; fi
 
-do_setup
+case $WORD_SIZE in
+    32) opam switch -j $NJOBS create jscoq+32bit ocaml-variants.$OCAML_VER+32bit ;;
+    64) opam switch -j $NJOBS create jscoq+64bit ocaml-base-compiler.$OCAML_VER ;;
+esac
+
+eval `opam env`
+
+install_deps

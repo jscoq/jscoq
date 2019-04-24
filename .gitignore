@@ -6,7 +6,7 @@
 /config.inc
 
 # Externals
-/coq-external/
+/_vendor*
 
 # Dune stuff
 _build

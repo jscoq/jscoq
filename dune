@@ -57,4 +57,4 @@
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
     (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR=}/.vfiles.d"))))
 
-; (dirs (:standard \ coq-external))
+(dirs (:standard _vendor+*))

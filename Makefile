@@ -15,24 +15,27 @@ JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
 WORD_SIZE ?= 32
+OS := ${shell uname}
+ARCH := $(OS)/$(WORD_SIZE)
 
 ifeq ($(WORD_SIZE),64)
-BUILD_CONTEXT = default
 DUNE_WORKSPACE = $(current_dir)/dune-workspace-64
+VARIANT = +64bit
 else
-BUILD_CONTEXT = 4.07.1+32bit
 VARIANT = +32bit
 endif
+
+BUILD_CONTEXT = jscoq$(VARIANT)
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the Coq sources and developments are.
-ADDONS_PATH := $(current_dir)/coq-external
-COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)$(VARIANT)/
+ADDONS_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
+COQSRC := $(ADDONS_PATH)/coq/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)$(VARIANT)
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/_vendor+$(COQ_VERSION)$(VARIANT)/coq
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
 DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
@@ -121,18 +124,12 @@ all-dist: dist dist-release dist-upload
 COQ_BRANCH=v8.10
 COQ_REPOS=https://github.com/coq/coq.git
 
-COQ_PATCHES = trampoline lazy-noinline
+COQ_PATCHES = trampoline lazy-noinline $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
-ifeq ($(WORD_SIZE),64)
-	COQ_PATCHES += coerce-32bit
-endif
-
-ifeq (${shell uname}/$(WORD_SIZE),Darwin/32)
-	COQ_PATCHES += byte-only
-endif
+COQ_PATCHES|64 = coerce-32bit
+COQ_PATCHES|Darwin/32 = byte-only
 
 $(COQSRC):
-	mkdir -p coq-external
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
