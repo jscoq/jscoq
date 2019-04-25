@@ -137,6 +137,11 @@
       'Admitted'
     ];
 
+    const lex_operators = 
+      /=>|:=|<:|<<:|:>|->|<->?|\\\/|\/\\|>=|<=|<>|\+\+|::|\|\||&&|\.\./;
+      
+    const lex_brackets = /\.\(|\{\||\|\}|`\{|`\(/;
+
     // Map assigning each keyword a category.
     var words = {};
 
@@ -196,7 +201,11 @@
       if(stream.eatSpace())
         return null;
 
-      if (stream.match(/[-=<]>|<-|[<>]=|\\\/|\/\\/)) return 'operator';
+      if (stream.match(lex_operators)) return 'operator';
+
+      //if (stream.match(lex_brackets))  return 'bracket';
+      // ^ skipped, for the time being, because matchbracket does not support
+      //   multi-character brackets.
 
       var ch = stream.next();
 
@@ -220,15 +229,8 @@
       }
 
       if(ch === '.') {
-        // Parse .. specially.
-        if(stream.peek() !== '.') {
-          state.tokenize = tokenStatementEnd;
-          return state.tokenize(stream, state);
-        } else {
-          stream.next();
-          return 'operator';
-        }
-
+        state.tokenize = tokenStatementEnd;
+        return state.tokenize(stream, state);
       }
 
       if (ch === '"') {
