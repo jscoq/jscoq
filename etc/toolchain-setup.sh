@@ -19,10 +19,12 @@ done
 create_switch() {
 
   case $WORD_SIZE in
-    32) opam switch -j $NJOBS create jscoq+32bit ocaml-variants.$OCAML_VER+32bit ;;
-    64) opam switch -j $NJOBS create jscoq+64bit ocaml-base-compiler.$OCAML_VER ;;
+    32) switch_name=jscoq+32bit; compiler=ocaml-variants.$OCAML_VER+32bit ;;
+    64) switch_name=jscoq+64bit; compiler=ocaml-base-compiler.$OCAML_VER ;;
   esac
 
+  opam switch -j $NJOBS create $switch_name $compiler
+  opam switch $switch_name || exit
   eval `opam env`
 
 }
