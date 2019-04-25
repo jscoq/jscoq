@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "0.9.4-pre",
+  "version": "0.9.4",
   "description": "Run the Coq Proof Assistant in your browser!",
   "main": "index.html",
   "dependencies": {

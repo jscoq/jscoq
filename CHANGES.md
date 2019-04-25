@@ -24,6 +24,7 @@
   - [x] Improved goal display (@ejgallego)
   - [x] Port to JSOO 3.4.0. (@ejgallego @corwin-of-amber)
   - [x] Workaround https://github.com/ocsigen/js_of_ocaml/issues/772 (@corwin-of-amber)
+  - [x] Performance and usability improvements to company-coq mode (@corwin-of-amber)
 
   Released on: 2019/04/23
 
