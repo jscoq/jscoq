@@ -51,12 +51,9 @@ Pending worker tasks:
   - [x] Improved goal display (@ejgallego)
   - [x] Port to JSOO 3.4.0. (@ejgallego @corwin-of-amber)
   - [x] Workaround https://github.com/ocsigen/js_of_ocaml/issues/772 (@corwin-of-amber)
+  - [x] Performance and usability improvements to company-coq mode (@corwin-of-amber)
 
-<<<<<<< HEAD
-  Released on: 2019/04/22
-=======
   Released on: 2019/04/23
->>>>>>> v8.9+worker
 
 # JsCoq 0.8 "The most inefficient programming language ever designed"
 -------------------------------------
