@@ -4,15 +4,30 @@ OCAML_VER=4.07.1
 NJOBS=4
 VERB= # -vv
 
-do_setup() {
+WORD_SIZE=32
 
-  # jsoo_repo=https://github.com/ocsigen/js_of_ocaml.git
+WRITE_CONFIG=no
 
-  # Pinning of js_of_ocaml
-  # for pkg in js_of_ocaml{-ppx,-lwt,-compiler,}
-  # do
-  #   opam pin add -y ${VERB} ${pkg} ${jsoo_repo}
-  # done
+for i in "$@"; do
+  case $i in
+    --32) WORD_SIZE=32; WRITE_CONFIG=yes ;;
+    --64) WORD_SIZE=64; WRITE_CONFIG=yes ;;
+    *)    echo "unknown option '$i'."; exit ;;
+  esac
+done
+
+create_switch() {
+
+  case $WORD_SIZE in
+    32) opam switch -j $NJOBS create jscoq+32bit ocaml-variants.$OCAML_VER+32bit ;;
+    64) opam switch -j $NJOBS create jscoq+64bit ocaml-base-compiler.$OCAML_VER ;;
+  esac
+
+  eval `opam env`
+
+}
+
+install_deps() {
 
   opam pin add -y -n --kind=path jscoq .
   opam install -y --deps-only $VERB -j $NJOBS jscoq
@@ -20,6 +35,24 @@ do_setup() {
 
 }
 
-opam switch -j $NJOBS -y create $OCAML_VER+32bit
-eval `opam env`
-do_setup
+post_install() {
+
+  # Brutally remove ocamlopt from the switch when building 32-bit
+  # on macOS.
+  # 32-bit native compilation on macOS is broken and we found no other 
+  # way to disable it.
+  # This has to take place only after install_deps.
+  case `uname`/$WORD_SIZE in
+    Darwin/32) rm -f $OPAM_SWITCH_PREFIX/bin/ocamlopt* ;;
+  esac
+
+}
+
+if [ -e config.inc ] ; then . config.inc
+else WRITE_CONFIG=yes ; fi
+
+if [ $WRITE_CONFIG == yes ] ; then echo "WORD_SIZE=$WORD_SIZE" > config.inc ; fi
+
+create_switch
+install_deps
+post_install

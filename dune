@@ -4,6 +4,7 @@
 
 (rule
  (targets coq-pkgs)
+ ; (mode promote)  - blocked by https://github.com/ocaml/dune/issues/2070
  (deps
    (package coq)
    (source_tree coq-addons)
@@ -39,13 +40,13 @@
    index.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.bc.js))
+   coq-js/jscoq_worker.js))
 
 ; Just the worker
 (alias
   (name jscoq_worker)
   (deps
-    coq-js/jscoq_worker.bc.js))
+    coq-js/jscoq_worker.js))
 
 (alias
  (name libs-pkg)
@@ -56,4 +57,4 @@
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/*.json")
     (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR=}/.vfiles.d"))))
 
-; (dirs (:standard \ coq-external))
+(dirs (:standard _vendor+*))

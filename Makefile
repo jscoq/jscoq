@@ -2,6 +2,8 @@
 .PHONY: jscoq libs-pkg links links-clean
 .PHONY: dist dist-upload dist-release
 
+-include ./config.inc
+
 # Coq Version
 COQ_VERSION:=v8.10
 JSCOQ_BRANCH:=
@@ -12,18 +14,31 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
-BUILD_CONTEXT = 4.07.1+32bit
+WORD_SIZE ?= 32
+OS := ${shell uname}
+ARCH := $(OS)/$(WORD_SIZE)
+
+ifeq ($(WORD_SIZE),64)
+DUNE_WORKSPACE = $(current_dir)/dune-workspace-64
+VARIANT = +64bit
+else
+VARIANT = +32bit
+endif
+
+BUILD_CONTEXT = jscoq$(VARIANT)
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# Directory where the coq sources and developments are.
-ADDONS_PATH := $(current_dir)/coq-external
-COQSRC := $(ADDONS_PATH)/coq-$(COQ_VERSION)+32bit/
+# Directory where the Coq sources and developments are.
+ADDONS_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
+COQSRC := $(ADDONS_PATH)/coq/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-external/coq-$(COQ_VERSION)+32bit
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/_vendor+$(COQ_VERSION)$(VARIANT)/coq
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
+
+DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
 NJOBS=4
 
@@ -46,10 +61,10 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 
 jscoq: force
-	ADDONS="$(ADDONS)" dune build @jscoq
+	ADDONS="$(ADDONS)" dune build @jscoq $(DUNE_FLAGS)
 
 libs-pkg: force
-	ADDONS="$(ADDONS)" dune build @libs-pkg
+	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
@@ -109,16 +124,19 @@ all-dist: dist dist-release dist-upload
 COQ_BRANCH=v8.10
 COQ_REPOS=https://github.com/coq/coq.git
 
+COQ_PATCHES = trampoline lazy-noinline $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+
+COQ_PATCHES|64 = coerce-32bit
+COQ_PATCHES|Darwin/32 = byte-only
+
 $(COQSRC):
-	mkdir -p coq-external
 	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply $(current_dir)/etc/patches/trampoline.patch \
-	                   $(current_dir)/etc/patches/lazy-noinline.patch
+	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
-	dune build @vodeps
-	cd $(COQSRC) && dune exec ./tools/coq_dune.exe --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
+	dune build @vodeps $(DUNE_FLAGS)
+	cd $(COQSRC) && dune exec ./tools/coq_dune.exe $(DUNE_FLAGS) --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
 
 # Coq should be now be built by composition with the Dune setup
 coq-build:

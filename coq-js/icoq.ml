@@ -50,11 +50,6 @@ external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
 type 'a seq = 'a Seq.t
 
-let rec seq_append s1 s2 =  (* use batteries?? *)
-  match s1 () with
-  | Seq.Nil -> s2
-  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
-
 
 let feedback_id = ref None
 
@@ -63,7 +58,6 @@ let feedback_id = ref None
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
 let coq_init opts =
-  let open Names in
 
   if opts.debug then begin
     Printexc.record_backtrace true;

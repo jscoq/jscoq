@@ -1,0 +1,13 @@
+diff --git a/dune b/dune
+index 787c3c3..e97092c 100644
+--- a/dune
++++ b/dune
+@@ -19,7 +19,7 @@
+  (deps
+   (source_tree theories)
+   (source_tree plugins))
+- (action (with-stdout-to .vfiles.d (bash "%{bin:coqdep} -dyndep both -noglob -boot `find theories plugins -type f -name *.v`"))))
++ (action (with-stdout-to .vfiles.d (bash "%{bin:coqdep} -dyndep byte -noglob -boot `find theories plugins -type f -name *.v`"))))
+ 
+ (alias
+  (name vodeps)
