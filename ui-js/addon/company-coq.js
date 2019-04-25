@@ -39,8 +39,9 @@ class Markup {
     
     attach(cm) {
         this.cm = cm;
-        this.applyToDocument();
-        cm.on('change', () => this.applyToDocument());
+        this.work = new WorkQueue(cm);
+        cm.on('change', (cm, change_obj) => this._flush(change_obj));
+        cm.on('renderLine', (cm, ln, el) => this._rescan(ln));
     }
 
     applyToDocument() {
@@ -51,6 +52,8 @@ class Markup {
     applyToLine(line) {
         this.clearFromLine(line);
         for (let tok of this.cm.getLineTokens(line)) {
+            if (tok.type === 'comment') continue;
+
             if (this.special_tokens.hasOwnProperty(tok.string)) {
                 let lit = this.special_tokens[tok.string],
                     from = {line, ch: tok.start},
@@ -84,6 +87,19 @@ class Markup {
             to = {line, ch: this.cm.getLine(line).length};
         for (let mark of this.cm.findMarks(from, to, m => m.owner == this))
             mark.clear();
+    }
+
+    _flush(change_obj) {
+        for (let ln = change_obj.from.ln; ln <= change_obj.to.ln; ln++) {
+            delete this.cm.getLineHandle(ln)._cc_recorded_styles;
+        }
+    }
+
+    _rescan(ln) {
+        if (!ln.styles.equals(ln._cc_recorded_styles)) {
+            ln._cc_recorded_styles = ln.styles;
+            this.work.enqueue(() => this.applyToLine(ln.lineNo()));
+        }
     }
 
     applyToDOM(dom) {
@@ -167,6 +183,25 @@ class Markup {
 
 }
 
+/**
+ * Auxiliary class for Markup.
+ * Bunches update tasks and performs them in a CodeMirror operation.
+ */
+class WorkQueue {
+    constructor(cm) { this.cm = cm; this.tasks = []; this.primed = false; }
+    enqueue(task) { 
+        this.tasks.push(task); 
+        if (!this.primed) this._engage();
+    }
+    _engage() {
+        this.primed = true;
+        requestAnimationFrame(() => this.cm.operation(() => {
+            try     { for (let t of this.tasks) t(); }
+            finally { this.primed = false; this.tasks = []; }
+        }));
+    }
+}
+
 // Builtin tactics are copied from coq-mode.
 // TODO: order tactics most common first rather than alphabetically.
 var vocab = {
@@ -222,10 +257,6 @@ class AutoComplete {
         this.kinds = kinds;
 
         this.max_matches = 100;  // threshold to prevent UI slowdown
-
-        this.extraKeys = {
-            Alt: (cm) => { this.hintZoom(cm); }
-        };
     }
 
     attach(cm) {
@@ -293,11 +324,25 @@ class AutoComplete {
                 requestAnimationFrame(() =>
                     cm.showHint({
                         hint: (cm, options) => hint.call(this, cm, options),
-                        completeSingle: false,
-                        extraKeys: this.extraKeys
+                        completeSingle: false
                     }));
             }
         }
+    }
+
+    /**
+     * Called by 'showHint' on 'autocomplete' command.
+     * (There is some overlap with senseContext functionality, but seems
+     * unavoidable.)
+     * @param {CodeMirror} cm editor instance
+     * @param {object} options showHint options object
+     */
+    getCompletions(cm, options) {
+        var cur = cm.getCursor(), token = cm.getTokenAt(cur),
+            is_head = token.state.is_head || token.state.begin_sentence;
+
+        var hint = is_head ? this.tacticHint : this.lemmaHint;
+        return hint.call(this, cm, options);
     }
 
     _isInsertAtCursor(cm, evt) {
@@ -445,11 +490,9 @@ class CompanyCoq {
         return this;
     }
 
-    static autocomplete(cm) {
+    static hint(cm, options) {
         if (cm.company_coq)
-            cm.company_coq.completion.senseContext(cm);
-        else
-            cm.showHint(); // fall back to default implementation
+            return cm.company_coq.completion.getCompletions(cm, options);
     }
 
     static mkEmptyScope() {
@@ -477,12 +520,14 @@ class CompanyCoq {
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         CodeMirror.CompanyCoq = CompanyCoq;
 
-        CodeMirror.commands.autocomplete = CompanyCoq.autocomplete; // override showHint
-
         CodeMirror.defineInitHook(cm => {
             if (cm.options.mode['company-coq'])
                 cm.company_coq = new CompanyCoq().attach(cm);
         });
+
+        CodeMirror.registerGlobalHelper("hint", "company-coq",
+            (mode, cm) => mode.name === 'coq' && !!cm.company_coq, 
+            CompanyCoq.hint);
     }
 }
 
