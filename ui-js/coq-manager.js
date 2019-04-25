@@ -17,6 +17,7 @@ Array.prototype.flatten  = function() { return [].concat.apply([], this); };
 Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; )
                                                     if (p(r = this[--i])) return r; }
 Array.prototype.equals   = function(other) {
+    if (other === this) return true;
     if (!other || this.length != other.length) return false;
     for (var i = 0, l=this.length; i < l; i++) {
         let te = this[i], oe = other[i];
