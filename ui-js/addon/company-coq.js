@@ -39,8 +39,9 @@ class Markup {
     
     attach(cm) {
         this.cm = cm;
-        this.applyToDocument();
-        cm.on('change', () => this.applyToDocument());
+        this.work = new WorkQueue(cm);
+        cm.on('change', (cm, change_obj) => this._flush(change_obj));
+        cm.on('renderLine', (cm, ln, el) => this._rescan(ln));
     }
 
     applyToDocument() {
@@ -51,6 +52,8 @@ class Markup {
     applyToLine(line) {
         this.clearFromLine(line);
         for (let tok of this.cm.getLineTokens(line)) {
+            if (tok.type === 'comment') continue;
+
             if (this.special_tokens.hasOwnProperty(tok.string)) {
                 let lit = this.special_tokens[tok.string],
                     from = {line, ch: tok.start},
@@ -84,6 +87,19 @@ class Markup {
             to = {line, ch: this.cm.getLine(line).length};
         for (let mark of this.cm.findMarks(from, to, m => m.owner == this))
             mark.clear();
+    }
+
+    _flush(change_obj) {
+        for (let ln = change_obj.from.ln; ln <= change_obj.to.ln; ln++) {
+            delete this.cm.getLineHandle(ln)._cc_recorded_styles;
+        }
+    }
+
+    _rescan(ln) {
+        if (!ln.styles.equals(ln._cc_recorded_styles)) {
+            ln._cc_recorded_styles = ln.styles;
+            this.work.enqueue(() => this.applyToLine(ln.lineNo()));
+        }
     }
 
     applyToDOM(dom) {
@@ -165,6 +181,25 @@ class Markup {
         if (prev) operation(prev);
     }
 
+}
+
+/**
+ * Auxiliary class for Markup.
+ * Bunches update tasks and performs them in a CodeMirror operation.
+ */
+class WorkQueue {
+    constructor(cm) { this.cm = cm; this.tasks = []; this.primed = false; }
+    enqueue(task) { 
+        this.tasks.push(task); 
+        if (!this.primed) this._engage();
+    }
+    _engage() {
+        this.primed = true;
+        requestAnimationFrame(() => this.cm.operation(() => {
+            try     { for (let t of this.tasks) t(); }
+            finally { this.primed = false; this.tasks = []; }
+        }));
+    }
 }
 
 // Builtin tactics are copied from coq-mode.
