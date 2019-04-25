@@ -38,6 +38,8 @@ COQSRC := $(ADDONS_PATH)/coq/
 COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/_vendor+$(COQ_VERSION)$(VARIANT)/coq
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
+COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
+
 DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
 NJOBS=4
@@ -46,6 +48,7 @@ export NJOBS
 export COQDIR
 export COQBUILDDIR
 export ADDONS_PATH
+export COQPKGS_ROOT
 
 ADDONS = mathcomp # iris ltac2 elpi equations dsp
 
