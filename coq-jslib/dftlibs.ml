@@ -84,13 +84,6 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "ssr"]
     ; ["mathcomp"; "ssreflect"]
     ]
-  ; "math-comp", [], all_of
-    [ ["mathcomp"; "algebra"]
-    ; ["mathcomp"; "fingroup"]
-    ; ["mathcomp"; "solvable"]
-    ; ["mathcomp"; "field"]
-    ; ["mathcomp"; "character"]
-    ]
   ; "coq-base", [], all_of
     [ ["Coq"; "Logic"]
     ; ["Coq"; "Program"]

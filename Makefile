@@ -45,6 +45,8 @@ DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 NJOBS=4
 
 export NJOBS
+export BUILD_CONTEXT
+
 export COQDIR
 export COQBUILDDIR
 export ADDONS_PATH

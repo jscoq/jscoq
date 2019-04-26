@@ -5,7 +5,7 @@ include coq-addons/common.mk
 
 MATHCOMP_GIT=https://github.com/ejgallego/math-comp.git
 MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
-MATHCOMP_DEST=$(COQPKGS_ROOT)/mathcomp
+MATHCOMP_DEST=$(COQPKGS_ROOT)/math-comp
 
 .PHONY: nothing get build jscoq-install
 
@@ -18,5 +18,6 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install
 
 jscoq-install:
-	mkdir -p $(MATHCOMP_DEST)
-	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ $(MATHCOMP_DEST)
+	$(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
+	            --create-package $(MATHCOMP_DEST).coq-pkg  \
+	            --create-manifest $(MATHCOMP_DEST).json
