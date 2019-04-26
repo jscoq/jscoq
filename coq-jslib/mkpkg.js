@@ -56,7 +56,7 @@ class PackageDefinition {
 
     toZip(save_as) {
         var z = new JSZip(), fopts = this.zip_file_opts;
-        z.file("coq-pkg.json", this.toJSON(this.manifest), fopts);
+        z.file("coq-pkg.json", this.toJSON(), fopts);
         for (let fn of this.listFiles()) {
             let phys = path.join(this.base_path, fn);
             if (/[.]cm[ao]$/.exec(fn))
@@ -74,8 +74,8 @@ class PackageDefinition {
             return z;
     }
 
-    toJSON(obj) {
-        return neatjson.neatJSON(obj, this.json_format_opts);
+    toJSON() {
+        return neatjson.neatJSON(this.manifest, this.json_format_opts);
     }
 
     writeManifest(to_file) {
@@ -84,7 +84,7 @@ class PackageDefinition {
         if (!to_file)
             console.error("Cannot write package manifest back: filename not given.");
         else
-            fs.writeFileSync(to_file, this.toJSON(this.manifest));
+            fs.writeFileSync(to_file, this.toJSON());
     }
 }
 
