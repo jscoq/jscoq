@@ -8,6 +8,7 @@ branches:
   - v8.9
   - v8.9+worker
   - v8.10
+  - v8.11
 
 cache:
   apt: true
@@ -19,29 +20,42 @@ addons:
     - gcc-multilib
 env:
   global:
-  - NJOBS=2
+  - NJOBS="2"
   - OPAMROOTISOK="true"
   - OPAMYES="true"
   - OPAMJOBS="2"
-  - COMPILER="4.07.1+32bit"
-  - BASE_OPAM="num dune elpi.1.1.1"
+  - JSCOQ_ARCH="32"
+
+matrix:
+  include:
+    - dist: xenial
+    - os: osx
+      cache:
+        ccache: true
+        directories:
+          - $HOME/.opam
+          - $HOME/Library/Caches/Homebrew
+      before_cache:
+        - brew cleanup
+      env:
+        - JSCOQ_ARCH="64"
+      before_install: |
+        set -e
+        brew update
+        brew install ccache opam
 
 before_install: |
-  sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.1/opam-2.0.1-x86_64-linux -o /usr/bin/opam
+  sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux -o /usr/bin/opam
   sudo chmod 755 /usr/bin/opam
 
 install:
-- opam init -c "$COMPILER" --disable-sandboxing
-- opam switch set "$COMPILER"
+- opam init -y --bare --disable-sandboxing || true
 - eval $(opam env)
-- opam install $BASE_OPAM
-- opam list
-- opam update
-- opam config var root
-- ./etc/toolchain-setup.sh
+- ./etc/toolchain-setup.sh --"$JSCOQ_ARCH"
 - eval $(opam env)
 - opam switch
 - opam list
+- opam config var root
 - git submodule update --remote
 
 script:
