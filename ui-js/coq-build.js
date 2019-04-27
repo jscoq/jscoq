@@ -48,6 +48,17 @@ class CoqProject {
         return (typeof name === 'string') ? name.split('.') : name;
     }
 
+    /**
+     * Merges another project into the current one.
+     * @param {CoqProject} other the other project
+     */
+    join(other) {
+        this.path.push(...other.path);
+        this.cmos.push(...other.cmos);
+        this.vfiles.push(...other.vfiles);
+        return this;
+    }
+
     toLogicalName(filename) {
         var dir = path.dirname(filename), 
             base = path.basename(filename).replace(/[.]v$/, '');
@@ -197,6 +208,18 @@ class CoqProject {
         return CoqProject.fromFileText(
             fs.readFileSync(coq_project_filename, 'utf-8'),
             project_root || path.dirname(coq_project_filename))
+    }
+
+    static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null) {
+        var is_dir;
+        try {
+            is_dir = fs.lstatSync(coq_project_dir_or_filename).isDirectory;
+        }
+        catch (e) { throw new Error(`not found: '${coq_project_dir_or_filename}'`); }
+
+        return CoqProject.fromFile(is_dir 
+            ? path.join(coq_project_dir_or_filename, '_CoqProject') 
+            : coq_project_dir_or_filename, project_root);
     }
     
 }
@@ -444,6 +467,7 @@ if (module && module.id == '.') {
         .option('--create-package <pkg>',        'write a .coq-pkg archive (requires --project)')
         .option('--create-manifest <json>',      'write a .json package definition (requires --project)')
         .option('--project <dir>',               'use project at dir (must contain a _CoqProject file)')
+        .option('--projects <dir,...>',          'use a comma-separated list of project directories')
         .option('--name <name>',                 'set package name; if unspecified, inferred from output filename')
         .parse(process.argv);
 
@@ -452,10 +476,15 @@ if (module && module.id == '.') {
     if (typeof opts.name !== 'string') opts.name = undefined; // name is a function otherwise :/
 
     if (opts.project) {
-        let proj_fn = path.basename(opts.project) === '_CoqProject' ?
-                      opts.project : path.join(opts.project, '_CoqProject');
+        proj = CoqProject.fromFileOrDirectory(opts.project);
+    }
 
-        proj = CoqProject.fromFile(proj_fn);
+    if (opts.projects) {
+        var projs = opts.projects.split(',').map(fn => CoqProject.fromFileOrDirectory(fn));
+
+        if (proj) projs.splice(0, 0, proj);
+
+        proj = projs.reduce((proj1, proj2) => proj1.join(proj2));
     }
         
     if (opts.createPackage) {

@@ -11,6 +11,8 @@ PLF_URL=https://www.cis.upenn.edu/~bcpierce/sf/plf-current/plf.tgz
 PLF_HOME=$(ADDONS_PATH)/plf
 PLF_DEST=coq-pkgs/PLF
 
+SF_DEST=$(COQPKGS_ROOT)/sf
+
 .PHONY: nothing get build jscoq-install
 
 nothing:
@@ -20,12 +22,10 @@ get:
 	[ -d $(PLF_HOME) ] || wget -qO- $(PLF_URL) | tar xvz -C $(ADDONS_PATH)
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(LF_HOME);  $(MAKE) clean; $(MAKE)
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(PLF_HOME); $(MAKE) clean; $(MAKE)
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(LF_HOME)  && $(MAKE)
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(PLF_HOME) && $(MAKE)
 
 jscoq-install:
-	mkdir -p $(LF_DEST)
-	$(SYNCVO) $(LF_HOME)/ $(LF_DEST)
-	mkdir -p $(PLF_DEST)
-	$(SYNCVO) $(PLF_HOME)/ $(PLF_DEST)
-
+	$(PKGBUILD) --projects $(LF_HOME),$(PLF_HOME)          \
+	            --create-package $(SF_DEST).coq-pkg        \
+	            --create-manifest $(SF_DEST).json
