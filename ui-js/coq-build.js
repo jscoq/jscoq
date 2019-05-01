@@ -5,12 +5,14 @@ const fs = require('fs'),
 
 require('./coq-manager'); // needed for Array.equals :\
 
+const fsif_native = {fs, path, glob};
 
 /**
  * List package directories and .cmo files for configuring the load path.
  */
 class CoqProject {
-    constructor() {
+    constructor(fsif=fsif_native) {
+        this.fsif = fsif;
         this.path = [];  /* [[logical, physical], ...] */
         this.cmos = [];
         this.vfiles = [];
@@ -24,23 +26,26 @@ class CoqProject {
     }
 
     add(base_dir, base_name) {
-        this.path.push([this._prefix(base_name), [base_dir, '.']]);
-        this.cmos.push(...this._cmoFiles(base_dir));
+        var path_element = [this._prefix(base_name), [base_dir, '.']];
+        if (!this.path.some(pel => pel.equals(path_element))) {
+            this.path.push(path_element);
+            this.cmos.push(...this._cmoFiles(base_dir));
+        }
     }
     addRecursive(base_dir, base_name) {
         var prefix = this._prefix(base_name);
         this.add(base_dir, prefix);
-        for (let dir of glob.sync('**/', {cwd: base_dir})) {
+        for (let dir of this.fsif.glob.sync('**/', {cwd: base_dir})) {
             dir = dir.replace(/[/]$/,'');
             var pkg = prefix.concat(dir.split('/').filter(x => x));
-            this.add(path.join(base_dir, dir), pkg);
+            this.add(this.fsif.path.join(base_dir, dir), pkg);
         }
     }
     _vFiles(dir) {
-        return glob.sync('*.v', {cwd: dir}).map(fn => path.join(dir, fn));
+        return this.fsif.glob.sync('*.v', {cwd: dir}).map(fn => this.fsif.path.join(dir, fn));
     }
     _cmoFiles(dir) {
-        return glob.sync('*.cm[oa]', {cwd: dir}).map(fn => path.join(dir, fn));
+        return this.fsif.glob.sync('*.cm[oa]', {cwd: dir}).map(fn => this.fsif.path.join(dir, fn));
     }
     _prefix(name) { return this._module_name(name); }
 
@@ -60,8 +65,8 @@ class CoqProject {
     }
 
     toLogicalName(filename) {
-        var dir = path.dirname(filename), 
-            base = path.basename(filename).replace(/[.]v$/, '');
+        var dir = this.fsif.path.dirname(filename), 
+            base = this.fsif.path.basename(filename).replace(/[.]v$/, '');
         for (let [logical, [physical]] of this.path) {
             if (physical === dir) return logical.concat([base])
         }
@@ -124,7 +129,7 @@ class CoqProject {
 
     writeManifest(to_file, name /*optional*/, archive /*optional*/) {
         name = name || this._guessName(to_file);
-        fs.writeFileSync(to_file, this.createManifestJSON(name, archive));
+        this.fsif.fs.writeFileSync(to_file, this.createManifestJSON(name, archive));
     }
 
     toZip(save_as, name /*optional*/) {
@@ -139,7 +144,7 @@ class CoqProject {
             if (logical_name) {
                 var lfile = this._localFile(`${fn}o`);
                 if (lfile)
-                    z.file(`${path.join(...logical_name)}.vo`, lfile,
+                    z.file(`${this.fsif.path.join(...logical_name)}.vo`, lfile,
                            this.zip_file_opts);
             }
             else
@@ -147,7 +152,7 @@ class CoqProject {
         }
         if (save_as) {
             return z.generateNodeStream()
-                .pipe(fs.createWriteStream(save_as))
+                .pipe(this.fsif.fs.createWriteStream(save_as))
                 .on('finish', () => { console.log(`wrote '${save_as}'.`); return z; });
         }
         else
@@ -156,8 +161,8 @@ class CoqProject {
 
     _localFile(filename) {
         try {
-            fs.lstatSync(filename);
-            return fs.createReadStream(filename);
+            this.fsif.fs.lstatSync(filename);
+            return this.fsif.fs.createReadStream(filename);
         }
         catch (e) {
             console.error(`skipped '${filename}' (not found).`);
@@ -165,7 +170,7 @@ class CoqProject {
     }
 
     _guessName(filename) {
-        return path.basename(filename).replace(/[.][^.]*$/,'');  // base sans extension
+        return this.fsif.path.basename(filename).replace(/[.][^.]*$/,'');  // base sans extension
     }
 
     /**
@@ -174,14 +179,14 @@ class CoqProject {
      * @param {string} coq_project_text content of _CoqProject definition file
      * @param {string} project_root location of _CoqProject file
      */
-    static fromFileText(coq_project_text, project_root) {
-        var proj = new CoqProject();
+    static fromFileText(coq_project_text, project_root, fsif=fsif_native) {
+        var proj = new CoqProject(fsif);
 
         for (let line of coq_project_text.split(/\n+/)) {
             var mo;
             if (mo = /\s*(-[RQ])\s+(\S+)\s+(\S+)/.exec(line)) {
                 var [flag, physical, logical] = [mo[1], mo[2], mo[3]];
-                physical = path.join(project_root, physical);
+                physical = fsif.path.join(project_root, physical);
                 if (flag === '-R')
                     proj.addRecursive(physical, logical);
                 else
@@ -189,7 +194,7 @@ class CoqProject {
             }
             else
                 proj.vfiles.push(...line.split(/\s+/).filter(w => /[.]v$/.exec(w))
-                    .map(fn => path.join(project_root, fn)));
+                    .map(fn => fsif.path.join(project_root, fn)));
         }
 
         if (proj.vfiles.length === 0)
@@ -204,22 +209,23 @@ class CoqProject {
      * @param {string?} project_root base directory for project;
      *   if omitted, the directory part of `coq_project_filename` is used.
      */
-    static fromFile(coq_project_filename, project_root=null) {
+    static fromFile(coq_project_filename, project_root=null, fsif=fsif_native) {
         return CoqProject.fromFileText(
-            fs.readFileSync(coq_project_filename, 'utf-8'),
-            project_root || path.dirname(coq_project_filename))
+            fsif.fs.readFileSync(coq_project_filename, 'utf-8'),
+            project_root || fsif.path.dirname(coq_project_filename),
+            fsif);
     }
 
-    static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null) {
+    static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null, fsif=fsif_native) {
         var is_dir;
         try {
-            is_dir = fs.lstatSync(coq_project_dir_or_filename).isDirectory;
+            is_dir = fsif.fs.lstatSync(coq_project_dir_or_filename).isDirectory;
         }
         catch (e) { throw new Error(`not found: '${coq_project_dir_or_filename}'`); }
 
         return CoqProject.fromFile(is_dir 
-            ? path.join(coq_project_dir_or_filename, '_CoqProject') 
-            : coq_project_dir_or_filename, project_root);
+            ? fsif.path.join(coq_project_dir_or_filename, '_CoqProject') 
+            : coq_project_dir_or_filename, project_root, fsif);
     }
     
 }
@@ -254,7 +260,8 @@ class SearchPath {
 }
 
 class CoqDep {
-    constructor() {
+    constructor(fsif=fsif_native) {
+        this.fsif = fsif;
         this.search_path = new SearchPath();
         this.deps = new Map();
     }
@@ -262,7 +269,7 @@ class CoqDep {
     processVernacFile(filename) {
         var mod = this.search_path.toLogicalName(filename);
         if (mod) {
-            this.processVernac(fs.readFileSync(filename, 'utf-8'), 
+            this.processVernac(this.fsif.fs.readFileSync(filename, 'utf-8'), 
                                mod.dirpath);
         }
     }
@@ -334,7 +341,8 @@ class CoqDep {
 
 class CoqC {
 
-    constructor(coq) {
+    constructor(coq, fsif=fsif_native) {
+        this.fsif = fsif;
         this.coq = coq || new HeadlessCoqManager();
 
         this.vo_output = {};
@@ -353,7 +361,7 @@ class CoqC {
     }
 
     spawn() {
-        var c = new CoqC(this.coq.spawn());
+        var c = new CoqC(this.coq.spawn(), this.fsif);
         c.vo_output = this.vo_output;  /* tie child's output to parent's */
         return c;
     }
@@ -366,7 +374,7 @@ class CoqC {
      */
     continueFrom(zip) {
         if (typeof zip === 'string') {
-            var load = fs.readFileSync(zip);
+            var load = this.fsif.fs.readFileSync(zip);
             return require('JSZip').loadAsync(load).then(z => this.continueFrom(z));
         }
         else {
@@ -392,23 +400,32 @@ class CoqC {
      * Multiple jobs are processed sequentially.
      * @param {array or object} entries a compilation job with fields 
      *   {input, dirpath}, or an array of them.
+     * @param {boolean} upload when true, copies the source files to Worker
+     *   space using Put commands.
      */
-    batchCompile(entries) {
+    batchCompile(entries, upload=false) {
         if (Array.isArray(entries)) {
-            return entries.reduce(
-                (promise, entry) => promise.then(() => this.spawn().batchCompile(entry)),
+            var jobs = entries.map(entry => () => this.spawn().batchCompile(entry, upload));
+            return jobs.reduce(
+                (promise, job) => promise.then(job),
                 Promise.resolve());
         }
         else {
-            var entry = entries, out_fn = `/lib/${entry.dirpath.join('/')}.vo`;
+            var entry = entries, pkg_id = entry.dirpath.slice(0, -1),
+                in_fn = upload ? `/static/_build/${entry.dirpath.join('/')}.v` : entry.input,
+                out_fn = `/lib/${entry.dirpath.join('/')}.vo`;
             if (this.vo_output.hasOwnProperty(out_fn)) return Promise.resolve();
 
             console.log("Compiling: ", entry.input);
             this.coq.options.top_name = entry.dirpath.join('.');
-            this.coq.options.compile = {input: entry.input,
-                                        output: out_fn};
+            this.coq.options.compile = {input: in_fn, output: out_fn};
+            if (upload)
+                this.coq.coq.put(in_fn, this.fsif.fs.readFileSync(entry.input));
             this.coq.start();
-            return this.coq.when_done.promise.then(() => this.coq.terminate());
+            return this.coq.when_done.promise.then(() => {
+                this.coq.terminate();
+                this.coq.project.add(`/lib/${pkg_id.join('/')}`, pkg_id);
+            });
         }
     }
 

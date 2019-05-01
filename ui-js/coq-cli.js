@@ -39,6 +39,8 @@ class HeadlessCoqManager {
             log_debug: false
         };
 
+        this.coq.options = this.options;
+
         this.doc = [];
 
         this.when_done = new Future();
@@ -107,8 +109,7 @@ class HeadlessCoqManager {
         var c = new HeadlessCoqManager();
         c.provider = this.provider.clone();
         c.project = this.project;
-        c.options = {};
-        for (let k in this.options) c.options[k] = this.options[k];
+        Object.assign(c.options, this.options);
         return c;
     }
 
@@ -267,6 +268,10 @@ class QueueCoqProvider {
 
 
 
+module.exports = {HeadlessCoqManager, HeadlessCoqWorker}
+
+
+
 if (module && module.id == '.') {
     var requires = [], require_pkgs = [],
         opts = require('commander')
@@ -324,12 +329,6 @@ if (module && module.id == '.') {
             out_pkg = opts.O || 'a.coq-pkg',
             build_plan = new CoqDep().processProject(proj).buildPlan(proj);
 
-        for (let [logical_path, _] of proj.path) {
-            let dir = `/lib/${logical_path.join('/')}`;
-            coq.coq.put(`${dir}/.anchor`, new Buffer(''));
-            coq.project.add(dir, logical_path);
-        }
-        
         let coqc = new CoqC(coq);
 
         let starting_point = opts.continue ? coqc.continueFrom(out_pkg) 
