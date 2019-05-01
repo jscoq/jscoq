@@ -1,6 +1,6 @@
-const fs = require('fs'),
-      path = require('path'),
-      {CoqWorker, Future} = require('../ui-js/jscoq'),
+const path = require('path'),
+      {fsif_native} = require('./fs-interface'),
+      {CoqWorker, Future} = require('./jscoq'),
       {CoqIdentifier} = require('./coq-manager'),
       {CoqProject, CoqDep, CoqC} = require('./coq-build'),
       format_pprint = require('./format-pprint'),
@@ -11,10 +11,12 @@ const fs = require('fs'),
 class HeadlessCoqWorker extends CoqWorker {
     constructor() {
         super(null, require('../coq-js/jscoq_worker').jsCoq);
-        this.worker.onmessage = evt => {
+        this.worker.onmessage = this._handler = evt => {
             process.nextTick(() => this.coq_handler({data: evt}));
         };
     }
+
+    spawn() { return new HeadlessCoqWorker(); }
 }
 
 /**
@@ -22,13 +24,14 @@ class HeadlessCoqWorker extends CoqWorker {
  */
 class HeadlessCoqManager {
 
-    constructor() {
-        this.coq = new HeadlessCoqWorker();
+    constructor(worker=undefined, fsif=fsif_native) {
+        this.coq = worker || new HeadlessCoqWorker();
         this.coq.observers.push(this);
+        this.fsif = fsif;
         this.provider = new QueueCoqProvider();
         this.pprint = new format_pprint.FormatPrettyPrint();
 
-        this.project = new CoqProject();
+        this.project = new CoqProject(fsif);
 
         this.options = {
             prelude: false,
@@ -100,13 +103,13 @@ class HeadlessCoqManager {
 
     load(vernac_filename) {
         // Relative paths must start with './' for Load command
-        if (!path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
+        if (!this.fsif.path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
             vernac_filename = `./${vernac_filename}`;
         this.provider.enqueue(`Load "${vernac_filename}".`);
     }
 
     spawn() {
-        var c = new HeadlessCoqManager();
+        var c = new HeadlessCoqManager(this.coq.spawn());
         c.provider = this.provider.clone();
         c.project = this.project;
         Object.assign(c.options, this.options);
@@ -136,7 +139,7 @@ class HeadlessCoqManager {
         this.coq.inspectPromise(0, ["All"]).then(results => {
             var symbols = results.map(fp => CoqIdentifier.ofFullPath(fp))
                             .filter(query_filter);
-            fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
+            this.fsif.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
             console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
         });
     }
@@ -212,16 +215,16 @@ class HeadlessCoqManager {
 
     findPackageDir(dirname = 'coq-pkgs') {
         for (let path_el of module.paths) {
-            for (let dir of [path.join(path_el, dirname), 
-                             path.join(path_el, '..', dirname)])
+            for (let dir of [this.fsif.path.join(path_el, dirname), 
+                             this.fsif.path.join(path_el, '..', dirname)])
                 if (this._isDirectory(dir))
                     return dir;
         }
-        return path.join('.', dirname);
+        return this.fsif.path.join('.', dirname);
     }
 
     _isDirectory(path) {
-        try { return fs.lstatSync(path).isDirectory(); }
+        try { return this.fsif.fs.statSync(path).isDirectory(); }
         catch { return false; }
     }
 

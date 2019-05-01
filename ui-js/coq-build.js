@@ -1,11 +1,9 @@
 const fs = require('fs'),
-      glob = require('glob'),
-      path = require('path')
+      path = require('path'),
+      {fsif_native} = require('./fs-interface'),
       neatjson = require('neatjson');
 
 require('./coq-manager'); // needed for Array.equals :\
-
-const fsif_native = {fs, path, glob};
 
 /**
  * List package directories and .cmo files for configuring the load path.
@@ -161,7 +159,7 @@ class CoqProject {
 
     _localFile(filename) {
         try {
-            this.fsif.fs.lstatSync(filename);
+            this.fsif.fs.statSync(filename);
             return this.fsif.fs.createReadStream(filename);
         }
         catch (e) {
@@ -219,7 +217,7 @@ class CoqProject {
     static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null, fsif=fsif_native) {
         var is_dir;
         try {
-            is_dir = fsif.fs.lstatSync(coq_project_dir_or_filename).isDirectory;
+            is_dir = fsif.fs.statSync(coq_project_dir_or_filename).isDirectory();
         }
         catch (e) { throw new Error(`not found: '${coq_project_dir_or_filename}'`); }
 
