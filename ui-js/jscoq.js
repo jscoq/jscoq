@@ -12,7 +12,7 @@ class CoqWorker {
 
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
-        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
+        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.js"))
         this.worker.onmessage = evt => this.coq_handler(evt);
 
         if (typeof window !== 'undefined')
@@ -136,6 +136,14 @@ class CoqWorker {
         this.routes[rid] = [pfr];
         pfr.atexit = () => { delete this.routes[rid]; };
         return pfr.promise;
+    }
+
+    spawn() {
+        return new CoqWorker(null, this.worker);
+    }
+
+    join(child) {
+        this.worker.onmessage = evt => this.coq_handler(evt);
     }
 
     // Internal event handling
