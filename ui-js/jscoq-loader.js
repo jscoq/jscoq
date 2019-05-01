@@ -37,16 +37,20 @@ var loadJsCoq;
         document.head.appendChild(link);
     };
 
+    var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
+        document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined;
 
     // In order for jsCoq to work we need to load:
     // - Codemirror CSS [core+theme+coq]
     // - Codemirror JS  [core+coq+emacs]
-    // - D3
+    // - jQuery
+    // - JSZip
+    // - localForage
     // - jsCoq = cm-provider + coq-packages + coq-manager
 
     loadJsCoq = function(base_path, node_modules_path) {
 
-        base_path = base_path || "./";
+        base_path = base_path || (scriptDir ? `${scriptDir}..` : "./");
         if (/[^/]$/.exec(base_path)) base_path += "/";
 
         node_modules_path = node_modules_path || base_path + "node_modules/";
