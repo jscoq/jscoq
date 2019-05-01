@@ -370,12 +370,13 @@ class CoqPkgArchive {
         var asyncs = [];
         this.zip.forEach((rel_path, entry) => {
             if (!entry.dir)
-                asyncs.push(
-                    entry.async('arraybuffer').then(content =>
-                        worker.put(`/lib/${rel_path}`, content))
-                );
+                asyncs.push((async () => {
+                    var content = await entry.async('arraybuffer');
+                    await worker.put(`/lib/${rel_path}`, content, 
+                            /*transferOwnership=*/true);
+                })());
         });
-        return Promise.all(asyncs);
+        await Promise.all(asyncs);
     }
 }
 
@@ -448,6 +449,9 @@ class PackageDownloader {
 
 if (typeof document !== 'undefined' && document.currentScript)
     PackageManager.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
+
+if (typeof module !== 'undefined')
+    module.exports = {CoqPkgArchive}
 
 // Local Variables:
 // js-indent-level: 4

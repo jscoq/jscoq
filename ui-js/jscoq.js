@@ -85,7 +85,7 @@ class CoqWorker {
         this.sendCommand(["ReassureLoadPath", load_path]);
     }
 
-    put(filename, content) {
+    put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
         if (content.buffer) {
             content = (content.byteOffset === 0 && 
@@ -99,9 +99,10 @@ class CoqWorker {
         if(this.options.debug) {
             console.debug("Posting file: ", msg);
         }
-        this.worker.postMessage(msg, [content]);
-        /* Notice: ownership of the 'content' buffer is transferred to the worker
-         * (for efficiency)
+        this.worker.postMessage(msg, transferOwnership ? [content] : []);
+        /* Notice: when transferOwnership is true, the 'content' buffer is
+         * transferred to the worker (for efficiency);
+         * it becomes unusable in the original context.
          */
     }
 
