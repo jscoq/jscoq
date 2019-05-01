@@ -184,7 +184,7 @@ class FormatPrettyPrint {
     pp2Text(msg, state) {
 
         // Elements are ...
-        if (msg.constructor !== Array) {
+        if (!Array.isArray(msg)) {
             return msg;
         }
 
