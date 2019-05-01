@@ -170,9 +170,10 @@ let lib_event_to_jsobj msg =
   let json_msg = lib_event_to_yojson msg          in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
-let is_worker = 
-  Js.Unsafe.global##.WorkerGlobalScope != Js.undefined &&
-    Js.Unsafe.pure_js_expr "this instanceof WorkerGlobalScope"
+let is_worker =
+  let open Js.Unsafe in
+  global##.WorkerGlobalScope != Js.undefined && global##.self != Js.undefined &&
+    pure_js_expr "self instanceof WorkerGlobalScope"
 
 let post_message : < .. > Js.t -> unit =
   if is_worker then Worker.post_message
