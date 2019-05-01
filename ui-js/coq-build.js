@@ -11,10 +11,18 @@ require('./coq-manager'); // needed for Array.equals :\
  */
 class CoqProject {
     constructor() {
-        this.path = [];
+        this.path = [];  /* [[logical, physical], ...] */
         this.cmos = [];
         this.vfiles = [];
+
+        this.json_format_opts = 
+            { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 };
+
+        this.zip_file_opts = 
+            { date: new Date("1/1/2000 UTC"), // dummy date (otherwise, zip changes every time it is created...)
+              createFolders: false };
     }
+
     add(base_dir, base_name) {
         this.path.push([this._prefix(base_name), [base_dir, '.']]);
         this.cmos.push(...this._cmoFiles(base_dir));
@@ -28,6 +36,9 @@ class CoqProject {
             this.add(path.join(base_dir, dir), pkg);
         }
     }
+    _vFiles(dir) {
+        return glob.sync('*.v', {cwd: dir}).map(fn => path.join(dir, fn));
+    }
     _cmoFiles(dir) {
         return glob.sync('*.cm[oa]', {cwd: dir}).map(fn => path.join(dir, fn));
     }
@@ -37,11 +48,32 @@ class CoqProject {
         return (typeof name === 'string') ? name.split('.') : name;
     }
 
+    /**
+     * Merges another project into the current one.
+     * @param {CoqProject} other the other project
+     */
+    join(other) {
+        this.path.push(...other.path);
+        this.cmos.push(...other.cmos);
+        this.vfiles.push(...other.vfiles);
+        return this;
+    }
+
     toLogicalName(filename) {
         var dir = path.dirname(filename), 
             base = path.basename(filename).replace(/[.]v$/, '');
         for (let [logical, [physical]] of this.path) {
             if (physical === dir) return logical.concat([base])
+        }
+    }
+
+    /**
+     * Finds all .v files in physical directories of the project
+     * and adds them to `this.vfiles`.
+     */
+    collectModules() {
+        for (let [_, [dir]] of this.path) {
+            this.vfiles.push(...this._vFiles(dir));
         }
     }
 
@@ -64,8 +96,9 @@ class CoqProject {
         }
     }
 
-    createManifest(name) {
-        var vo_files_logical = this.vfiles.map(vf => this.toLogicalName(vf)),
+    createManifest(name, archive) {
+        var manifest = {desc: name || '', deps: [], pkgs: []},
+            vo_files_logical = this.vfiles.map(vf => this.toLogicalName(vf)),
             pkgs = [];
 
         var vo_files_of_pkg = (pkg_id) => vo_files_logical.filter(vf => 
@@ -74,11 +107,65 @@ class CoqProject {
 
         for (let [logical, _] of this.path) {
             pkgs.push({pkg_id: logical,
-                vo_files: vo_files_of_pkg(logical),
+                vo_files: vo_files_of_pkg(logical).map(x => [x, '']),   // TODO digest
                 cma_files: []});
         }
 
-        return {desc: name || '', deps: [], pkgs: pkgs};
+        manifest.pkgs = pkgs;
+        if (archive) manifest.archive = archive;
+
+        return manifest;
+    }
+
+    createManifestJSON(name, archive) {
+        return neatjson.neatJSON(this.createManifest(name, archive), 
+                                 this.json_format_opts);
+    }
+
+    writeManifest(to_file, name /*optional*/, archive /*optional*/) {
+        name = name || this._guessName(to_file);
+        fs.writeFileSync(to_file, this.createManifestJSON(name, archive));
+    }
+
+    toZip(save_as, name /*optional*/) {
+        const JSZip = require('jszip');
+              
+        if (save_as) name = name || this._guessName(save_as);
+
+        var z = new JSZip(), promises = [];
+        z.file('coq-pkg.json', this.createManifestJSON(name));
+        for (let fn of this.vfiles) {
+            let logical_name = this.toLogicalName(fn);
+            if (logical_name) {
+                var lfile = this._localFile(`${fn}o`);
+                if (lfile)
+                    z.file(`${path.join(...logical_name)}.vo`, lfile,
+                           this.zip_file_opts);
+            }
+            else
+                console.warn(`skipped '${fn}' (not in path).`);
+        }
+        if (save_as) {
+            return z.generateNodeStream()
+                .pipe(fs.createWriteStream(save_as))
+                .on('finish', () => { console.log(`wrote '${save_as}'.`); return z; });
+        }
+        else
+            return Promise.resolve(z);
+    }
+
+    _localFile(filename) {
+        try {
+            fs.lstatSync(filename);
+            return fs.createReadStream(filename);
+        }
+        catch (e) {
+            console.error(`skipped '${filename}' (not found).`);
+        }
+    }
+
+    _guessName(filename) {
+        return path.basename(filename).replace(/[.][^.]*$/,'');  // base sans extension
     }
 
     /**
@@ -105,6 +192,9 @@ class CoqProject {
                     .map(fn => path.join(project_root, fn)));
         }
 
+        if (proj.vfiles.length === 0)
+            proj.collectModules();
+
         return proj;
     }
 
@@ -118,6 +208,18 @@ class CoqProject {
         return CoqProject.fromFileText(
             fs.readFileSync(coq_project_filename, 'utf-8'),
             project_root || path.dirname(coq_project_filename))
+    }
+
+    static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null) {
+        var is_dir;
+        try {
+            is_dir = fs.lstatSync(coq_project_dir_or_filename).isDirectory;
+        }
+        catch (e) { throw new Error(`not found: '${coq_project_dir_or_filename}'`); }
+
+        return CoqProject.fromFile(is_dir 
+            ? path.join(coq_project_dir_or_filename, '_CoqProject') 
+            : coq_project_dir_or_filename, project_root);
     }
     
 }
@@ -362,22 +464,42 @@ module.exports = {CoqProject, CoqDep, CoqC}
 
 if (module && module.id == '.') {
     var opts = require('commander')
-        .version('0.9.2', '-v, --version')
-        .option('--project <dir>',                          'build project at dir (must contain a _CoqProject file)')
+        .option('--create-package <pkg>',        'write a .coq-pkg archive (requires --project)')
+        .option('--create-manifest <json>',      'write a .json package definition (requires --project)')
+        .option('--project <dir>',               'use project at dir (must contain a _CoqProject file)')
+        .option('--projects <dir,...>',          'use a comma-separated list of project directories')
+        .option('--name <name>',                 'set package name; if unspecified, inferred from output filename')
         .parse(process.argv);
 
+    var proj, pkg;
+
+    if (typeof opts.name !== 'string') opts.name = undefined; // name is a function otherwise :/
+
     if (opts.project) {
-        let proj = CoqProject.fromFileText(
-            fs.readFileSync(path.join(opts.project, '_CoqProject'), 'utf-8'),
-            opts.project);
-        console.log(proj.path);
-        console.log(proj.vfiles.map(x => proj.toLogicalName(x)));
+        proj = CoqProject.fromFileOrDirectory(opts.project);
+    }
 
-        var coqdep = new CoqDep();
+    if (opts.projects) {
+        var projs = opts.projects.split(',').map(fn => CoqProject.fromFileOrDirectory(fn));
 
-        coqdep.processProject(proj);
-        console.log(coqdep.buildPlan(proj));
+        if (proj) projs.splice(0, 0, proj);
 
-        process.exit();
+        proj = projs.reduce((proj1, proj2) => proj1.join(proj2));
+    }
+        
+    if (opts.createPackage) {
+        pkg = opts.createPackage;
+        if (proj)
+            proj.toZip(opts.createPackage, opts.name);
+        else
+            console.error("Create package from what? Use --project to specify source.");
+    }
+
+    if (opts.createManifest) {
+        if (proj)
+            proj.writeManifest(opts.createManifest, opts.name, 
+                pkg ? path.basename(pkg) : undefined);
+        else
+            console.error("Create manifest of what? Use --project to specify source.");
     }
 }
