@@ -411,7 +411,7 @@ class CmCoqProvider {
     }
 
     load(text, filename, dirty=false) {
-        if (this.autosave && this.dirty) saveLocal();
+        if (this.autosave && this.dirty) this.saveLocal();
 
         this.editor.setValue(text);
         this.filename = filename;
