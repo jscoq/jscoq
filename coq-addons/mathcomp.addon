@@ -18,6 +18,7 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install
 
 jscoq-install:
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(COQPKGS_ROOT)/mathcomp/
 	$(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
 	            --create-package $(MATHCOMP_DEST).coq-pkg  \
 	            --create-manifest $(MATHCOMP_DEST).json
