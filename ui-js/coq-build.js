@@ -1,9 +1,9 @@
-const fs = require('fs'),
-      path = require('path'),
-      {fsif_native} = require('./fs-interface'),
+const {fsif_native} = require('./fs-interface'),
       neatjson = require('neatjson');
 
 require('./coq-manager'); // needed for Array.equals :\
+
+
 
 /**
  * List package directories and .cmo files for configuring the load path.
@@ -434,7 +434,7 @@ class CoqC {
     }
 
     toZip(save_as) {
-        const JSZip = require('jszip'),
+        const JSZip = require('jszip'), path = this.fsif.path,
               base_dir = "/lib",
               name = save_as ? path.basename(save_as).replace(/[.][^.]*$/,'') : undefined;
         var z = new JSZip();
@@ -446,7 +446,7 @@ class CoqC {
         }
         if (save_as) {
             return z.generateNodeStream()
-                .pipe(fs.createWriteStream(save_as))
+                .pipe(this.fsif.fs.createWriteStream(save_as))
                 .on('finish', () => { console.log(`wrote '${save_as}'.`); return z; });
         }
         else
@@ -454,7 +454,7 @@ class CoqC {
     }
 
     createManifest(name) {
-        const base_dir = "/lib";
+        const base_dir = "/lib", path = this.fsif.path;
         var dirs = new Map(), pkgs = [];
         for (let fn in this.vo_output) {
             var dir = path.dirname(path.relative(base_dir, fn)),
@@ -485,6 +485,8 @@ if (module && module.id == '.') {
         .option('--projects <dir,...>',          'use a comma-separated list of project directories')
         .option('--name <name>',                 'set package name; if unspecified, inferred from output filename')
         .parse(process.argv);
+
+    const path = require('path');
 
     var proj, pkg;
 

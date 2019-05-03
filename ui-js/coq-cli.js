@@ -1,16 +1,16 @@
-const path = require('path'),
-      {fsif_native} = require('./fs-interface'),
+
+const {fsif_native} = require('./fs-interface'),
       {CoqWorker, Future} = require('./jscoq'),
       {CoqIdentifier} = require('./coq-manager'),
       {CoqProject, CoqDep, CoqC} = require('./coq-build'),
-      format_pprint = require('./format-pprint'),
-      mkpkg = require('../coq-jslib/mkpkg');
+      {FormatPrettyPrint} = require('./format-pprint');
 
 
 
 class HeadlessCoqWorker extends CoqWorker {
     constructor() {
-        super(null, require('../coq-js/jscoq_worker').jsCoq);
+        var node_require = require;  /* bypass browserify */
+        super(null, node_require('../coq-js/jscoq_worker').jsCoq);
         this.worker.onmessage = this._handler = evt => {
             process.nextTick(() => this.coq_handler({data: evt}));
         };
@@ -29,7 +29,7 @@ class HeadlessCoqManager {
         this.coq.observers.push(this);
         this.fsif = fsif;
         this.provider = new QueueCoqProvider();
-        this.pprint = new format_pprint.FormatPrettyPrint();
+        this.pprint = new FormatPrettyPrint();
 
         this.project = new CoqProject(fsif);
 
@@ -292,6 +292,9 @@ if (module && module.id == '.') {
         .on('option:require',     path => { requires.push(path); })
         .on('option:require-pkg', json => { require_pkgs.push(json); })
         .parse(process.argv);
+
+    const path = require('path'),
+          mkpkg = require('../coq-jslib/mkpkg');
 
     var coq = new HeadlessCoqManager();
 
