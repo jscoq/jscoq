@@ -511,12 +511,22 @@ class CoqBuild {
         return this;
     }
 
-    ofDirectory(dir) {
-        this.store.addFrom(fsif_native, dir, '_CoqProject');
-        this.store.addFrom(fsif_native, dir, '**/*.v');
+    ofDirectory(dir, fsif=fsif_native) {
+        // Read project file and store all .v files in transient folders
+        // according to their logical paths
+        var physical = CoqProject.fromFileOrDirectory(dir, null, fsif);
 
-        this.project =
-            CoqProject.fromFileOrDirectory('/', null, this.store.fsif);
+        for (let vfile of physical.vfiles) {
+            var logical = physical.toLogicalName(vfile);
+            if (logical) {
+                this.store.create(`/${logical.join('/')}.v`,
+                                  fsif.fs.readFileSync(vfile));
+            }
+        }
+
+        this.project = new CoqProject(this.store.fsif);
+        this.project.addRecursive('/', []);
+        this.project.collectModules();
 
         this._updateView();
         return this;
