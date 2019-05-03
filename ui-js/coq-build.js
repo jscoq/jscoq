@@ -1,4 +1,4 @@
-const {fsif_native} = require('./fs-interface'),
+const {fsif_native, FileStore} = require('./fs-interface'),
       neatjson = require('neatjson');
 
 require('./coq-manager'); // needed for Array.equals :\
@@ -481,8 +481,80 @@ class CoqC {
 }
 
 
+/**
+ * Main build task entry point.
+ * Orchestrates the different build stages and backs UI for displaying
+ * build progress and outcome.
+ */
+class CoqBuild {
 
-module.exports = {CoqProject, CoqDep, CoqC}
+    constructor() {
+        this.store = new FileStore();
+        this.view = undefined;
+
+        this.options = {
+            upload: true
+        };
+    }
+
+    withUI(dom) {
+        require('./components/file-view');
+
+        this.view = new Vue({
+            el: dom,
+            data: {
+                files: []
+            }
+        });
+
+        this._updateView();
+        return this;
+    }
+
+    ofDirectory(dir) {
+        this.store.addFrom(fsif_native, dir, '_CoqProject');
+        this.store.addFrom(fsif_native, dir, '**/*.v');
+
+        this.project =
+            CoqProject.fromFileOrDirectory('/', null, this.store.fsif);
+
+        this._updateView();
+        return this;
+    }
+
+    prepare(coq) {
+        const {HeadlessCoqManager} = require('./coq-cli');
+
+        // Compute module dependencies with CoqDep
+        var coqdep = new CoqDep(this.store.fsif);
+        this.plan = coqdep.buildPlan(this.project);
+
+        // Create a worker and a compiler instance
+        this.coq = coq || new HeadlessCoqManager(
+            (typeof CoqWorker !== 'undefined') ? new CoqWorker : undefined);
+        Object.assign(this.coq.options, this.options);
+
+        this.coqc = new CoqC(this.coq, this.store.fsif);
+    }
+
+    start() {
+        this.coqc.batchCompile(this.plan, this.options.upload);
+    }
+
+    _updateView() {
+        // TODO might be better to use a Vue computed property instead
+        if (this.view) {
+            for (let fn of this.store.file_map.keys()) {
+                this.view.$refs.file_list.create(fn);
+            }
+        }
+    }
+
+}
+
+
+
+module.exports = {CoqProject, CoqDep, CoqC, CoqBuild}
 
 
 
