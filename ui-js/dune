@@ -1,0 +1,14 @@
+(rule
+ (mode promote)
+ (targets coq-build.browser.js)
+ (deps (:include .jsfiles))
+ (action (bash "npx browserify coq-build.js -d -s coqBuild -o %{targets}"))
+)
+
+; List all .js files except ones ending in .browser.js.
+; (this is useful when links are present)
+(rule
+ (targets .jsfiles)
+ (action (with-stdout-to %{targets} 
+  (bash "ls *.js | grep -v '\\.browser\\.js$'")))
+)
