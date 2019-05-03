@@ -66,7 +66,7 @@ class FileStore {
     }
 
     folders() {
-        var s = new Set();
+        var s = new Set(['/']);
         for (let fn of this.files()) {
             let pels = fn.split('/');
             for (let i = 1; i < pels.length; i++) {
@@ -100,10 +100,13 @@ class FileStore {
         else
             entries = this.files();
 
+        var prefix = options.cwd &&
+            (options.cwd + (options.cwd.endsWith('/') ? '' : '/'));
+
         for (let entry of entries) {
-            if (options.cwd) {
-                if (entry.startsWith(options.cwd + '/'))
-                    entry = entry.substring(options.cwd.length + 1);
+            if (prefix) {
+                if (entry.startsWith(prefix))
+                    entry = entry.substring(prefix.length);
                 else
                     continue;
             }

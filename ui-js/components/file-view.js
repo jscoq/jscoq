@@ -102,7 +102,8 @@ Vue.component('file-list', {
         },
 
         create(rel_path, type='file') {
-            if (typeof rel_path === 'string') rel_path = rel_path.split('/');
+            if (typeof rel_path === 'string')
+                rel_path = rel_path.split('/').filter(x => x);
 
             var cwd = {name: '/', files: this.files};
             for (let pel of rel_path) {
