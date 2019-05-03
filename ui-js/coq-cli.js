@@ -214,7 +214,7 @@ class HeadlessCoqManager {
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
-        for (let path_el of module.paths) {
+        for (let path_el of module.paths || []) {
             for (let dir of [this.fsif.path.join(path_el, dirname), 
                              this.fsif.path.join(path_el, '..', dirname)])
                 if (this._isDirectory(dir))

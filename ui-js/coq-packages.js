@@ -6,13 +6,14 @@ class PackageManager {
      * Creates the packages UI and loading manager.
      *
      * @param {Element} panel_dom <div> element to hold the package entries
-     * @param {string} pkg_root_path base URL of package locations (coq-pkgs)
-     * @param {list} pkg_names list of package names
+     * @param {string} pkg_root_path base URL of package locations (coq-pkgs);
+     *   relative to the location of this script
+     * @param {array} pkg_names list of package names
      * @param {CoqWorker} coq reference to the Coq worker instance to send
      *   load requests to
      */
-    constructor(panel_dom, pkg_root_path, pkg_names, coq) {
-        this.pkg_root_path = pkg_root_path;
+    constructor(panel_dom, pkg_root_path='../coq-pkgs/', pkg_names=[], coq) {
+        this.pkg_root_path = pkg_root_path + (pkg_root_path.endsWith('/') ? '' : '/');
         this.pkg_names     = pkg_names;
         this.panel         = panel_dom;
         this.bundles       = {};
@@ -81,6 +82,15 @@ class PackageManager {
 
             this.addBundleInfo(bname, pkg_info);
             this.bundles[bname].archive = archive;
+        });
+    }
+
+    addBundleResource(bname, uri=undefined) {
+        return new Promise((resolve, reject) => {
+            $.getJSON(uri || this.getUrl(`${bname}.json`)).then(json => {
+                this.addBundleInfo(bname || json.desc, json);
+                resolve(json);
+            });
         });
     }
 

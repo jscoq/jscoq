@@ -19,9 +19,7 @@ var fsif_native;
 
 if (typeof process !== 'undefined') {
     const node_require = require, /* bypass browserify */
-
-
-     fs = node_require('fs'),
+          fs = node_require('fs'),
           glob = node_require('glob'),
           path = node_require('path');
 
@@ -29,7 +27,7 @@ if (typeof process !== 'undefined') {
     fsif_native = {fs, path, glob};
 }
 else {
-    fsif_native = {};  // stub
+    fsif_native = { /* stub */ };
 }
 
 
@@ -56,10 +54,10 @@ class FileStore {
         this.file_map.set(filename, content);
     }
 
-    addFrom(fsif, root_dir, glob_pattern) {
+    addFrom(fsif, root_dir, glob_pattern="**", into="/") {
         for (let fn of fsif.glob.sync(glob_pattern, {cwd: root_dir})) {
             var content = fsif.fs.readFileSync(fsif.path.join(root_dir, fn));
-            this.create(fn, content);
+            this.create(this.fsif.path.join(into, fn), content);
         }
     }
 
@@ -117,6 +115,9 @@ class FileStore {
 }
 
 
+/**
+ * A minimal drop-in replacement for Node's `path` module.
+ */
 const path_polyfill = {
     join(...paths) {
         if (paths.length === 0) return '.';
@@ -125,7 +126,7 @@ const path_polyfill = {
             for (let pel of p.split('/')) {
                 if (pel === '' || pel === '.') continue;
                 else if (pel === '..') cwd = this.dirname(cwd);
-                else cwd = `${cwd}/${pel}`;
+                else cwd = `${cwd.replace(/[/]$/, '')}/${pel}`;
             }
         }
         return cwd;

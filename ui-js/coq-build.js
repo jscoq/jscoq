@@ -31,12 +31,14 @@ class CoqProject {
         }
     }
     addRecursive(base_dir, base_name) {
-        var prefix = this._prefix(base_name);
-        this.add(base_dir, prefix);
-        for (let dir of this.fsif.glob.sync('**/', {cwd: base_dir})) {
-            dir = dir.replace(/[/]$/,'');
-            var pkg = prefix.concat(dir.split('/').filter(x => x));
-            this.add(this.fsif.path.join(base_dir, dir), pkg);
+        if (this._isDirectory(base_dir)) {
+            var prefix = this._prefix(base_name);
+            this.add(base_dir, prefix);
+            for (let dir of this.fsif.glob.sync('**/', {cwd: base_dir})) {
+                dir = dir.replace(/[/]$/,'');
+                var pkg = prefix.concat(dir.split('/').filter(x => x));
+                this.add(this.fsif.path.join(base_dir, dir), pkg);
+            }
         }
     }
     _vFiles(dir) {
@@ -169,6 +171,13 @@ class CoqProject {
 
     _guessName(filename) {
         return this.fsif.path.basename(filename).replace(/[.][^.]*$/,'');  // base sans extension
+    }
+
+    _isDirectory(p) {
+        try {
+            return this.fsif.fs.statSync(p).isDirectory();
+        }
+        catch (e) { return false; }
     }
 
     /**
