@@ -215,12 +215,26 @@ class CoqProject {
      * @param {string} coq_project_filename file in _CoqProject format
      * @param {string?} project_root base directory for project;
      *   if omitted, the directory part of `coq_project_filename` is used.
+     * @param {object} fsif file-system interface to use
      */
     static fromFile(coq_project_filename, project_root=null, fsif=fsif_native) {
         return CoqProject.fromFileText(
             fsif.fs.readFileSync(coq_project_filename, 'utf-8'),
             project_root || fsif.path.dirname(coq_project_filename),
             fsif);
+    }
+
+    /**
+     * Configures a project from a directory containing a _CoqProject file.
+     * @param {string} dir directory
+     * @param {string?} project_root base directory for project;
+     *   if omitted, `dir` is used as root as well.
+     * @param {object} fsif file-system interface to use
+     */
+    static fromDirectory(dir, project_root=null, fsif=fsif_native) {
+        return CoqProject.fromFile(
+            fsif.path.join(dir, '_CoqProject'),
+            project_root || dir, fsif);
     }
 
     static fromFileOrDirectory(coq_project_dir_or_filename, project_root=null, fsif=fsif_native) {
@@ -230,9 +244,8 @@ class CoqProject {
         }
         catch (e) { throw new Error(`not found: '${coq_project_dir_or_filename}'`); }
 
-        return CoqProject.fromFile(is_dir 
-            ? fsif.path.join(coq_project_dir_or_filename, '_CoqProject') 
-            : coq_project_dir_or_filename, project_root, fsif);
+        return (is_dir ? CoqProject.fromDirectory : CoqProject.fromFile)(
+            coq_project_dir_or_filename, project_root, fsif);
     }
     
 }
@@ -352,7 +365,9 @@ class CoqC {
         this.fsif = fsif;
         this.coq = coq || new HeadlessCoqManager();
 
-        this.vo_output = {};
+        this.output = {root: '/lib', vo: {}, errors: {}};
+
+        this.onprogress = () => {};
 
         var dummy = {
             coqCancelled: () => { },
@@ -369,7 +384,8 @@ class CoqC {
 
     spawn() {
         var c = new CoqC(this.coq.spawn(), this.fsif);
-        c.vo_output = this.vo_output;  /* tie child's output to parent's */
+        c.output = this.output;  /* tie child's output to parent's */
+        c.onprogress = this.onprogress;
         return c;
     }
 
@@ -388,10 +404,10 @@ class CoqC {
             var upload = [];
             zip.forEach((fn, content) => {
                 if (/[.]vo$/.exec(fn)) {
-                    fn = `/lib/${fn}`;
+                    fn = `${this.output.root}/${fn}`;
                     upload.push(
                         content.async('arraybuffer').then(data => {
-                            this.vo_output[fn] = data;
+                            this.output.vo[fn] = data;
                             this.coq.coq.put(fn, data);
                         })
                     );
@@ -403,7 +419,7 @@ class CoqC {
 
     /**
      * Compiles a .v file, producing a .vo file and placing it in the worker's
-     * '/lib/'.
+     * pseudo-filesystem under `this.output.root`.
      * Multiple jobs are processed sequentially.
      * @param {array or object} entries a compilation job with fields 
      *   {input, dirpath}, or an array of them.
@@ -419,11 +435,15 @@ class CoqC {
         }
         else {
             var entry = entries, pkg_id = entry.dirpath.slice(0, -1),
+                root = this.output.root,
                 in_fn = upload ? `/static/_build/${entry.dirpath.join('/')}.v` : entry.input,
-                out_fn = `/lib/${entry.dirpath.join('/')}.vo`;
-            if (this.vo_output.hasOwnProperty(out_fn)) return Promise.resolve();
+                out_fn = `${this.fsif.path.join(root, ...entry.dirpath)}.vo`;
 
+            if (this.output.vo.hasOwnProperty(out_fn)) return Promise.resolve();
+
+            this.onprogress({type: 'start', filename: in_fn, state: this.output});
             console.log("Compiling: ", entry.input);
+
             this.coq.options.top_name = entry.dirpath.join('.');
             this.coq.options.compile = {input: in_fn, output: out_fn};
             if (upload)
@@ -431,51 +451,58 @@ class CoqC {
             this.coq.start();
             return this.coq.when_done.promise.then(() => {
                 this.coq.terminate();
-                this.coq.project.add(`/lib/${pkg_id.join('/')}`, pkg_id);
+                this.coq.project.add(this.fsif.path.join(root, ...pkg_id), pkg_id);
+                this.onprogress({type: 'end', filename: in_fn, state: this.output});
             });
         }
     }
 
     coqGot(filename, buf) {
-        this.vo_output[filename] = buf;
+        var rel = this.fsif.path.relative(this.output.root, filename);
+        this.output.vo[rel] = buf;
         let idx = this.coq.coq.observers.indexOf(this);
         if (idx > -1) this.coq.coq.observers.splice(idx, 1);
     }
 
     toZip(save_as) {
         const JSZip = require('jszip'), path = this.fsif.path,
-              base_dir = "/lib",
               name = save_as ? path.basename(save_as).replace(/[.][^.]*$/,'') : undefined;
         var z = new JSZip();
         z.file('coq-pkg.json', neatjson.neatJSON(this.createManifest(name), 
                                                  this.json_format_opts));
-        for (let fn in this.vo_output) {
-            z.file(path.relative(base_dir, fn), this.vo_output[fn], 
-                   this.zip_file_opts);
+        for (let fn in this.output.vo) {
+            z.file(fn, this.output.vo[fn], this.zip_file_opts);
         }
         if (save_as) {
             return z.generateNodeStream()
                 .pipe(this.fsif.fs.createWriteStream(save_as))
-                .on('finish', () => { console.log(`wrote '${save_as}'.`); return z; });
+                .on('finish', () => {
+                    console.log(`wrote '${save_as}'.`); return z;
+                });
         }
         else
             return Promise.resolve(z);
     }
 
     createManifest(name) {
-        const base_dir = "/lib", path = this.fsif.path;
+        const path = this.fsif.path;
         var dirs = new Map(), pkgs = [];
-        for (let fn in this.vo_output) {
-            var dir = path.dirname(path.relative(base_dir, fn)),
-                base = path.basename(fn);
+        for (let fn in this.output.vo) {
+            var dir = path.dirname(dn), base = path.basename(fn);
             if (dirs.has(dir)) dirs.get(dir).push(base);
             else dirs.set(dir, [base]);
         }
         for (let dir of dirs.keys()) {
-            pkgs.push({pkg_id: dir.split('/'),
-                       vo_files: dirs.get(dir).map(x => [x, ''])});  // TODO: digest
+            pkgs.push({
+                pkg_id: dir.split('/'),
+                vo_files: dirs.get(dir).map(x => this._voEntry(x))
+             });
         }
         return {desc: name || '', deps: [], pkgs: pkgs};
+    }
+
+    _voEntry(x) {
+        return [x, ''];  // TODO: digest
     }
 
 }
@@ -524,31 +551,52 @@ class CoqBuild {
             }
         }
 
-        this.project = new CoqProject(this.store.fsif);
-        this.project.addRecursive('/', []);
-        this.project.collectModules();
+        this._openProject();
+        return Promise.resolve(this);
+    }
 
-        this._updateView();
-        return this;
+    ofZip(zip) {
+        var zip_store = new FileStore(), scan = [];
+        zip.forEach((fn, content) => {
+            scan.push(
+                content.async('arraybuffer').then(data =>
+                    zip_store.create(`/${fn}`, data)));
+        });
+        return Promise.all(scan).then(() => {
+            console.log(zip_store);
+
+        
+            return this.ofDirectory('/', zip_store.fsif); });
     }
 
     prepare(coq) {
         const {HeadlessCoqManager} = require('./coq-cli');
 
         // Compute module dependencies with CoqDep
-        var coqdep = new CoqDep(this.store.fsif);
-        this.plan = coqdep.buildPlan(this.project);
+        if (this.project) {
+            var coqdep = new CoqDep(this.store.fsif);
+            this.plan = coqdep.buildPlan(this.project);
+        }
 
         // Create a worker and a compiler instance
-        this.coq = coq || new HeadlessCoqManager(
+        this.coq = coq || this.coq || new HeadlessCoqManager(
             (typeof CoqWorker !== 'undefined') ? new CoqWorker : undefined);
         Object.assign(this.coq.options, this.options);
 
         this.coqc = new CoqC(this.coq, this.store.fsif);
+        this.coqc.onprogress = output => console.log(output);
     }
 
     start() {
         this.coqc.batchCompile(this.plan, this.options.upload);
+    }
+
+    _openProject(dir="/") {
+        this.project = new CoqProject(this.store.fsif);
+        this.project.addRecursive(dir, []);
+        this.project.collectModules();
+
+        this._updateView();
     }
 
     _updateView() {

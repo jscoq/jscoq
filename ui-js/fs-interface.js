@@ -9,7 +9,7 @@
  * In this case, however, the interface has to adhere to JavaScript standards.
  * The substituted interfaces are:
  * - fs: readFileSync, writeFileSync, statSync
- * - path: join, dirname, basename, isAbsolute
+ * - path: join, dirname, basename, isAbsolute, relative
  * - glob: sync
  */
 
@@ -51,6 +51,8 @@ class FileStore {
     }
 
     create(filename, content) {
+        if (!(content instanceof Buffer))
+            content = Buffer.from(content);
         this.file_map.set(filename, content);
     }
 
@@ -79,7 +81,7 @@ class FileStore {
     readFileSync(filename, encoding=null) {
         var contents = this.file_map.get(filename);
         if (contents) {
-            return encoding ? contents.toString('utf-8') : contents;
+            return encoding ? contents.toString(encoding) : contents;
         }
         else throw new Error(`ENOENT: '${filename}'`);
     }
@@ -143,6 +145,15 @@ const path_polyfill = {
     },
     isAbsolute(p) {
         return p.startsWith('/');
+    },
+    relative(from, to) {
+        var prefix = from + (from.endsWith('/') ? '' : '/');
+        if (to.startsWith(prefix)) {
+            return to.substring(prefix.length);
+        }
+        else {
+            throw new Error('not implemented');  // TBD
+        }
     }
 }
 
