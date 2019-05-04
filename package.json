@@ -14,7 +14,8 @@
     "localforage": "^1.7.3",
     "minimatch": "^3.0.4",
     "neatjson": "^0.8.3",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "vue": "^2.6.10"
   },
   "devDependencies": {
     "browserify": "^16.2.3"
