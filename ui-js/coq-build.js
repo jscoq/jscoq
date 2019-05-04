@@ -498,7 +498,7 @@ class CoqBuild {
     }
 
     withUI(dom) {
-        require('./components/file-view');
+        require('./components/file-list');
 
         this.view = new Vue({
             el: dom,
