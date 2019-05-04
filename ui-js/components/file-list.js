@@ -22,7 +22,8 @@ Vue.component('file-list', {
     template: `
     <ul :class="['file-list', 'level-'+$data._level]">
         <li v-for="f in files" :data-name="f.name" :class="{folder: f.files, file: !f.files}"
-                draggable="true" @dragstart="drag" @dragend="undrag" @drop="drop" @dragover="dragover" @dragleave="dragout">
+                draggable="true" @dragstart="drag" @dragend="undrag" @drop="drop" 
+                @dragover="dragover" @dragenter="dragover" @dragleave="dragout">
             <file-list.folder v-if="f.files" :entry="f" :path="$data._path" :level="$data._level + 1"
                     @action="action"/>
             <file-list.file v-else :entry="f"/>
@@ -31,10 +32,11 @@ Vue.component('file-list', {
     `,
     methods: {
         drag(ev) {
-            var item_name = $(ev.currentTarget).attr('data-name'),
+            var target = $(ev.currentTarget),
+                item_name = target.attr('data-name'),
                 from_path = [...this.$data._path, item_name];
             ev.dataTransfer.setData('text/json', JSON.stringify(from_path));
-            $(event.currentTarget).addClass('dragged');
+            requestAnimationFrame(() => target.addClass('dragged'));
             ev.stopPropagation();
         },
         undrag(ev) {
@@ -42,8 +44,9 @@ Vue.component('file-list', {
         },
         drop(ev) {
             var from_path = JSON.parse(ev.dataTransfer.getData('text/json')),
-                item_name = $(ev.currentTarget).attr('data-name'),
-                is_folder = $(ev.currentTarget).is('.folder'),
+                target = $(ev.currentTarget),
+                item_name = target.attr('data-name'),
+                is_folder = target.is('.folder'),
                 to_path = this.$data._path.concat(is_folder ? item_name : []),
                 after_name = is_folder ? null : item_name;
             this.action({
@@ -59,6 +62,7 @@ Vue.component('file-list', {
             if ($(ev.currentTarget).closest('.dragged').length === 0) {
                 $(ev.currentTarget).addClass('draghov');
                 ev.preventDefault();
+                ev.dataTransfer.dropEffect = 'move';
             }
             ev.stopPropagation();
         },

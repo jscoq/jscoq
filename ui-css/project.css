@@ -47,9 +47,10 @@ ul.file-list div.level-5 {
     background: #d0d0d0;
 }
 
-ul.file-list > li.draghov,
-ul.file-list > li.draghov > div {
-    background: rgba(255,0,0,0.1);
+ul.file-list > li.file.draghov,
+ul.file-list > li.folder.draghov > * > .entry {
+    border-bottom: 2px solid rgba(87, 87, 175, 0.8);
+    margin-bottom: -2px;
 }
 
 ul.file-list .dragged {
