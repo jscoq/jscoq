@@ -41,8 +41,11 @@ function setupPackageManager(coq_manager) {
     return pm;
 }
 
-function loadFromDroppedFiles(drop_ev) {
-    for (let file of drop_ev.dataTransfer.files) {
+function loadFromSelectedFiles(ev) {
+    var files = ev.dataTransfer ? ev.dataTransfer.files
+        : (ev.target.files || []);
+    
+    for (let file of files) {
         if (file.type === 'application/zip') {
             coq_build.ofZip(file)
             .then(() => coq_build.prepare());
@@ -61,13 +64,19 @@ function loadFromDroppedFiles(drop_ev) {
 }
 
 function setupDropZone(jdom) {
-    jdom.on('dragover', ev => { ev.preventDefault(); });
-    jdom.on('dragenter', ev => { jdom.addClass('drag-into'); });
-    jdom.on('dragleave', ev => { jdom.removeClass('drag-into'); });
+    jdom.on('dragover', ev => {
+        if (ev.originalEvent.dataTransfer.types.includes("Files")) {
+            jdom.addClass('draghov');
+            ev.preventDefault();
+            ev.originalEvent.dataTransfer.dropEffect = 'link';
+        }
+    });
+    jdom.on('dragenter', ev => { jdom.addClass('draghov'); });
+    jdom.on('dragleave', ev => { jdom.removeClass('draghov'); });
     jdom.on('drop', ev => {
         ev.preventDefault(); ev.stopPropagation();
-        jdom.removeClass('drag-into');
-        loadFromDroppedFiles(ev.originalEvent);
+        jdom.removeClass('draghov');
+        loadFromSelectedFiles(ev.originalEvent);
     });
 }
 
@@ -90,6 +99,8 @@ loadJsCoq().then(async () => {
 
     // UI events
     setupDropZone($('html'));
+    $('#open').click(() => $('#open-files').click());
+    $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
     $('#build').click(() => coq_build.start());
 
 });
@@ -97,7 +108,9 @@ loadJsCoq().then(async () => {
   </head>
 
   <body>
+    <button id="open">△</button>
     <button id="build">►</button>
+    <input id="open-files" type="file" hidden multiple>
     <hr/>
     <div id="project-pane">
       <file-list ref="file_list" :files="files"></file-list>
