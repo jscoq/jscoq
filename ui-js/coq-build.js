@@ -582,7 +582,8 @@ class CoqBuild {
 
         // Create a worker and a compiler instance
         this.coq = coq || this.coq || new HeadlessCoqManager(
-            (typeof CoqWorker !== 'undefined') ? new CoqWorker : undefined);
+            (typeof CoqWorker !== 'undefined') ? new CoqWorker : undefined,
+            this.store.fsif);
         Object.assign(this.coq.options, this.options);
 
         this.coqc = new CoqC(this.coq, this.store.fsif);

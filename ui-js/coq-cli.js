@@ -109,7 +109,7 @@ class HeadlessCoqManager {
     }
 
     spawn() {
-        var c = new HeadlessCoqManager(this.coq.spawn());
+        var c = new HeadlessCoqManager(this.coq.spawn(), this.fsif);
         c.provider = this.provider.clone();
         c.project = this.project;
         Object.assign(c.options, this.options);
