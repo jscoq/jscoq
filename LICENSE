@@ -49,12 +49,17 @@ License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.
 
 Files: examples/Stlc.html
-LICENSE: BSD
+License: BSD
 Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
 
-Files: ui-external/*
-Comment: The frameworks in external, pace, codemirror, etc... are under their
-         own licence, see the directories for more details.
+Files: coq-js/js_stub/str.js
+License: LGPL2.1
+Comment: Derived from OCaml (https://github.com/ocaml/ocaml).
+
+Files: coq-js/js_stub/marshal*.js
+Licence: LGPL2.0
+Comment: Derived from js_of_ocaml (https://github.com/ocsigen/js_of_ocaml).
+ (if js_of_ocaml updates to LGPL2.1+, then these should be updated to the same.)
 
 # Regarding Coq and derivatives:
 
