@@ -441,7 +441,7 @@ class CoqC {
 
             if (this.output.vo.hasOwnProperty(out_fn)) return Promise.resolve();
 
-            this.onprogress({type: 'start', filename: in_fn, state: this.output});
+            this.onprogress({type: 'start', entry, state: this.output});
             console.log("Compiling: ", entry.input);
 
             this.coq.options.top_name = entry.dirpath.join('.');
@@ -452,7 +452,7 @@ class CoqC {
             return this.coq.when_done.promise.then(() => {
                 this.coq.terminate();
                 this.coq.project.add(this.fsif.path.join(root, ...pkg_id), pkg_id);
-                this.onprogress({type: 'end', filename: in_fn, state: this.output});
+                this.onprogress({type: 'end', entry, state: this.output});
             });
         }
     }
@@ -522,6 +522,8 @@ class CoqBuild {
         this.options = {
             upload: true
         };
+
+        this._ongoing = new Set();
     }
 
     withUI(dom) {
@@ -556,17 +558,17 @@ class CoqBuild {
     }
 
     ofZip(zip) {
+        if (zip instanceof Blob)
+            return JSZip.loadAsync(zip).then(z => this.ofZip(z));
+
         var zip_store = new FileStore(), scan = [];
         zip.forEach((fn, content) => {
             scan.push(
                 content.async('arraybuffer').then(data =>
                     zip_store.create(`/${fn}`, data)));
         });
-        return Promise.all(scan).then(() => {
-            console.log(zip_store);
-
-        
-            return this.ofDirectory('/', zip_store.fsif); });
+        return Promise.all(scan).then(() =>
+            this.ofDirectory('/', zip_store.fsif));
     }
 
     prepare(coq) {
@@ -584,7 +586,10 @@ class CoqBuild {
         Object.assign(this.coq.options, this.options);
 
         this.coqc = new CoqC(this.coq, this.store.fsif);
-        this.coqc.onprogress = output => console.log(output);
+        this.coqc.onprogress = ev => this._onProgress(ev);
+
+        this._ongoing.clear();
+        this._updateView();
     }
 
     start() {
@@ -596,6 +601,17 @@ class CoqBuild {
         this.project.addRecursive(dir, []);
         this.project.collectModules();
 
+        this._ongoing.clear();
+        this._updateView();
+    }
+
+    _onProgress(ev) {
+        if (ev.type == 'start') {
+            this._ongoing.add(ev.entry.input);
+        }
+        else if (ev.type == 'end') {
+            this._ongoing.delete(ev.entry.input);
+        }
         this._updateView();
     }
 
@@ -603,12 +619,27 @@ class CoqBuild {
         // TODO might be better to use a Vue computed property instead
         if (this.view) {
             for (let fn of this.store.file_map.keys()) {
-                this.view.$refs.file_list.create(fn);
+                var e = this.view.$refs.file_list.create(fn),
+                    status = this._fileStatus(fn);
+                e.tags = status ? [CoqBuild.BULLETS[status]] : [];
             }
         }
     }
 
+    _fileStatus(fn) {
+        if (this._ongoing.has(fn)) return 'compiling';
+
+        var vo_fn = `${fn.replace(/^[/]*/, '')}o`;
+        if (this.coqc && this.coqc.output.vo.hasOwnProperty(vo_fn))
+            return 'compiled';
+    }
+
 }
+
+CoqBuild.BULLETS = {
+    compiled: {text: '✓', class: 'compiled'},
+    compiling: {text: '◎', class: 'compiling'}
+};
 
 
 

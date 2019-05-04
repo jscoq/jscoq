@@ -23,9 +23,9 @@ Vue.component('file-list', {
     <ul :class="['file-list', 'level-'+$data._level]">
         <li v-for="f in files" :data-name="f.name" :class="{folder: f.files, file: !f.files}"
                 draggable="true" @dragstart="drag" @dragend="undrag" @drop="drop" @dragover="dragover" @dragleave="dragout">
-            <folder v-if="f.files" :entry="f" :path="$data._path" :level="$data._level + 1"
-                    @action="action"></folder>
-            <span v-else class="name">{{f.name}}</span>
+            <file-list.folder v-if="f.files" :entry="f" :path="$data._path" :level="$data._level + 1"
+                    @action="action"/>
+            <file-list.file v-else :entry="f"/>
         </li>
     </ul>
     `,
@@ -110,7 +110,7 @@ Vue.component('file-list', {
                 if (!cwd.files) cwd.files = [];
                 let e = cwd.files.find(e => e.name === pel);
                 if (!e) {
-                    e = {name: pel, files: undefined};
+                    e = {name: pel, files: undefined, tags: undefined};
                     cwd.files.push(e);
                 }
                 cwd = e;
@@ -123,10 +123,24 @@ Vue.component('file-list', {
 });
 
 /**
- * `<folder>`
+ * `<file-list.file>`
+ * Represents a file entry.
+ */
+Vue.component('file-list.file', {
+    props: ['entry'],
+    template: `
+    <div class="entry">
+        <span class="name">{{entry.name}}</span>
+        <file-list.tags :tags="entry.tags"/>
+    </div>
+    `
+});
+
+/**
+ * `<file-list.folder>`
  * Represents a subfolder.
  */
-Vue.component('folder', {
+Vue.component('file-list.folder', {
     props: ['entry', 'level', 'path', 'collapsed'],
     data: function() { return {
         _path: [...(this.path || []), this.entry.name],
@@ -134,9 +148,9 @@ Vue.component('folder', {
     }; },
     template: `
     <div :class="['level-'+level]">
-        <div class="name">
-            <folder-knob v-model="$data._collapsed"></folder-knob>
-            {{entry.name}}
+        <div class="entry">
+            <file-list.folder-knob v-model="$data._collapsed"/>
+            <span class="name">{{entry.name}}</span>
         </div>
         <file-list :files="entry.files" :path="$data._path" :level="level"
                    v-show="!$data._collapsed"
@@ -147,10 +161,10 @@ Vue.component('folder', {
 })
 
 /**
- * `<folder-knob>`
+ * `<file-list.folder-knob>`
  * A small widget for expanding/collapsing a subfolder.
  */
-Vue.component('folder-knob', {
+Vue.component('file-list.folder-knob', {
     props: ['value'],
     data: function() { return {checked: !!this.value}; },
     template: `
@@ -159,3 +173,20 @@ Vue.component('folder-knob', {
     `
 });
 
+/**
+ * `<file-list.tags>`
+ * A small bin containing file tags.
+ */
+Vue.component('file-list.tags', {
+    props: ['tags'],
+    template: `
+    <div v-if="tags" class="tags">
+        <span v-for="t in tags" :class="t.class">{{displayText(t)}}</span>
+    </div>
+    `,
+    methods: {
+        displayText(t) {
+            return t.text === undefined ? t : t.text;
+        }
+    }
+});

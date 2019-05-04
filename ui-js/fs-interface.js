@@ -17,7 +17,7 @@ const minimatch = require('minimatch');
 
 var fsif_native;
 
-if (typeof process !== 'undefined') {
+if (global.process !== undefined && global.process.versions.node) {
     const node_require = require, /* bypass browserify */
           fs = node_require('fs'),
           glob = node_require('glob'),
