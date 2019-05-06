@@ -650,13 +650,16 @@ class CoqBuild {
         var vo_fn = `${fn.replace(/^[/]*/, '')}o`;
         if (this.coqc && this.coqc.output.vo.hasOwnProperty(vo_fn))
             return 'compiled';
+        else if (this.coqc.output.errors.hasOwnProperty(fn))
+            return 'error';
     }
 
 }
 
 CoqBuild.BULLETS = {
+    compiling: {text: '◎', class: 'compiling'},
     compiled: {text: '✓', class: 'compiled'},
-    compiling: {text: '◎', class: 'compiling'}
+    error: {text: '✗', class: 'error'}
 };
 
 
