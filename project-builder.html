@@ -33,9 +33,10 @@ function setupPackageManager(coq_manager) {
     var pm = new PackageManager($('#packages-panel')[0]);
     pm.coq = coq_manager.coq;
 
-    // Load init from coq-pkg
-    pm.addBundleResource('init')
-    .then(() => pm.loadDeps(['init']))
+    // Load standard libs from coq-pkgs
+    var deps = ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'];
+    deps.reduce((p, d) => p.then(() => pm.addBundleResource(d)), Promise.resolve())
+    .then(() => pm.loadDeps(deps))
     .then(() => coq_manager.project.path.push(...pm.getLoadPath()));
 
     return pm;
