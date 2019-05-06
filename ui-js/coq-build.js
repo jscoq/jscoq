@@ -401,14 +401,16 @@ class CoqC {
             return require('JSZip').loadAsync(load).then(z => this.continueFrom(z));
         }
         else {
-            var upload = [];
+            var upload = [], root = this.output.root;
             zip.forEach((fn, content) => {
                 if (/[.]vo$/.exec(fn)) {
-                    fn = `${this.output.root}/${fn}`;
+                    var put_fn = this.fsif.path.join(root, fn);
                     upload.push(
                         content.async('arraybuffer').then(data => {
                             this.output.vo[fn] = data;
-                            this.coq.coq.put(fn, data);
+                            this.coq.coq.put(put_fn, data);
+                            this.coq.project.add(this.fsif.path.dirname(put_fn),
+                                this.fsif.path.dirname(fn).split('/'));
                         })
                     );
                 }
@@ -437,7 +439,8 @@ class CoqC {
             var entry = entries, pkg_id = entry.dirpath.slice(0, -1),
                 root = this.output.root,
                 in_fn = upload ? `/static/_build/${entry.dirpath.join('/')}.v` : entry.input,
-                out_fn = `${this.fsif.path.join(root, ...entry.dirpath)}.vo`;
+                out_fn = `${this.fsif.path.join(...entry.dirpath)}.vo`,
+                out_fn_abs = this.fsif.path.join(root, out_fn);
 
             if (this.output.vo.hasOwnProperty(out_fn)) return Promise.resolve();
 
@@ -445,23 +448,36 @@ class CoqC {
             console.log("Compiling: ", entry.input);
 
             this.coq.options.top_name = entry.dirpath.join('.');
-            this.coq.options.compile = {input: in_fn, output: out_fn};
+            this.coq.options.compile = {input: in_fn, output: out_fn_abs};
             if (upload)
                 this.coq.coq.put(in_fn, this.fsif.fs.readFileSync(entry.input));
             this.coq.start();
+            // Handle success/failure status from manager
             return this.coq.when_done.promise.then(() => {
-                this.coq.terminate();
                 this.coq.project.add(this.fsif.path.join(root, ...pkg_id), pkg_id);
-                this.onprogress({type: 'end', entry, state: this.output});
+            })
+            .catch(e => {
+                this.output.errors[entry.input] = e; 
+                return Promise.reject(e); 
+            })
+            .finally(() => {
+                this.cleanup();
+                this.onprogress({type: 'end', entry, state: this.output})
             });
         }
     }
 
-    coqGot(filename, buf) {
-        var rel = this.fsif.path.relative(this.output.root, filename);
-        this.output.vo[rel] = buf;
+    cleanup() {
+        this.coq.terminate();
         let idx = this.coq.coq.observers.indexOf(this);
         if (idx > -1) this.coq.coq.observers.splice(idx, 1);
+    }
+
+    coqGot(filename, buf) {
+        if (!this.coq.when_done.isFailed()) {
+            var rel = this.fsif.path.relative(this.output.root, filename);
+            this.output.vo[rel] = buf;
+        }
     }
 
     toZip(save_as) {
@@ -488,7 +504,7 @@ class CoqC {
         const path = this.fsif.path;
         var dirs = new Map(), pkgs = [];
         for (let fn in this.output.vo) {
-            var dir = path.dirname(dn), base = path.basename(fn);
+            var dir = path.dirname(fn), base = path.basename(fn);
             if (dirs.has(dir)) dirs.get(dir).push(base);
             else dirs.set(dir, [base]);
         }
@@ -577,6 +593,7 @@ class CoqBuild {
         // Compute module dependencies with CoqDep
         if (this.project) {
             var coqdep = new CoqDep(this.store.fsif);
+            coqdep.processProject(this.project);
             this.plan = coqdep.buildPlan(this.project);
         }
 

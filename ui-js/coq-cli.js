@@ -185,9 +185,11 @@ class HeadlessCoqManager {
     }
 
     coqGot(filename, buf) {
-        this.coq.put(filename, buf);
-        console.log(` > ${filename}`);
-        this.when_done.resolve();
+        if (!this.when_done.isFailed()) {
+            this.coq.put(filename, buf);
+            console.log(` > ${filename}`);
+            this.when_done.resolve();
+        }
     }
 
     coqCancelled(sid) {
@@ -196,8 +198,9 @@ class HeadlessCoqManager {
     }
 
     coqCoqExn(loc, _, msg) {
-        console.error(`[Exception] ${this.pprint.pp2Text(msg)}`);
-        this.when_done.reject(msg);
+        var loc_repr = this._format_loc(loc);
+        console.error(`[Exception] ${this.pprint.pp2Text(msg)}${loc_repr}`);
+        this.when_done.reject({loc, error: msg});
     }
 
     feedFileLoaded() { }
@@ -210,7 +213,7 @@ class HeadlessCoqManager {
     feedMessage(sid, [lvl], loc, msg) { 
         console.log('-'.repeat(60));
         console.log(`[${lvl}] ${this.pprint.pp2Text(msg).replace('\n', '\n         ')}`); 
-        console.log('-'.repeat(60));
+        console.log('-'.repeat(60) + this._format_loc(loc));
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
@@ -231,6 +234,13 @@ class HeadlessCoqManager {
     _identifierWithin(id, modpath) {
         var prefix = (typeof modpath === 'string') ? modpath.split('.') : modpath;
         return id.prefix.slice(0, prefix.length).equals(prefix);
+    }
+
+    _format_loc(loc) {
+        return loc ? 
+            (loc.fname && loc.fname[0] === 'InFile' ?
+                `\n\t(at ${loc.fname[1]}:${loc.line_nb})` : 
+                `\n${JSON.stringify(loc)}`) : '';
     }
 
 }
