@@ -66,12 +66,13 @@ class PackageDefinition {
                     .on("error", () => console.error(`error reading '${phys}'.`)), fopts);
         }
         if (save_as) {
-            return z.generateNodeStream()
+            return new Promise((resolve, reject) =>
+              z.generateNodeStream()
                 .pipe(fs.createWriteStream(save_as))
-                .on('finish', () => console.log(`wrote '${save_as}'.`));
+                .on('finish', () => { console.log(`wrote '${save_as}'.`); resolve(z); }));
         }
         else
-            return z;
+            return Promise.resolve(z);
     }
 
     toJSON() {
@@ -96,11 +97,13 @@ module.exports = {PackageDefinition};
 // Usage:
 //  node mkpkg.js <json filenames...>
 if (module.id == '.') {
-    for (let json_fn of process.argv.slice(2)) {
-        var pd = PackageDefinition.fromFile(json_fn),
-            zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
-        pd.toZip(zip_fn);
-        pd.manifest.archive = path.basename(zip_fn);
-        pd.writeManifest();
-    }
+    (async () => {
+        for (let json_fn of process.argv.slice(2)) {
+            let pd = PackageDefinition.fromFile(json_fn),
+                zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
+            await pd.toZip(zip_fn);
+            pd.manifest.archive = path.basename(zip_fn);
+            pd.writeManifest();
+        }
+    })();
 }
