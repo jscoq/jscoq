@@ -388,12 +388,7 @@ let jscoq_execute =
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
   | Load filename ->
-    let vernac_state = Vernac.State.
-      { doc = fst !doc; sid = Jscoq_doc.tip !doc; proof = None; time = false } in
-    ignore(
-      Vernac.load_vernac ~echo:false ~check:false ~interactive:false
-                         ~state:vernac_state filename)
-    (* TODO update document tip instead of ignoring *)
+    doc := Jscoq_doc.load ~doc:!doc filename ~echo:false
   | Compile filename ->
     post_file filename (Icoq.compile_vo ~doc:(fst !doc))
 

@@ -33,6 +33,12 @@ val query :
   string                   ->
   unit
 
+val load :
+  doc:ser_doc        ->
+  string             ->
+  echo:bool          ->
+  ser_doc
+
 val cancel  : doc:ser_doc -> Stateid.t -> Stateid.t list * ser_doc
 
 (** [observe ~doc sid] evals up to state [sid] on document [doc]. *)
