@@ -48,7 +48,7 @@ function loadFromSelectedFiles(ev) {
     
     for (let file of files) {
         if (file.type === 'application/zip') {
-            coq_build.ofZip(file)
+            coq_build.startNew().ofZip(file)
             .then(() => coq_build.prepare());
 
             return; /* TODO multiple zips? */

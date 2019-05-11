@@ -122,6 +122,10 @@ Vue.component('file-list', {
             if (type === 'folder' && !cwd.files)
                 cwd.files = [];
             return cwd;
+        },
+
+        clear() {
+            this.files.splice(0);
         }
     }
 });

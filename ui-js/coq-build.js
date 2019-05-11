@@ -556,6 +556,13 @@ class CoqBuild {
         return this;
     }
 
+    startNew() {
+        if (this.view) this.view.$refs.file_list.clear();
+        this.store = new FileStore();
+        this._ongoing.clear();
+        return this;
+    }
+
     ofDirectory(dir, fsif=fsif_native) {
         // Read project file and store all .v files in transient folders
         // according to their logical paths
