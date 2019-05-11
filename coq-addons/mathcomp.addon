@@ -3,16 +3,22 @@
 
 include coq-addons/common.mk
 
-MATHCOMP_GIT=https://github.com/ejgallego/math-comp.git
+MATHCOMP_GIT=https://github.com/math-comp/math-comp.git
 MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
 MATHCOMP_DEST=$(COQPKGS_ROOT)/math-comp
+
+FASTLOAD_PATCH=$(PWD)/etc/patches/mathcomp-fast-load.patch
 
 .PHONY: nothing get build jscoq-install
 
 nothing:
 
-get:
-	[ -d $(MATHCOMP_HOME) ] || git clone --depth=1 -b fast-load $(MATHCOMP_GIT) $(MATHCOMP_HOME)
+$(MATHCOMP_HOME):
+	git clone --depth=1 $(MATHCOMP_GIT) $@
+	cd $@ && git apply $(FASTLOAD_PATCH)
+
+get: $(MATHCOMP_HOME)
+	@true
 
 build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install

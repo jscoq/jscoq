@@ -1,8 +1,20 @@
+diff --git a/mathcomp/Make b/mathcomp/Make
+index 4becdcb..c33c3a4 100644
+--- a/mathcomp/Make
++++ b/mathcomp/Make
+@@ -49,7 +49,6 @@ fingroup/quotient.v
+ solvable/abelian.v
+ solvable/all_solvable.v
+ solvable/alt.v
+-solvable/burnside_app.v
+ solvable/center.v
+ solvable/commutator.v
+ solvable/cyclic.v
 diff --git a/mathcomp/algebra/rat.v b/mathcomp/algebra/rat.v
-index 9012291..00d2f7a 100644
+index 228a824..da2ad40 100644
 --- a/mathcomp/algebra/rat.v
 +++ b/mathcomp/algebra/rat.v
-@@ -794,6 +794,7 @@ Ltac ring_to_rat :=
+@@ -799,6 +799,7 @@ Ltac ring_to_rat :=
            -?[(_ + _)%R]/(_ + _)%Q -?[(_ * _)%R]/(_ * _)%Q
            -?[(- _)%R]/(- _)%Q -?[(_ ^-1)%R]/(_ ^-1)%Q /=.
  
@@ -10,17 +22,29 @@ index 9012291..00d2f7a 100644
  Lemma rat_ring_theory : (ring_theory 0%Q 1%Q addq mulq subq oppq eq).
  Proof.
  split => * //; rat_to_ring;
-@@ -810,3 +811,4 @@ by move=> p /eqP p_neq0; rat_to_ring; rewrite mulVf.
+@@ -815,3 +816,4 @@ by move=> p /eqP p_neq0; rat_to_ring; rewrite mulVf.
  Qed.
  
  Add Field rat_field : rat_field_theory.
 +*)
+diff --git a/mathcomp/solvable/all_solvable.v b/mathcomp/solvable/all_solvable.v
+index b05a3c4..bc3d3a4 100644
+--- a/mathcomp/solvable/all_solvable.v
++++ b/mathcomp/solvable/all_solvable.v
+@@ -1,6 +1,6 @@
+ Require Export abelian.
+ Require Export alt.
+-Require Export burnside_app.
++(* Require Export burnside_app. *)
+ Require Export center.
+ Require Export commutator.
+ Require Export cyclic.
 diff --git a/mathcomp/ssreflect/prime.v b/mathcomp/ssreflect/prime.v
-index b346a93..79d0602 100644
+index bcb163c..898d743 100644
 --- a/mathcomp/ssreflect/prime.v
 +++ b/mathcomp/ssreflect/prime.v
-@@ -99,7 +99,7 @@ Lemma ifnzP T n (x y : T) : ifnz_spec n x y (ifnz n x y).
- Proof. by case: n => [|n]; [right | left]. Qed.
+@@ -118,7 +118,7 @@ Notation "p ^? e :: pd" := (cons_pfactor p e pd)
+ End PrimeDecompAux.
  
  (* For pretty-printing. *)
 -Definition NumFactor (f : nat * nat) := ([Num of f.1], f.2).
@@ -29,13 +53,14 @@ index b346a93..79d0602 100644
  Definition pfactor p e := p ^ e.
  
 diff --git a/mathcomp/ssreflect/ssrnat.v b/mathcomp/ssreflect/ssrnat.v
-index 5091411..6d2d512 100644
+index 86f8fb2..0235c53 100644
 --- a/mathcomp/ssreflect/ssrnat.v
 +++ b/mathcomp/ssreflect/ssrnat.v
-@@ -3,9 +3,11 @@
- Require Import mathcomp.ssreflect.ssreflect.
- From mathcomp
- Require Import ssrfun ssrbool eqtype.
+@@ -1,9 +1,12 @@
+ (* (c) Copyright 2006-2016 Microsoft Corporation and Inria.                  *)
+ (* Distributed under the terms of CeCILL-B.                                  *)
+ From mathcomp Require Import ssreflect ssrfun ssrbool eqtype.
++
 +(*
  Require Import BinNat.
  Require BinPos Ndec.
@@ -44,15 +69,15 @@ index 5091411..6d2d512 100644
  
  (******************************************************************************)
  (* A version of arithmetic on nat (natural numbers) that is better suited to  *)
-@@ -1431,6 +1433,7 @@ End NatTrec.
+@@ -1581,6 +1584,7 @@ End NatTrec.
  
  Notation natTrecE := NatTrec.trecE.
  
 +(*
- Lemma eq_binP : Equality.axiom Ndec.Neqb.
+ Lemma eq_binP : Equality.axiom N.eqb.
  Proof.
  move=> p q; apply: (iffP idP) => [|<-]; last by case: p => //; elim.
-@@ -1510,6 +1513,7 @@ by case: b; last (elim=> //= p <-; rewrite natTrecE mulnn -expnM muln2 ?expnS).
+@@ -1662,6 +1666,7 @@ by case: b; last (elim=> //= p <-; rewrite natTrecE mulnn -expnM muln2 ?expnS).
  Qed.
  
  End NumberInterpretation.
@@ -60,7 +85,7 @@ index 5091411..6d2d512 100644
  
  (* Big(ger) nat IO; usage:                              *)
  (*     Num 1 072 399                                    *)
-@@ -1518,6 +1522,7 @@ End NumberInterpretation.
+@@ -1670,6 +1675,7 @@ End NumberInterpretation.
  (*        to display the resut of an expression that    *)
  (*        returns a larger integer.                     *)
  
@@ -68,7 +93,7 @@ index 5091411..6d2d512 100644
  Record number : Type := Num {bin_of_number :> N}.
  
  Definition extend_number (nn : number) m := Num (nn * 1000 + bin_of_nat m).
-@@ -1530,9 +1535,11 @@ Canonical number_eqType := Eval hnf in EqType number number_eqMixin.
+@@ -1682,9 +1688,11 @@ Canonical number_eqType := Eval hnf in EqType number number_eqMixin.
  
  Notation "[ 'Num' 'of' e ]" := (Num (bin_of_nat e))
    (at level 0, format "[ 'Num'  'of'  e ]") : nat_scope.
@@ -80,7 +105,7 @@ index 5091411..6d2d512 100644
  Lemma nat_semi_ring : semi_ring_theory 0 1 addn muln (@eq _).
  Proof. exact: mk_srt add0n addnC addnA mul1n mul0n mulnC mulnA mulnDl. Qed.
  
-@@ -1544,6 +1551,7 @@ Qed.
+@@ -1696,6 +1704,7 @@ Qed.
  
  Lemma nat_power_theory : power_theory 1 muln (@eq _) nat_of_bin expn.
  Proof. by split; apply: nat_of_exp_bin. Qed.
@@ -88,7 +113,7 @@ index 5091411..6d2d512 100644
  
  (* Interface to the ring tactic machinery. *)
  
-@@ -1551,11 +1559,13 @@ Fixpoint pop_succn e := if e is e'.+1 then fun n => pop_succn e' n.+1 else id.
+@@ -1703,11 +1712,13 @@ Fixpoint pop_succn e := if e is e'.+1 then fun n => pop_succn e' n.+1 else id.
  
  Ltac pop_succn e := eval lazy beta iota delta [pop_succn] in (pop_succn e 1).
  
@@ -102,7 +127,7 @@ index 5091411..6d2d512 100644
  
  Ltac succn_to_add :=
    match goal with
-@@ -1568,9 +1578,11 @@ Ltac succn_to_add :=
+@@ -1720,9 +1731,11 @@ Ltac succn_to_add :=
    | _ => idtac
    end.
  
