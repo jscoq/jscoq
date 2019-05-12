@@ -97,13 +97,14 @@ module.exports = {PackageDefinition};
 // Usage:
 //  node mkpkg.js <json filenames...>
 if (module.id == '.') {
-    (async () => {
-        for (let json_fn of process.argv.slice(2)) {
-            let pd = PackageDefinition.fromFile(json_fn),
-                zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
-            await pd.toZip(zip_fn);
+    // Using promise chaining instead of async/await to support older Node.js
+    process.argv.slice(2).map(json_fn => () => {
+        let pd = PackageDefinition.fromFile(json_fn),
+            zip_fn = json_fn.replace(/([.]json|)$/, '.coq-pkg');
+        return pd.toZip(zip_fn).then(() => {
             pd.manifest.archive = path.basename(zip_fn);
             pd.writeManifest();
-        }
-    })();
+        });
+    })
+    .reduce((promise, action) => promise.then(action), Promise.resolve());
 }
