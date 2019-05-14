@@ -542,7 +542,7 @@ class CoqBuild {
         this._ongoing = new Set();
     }
 
-    withUI(dom) {
+    withUI(dom, editor_provider=null) {
         require('./components/file-list');
 
         this.view = new Vue({
@@ -551,6 +551,16 @@ class CoqBuild {
                 files: []
             }
         });
+
+        if (editor_provider) {
+            this.view.$refs.file_list.$on('action', ev => {
+                if (ev.type === 'select' && ev.kind === 'file') {
+                    var path = `/${ev.path.join('/')}`,
+                        text = this.store.readFileSync(path, 'utf-8');
+                    editor_provider.load(text);
+                }
+            });
+        }
 
         this._updateView();
         return this;

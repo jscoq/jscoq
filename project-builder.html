@@ -13,21 +13,18 @@
     <title>Coq Project View</title>
 
     <style>
+      html, body { height: 100%; }
       body {
-        margin: 9px !important; /* overrides coq-base.css */
-      }
-      #project-pane {
-        margin-bottom: 1em;
-      }
-      .drag-into body {
-        background: #e4e4ef;
+        margin: 0;
+        padding: 9px !important;  /* overrides coq.css */
+        box-sizing: border-box;
       }
     </style>
 
     <script>
 const {CoqBuild} = coqBuild;
 
-var coq_build, pm;
+var coq_build, pm, cm;
 
 function setupPackageManager(coq_manager) {
     var pm = new PackageManager($('#packages-panel')[0]);
@@ -82,12 +79,13 @@ function setupDropZone(jdom) {
 }
 
 
+
 loadJsCoq().then(async () => {
 
     coq_build = await new CoqBuild();
 
     $(() => {
-        coq_build.withUI('#project-pane');
+        coq_build.withUI('#project-panel file-list', cm);
     });
     
     Object.assign(coq_build.options, {
@@ -98,25 +96,35 @@ loadJsCoq().then(async () => {
 
     pm = setupPackageManager(coq_build.coq);
 
+    cm = new CmCoqProvider('code-pane');
+
     // UI events
-    setupDropZone($('html'));
+    setupDropZone($('#outline-pane'));
     $('#open').click(() => $('#open-files').click());
     $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
     $('#build').click(() => coq_build.start());
-
 });
     </script>
   </head>
 
-  <body>
-    <button id="open">△</button>
-    <button id="build">►</button>
-    <input id="open-files" type="file" hidden multiple>
-    <hr/>
-    <div id="project-pane">
-      <file-list ref="file_list" :files="files"></file-list>
+  <body id="ide-container">
+    <div id="outline-pane" class="vertical-pane left">
+      <div id="project-panel">
+        <div id="project-toolbar">
+          <button id="open">△</button>
+          <button id="build">►</button>
+          <input id="open-files" type="file" hidden multiple>
+          <hr/>
+        </div>
+        <file-list ref="file_list" :files="files"></file-list>
+      </div>
     </div>
+    <div id="code-pane">
 
-    <div id="packages-panel"></div>
+    </div>
+    <div id="cnc-pane" class="vertical-pane right">
+      <div id="log-panel"></div>
+      <div id="packages-panel"><p>Packages</p></div>
+    </div>
   </body>
 </html>

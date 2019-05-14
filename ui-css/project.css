@@ -1,3 +1,45 @@
+/* Panel layout */
+
+#ide-container {
+    display: flex;
+    height: 100%;
+}
+#outline-pane {
+    width: 15%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+#cnc-pane {
+    width: 20%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+#code-pane {
+    flex-grow: 1;
+    width: 200px; /* will serve as min width */
+}
+#project-panel {
+    margin-bottom: 1em;   
+}
+#log-panel {
+    flex-grow: 1;
+}
+.vertical-pane {
+    display: flex;
+    flex-direction: column;
+}
+.vertical-pane.left {
+    padding-right: 5px;
+}
+.vertical-pane.right {
+    padding-left: 5px;
+}
+
+.vertical-pane.draghov {
+    background: #e4e4ef;
+}
+
+/* File list styles */
 
 ul.file-list {
     list-style: none;
