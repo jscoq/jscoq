@@ -14,6 +14,7 @@ module Names    = Serlib.Ser_names
 module Evar     = Serlib.Ser_evar
 module Goptions = Serlib.Ser_goptions
 module Libnames = Serlib.Ser_libnames
+module Vernacexpr = Serlib.Ser_vernacexpr
 
 module Seq = struct
   type 'a t = 'a Seq.t
@@ -72,6 +73,7 @@ type jscoq_cmd =
   | Goals   of Stateid.t
   | Query   of Stateid.t * Feedback.route_id * string
   | Inspect of Stateid.t * Feedback.route_id * search_query
+  | Ast     of Stateid.t
 
   (*            filename content *)
   | Register of string

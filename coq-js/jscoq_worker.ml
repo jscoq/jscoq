@@ -286,6 +286,10 @@ let jscoq_execute =
 
   | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
 
+  | Ast sid ->
+    let ast = Stm.get_ast ~doc:(fst !doc) sid in
+    out_fn @@ Ast ast
+
   | Init(set_opts, lib_init, lib_path) ->
     let ndoc, iid = exec_init set_opts lib_init lib_path in
     doc := Jscoq_doc.create ndoc;

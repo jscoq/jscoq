@@ -19,6 +19,7 @@
  - Open/save file dialogs that support local persistence (in the browser) and files (@corwin-of-amber)
  - Asynchronous document management to circumvent various race conditions (@corwin-of-amber)
  - Use serlib for serialization of Coq datatypes to JSON (@ejgallego)
+ - New query `Ast` which does return a traversable Ast representation (@ejgallego)
 
  - [ ] Use sertop / serlib [partially done]
  - [ ] Automatic parsing mode.
