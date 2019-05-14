@@ -457,7 +457,7 @@ class CoqC {
                 this.coq.project.add(this.fsif.path.join(root, ...pkg_id), pkg_id);
             })
             .catch(e => {
-                this.output.errors[entry.input] = e; 
+                this.output.errors[entry.input] = [this.decorateError(e, entry)]; 
                 return Promise.reject(e); 
             })
             .finally(() => {
@@ -521,6 +521,41 @@ class CoqC {
         return [x, ''];  // TODO: digest
     }
 
+    decorateError(err, entry) {
+        err.entry = entry;
+        // Convert character positions to {line, ch}
+        if (err.loc) {
+            var source;
+            try {
+                source = this.fsif.fs.readFileSync(entry.input, 'utf-8');
+            }
+            catch (e) { console.warn(e); return; }
+            err.loc.start = CoqC.posToLineCh(source, err.loc.bp);
+            err.loc.end =   CoqC.posToLineCh(source, err.loc.ep);
+        }
+        return err;
+    }
+
+    /**
+     * Translates a character index to a {line, ch} location indicator.
+     * @param {string} source_text document being referenced
+     * @param {integer} pos character offset from beginning of string 
+     *   (zero-based)
+     * @return {object} a {line, ch} object with (zero-based) line and 
+     *   character location
+     */
+    static posToLineCh(source_text, pos) {
+        var offset = 0, line = 0, ch = pos;
+        do {
+            var eol = source_text.indexOf('\n', offset);
+            if (eol === -1 || eol >= pos) break;
+            line++; 
+            ch -= (eol - offset + 1);
+            offset = eol + 1;
+        } while (true);
+
+        return {line, ch};
+    }
 }
 
 
@@ -540,30 +575,6 @@ class CoqBuild {
         };
 
         this._ongoing = new Set();
-    }
-
-    withUI(dom, editor_provider=null) {
-        require('./components/file-list');
-
-        this.view = new Vue({
-            el: dom,
-            data: {
-                files: []
-            }
-        });
-
-        if (editor_provider) {
-            this.view.$refs.file_list.$on('action', ev => {
-                if (ev.type === 'select' && ev.kind === 'file') {
-                    var path = `/${ev.path.join('/')}`,
-                        text = this.store.readFileSync(path, 'utf-8');
-                    editor_provider.load(text);
-                }
-            });
-        }
-
-        this._updateView();
-        return this;
     }
 
     startNew() {
@@ -650,6 +661,47 @@ class CoqBuild {
         this._updateView();
     }
 
+    // =======
+    // UI Part
+    // =======
+
+    withUI(project_dom, report_dom=null) {
+        require('./components/file-list');
+        require('./components/problem-list');
+
+        this.view = new Vue({
+            el: project_dom,
+            data: {
+                files: []
+            }
+        });
+
+        this.view.$on('action', ev => this.onAction(ev));
+
+        if (report_dom) {
+            this.report = new Vue({
+                el: report_dom,
+                data: {
+                    errors: []
+                }
+            });
+        }
+
+        this._updateView();
+        return this;
+    }
+
+    withEditor(editor_provider) {
+        this.editor_provider = editor_provider;
+    }
+
+    onAction(ev) {
+        if (this.editor_provider 
+              && ev.type === 'select' && ev.kind === 'file') {
+            this._openSourceFile(`/${ev.path.join('/')}`);
+        }
+    }
+
     _updateView() {
         // TODO might be better to use a Vue computed property instead
         if (this.view) {
@@ -658,6 +710,10 @@ class CoqBuild {
                     status = this._fileStatus(fn);
                 e.tags = status ? [CoqBuild.BULLETS[status]] : [];
             }
+        }
+
+        if (this.report && this.coqc) {
+            this.report.errors = Object.values(this.coqc.output.errors);
         }
     }
 
@@ -669,6 +725,26 @@ class CoqBuild {
             return 'compiled';
         else if (this.coqc.output.errors.hasOwnProperty(fn))
             return 'error';
+    }
+
+    _openSourceFile(filename) {
+        var text = this.store.readFileSync(filename, 'utf-8');
+        this.editor_provider.load(text, filename);
+        this._updateMarks();
+    }
+
+    _updateMarks() {
+        if (this.editor_provider) {
+            var filename = this.editor_provider.filename;
+            if (filename && this.coqc.output.errors.hasOwnProperty(filename)) {
+                for (let e of this.coqc.output.errors[filename]) {
+                    if (e.loc && e.loc.start && e.loc.end) {
+                        var stm = {start: e.loc.start, end: e.loc.end};
+                        this.editor_provider.mark(stm, 'error');
+                    }
+                }
+            }
+        }
     }
 
 }
