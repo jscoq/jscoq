@@ -13,6 +13,11 @@ ul.file-list li.file {
     cursor: pointer;
 }
 
+ul.file-list li.file.selected {
+    background: rgb(46, 103, 160) !important;
+    color: white;
+}
+
 ul.file-list li.file:hover,
 ul.file-list li.folder > * > .entry:hover {
     background: rgba(0,0,0,0.02);

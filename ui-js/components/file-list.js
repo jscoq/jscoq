@@ -13,24 +13,35 @@
 
 
 Vue.component('file-list', {
-    props: ['files', 'level', 'path'],
+    props: ['files', 'level', 'path', 'selection'],
     data: function() { return {
         _level: this.level || 0,
         _path: typeof this.path === 'string' ? this.path.split('/') 
-                : this.path || []
+                : this.path || [],
+        _selection: []
     }; },
     template: `
     <ul :class="['file-list', 'level-'+$data._level]">
-        <li v-for="f in files" :data-name="f.name" :class="{folder: f.files, file: !f.files}"
+        <li v-for="f in files" :data-name="f.name" 
+                :class="{folder: f.files, file: !f.files, selected: isSelected([f.name])}"
+                @click="onclick"
                 draggable="true" @dragstart="drag" @dragend="undrag" @drop="drop" 
                 @dragover="dragover" @dragenter="dragover" @dragleave="dragout">
             <file-list.folder v-if="f.files" :entry="f" :path="$data._path" :level="$data._level + 1"
-                    @action="action"/>
+                    :selection="$data._selection" @action="action"/>
             <file-list.file v-else :entry="f"/>
         </li>
     </ul>
     `,
     methods: {
+        onclick(ev) {
+            var target = $(ev.currentTarget),
+                item_name = target.attr('data-name'),
+                path = [...this.$data._path, item_name],
+                kind = target.hasClass('folder') ? 'folder' : 'file';
+            this.action({type: 'select', path, kind});
+            ev.stopPropagation();            
+        },
         drag(ev) {
             var target = $(ev.currentTarget),
                 item_name = target.attr('data-name'),
@@ -43,7 +54,10 @@ Vue.component('file-list', {
             $(event.currentTarget).removeClass('dragged');
         },
         drop(ev) {
-            var from_path = JSON.parse(ev.dataTransfer.getData('text/json')),
+            var evdata = ev.dataTransfer.getData('text/json');
+            if (!evdata) return;
+
+            var from_path = JSON.parse(evdata),
                 target = $(ev.currentTarget),
                 item_name = target.attr('data-name'),
                 is_folder = target.is('.folder'),
@@ -73,11 +87,20 @@ Vue.component('file-list', {
         action(ev) {
             if (this.$data._level === 0) {
                 switch (ev.type) {
+                    case 'select': 
+                        if (ev.kind === 'file') this.select(ev.path); break;
                     case 'move': this.move(ev.from, ev.to, ev.after); break;
                 }
             }
-            else
-                this.$emit('action', ev);
+            this.$emit('action', ev);
+        },
+
+        select(path) {
+            this.$data._selection = [path];
+        },
+        isSelected(path) {
+            var sel = this.selection || this.$data._selection;
+            return sel && sel.some(x => x.equals(path));
         },
 
         move(from, to, after) {
@@ -149,7 +172,7 @@ Vue.component('file-list.file', {
  * Represents a subfolder.
  */
 Vue.component('file-list.folder', {
-    props: ['entry', 'level', 'path', 'collapsed'],
+    props: ['entry', 'level', 'path', 'selection', 'collapsed'],
     data: function() { return {
         _path: [...(this.path || []), this.entry.name],
         _collapsed: !!this.collapsed
@@ -161,11 +184,20 @@ Vue.component('file-list.folder', {
             <span class="name">{{entry.name}}</span>
         </div>
         <file-list :files="entry.files" :path="$data._path" :level="level"
+                   :selection="subselection(selection, entry.name)"
                    v-show="!$data._collapsed"
                    @action="$emit('action', $event)">
         </file-list>
     </div>
-    `
+    `,
+    methods: {
+        subselection(selection, folder_name) {
+            if (selection) {
+                return selection.filter(x => x[0] === folder_name)
+                                .map(x => x.slice(1));
+            }
+        }
+    }
 })
 
 /**
