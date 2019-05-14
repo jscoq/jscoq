@@ -12,6 +12,8 @@
  * this module separated from Coq
  *)
 
+module J = Yojson.Safe
+
 type digest =
   [%import: Digest.t]
   [@@deriving yojson]
@@ -31,6 +33,6 @@ type coq_bundle =
   ; deps      : string list
   ; pkgs      : coq_pkg list
   ; archive   : string option [@default None]
-  ; modDeps   : Yojson.Safe.json option [@default None]
+  ; modDeps   : Yojson.Safe.t option [@default None]
   } [@@deriving yojson]
 

@@ -20,10 +20,13 @@ depends: [
   "ppx_deriving_yojson" { >= "3.3"              }
   "ppx_import"          { build & >= "1.5-3"    }
   "lwt_ppx"             { >= "1.2.1"            }
+  # We should just rely on OPAM's serlib but this is still early
+  "sexplib"             { >= "v0.11.0"           }
+  "ppx_sexp_conv"       { build   & >= "v0.11.0" }
   # We build a local, patched Coq, but however it is still a dep
   # "coq"                 { >= "8.9.0" & < "8.10" }
   "num"
-  "elpi"                { = "1.1.1" }
+  "elpi"                { = "1.2.0" }
 ]
 
 build: [ "dune" "build" "-p" name "-j" jobs ]

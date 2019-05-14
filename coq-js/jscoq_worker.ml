@@ -9,99 +9,15 @@
 
 open Js_of_ocaml
 open Jscoqlib
-
-open Jser_feedback
-open Jser_feedback.Feedback
-open Jser_names
-open Jser_goals
+open Jscoq_proto.Proto
 
 let jscoq_version = "0.10.0~beta1"
 
-type gvalue =
-  [%import: Goptions.option_value]
-  [@@deriving yojson]
-
-type coq_options = (string list * gvalue) list [@@deriving yojson]
-
-type jscoq_options =
-  { top_name: string           [@default "JsCoq"]
-  ; implicit_libs: bool        [@default true]
-  ; stm_debug: bool            [@default false]
-  ; coq_options: coq_options   [@default []]
-  }
-  [@@deriving yojson]
-
-let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; 
-                 coq_options = [] }
-
-type search_query =
-  | All
-  | CurrentFile
-  | ModulePrefix of Names.DirPath.t
-  | Keyword of string
-  | Locals
-  [@@deriving yojson]
-
-
-(* Main RPC calls *)
-type jscoq_cmd =
-  | InfoPkg of string * string list
-  | LoadPkg of string * string
-
-  (*           opts            initial_imports      load paths                      *)
-  | Init    of jscoq_options * string list list   * (string list * string list) list
-
-  (*           ontop       new         sentence                *)
-  | Add     of Stateid.t * Stateid.t * string * bool
-  | Cancel  of Stateid.t
-  | Exec    of Stateid.t
-
-  | Goals   of Stateid.t
-  | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of Stateid.t * Feedback.route_id * search_query
-
-  (*            filename content *)
-  | Register of string
-  | Put      of string * string
-
-  (* XXX: Not well founded... *)
-  | GetOpt  of string list
-
-  | ReassureLoadPath of (string list * string list) list
-  | Load    of string
-  | Compile of string
-  [@@deriving yojson]
-
-type jscoq_answer =
-  | CoqInfo   of string
-
-  | Ready     of Stateid.t
-
-  (* Merely Informative now *)
-  | Added     of Stateid.t * Loc.t option
-
-  (* Requires pkg(s)         prefix        module names    *)
-  | Pending   of Stateid.t * string list * string list list
-
-  (* Main feedback *)
-  | Cancelled of Stateid.t list
-
-  | GoalInfo  of Stateid.t   * Pp.t reified_goal ser_goals option
-
-  | CoqOpt    of string list * gvalue
-  | Log       of level       * Pp.t
-  | Feedback  of feedback
-
-  | SearchResults of Feedback.route_id * Libnames.full_path seq
-
-  (* Low-level *)
-  | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
-  | JsonExn   of string
-  [@@deriving to_yojson]
+let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; coq_options = [] }
 
 let jsCoq = Js.Unsafe.obj [||]
 
-let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t =
+let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.t) : < .. > Js.t =
   let open Js.Unsafe in
   let ofresh j = json_to_obj (obj [||]) j in
   match json with
@@ -116,7 +32,7 @@ let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.json) : < .. > Js.t
   | `Tuple t  -> Array.(Js.array @@ map ofresh (of_list t))
   | `Variant(_,_) -> pure_js_expr "undefined"
 
-let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.json =
+let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.t =
   let open Js in
   let open Js.Unsafe in
   let typeof_cobj = to_string (typeof cobj) in
@@ -230,7 +146,7 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
 
   Icoq.(coq_init {
       ml_load      = Jslibmng.coq_cma_link;
-      fb_handler   = (fun fb -> post_answer (Feedback (Feedback.fb_opt fb)));
+      fb_handler   = (fun fb -> post_answer (Feedback (Jscoq_util.fb_opt fb)));
       require_libs = lib_require;
       iload_path   = List.map (fun (path_el, phys) ->
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
@@ -252,7 +168,7 @@ let exec_getopt opt =
 
 let coq_exn_info exn =
     let (e, info) = CErrors.push exn                   in
-    let pp_exn    = Pp.opt @@ CErrors.iprint (e, info) in
+    let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
 (* -- Used by Add command -- *)
@@ -296,6 +212,10 @@ let symbols_for (q : search_query) env =
     | _            -> Icoq.inspect_globals ~env ()
     [@@warning "-4"]
 
+let pp_of_goals =
+  let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
+  Serapi_goals.get_goals_gen ppx
+
 let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
@@ -333,7 +253,7 @@ let jscoq_execute =
 
   | Goals sid        ->
     let doc = fst !doc in
-    let goal_pp = Serapi_goals.pp_of_goals ~doc sid in
+    let goal_pp = pp_of_goals ~doc sid in
     out_fn @@ GoalInfo (sid, goal_pp)
 
   | Query (sid, rid, query) ->
