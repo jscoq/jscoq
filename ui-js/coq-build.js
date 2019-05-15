@@ -685,6 +685,8 @@ class CoqBuild {
                     errors: []
                 }
             });
+
+            this.report.$refs.problem_list.pprint = new FormatPrettyPrint();
         }
 
         this._updateView();

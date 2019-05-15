@@ -5,13 +5,16 @@
 
 Vue.component('problem-list', {
     props: ['problems'],
+    data: function() { return {
+        pprint: undefined
+    }; },
     template: `
     <ul class="problem-list">
         <li v-for="group in nonempty(problems)">
             {{noslash(group[0].entry.input)}}
             <ul class="problem-group">
-                <li v-for="item in group">
-                    {{item.error}}
+                <li v-for="item in group"
+                    v-html="msgHTML(item.error)">
                 </li>
             </ul>
         </li>
@@ -25,7 +28,10 @@ Vue.component('problem-list', {
             return s.replace(/^[/]/, '');
         },
         msgHTML(msg) {
-            
+            if (this.pprint) {
+                return this.pprint.pp2HTML(msg);
+            }
+            else return msg;
         }
     }
 });

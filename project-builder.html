@@ -85,8 +85,8 @@ loadJsCoq().then(async () => {
     coq_build = await new CoqBuild();
 
     $(() => {
-        coq_build.withUI('#project-panel file-list')
-                  .withEditor(cm);
+        coq_build.withUI('#project-panel file-list', '#log-panel')
+                 .withEditor(cm);
     });
     
     Object.assign(coq_build.options, {
@@ -126,7 +126,7 @@ loadJsCoq().then(async () => {
 
     <div id="cnc-pane" class="vertical-pane right">
       <div id="log-panel">
-        <problem-list :problems="errors"/>
+        <problem-list ref="problem_list" :problems="errors"/>
       </div>
       <div id="packages-panel"><p>Packages</p></div>
     </div>
