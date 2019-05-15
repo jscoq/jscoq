@@ -26,15 +26,17 @@ const {CoqBuild} = coqBuild;
 
 var coq_build, pm, cm;
 
-function setupPackageManager(coq_manager) {
+async function setupPackageManager(coq_manager) {
     var pm = new PackageManager($('#packages-panel')[0]);
     pm.coq = coq_manager.coq;
 
     // Load standard libs from coq-pkgs
-    var deps = ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'];
-    deps.reduce((p, d) => p.then(() => pm.addBundleResource(d)), Promise.resolve())
-    .then(() => pm.loadDeps(deps))
-    .then(() => coq_manager.project.path.push(...pm.getLoadPath()));
+    var pkgs = ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'],
+        deps = pkgs;
+
+    await Promise.all(pkgs.map(pkg => pm.addBundleResource(pkg)));
+    await pm.loadDeps(deps);
+    coq_manager.project.path.push(...pm.getLoadPath());
 
     return pm;
 }
@@ -82,11 +84,19 @@ function setupDropZone(jdom) {
 
 loadJsCoq().then(async () => {
 
-    coq_build = await new CoqBuild();
+    coq_build = new CoqBuild();
 
     $(() => {
+        cm = new CmCoqProvider('code-pane');
+
         coq_build.withUI('#project-panel file-list', '#log-panel')
                  .withEditor(cm);
+
+        // UI events
+        setupDropZone($('#outline-pane'));
+        $('#open').click(() => $('#open-files').click());
+        $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
+        $('#build').click(() => coq_build.start());
     });
     
     Object.assign(coq_build.options, {
@@ -95,15 +105,9 @@ loadJsCoq().then(async () => {
 
     coq_build.prepare();
 
-    pm = setupPackageManager(coq_build.coq);
+    pm = await setupPackageManager(coq_build.coq);
 
-    cm = new CmCoqProvider('code-pane');
-
-    // UI events
-    setupDropZone($('#outline-pane'));
-    $('#open').click(() => $('#open-files').click());
-    $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
-    $('#build').click(() => coq_build.start());
+    $('#build').prop('disabled', false);
 });
     </script>
   </head>
@@ -113,7 +117,7 @@ loadJsCoq().then(async () => {
       <div id="project-panel">
         <div id="project-toolbar">
           <button id="open">△</button>
-          <button id="build">►</button>
+          <button id="build" disabled>►</button>
           <input id="open-files" type="file" hidden multiple>
           <hr/>
         </div>

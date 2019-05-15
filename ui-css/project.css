@@ -39,6 +39,12 @@
     background: #e4e4ef;
 }
 
+/* Toolbar styles */
+
+#project-panel button:disabled {
+    color: gray;
+}
+
 /* File list styles */
 
 ul.file-list {
