@@ -398,7 +398,7 @@ class CoqC {
     continueFrom(zip) {
         if (typeof zip === 'string') {
             var load = this.fsif.fs.readFileSync(zip);
-            return require('JSZip').loadAsync(load).then(z => this.continueFrom(z));
+            return require('jszip').loadAsync(load).then(z => this.continueFrom(z));
         }
         else {
             var upload = [], root = this.output.root;
