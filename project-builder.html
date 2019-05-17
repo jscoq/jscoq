@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+
+    <script src="./node_modules/vue/dist/vue.js"></script>
+
+    <script src="./ui-js/jscoq-loader.js"></script>
+    <script src="./ui-js/coq-build.browser.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="./ui-css/project.css">
+
+    <title>Coq Project View</title>
+
+    <style>
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        padding: 9px !important;  /* overrides coq.css */
+        box-sizing: border-box;
+      }
+    </style>
+
+    <script>
+const {CoqBuild} = coqBuild;
+
+var coq_build, pm, cm;
+
+async function setupPackageManager(coq_manager) {
+    var pm = new PackageManager($('#packages-panel')[0]);
+    pm.coq = coq_manager.coq;
+
+    // Load standard libs from coq-pkgs
+    var pkgs = ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'],
+        deps = pkgs;
+
+    await Promise.all(pkgs.map(pkg => pm.addBundleResource(pkg)));
+    await pm.loadDeps(deps);
+    coq_manager.project.path.push(...pm.getLoadPath());
+
+    return pm;
+}
+
+function loadFromSelectedFiles(ev) {
+    var files = ev.dataTransfer ? ev.dataTransfer.files
+        : (ev.target.files || []);
+    
+    for (let file of files) {
+        if (file.type === 'application/zip') {
+            coq_build.startNew().ofZip(file)
+            .then(() => coq_build.prepare());
+
+            return; /* TODO multiple zips? */
+        }
+    }
+    /*
+     * TODO support folders in webkit
+    for (let item of drop_ev.dataTransfer.items) {
+        if (item.kind === 'folder') {
+            console.log(item, item.webkitGetAsEntry());
+        }
+    }
+    */
+}
+
+function setupDropZone(jdom) {
+    jdom.on('dragover', ev => {
+        if (ev.originalEvent.dataTransfer.types.includes("Files")) {
+            jdom.addClass('draghov');
+            ev.preventDefault();
+            ev.originalEvent.dataTransfer.dropEffect = 'link';
+        }
+    });
+    jdom.on('dragenter', ev => { jdom.addClass('draghov'); });
+    jdom.on('dragleave', ev => { jdom.removeClass('draghov'); });
+    jdom.on('drop', ev => {
+        ev.preventDefault(); ev.stopPropagation();
+        jdom.removeClass('draghov');
+        loadFromSelectedFiles(ev.originalEvent);
+    });
+}
+
+
+
+loadJsCoq().then(async () => {
+
+    coq_build = new CoqBuild();
+
+    $(() => {
+        cm = new CmCoqProvider('code-pane');
+
+        coq_build.withUI('#project-panel file-list', '#log-panel')
+                 .withEditor(cm);
+
+        // UI events
+        setupDropZone($('#outline-pane'));
+        $('#open').click(() => $('#open-files').click());
+        $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
+        $('#build').click(() => coq_build.start());
+    });
+    
+    Object.assign(coq_build.options, {
+        prelude: true, log_debug: true, debug: true
+    });
+
+    coq_build.prepare();
+
+    pm = await setupPackageManager(coq_build.coq);
+
+    $('#build').prop('disabled', false);
+});
+    </script>
+  </head>
+
+  <body id="ide-container">
+    <div id="outline-pane" class="vertical-pane left">
+      <div id="project-panel">
+        <div id="project-toolbar">
+          <button id="open">△</button>
+          <button id="build" disabled>►</button>
+          <input id="open-files" type="file" hidden multiple>
+          <hr/>
+        </div>
+        <file-list ref="file_list" :files="files" 
+                   @action="$emit('action', $event)"/>
+      </div>
+    </div>
+
+    <div id="code-pane"></div>
+
+    <div id="cnc-pane" class="vertical-pane right">
+      <div id="log-panel">
+        <problem-list ref="problem_list" :problems="errors"/>
+      </div>
+      <div id="packages-panel"><p>Packages</p></div>
+    </div>
+  </body>
+</html>

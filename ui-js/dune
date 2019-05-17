@@ -1,0 +1,8 @@
+(rule
+ (targets coq-build.browser.js)
+ (deps
+  (source_tree .)
+  (source_tree ../coq-jslib)
+  ../node_modules)
+ (action (bash "npx browserify coq-build.js -d -s coqBuild -o %{targets}"))
+)

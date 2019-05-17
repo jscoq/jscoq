@@ -1,20 +1,22 @@
-const fs = require('fs'),
-      path = require('path'),
-      {CoqWorker, Future} = require('../ui-js/jscoq'),
+
+const {fsif_native} = require('./fs-interface'),
+      {CoqWorker, Future} = require('./jscoq'),
       {CoqIdentifier} = require('./coq-manager'),
       {CoqProject, CoqDep, CoqC} = require('./coq-build'),
-      format_pprint = require('./format-pprint'),
-      mkpkg = require('../coq-jslib/mkpkg');
+      {FormatPrettyPrint} = require('./format-pprint');
 
 
 
 class HeadlessCoqWorker extends CoqWorker {
     constructor() {
-        super(null, require('../coq-js/jscoq_worker').jsCoq);
-        this.worker.onmessage = evt => {
+        var node_require = require;  /* bypass browserify */
+        super(null, node_require('../coq-js/jscoq_worker').jsCoq);
+        this.worker.onmessage = this._handler = evt => {
             process.nextTick(() => this.coq_handler({data: evt}));
         };
     }
+
+    spawn() { return new HeadlessCoqWorker(); }
 }
 
 /**
@@ -22,13 +24,14 @@ class HeadlessCoqWorker extends CoqWorker {
  */
 class HeadlessCoqManager {
 
-    constructor() {
-        this.coq = new HeadlessCoqWorker();
+    constructor(worker=undefined, fsif=fsif_native) {
+        this.coq = worker || new HeadlessCoqWorker();
         this.coq.observers.push(this);
+        this.fsif = fsif;
         this.provider = new QueueCoqProvider();
-        this.pprint = new format_pprint.FormatPrettyPrint();
+        this.pprint = new FormatPrettyPrint();
 
-        this.project = new CoqProject();
+        this.project = new CoqProject(fsif);
 
         this.options = {
             prelude: false,
@@ -38,6 +41,8 @@ class HeadlessCoqManager {
             inspect: false,
             log_debug: false
         };
+
+        this.coq.options = this.options;
 
         this.doc = [];
 
@@ -98,17 +103,16 @@ class HeadlessCoqManager {
 
     load(vernac_filename) {
         // Relative paths must start with './' for Load command
-        if (!path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
+        if (!this.fsif.path.isAbsolute(vernac_filename) && !/^[.][/]/.exec(vernac_filename))
             vernac_filename = `./${vernac_filename}`;
         this.provider.enqueue(`Load "${vernac_filename}".`);
     }
 
     spawn() {
-        var c = new HeadlessCoqManager();
+        var c = new HeadlessCoqManager(this.coq.spawn(), this.fsif);
         c.provider = this.provider.clone();
         c.project = this.project;
-        c.options = {};
-        for (let k in this.options) c.options[k] = this.options[k];
+        Object.assign(c.options, this.options);
         return c;
     }
 
@@ -135,7 +139,7 @@ class HeadlessCoqManager {
         this.coq.inspectPromise(0, ["All"]).then(results => {
             var symbols = results.map(fp => CoqIdentifier.ofFullPath(fp))
                             .filter(query_filter);
-            fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
+            this.fsif.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
             console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
         });
     }
@@ -181,9 +185,11 @@ class HeadlessCoqManager {
     }
 
     coqGot(filename, buf) {
-        this.coq.put(filename, buf);
-        console.log(` > ${filename}`);
-        this.when_done.resolve();
+        if (!this.when_done.isFailed()) {
+            this.coq.put(filename, buf);
+            console.log(` > ${filename}`);
+            this.when_done.resolve();
+        }
     }
 
     coqCancelled(sid) {
@@ -192,8 +198,9 @@ class HeadlessCoqManager {
     }
 
     coqCoqExn(loc, _, msg) {
-        console.error(`[Exception] ${this.pprint.pp2Text(msg)}`);
-        this.when_done.reject(msg);
+        var loc_repr = this._format_loc(loc);
+        console.error(`[Exception] ${this.pprint.pp2Text(msg)}${loc_repr}`);
+        this.when_done.reject({loc, error: msg});
     }
 
     feedFileLoaded() { }
@@ -206,27 +213,34 @@ class HeadlessCoqManager {
     feedMessage(sid, [lvl], loc, msg) { 
         console.log('-'.repeat(60));
         console.log(`[${lvl}] ${this.pprint.pp2Text(msg).replace('\n', '\n         ')}`); 
-        console.log('-'.repeat(60));
+        console.log('-'.repeat(60) + this._format_loc(loc));
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
-        for (let path_el of module.paths) {
-            for (let dir of [path.join(path_el, dirname), 
-                             path.join(path_el, '..', dirname)])
+        for (let path_el of module.paths || []) {
+            for (let dir of [this.fsif.path.join(path_el, dirname), 
+                             this.fsif.path.join(path_el, '..', dirname)])
                 if (this._isDirectory(dir))
                     return dir;
         }
-        return path.join('.', dirname);
+        return this.fsif.path.join('.', dirname);
     }
 
     _isDirectory(path) {
-        try { return fs.lstatSync(path).isDirectory(); }
+        try { return this.fsif.fs.statSync(path).isDirectory(); }
         catch { return false; }
     }
 
     _identifierWithin(id, modpath) {
         var prefix = (typeof modpath === 'string') ? modpath.split('.') : modpath;
         return id.prefix.slice(0, prefix.length).equals(prefix);
+    }
+
+    _format_loc(loc) {
+        return loc ? 
+            (loc.fname && loc.fname[0] === 'InFile' ?
+                `\n\t(at ${loc.fname[1]}:${loc.line_nb})` : 
+                `\n${JSON.stringify(loc)}`) : '';
     }
 
 }
@@ -267,6 +281,10 @@ class QueueCoqProvider {
 
 
 
+module.exports = {HeadlessCoqManager, HeadlessCoqWorker}
+
+
+
 if (module && module.id == '.') {
     var requires = [], require_pkgs = [],
         opts = require('commander')
@@ -284,6 +302,9 @@ if (module && module.id == '.') {
         .on('option:require',     path => { requires.push(path); })
         .on('option:require-pkg', json => { require_pkgs.push(json); })
         .parse(process.argv);
+
+    const path = require('path'),
+          mkpkg = require('../coq-jslib/mkpkg');
 
     var coq = new HeadlessCoqManager();
 
@@ -324,12 +345,6 @@ if (module && module.id == '.') {
             out_pkg = opts.O || 'a.coq-pkg',
             build_plan = new CoqDep().processProject(proj).buildPlan(proj);
 
-        for (let [logical_path, _] of proj.path) {
-            let dir = `/lib/${logical_path.join('/')}`;
-            coq.coq.put(`${dir}/.anchor`, new Buffer(''));
-            coq.project.add(dir, logical_path);
-        }
-        
         let coqc = new CoqC(coq);
 
         let starting_point = opts.continue ? coqc.continueFrom(out_pkg) 

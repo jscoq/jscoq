@@ -2,7 +2,7 @@
 *~
 .*.swp
 
-# Config
+# Local build configuration file
 /config.inc
 
 # Externals
@@ -13,12 +13,15 @@ _build
 .merlin
 *.install
 
-# Links for in-place serving
+# Node stuff
 node_modules
+
+# Links for in-place serving
 coq-pkgs
 /coq-js/jscoq_worker.js
+*.browser.js
 
-# Apple-stuff
+# Apple stuff
 .DS_Store
 .AppleDouble
 

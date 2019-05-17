@@ -10,11 +10,13 @@
  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
  - Workaround JSOO problem with `Lazy` (@corwin-of-amber)
  - [bugfix] Contention in autocomplete between company-coq and Tex-input (@corwin-of-amber)
+ - Simple UI for compiling pure-Coq projects in the browser (@corwin-of-amber, in-progress)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
  - [ ] Use sertop / serlib
  - [ ] Support for UI layouts.
+ - [x] Decentralized build mode for addons.
 
 Pending worker tasks:
 

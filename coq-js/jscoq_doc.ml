@@ -95,6 +95,17 @@ let query ~doc ~at ~route query =
   let pa = Pcoq.Parsable.make (Stream.of_string query) in
   Stm.query ~doc ~at ~route pa
 
+let load ~doc filename ~echo =
+  let ndoc, sdoc = doc in
+  let vernac_state = Vernac.State.
+    { doc = ndoc; sid = tip doc; proof = None; time = false } in
+  (* loading with ~check:true to avoid some stack overflows in stm *)
+  let vernac_state' =
+    Vernac.load_vernac ~echo ~check:true ~interactive:false
+                        ~state:vernac_state filename in
+  let new_sdoc = vernac_state'.sid :: sdoc in
+  (vernac_state.doc, new_sdoc)
+
 (* invalid range returns a list of all the invalid stateid from
    can_st and the new doc _in reverse order_ *)
 let invalid_range ~sdoc can_st =

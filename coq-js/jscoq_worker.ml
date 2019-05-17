@@ -170,7 +170,10 @@ let lib_event_to_jsobj msg =
   let json_msg = lib_event_to_yojson msg          in
   json_to_obj (Js.Unsafe.obj [||]) json_msg
 
-let is_worker = (Js.Unsafe.global##.onmessage != Js.undefined)
+let is_worker =
+  let open Js.Unsafe in
+  global##.WorkerGlobalScope != Js.undefined && global##.self != Js.undefined &&
+    pure_js_expr "self instanceof WorkerGlobalScope"
 
 let post_message : < .. > Js.t -> unit =
   if is_worker then Worker.post_message
@@ -385,12 +388,7 @@ let jscoq_execute =
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
   | Load filename ->
-    let vernac_state = Vernac.State.
-      { doc = fst !doc; sid = Jscoq_doc.tip !doc; proof = None; time = false } in
-    ignore(
-      Vernac.load_vernac ~echo:false ~check:false ~interactive:false
-                         ~state:vernac_state filename)
-    (* TODO update document tip instead of ignoring *)
+    doc := Jscoq_doc.load ~doc:!doc filename ~echo:false
   | Compile filename ->
     post_file filename (Icoq.compile_vo ~doc:(fst !doc))
 

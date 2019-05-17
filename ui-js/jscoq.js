@@ -12,8 +12,8 @@ class CoqWorker {
 
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
-        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "jscoq_worker.js"))
-        this.worker.onmessage = evt => this.coq_handler(evt);
+        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.js"))
+        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.worker.terminate());
@@ -85,7 +85,7 @@ class CoqWorker {
         this.sendCommand(["ReassureLoadPath", load_path]);
     }
 
-    put(filename, content) {
+    put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
         if (content.buffer) {
             content = (content.byteOffset === 0 && 
@@ -99,9 +99,10 @@ class CoqWorker {
         if(this.options.debug) {
             console.debug("Posting file: ", msg);
         }
-        this.worker.postMessage(msg, [content]);
-        /* Notice: ownership of the 'content' buffer is transferred to the worker
-         * (for efficiency)
+        this.worker.postMessage(msg, transferOwnership ? [content] : []);
+        /* Notice: when transferOwnership is true, the 'content' buffer is
+         * transferred to the worker (for efficiency);
+         * it becomes unusable in the original context.
          */
     }
 
@@ -136,6 +137,14 @@ class CoqWorker {
         this.routes[rid] = [pfr];
         pfr.atexit = () => { delete this.routes[rid]; };
         return pfr.promise;
+    }
+
+    spawn() {
+        return new CoqWorker(null, this.worker);
+    }
+
+    join(child) {
+        this.worker.onmessage = this._handler;
     }
 
     // Internal event handling

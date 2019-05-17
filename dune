@@ -38,9 +38,11 @@
    (source_tree ui-external)
    (source_tree examples)
    index.html
+   project-builder.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.js))
+   coq-js/jscoq_worker.js
+   ui-js/coq-build.browser.js))
 
 ; Just the worker
 (alias

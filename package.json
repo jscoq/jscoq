@@ -12,10 +12,14 @@
     "jquery": "^3.3.1",
     "jszip": "^3.1.5",
     "localforage": "^1.7.3",
+    "minimatch": "^3.0.4",
     "neatjson": "^0.8.3",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "vue": "^2.6.10"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "browserify": "^16.2.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ejgallego/jscoq.git"
