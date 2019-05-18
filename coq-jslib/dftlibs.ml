@@ -74,8 +74,6 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "syntax"]
     ; ["Coq"; "cc"]
     ; ["Coq"; "firstorder"]
-    ; ["Coq"; "extraction"]
-    ; ["Coq"; "funind"]
     ; ["Coq"; "btauto"]
     ; ["Coq"; "Init"]
     ; ["Coq"; "Bool"]
@@ -96,6 +94,8 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "Numbers"]
     ; ["Coq"; "Numbers"; "NatInt"]
     ; ["Coq"; "Numbers"; "Natural"; "Abstract"]
+    ; ["Coq"; "extraction"]
+    ; ["Coq"; "funind"]
     ] @
     [ ["Coq"; "Arith"], Only ["PeanoNat.vo"; "Le.vo"; "Lt.vo"; "Ge.vo"; "Gt.vo";
                               "Plus.vo"; "Minus.vo"; "Compare_dec.vo"; "Wf_nat.vo"]
