@@ -1,5 +1,5 @@
 .PHONY: all clean force
-.PHONY: jscoq libs-pkg links links-clean
+.PHONY: jscoq jscoq_worker libs-pkg links links-clean
 .PHONY: dist dist-upload dist-release
 
 -include ./config.inc
@@ -67,6 +67,9 @@ all:
 
 jscoq: force
 	ADDONS="$(ADDONS)" dune build @jscoq $(DUNE_FLAGS)
+
+jscoq_worker:
+	ADDONS="$(ADDONS)" dune build @jscoq_worker $(DUNE_FLAGS)
 
 libs-pkg: force
 	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS)
