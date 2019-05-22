@@ -72,7 +72,7 @@ jscoq_worker:
 	ADDONS="$(ADDONS)" dune build @jscoq_worker $(DUNE_FLAGS)
 
 libs-pkg: force
-	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS)
+	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS) --force
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
