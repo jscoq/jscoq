@@ -45,6 +45,8 @@ class CoqLayoutClassic {
              alt="Down (Meta-N)" title="Down (Meta-N)" name="down"/>
         <img src="${base_path}/ui-images/to-cursor.png" width="38" height="24"
              alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
+        <img src="${base_path}/ui-images/reset.png" width="25" height="25"
+             alt="Reset worker" title="Reset worker" name="reset"/>
       </span>
       <div class="exits right">
         <a href="https://github.com/ejgallego/jscoq">Readme @ 

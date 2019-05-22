@@ -10,9 +10,11 @@ class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
+        this._worker_script = scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.js");
+
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
-        this.worker = worker || new Worker(scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.js"))
+        this.worker = worker || new Worker(this._worker_script)
         this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
 
         if (typeof window !== 'undefined')
@@ -108,6 +110,16 @@ class CoqWorker {
 
     register(filename) {
         this.sendCommand(["Register", filename]);
+    }
+
+    restart() {
+        this.sids = [, new Future()];
+
+        this.worker.terminate();  // kill!
+
+        // Recreate worker
+        this.worker = new Worker(this._worker_script);
+        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
     }
 
     // Promise-based APIs

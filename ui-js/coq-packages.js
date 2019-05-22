@@ -266,6 +266,17 @@ class PackageManager {
         });
     }
 
+    /**
+     * Make all loaded packages unloaded.
+     * This is called after the worker is restarted.
+     * Does not dropped downloaded/cached archives.
+     */
+    reset() {
+        for (let b of Object.values(this.bundles)) {
+            delete b.promise;
+        }
+    }
+
     collapse() {
         this.panel.parentNode.classList.add('collapsed');
     }

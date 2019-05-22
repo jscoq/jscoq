@@ -185,6 +185,17 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * Removes all sentence marks
+     */
+    retract() {
+        for (let mark of this.editor.getAllMarks()) {
+            if (mark.stm) {
+                this.mark(mark.stm, 'clear');
+            }
+        }
+    }
+
     markWithClass(stm, className) {
         var doc = this.editor.getDoc();
 
@@ -409,6 +420,10 @@ class CmCoqProvider {
         } while(type_re && !(type_re.test(next.type)));
         return next;
     }
+
+    // ================
+    // Persistence Part
+    // ================
 
     load(text, filename, dirty=false) {
         if (this.autosave && this.dirty) this.saveLocal();

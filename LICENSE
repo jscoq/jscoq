@@ -25,24 +25,28 @@ Files: ui-images/power-button-512-black.png
 License: CC-BY 3.0
 Comment: Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
 
-ui-images/log-info.png
+Files: ui-images/log-info.png
 License: CC-BY 3.0
 Comment: Kirill Kazachek, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
 
-ui-images/log-error.png
+Files: ui-images/log-error.png
 License: SIL OFL
 Comment: Dave Gandy (Font Awesome), via iconfinder [https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL]
          DinosoftLabs, via iconfinder (free for commercial use).
          Combined into a single 32x32 image.
 
-ui-images/log-warn.png
+Files: ui-images/log-warn.png
 License: CC-BY 2.5
 Comment: Ben Gillbanks, via iconfinder [https://creativecommons.org/licenses/by/2.5/]
 
-ui-images/log-notice.png
+Files: ui-images/log-notice.png
 License: CC-BY 3.0
 Comment: Rudy Muhardika, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
          Cropped so that actual image area is a little below 32x32.
+
+Files: ui-images/reset.png, ui-images/assets/reset.svg
+License: CC-BY 3.0
+Comment: Hali Gali Harun, IT, via TheNounProject
 
 Files: ui-images/*
 License: AGPL-3

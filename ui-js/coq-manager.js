@@ -121,6 +121,10 @@ class ProviderContainer {
         stm.sp.highlight(stm, flag);
     }
 
+    retract() {
+        for (let sp of this.snippets) sp.retract();
+    }
+
     // Focus and movement-related operations.
 
     // Get the point of the current focused element.
@@ -814,16 +818,29 @@ class CoqManager {
         this.error = [];
     }
 
-    // Drops all the state!
+    /**
+     * Drops all the state and re-launches the worker.
+     * Loaded packages are reloaded (but obviously not Require'd) by the
+     * package manager.
+     * @returns {Promise} resolves after 'init' command has been issued.
+     */
     reset() {
+        this.layout.update_goals($('<b>').text('Coq worker reset.'));
+        this.provider.retract();
 
-        // Reset out sentences
-        this.doc.sentences.forEach(function(stm) {
-            this.provider.mark(stm, "clear");
-        }, this);
+        var dummy_sentence = this.doc.sentences[0];
+        this.doc.sentences = [dummy_sentence];
+        this.doc.stm_id = [, dummy_sentence];
 
-        // this.doc.sentences = [];
-        // XXX Kill worker
+        this.error = [];
+        this.goTarget = null;
+
+        this.coq.restart();
+
+        // Reload packages and init
+        var pkgs = this.packages.loaded_pkgs.slice();
+        this.packages.reset();
+        return this.packages.loadDeps(pkgs).then(() => this.coqInit());
     }
 
     // Keyboard handling
@@ -836,7 +853,7 @@ class CoqManager {
         if (!e.altKey) return true;
 
         // When navigation is disabled, suppress keystrokes
-        if (!this.navEnabled && [13, 39, 78, 40, 80, 38].indexOf(e.keyCode) > -1) {
+        if (!this.navEnabled && [13, 39, 78, 40, 80, 38].includes(e.keyCode)) {
             e.preventDefault();
             e.stopPropagation();
             return true;
