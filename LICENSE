@@ -48,6 +48,14 @@ Files: ui-images/reset.png, ui-images/assets/reset.svg
 License: CC-BY 3.0
 Comment: Hali Gali Harun, IT, via TheNounProject
 
+Files: ui-images/{up,down}.png, ui-images/assets/arrow.svg
+Licence: CC-BY 3.0
+Comment: Dean Mocha, TW
+
+Files: ui-images/to-cursor.png, ui-images/assets/{text,to}-cursor.svg
+Licence: CC-BY 3.0
+Comments: Derived work from those of Dean Mocha, TW & Icon 54, via TheNounProject
+
 Files: ui-images/*
 License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.

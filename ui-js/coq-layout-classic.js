@@ -39,11 +39,11 @@ class CoqLayoutClassic {
         -->
       </div> <!-- /.exits -->
       <span id="buttons" class="disabled">
-        <img src="${base_path}/ui-images/up.png" width="21" height="24"
-             alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/>
-        <img src="${base_path}/ui-images/down.png" width="21" height="25"
+        <img src="${base_path}/ui-images/up.png" width="20" height="20"
+             alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/><!--
+        --><img src="${base_path}/ui-images/down.png" width="20" height="20"
              alt="Down (Meta-N)" title="Down (Meta-N)" name="down"/>
-        <img src="${base_path}/ui-images/to-cursor.png" width="38" height="24"
+        <img src="${base_path}/ui-images/to-cursor.png" width="24" height="24"
              alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
         <img src="${base_path}/ui-images/reset.png" width="25" height="25"
              alt="Reset worker" title="Reset worker" name="reset"/>
