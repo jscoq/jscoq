@@ -100,8 +100,6 @@ a, a:link, a:visited, a:active {
 .flex-panel {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid #9f9f9f;
-  border-left: 1px solid #9f9f9f;
   flex: 1000 1;
   overflow: hidden;
   transition: flex 0.5s ease-in-out;
@@ -109,7 +107,6 @@ a, a:link, a:visited, a:active {
 
 .flex-panel > .caption {
   flex-shrink: 0;
-  background: #c4c4c4;
   font-size: 11px;
   height: 20px;
   padding: 3px 10px 0 10px;

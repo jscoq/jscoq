@@ -10,24 +10,39 @@ body {
   background: #fff;
 }
 
-#panel-wrapper {
+.jscoq-theme-light#panel-wrapper,
+.jscoq-theme-light #panel-wrapper {
   background: #fff;
+  color: #000;
+  border-left: 1px solid #999;
 }
 
-#vsep, #hsep {
+.jscoq-theme-light .flex-panel {
+  border-top: 1px solid #9f9f9f;
+}
+
+.jscoq-theme-light .flex-panel > .caption {
+  background: #c4c4c4;
+}
+
+.jscoq-theme-light #vsep,
+.jscoq-theme-light #hsep {
   background: #ddd;
 }
 
-a, a:link, a:visited, a:active {
+.jscoq-theme-light a,
+.jscoq-theme-light a:link,
+.jscoq-theme-light a:visited,
+.jscoq-theme-light a:active {
   color: #22f;
 }
 
-a:hover {
+.jscoq-theme-light a:hover {
   color: #5af;
 }
 
-#toolsbar {
-  border-bottom: 1px solid #272727;
+.jscoq-theme-light #toolbar {
+  border-bottom: 1px solid #999;
 }
 
 /* Coq settings */

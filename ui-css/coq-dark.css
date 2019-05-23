@@ -2,15 +2,15 @@
 
 /* Panel/body settings */
 
-#panel-wrapper.jscoq-theme-dark,
+.jscoq-theme-dark#panel-wrapper,
 .jscoq-theme-dark #panel-wrapper {
-    background: #222;
-    color: #eee;
+  background: #222;
+  color: #eee;
+  border-left: 1px solid #9f9f9f;
 }
 
 .jscoq-theme-dark .flex-panel {
   border-top: 1px solid #9f9f9f;
-  border-left: 1px solid #9f9f9f;
 }
 
 #vsep, #hsep {
