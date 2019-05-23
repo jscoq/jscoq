@@ -1,5 +1,5 @@
 diff --git a/lib/control.ml b/lib/control.ml
-index 9054507..f687b94 100644
+index 9054507..694129b 100644
 --- a/lib/control.ml
 +++ b/lib/control.ml
 @@ -16,7 +16,14 @@ let steps = ref 0
@@ -17,7 +17,7 @@ index 9054507..f687b94 100644
    if !interrupt then begin interrupt := false; raise Sys.Break end;
    incr steps;
    if !enable_thread_delay && !steps = 1000 then begin
-@@ -79,11 +86,29 @@ let windows_timeout n f x e =
+@@ -79,11 +86,30 @@ let windows_timeout n f x e =
      let e = Backtrace.add_backtrace e in
      Exninfo.iraise e
  
@@ -30,7 +30,8 @@ index 9054507..f687b94 100644
 +  let killed = ref false in
 +  timeout_deadline := Some (Unix.gettimeofday () +. float_of_int n,
 +                            fun () -> killed := true; interrupt := true);
-+  let protect () = jscoq_timeout_yield (); timeout_deadline := None in
++  let protect () = jscoq_timeout_yield (); timeout_deadline := None;
++                   interrupt := false in
 +  let res = try unwind ~protect (fun () -> f x) with Sys.Break -> raise e in
 +  if !killed then raise e;
 +  res
