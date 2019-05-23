@@ -58,11 +58,12 @@ var loadJsCoq;
 
         loadCss(node_modules_path + 'codemirror/lib/codemirror');
         loadCss(node_modules_path + 'codemirror/theme/blackboard');
-        loadCss(node_modules_path + 'codemirror/theme/blackboard');
+        loadCss(node_modules_path + 'codemirror/theme/darcula');
         loadCss(node_modules_path + 'codemirror/addon/hint/show-hint');
         loadCss(base_path + 'ui-css/coq-log');
         loadCss(base_path + 'ui-css/coq-base');
         loadCss(base_path + 'ui-css/coq-light');
+        loadCss(base_path + 'ui-css/coq-dark');
 
         var files = [node_modules_path + 'codemirror/lib/codemirror',
                      node_modules_path + 'codemirror/keymap/emacs',

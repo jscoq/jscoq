@@ -3,15 +3,15 @@
 /* Panel/body settings */
 
 body {
-    background: #e4e4e4;
+  background: #e4e4e4;
 }
 
 #document {
-    background: #fff;
+  background: #fff;
 }
 
 #panel-wrapper {
-    background: #fff;
+  background: #fff;
 }
 
 #vsep, #hsep {
@@ -28,11 +28,6 @@ a:hover {
 
 #toolsbar {
   border-bottom: 1px solid #272727;
-}
-
-#goal-text {
-    background-color: #FFF;
-    /* color: #FFF; */
 }
 
 /* Coq settings */
@@ -66,7 +61,7 @@ a:hover {
 
 /* Normal theme settings */
 
-.cm-s-default.CodeMirror {
+.CodeMirror.cm-s-default {
     background: #f1f1f1;
 }
 
@@ -107,7 +102,7 @@ a:hover {
   color: red;
 }
 
-div.CodeMirror span.CodeMirror-matchingbracket {
+.CodeMirror span.CodeMirror-matchingbracket {
   color: #939;
   outline: 1px solid rgba(200, 0, 0, 0.3);
   outline-offset: -1px;

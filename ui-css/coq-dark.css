@@ -2,17 +2,15 @@
 
 /* Panel/body settings */
 
-body {
-  background-color: #000;
-  color: #fff;
+#panel-wrapper.jscoq-theme-dark,
+.jscoq-theme-dark #panel-wrapper {
+    background: #222;
+    color: #eee;
 }
 
-#document {
-    background: #000;
-}
-
-#panel-wrapper {
-    background: #000;
+.jscoq-theme-dark .flex-panel {
+  border-top: 1px solid #9f9f9f;
+  border-left: 1px solid #9f9f9f;
 }
 
 #vsep, #hsep {
@@ -23,16 +21,28 @@ body {
   background-color: #000;
 }
 
-a, a:link, a:visited, a:active {
+.jscoq-theme-dark a,
+.jscoq-theme-dark a:link,
+.jscoq-theme-dark a:visited,
+.jscoq-theme-dark a:active {
   color: #abc;
 }
 
-a:hover {
+.jscoq-theme-dark a:hover {
   color: #5af;
 }
 
-#toolsbar {
+.jscoq-theme-dark #toolbar {
   border-bottom: 1px solid #272727;
+}
+
+.jscoq-theme-dark .flex-panel > .caption {
+  background: #666;
+  color: #ccc;
+}
+
+.jscoq-theme-dark .link-to-github::after {
+  background-image: url(../ui-images/themes/dark/github.png);
 }
 
 /* Code settings */
@@ -43,24 +53,20 @@ a:hover {
 /*.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }*/
 /*.CodeMirror { color: #fff; }*/
 
-.cm-s-blackboard.CodeMirror {
-    background: #000;
-}
-
 .cm-s-blackboard .CodeMirror-gutters {
     background: #000;
     border-right: 1px solid #272727;
 }
 
-.coq-eval-ok {
+.cm-s-blackboard .coq-eval-ok {
   background: #483D8B;
 }
 
-.coq-eval-pending {
+.cm-s-blackboard .coq-eval-pending {
   background: #fc6;
 }
 
-.coq-eval-failed {
+.cm-s-blackboard .coq-eval-failed {
   background: #aa0000;
 }
 
@@ -69,7 +75,7 @@ a:hover {
   color: #98FB98;
 }
 
-.cm-s-blackboard .cm-number {
+.cm-s-blackboard .cm-s-blackboard .cm-number {
   color: #FFFFFF;
 }
 
@@ -91,30 +97,14 @@ a:hover {
 }
 
 /* Tactics */
-.cm-keyword {
+.cm-s-blackboard .cm-keyword {
   color: #98FB98;
 }
 
-.cm-tactic {
+.cm-s-blackboard .cm-tactic {
   color: #9370DB;
 }
 
-.cm-terminator {
+.cm-s-blackboard .cm-terminator {
   color: #FF0000;
 }
-
-/*  */
-.cm-statementend {
-  /* background: #6C64FE; */
-}
-
-.cm-bullet,
-.cm-bracket,
-.cm-brace{
-  /*
-  background: bisque;
-  color: black;
-  */
-}
-
-
