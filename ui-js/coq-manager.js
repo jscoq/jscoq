@@ -912,6 +912,10 @@ class CoqManager {
         case 'down' :
             this.goNext(true);
             break;
+
+        case 'reset':
+            this.reset();
+            break;
         }
     }
 
