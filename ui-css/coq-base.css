@@ -166,6 +166,29 @@ a, a:link, a:visited, a:active {
   flex: 1 1000 20px;
 }
 
+#goal-panel p {
+  margin: 0;
+}
+
+#goal-panel p.splash-above {
+  margin-top: 0.2em;
+  margin-left: 0.5em;
+}
+
+#goal-panel div.splash-middle {
+  text-align: center;
+  margin: 1em 0;
+  line-height: 0;
+}
+
+#goal-panel div.splash-middle img {
+  height: 64px;
+}
+
+#goal-panel p.system {
+  margin: 0.75em 0; 
+}
+
 #goal-text {
   border: 0;
   white-space: pre;
