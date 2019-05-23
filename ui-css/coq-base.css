@@ -100,7 +100,8 @@ a, a:link, a:visited, a:active {
 .flex-panel {
   display: flex;
   flex-direction: column;
-  border: 1px solid #9f9f9f;
+  border-top: 1px solid #9f9f9f;
+  border-left: 1px solid #9f9f9f;
   flex: 1000 1;
   overflow: hidden;
   transition: flex 0.5s ease-in-out;
@@ -217,11 +218,21 @@ a, a:link, a:visited, a:active {
   transition: opacity 120ms linear;
 }
 
-#at-github {
-  height: 24px;
+.link-to-github {
+  word-spacing: -2px; /* aren't we picky */
+}
+
+.link-to-github::after {
+  content: "";
+  display: inline-block;
+  height: 25px;
+  width: 25px;
+  background: url(../ui-images/github.png);
+  background-size: 25px 25px;
+  background-repeat: no-repeat;
   vertical-align: middle;
+  margin-left: .3em;
   padding-bottom: 5px;
-  box-sizing: content-box;
 }
 
 #buttons {

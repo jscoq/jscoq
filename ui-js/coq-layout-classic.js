@@ -49,8 +49,7 @@ class CoqLayoutClassic {
              alt="Reset worker" title="Reset worker" name="reset"/>
       </span>
       <div class="exits right">
-        <a href="https://github.com/ejgallego/jscoq">Readme @ 
-        <img src="https://github.com/favicon.ico" id="at-github"></a>
+        <a href="https://github.com/ejgallego/jscoq" class="link-to-github">Readme @</a>
       </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
@@ -90,6 +89,9 @@ class CoqLayoutClassic {
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html(options.base_path);
+
+        if (options.theme)
+            this.panel.classList.add(`jscoq-theme-${options.theme}`);
 
         this.ide.appendChild(this.panel);
 
