@@ -5,7 +5,7 @@
   "main": "index.html",
   "dependencies": {
     "bootstrap": "^3.4.1",
-    "codemirror": "^5.46.0",
+    "codemirror": "^5.47.0",
     "commander": "^2.20.0",
     "find": "^0.3.0",
     "glob": "^7.1.3",
