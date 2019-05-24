@@ -38,15 +38,11 @@ class CoqLayoutClassic {
         </a>
         -->
       </div> <!-- /.exits -->
-      <span id="buttons" class="disabled">
-        <img src="${base_path}/ui-images/up.png" width="20" height="20"
-             alt="Up (Meta-P)" title="Up (Meta-P)" name="up"/><!--
-        --><img src="${base_path}/ui-images/down.png" width="20" height="20"
-             alt="Down (Meta-N)" title="Down (Meta-N)" name="down"/>
-        <img src="${base_path}/ui-images/to-cursor.png" width="24" height="24"
-             alt="To cursor (Meta-Enter)" title="To cursor (Meta-Enter)" name="to-cursor"/>
-        <img src="${base_path}/ui-images/reset.png" width="25" height="25"
-             alt="Reset worker" title="Reset worker" name="reset"/>
+      <span id="buttons">
+        <button name="up"          alt="Up (Meta-P)"             title="Up (Meta-P)"></button><!--
+     --><button name="down"        alt="Down (Meta-N)"           title="Down (Meta-N)"></button>
+        <button name="to-cursor"   alt="To cursor (Meta-Enter)"  title="To cursor (Meta-Enter)"></button>
+        <button name="reset"       alt="Reset worker"            title="Reset worker"></button>
       </span>
       <div class="exits right">
         <a href="https://github.com/ejgallego/jscoq" class="link-to-github">Readme @</a>
@@ -107,7 +103,10 @@ class CoqLayoutClassic {
         this.panel.querySelector('#hide-panel')
             .addEventListener('click', evt => this.toggle() );
 
+        this._setButtons(false); // starts disabled
+
         this.onAction = evt => {};
+        this.buttons.addEventListener('click', evt => this.onAction(evt));
 
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
@@ -137,18 +136,21 @@ class CoqLayoutClassic {
         }
     }
 
+    _setButtons(enabled) {
+        $(this.buttons).find('button').attr('disabled', !enabled);
+        enabled ? this.buttons.classList.remove('disabled') 
+                : this.buttons.classList.add('disabled');
+    }
+
     toolbarOn() {
         // Enable the button actions and show them.
-        this.btnEventHandler = (evt) => this.onAction(evt);
-        this.buttons.addEventListener('click', this.btnEventHandler);
-        this.buttons.classList.remove('disabled');
+        this._setButtons(true);
         this.ide.classList.remove('on-hold');
     }
 
     toolbarOff() {
         // Disable the button actions and dim them.
-        this.buttons.removeEventListener('click', this.btnEventHandler);
-        this.buttons.classList.add('disabled');
+        this,_setButtons(false);
         this.ide.classList.add('on-hold');
     }
 

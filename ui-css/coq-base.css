@@ -238,17 +238,46 @@ a, a:link, a:visited, a:active {
   padding-left: 2em;
   transition: opacity 500ms ease;
   vertical-align: middle;
-}
-
-#buttons.disabled {
-  opacity: 0.15;
-}
-
-#buttons img {
-  margin: 0 2px;
   margin-top: 5px;
-  cursor: pointer;
+}
+
+#buttons button {
+  border: none;
+  width: 20px;
+  height: 20px;
+  background-size: 100%;
   vertical-align: middle;
+  cursor: pointer;
+}
+
+#buttons button:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
+#buttons button:active {
+  opacity: 0.8;
+}
+
+#buttons button:focus {
+  outline: none;
+}
+
+#buttons button[name=up] {
+  background-image: url(../ui-images/up.png);
+}
+#buttons button[name=down] {
+  background-image: url(../ui-images/down.png);
+}
+#buttons button[name=to-cursor] {
+  background-image: url(../ui-images/to-cursor.png);
+  width: 25px;
+  height: 25px;
+}
+#buttons button[name=reset] {
+  background-image: url(../ui-images/reset.png);
+  width: 25px;
+  height: 25px;
 }
 
 /* overloads */
