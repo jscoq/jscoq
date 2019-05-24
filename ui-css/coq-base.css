@@ -181,8 +181,30 @@ a, a:link, a:visited, a:active {
   line-height: 0;
 }
 
-#goal-panel div.splash-middle img {
-  height: 64px;
+#goal-panel div.splash-middle div.splash-image {
+  display: inline-block;
+  width: 178.125px;
+  height: 75px;
+  background-size: 178.125px;
+  background-image: url(../ui-images/jscoq-splash.png);
+}
+
+#goal-panel div.splash-middle div.wait {
+  animation: splash-wait 1.0s steps(7) infinite;
+}
+
+#goal-panel div.splash-middle div.ready {
+  animation: splash-ready 0.5s steps(6) forwards;
+}
+
+@keyframes splash-wait {
+  0% { background-position-y: 0px; }
+  100% { background-position-y: -525px; }
+}
+
+@keyframes splash-ready {
+  0% { background-position-y: -525px; }
+  100% { background-position-y: -975px; }
 }
 
 #goal-panel p.system {

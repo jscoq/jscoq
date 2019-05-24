@@ -153,26 +153,25 @@ class CoqLayoutClassic {
     }
 
     splash(version_info, msg, mode='wait') {
-        $(this.proof).empty();
+        var above = $(this.proof).find('.splash-above'), 
+            image = $(this.proof).find('.splash-image'), 
+            below = $(this.proof).find('.splash-below');
 
-        if (version_info)
-            $(this.proof).append(
-                $('<p>').addClass('splash-above').text(version_info));
-
-        var img_fn = {wait: 'jscoq', ready: 'jscoq-still'}[mode],
-            img_path = `${this.options.base_path}/ui-images/${img_fn}.gif`;
-
-        if (img_fn)
-            $(this.proof).append(
+        if (!(above.length && image.length && below.length)) {
+            $(this.proof).empty().append(
+                above = $('<p>').addClass('splash-above'),
                 $('<div>').addClass('splash-middle').append(
-                    $('<img>').attr('src', img_path)
-                )
-            );
-
-        if (msg) {
-            $(this.proof).append(
-                $('<p>').addClass('splash-below').text(msg));
+                    image = $('<div>')
+                ),
+                below = $('<p>').addClass('splash-below')
+            )
         }
+
+        if (version_info) above.text(version_info);
+        if (msg)          below.text(msg);
+        
+        image[0].classList = [];
+        image.addClass(['splash-image', mode]);
     }
 
     /**
@@ -318,7 +317,7 @@ class CoqLayoutClassic {
      */
     _preloadImages() {
         var imgs_dir = `${this.options.base_path}/ui-images`,
-            img_fns = ['jscoq.gif', 'jscoq-still.gif', 'egg.png'];
+            img_fns = ['jscoq-splash.png', 'egg.png'];
 
         for (let fn of img_fns) {
             new Image().src = `${imgs_dir}/${fn}`;
