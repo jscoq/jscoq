@@ -827,6 +827,7 @@ class CoqManager {
      */
     reset() {
         this.layout.update_goals($('<b>').text('Coq worker reset.'));
+        this.disable();
         this.provider.retract();
 
         var dummy_sentence = this.doc.sentences[0];
