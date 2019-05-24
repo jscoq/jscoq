@@ -157,11 +157,13 @@ class CoqLayoutClassic {
             image = $(this.proof).find('.splash-image'), 
             below = $(this.proof).find('.splash-below');
 
+        var overlay = `${this.options.base_path}/ui-images/${mode}.gif`;
+
         if (!(above.length && image.length && below.length)) {
             $(this.proof).empty().append(
                 above = $('<p>').addClass('splash-above'),
                 $('<div>').addClass('splash-middle').append(
-                    image = $('<div>')
+                    image = $('<div>').append($('<img>'))
                 ),
                 below = $('<p>').addClass('splash-below')
             )
@@ -172,6 +174,7 @@ class CoqLayoutClassic {
         
         image[0].classList = [];
         image.addClass(['splash-image', mode]);
+        image.find('img').attr('src', overlay);
     }
 
     /**
@@ -197,7 +200,7 @@ class CoqLayoutClassic {
 
     toolbarOff() {
         // Disable the button actions and dim them.
-        this,_setButtons(false);
+        this._setButtons(false);
         this.ide.classList.add('on-hold');
     }
 
