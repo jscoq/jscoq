@@ -20,6 +20,7 @@
  - [ ] Support for UI layouts.
  - [x] Decentralized build mode for addons.
  - [ ] Dark theme - color scheme and icon set
+ - [ ] Printer-friendly formatting in documents.
 
 Pending worker tasks:
 
