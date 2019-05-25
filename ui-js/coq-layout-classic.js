@@ -9,6 +9,12 @@
 /***********************************************************************/
 /* The CoqLayout class contains the goal, query, and packages buffer   */
 /***********************************************************************/
+
+/**
+ * Classical layout: a right panel containing a toolbar with buttons at the 
+ * top, and a main area divided vertically into three collapsible panes.
+ * Also shows a power button that hides or shows the panel.
+ */
 class CoqLayoutClassic {
 
     html(base_path) {
@@ -76,8 +82,16 @@ class CoqLayoutClassic {
         return html;
     }
 
-    // We first initialize the providers.
+    /**
+     * Initializes the UI layout.
+     * @param {object} options jsCoq options; used keys are:
+     *   - wrapper_id: element id of the IDE container
+     *   - base_path: URL for the root directory of jsCoq
+     *   - theme: jsCoq theme to use for the panel ('light' or 'dark')
+     */
     constructor(options) {
+
+        this.options = options;
 
         // Our reference to the IDE, goal display & query buffer.
         this.ide   = document.getElementById(options.wrapper_id);
@@ -113,6 +127,8 @@ class CoqLayoutClassic {
         $(this.panel).find('select[name=msg_filter]')
             .change(ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
+
+        this._preloadImages();
     }
 
     show() {
@@ -136,6 +152,40 @@ class CoqLayoutClassic {
         }
     }
 
+    splash(version_info, msg, mode='wait') {
+        var above = $(this.proof).find('.splash-above'), 
+            image = $(this.proof).find('.splash-image'), 
+            below = $(this.proof).find('.splash-below');
+
+        var overlay = `${this.options.base_path}/ui-images/${mode}.gif`;
+
+        if (!(above.length && image.length && below.length)) {
+            $(this.proof).empty().append(
+                above = $('<p>').addClass('splash-above'),
+                $('<div>').addClass('splash-middle').append(
+                    image = $('<div>').append($('<img>'))
+                ),
+                below = $('<p>').addClass('splash-below')
+            )
+        }
+
+        if (version_info) above.text(version_info);
+        if (msg)          below.text(msg);
+        
+        image[0].classList = [];
+        image.addClass(['splash-image', mode]);
+        image.find('img').attr('src', overlay);
+    }
+
+    /**
+     * Shows a notice in the main goal pane (reserved for important messages,
+     * such as during startup).
+     * @param {string} msg message text
+     */
+    systemNotification(msg) {
+        $(this.proof).append($('<p>').addClass('system').text(msg));
+    }
+
     _setButtons(enabled) {
         $(this.buttons).find('button').attr('disabled', !enabled);
         enabled ? this.buttons.classList.remove('disabled') 
@@ -150,7 +200,7 @@ class CoqLayoutClassic {
 
     toolbarOff() {
         // Disable the button actions and dim them.
-        this,_setButtons(false);
+        this._setButtons(false);
         this.ide.classList.add('on-hold');
     }
 
@@ -238,11 +288,6 @@ class CoqLayoutClassic {
         return level <= this.log_level;
     }
 
-    // Execute a query to Coq
-    query(query) {
-        return true;
-    }
-
     panelClickHandler(evt) {
 
         var target = evt.target;
@@ -267,6 +312,18 @@ class CoqLayoutClassic {
 
                 panel.classList.add('collapsed');
             }
+        }
+    }
+
+    /**
+     * Auxiliary function to improve UX by preloading images.
+     */
+    _preloadImages() {
+        var imgs_dir = `${this.options.base_path}/ui-images`,
+            img_fns = ['jscoq-splash.png', 'egg.png'];
+
+        for (let fn of img_fns) {
+            new Image().src = `${imgs_dir}/${fn}`;
         }
     }
 }

@@ -12,6 +12,7 @@
  - [bugfix] Contention in autocomplete between company-coq and Tex-input (@corwin-of-amber)
  - Simple UI for compiling pure-Coq projects in the browser (@corwin-of-amber, in-progress)
  - Timeout support and worker reset button (@corwin-of-amber)
+ - Splash image (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.

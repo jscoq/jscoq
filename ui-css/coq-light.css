@@ -45,6 +45,10 @@ body {
   border-bottom: 1px solid #999;
 }
 
+.jscoq-theme-light #goal-panel p.system {
+  color: #555;
+}
+
 /* Coq settings */
 
 .coq-eval-ok {

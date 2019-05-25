@@ -217,6 +217,7 @@ class CoqManager {
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
+        this.layout.splash();
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
         this.setupDragDrop();
@@ -388,11 +389,7 @@ class CoqManager {
 
     // The first state is ready.
     coqReady(sid) {
-
-        this.layout.proof.append(document.createTextNode(
-            "\nCoq worker is ready with sid = " + sid.toString() + "\n"));
-            /* init libraries have already been loaded by now */
-
+        this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
     }
 
@@ -636,14 +633,14 @@ class CoqManager {
     // the corresponding JS-version (not to speak of types)
     coqCoqInfo(info) {
 
-        this.layout.proof.textContent = info;
+        this.version_info = info;
 
         var pkgs = this.options.init_pkgs;
 
-        if (pkgs.length > 0)
-            this.layout.proof.textContent +=
-                  "\nPlease wait for the libraries to load, thanks!"
-                + "\n(If you are having trouble, try cleaning your browser's cache.)\n";
+        this.layout.splash(info,
+            pkgs.length == 0 ? undefined : 
+              "Loading libraries. Please wait.\n"
+            + "(If you are having trouble, try cleaning your browser's cache.)");
 
         this.packages.waitFor(pkgs)
         .then(() => this.packages.loadDeps(pkgs))
@@ -656,21 +653,16 @@ class CoqManager {
 
         this.packages.collapse();
 
-        this.layout.proof.append(document.createTextNode(
-            "\n===> JsCoq filesystem initialized successfully!\n" +
-            "===> Loaded packages [" + this.options.init_pkgs.join(', ') + "] \n"));
+        this.layout.systemNotification(
+            "===> JsCoq filesystem initialized successfully!\n" +
+            `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
-        // XXXXXX: Critical point
-        var load_lib = [];
+        // Set startup parameters
+        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
+            load_path = this.packages.getLoadPath(),
+            load_lib = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [];
 
-        if (this.options.prelude) {
-            load_lib.push(["Coq", "Init", "Prelude"]);
-        }
-
-        let set_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
-            load_path = this.packages.getLoadPath();
-
-        this.coq.init(set_opts, load_lib, load_path);
+        this.coq.init(init_opts, load_lib, load_path);
         // Almost done!
     }
 
@@ -894,8 +886,8 @@ class CoqManager {
     disable() {
         this.navEnabled = false;
         this.layout.toolbarOff();
-        this.layout.proof.append(document.createTextNode(
-                "\n===> Waiting for Package load!\n"));
+        this.layout.systemNotification(
+                "===> Waiting for package(s) to load.");
     }
 
     toolbarClickHandler(evt) {

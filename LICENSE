@@ -60,6 +60,11 @@ Files: ui-images/github.png, ui-images/themes/dark/github.png
 Licence: Proprietary
 Comments: Fair use according to the terms of https://github.com/logos.
 
+Files: ui-images/assets/sphere.svg
+Licence: CC-BY 3.0
+Comments: From Wikipedia (by Geek3) https://en.wikipedia.org/wiki/Sphere.
+          Reduced number of grid lines.
+
 Files: ui-images/*
 License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.
