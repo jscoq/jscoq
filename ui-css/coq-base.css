@@ -491,3 +491,19 @@ div.hint-package {
   overflow: hidden;
   font-size: 1pt;
 }
+
+/* Printing options */
+
+@media print {
+  #hide-panel { display: none; }
+  a.link-to-github { display: none; }
+
+  .flex-panel:not(.collapsed) .caption {
+    border-bottom: 1px dashed #ccc;
+  }
+
+  #panel-wrapper {
+    height: calc(100% - 2px);  /* otherwise border does not show... */
+    border-bottom: 1px solid #aaa;
+  }
+}

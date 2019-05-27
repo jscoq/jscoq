@@ -32,7 +32,6 @@ var loadJsCoq;
         link.href  = css+'.css';
         link.type  = "text/css";
         link.rel   = "stylesheet";
-        link.media = "screen";
 
         document.head.appendChild(link);
     };
@@ -41,8 +40,9 @@ var loadJsCoq;
         document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined;
 
     // In order for jsCoq to work we need to load:
-    // - Codemirror CSS [core+theme+coq]
-    // - Codemirror JS  [core+coq+emacs]
+    // - Codemirror CSS [core + themes]
+    // - Codemirror JS  [core + emacs keymap + addons]
+    // - Codemirror custom modes and addons [coq + company-coq + tex-input]
     // - jQuery
     // - JSZip
     // - localForage
