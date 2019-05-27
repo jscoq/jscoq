@@ -80,6 +80,9 @@ class Markup {
                 }
             }
         }
+
+        if (this.cm.display.maxLine && 
+            this.cm.display.maxLine.lineNo() === line) this._maxLineHack();
     }
 
     clearFromLine(line) {
@@ -90,8 +93,14 @@ class Markup {
     }
 
     _flush(change_obj) {
-        for (let ln = change_obj.from.ln; ln <= change_obj.to.ln; ln++) {
+        for (let ln = change_obj.from.line; ln <= change_obj.to.line; ln++) {
             delete this.cm.getLineHandle(ln)._cc_recorded_styles;
+        }
+
+        if (this.cm.display.maxLine) {
+            var mx = this.cm.display.maxLine.lineNo();
+            if (mx >= change_obj.from.line && 
+                mx <= change_obj.to.line) this._maxLineHack();
         }
     }
 
@@ -99,6 +108,26 @@ class Markup {
         if (!ln.styles.equals(ln._cc_recorded_styles)) {
             ln._cc_recorded_styles = ln.styles;
             this.work.enqueue(() => this.applyToLine(ln.lineNo()));
+        }
+    }
+
+    /**
+     * (internal) This is needed to prevent a scrolling bug in CodeMirror 5.47.
+     * CodeMirror saves the line that has the maximal length and updates the
+     * sizerWidth to its total width.
+     * Since replacedWith widgets effectively shrinks the line, this results in
+     * underscrolling in many cases.
+     */
+    _maxLineHack() {
+        var display = this.cm.display, curOp = this.cm.curOp;
+        display.maxLineChanged = false;
+        if (curOp) {
+            curOp.updateMaxLine = false;
+            curOp.adjustWidthTo = display.maxLine.text.length * 
+                                  this.cm.defaultCharWidth();
+            // Force the size using the actual character count.
+            // May result in too much horizontal scrolling, but that is
+            // better than the alternative.
         }
     }
 
@@ -197,8 +226,10 @@ class WorkQueue {
         this.primed = true;
         requestAnimationFrame(() => this.cm.operation(() => {
             try     { for (let t of this.tasks) t(); }
-            finally { this.primed = false; this.tasks = []; }
+            finally { this.primed = false; this.tasks = []; this._cleanup(); }
         }));
+    }
+    _cleanup() {
     }
 }
 
@@ -483,6 +514,7 @@ class CompanyCoq {
     }
 
     attach(cm) {
+        console.log(cm.curOp);
         this.markup.attach(cm);
         this.completion.attach(cm);
         this.observe.attach(cm);
