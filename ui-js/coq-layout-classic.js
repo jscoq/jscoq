@@ -174,7 +174,8 @@ class CoqLayoutClassic {
         
         image[0].classList = [];
         image.addClass(['splash-image', mode]);
-        image.find('img').attr('src', overlay);
+        var img = image.find('img');
+        if (img.attr('src') !== overlay) img.attr('src', overlay);
     }
 
     /**
