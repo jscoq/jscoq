@@ -559,10 +559,13 @@ class CoqManager {
 
             var hgoals = this.pprint.goals2DOM(goals);
 
+            // Preprocess pretty-printed output
+            if (this.company_coq) {
+                this.contextual_info.pinIdentifiers(hgoals);
+                this.company_coq.markup.applyToDOM(hgoals[0]);
+            }
 
             this.doc.goals[sid] = hgoals;
-            // Don't update goals on trasient when go to point.
-            // if(!this.goTarget)
             this.updateGoals(hgoals);
         }
     }
@@ -916,10 +919,6 @@ class CoqManager {
     updateGoals(html) {
         if (html) {
             this.layout.update_goals(html);
-            if (this.company_coq) {
-                this.contextual_info.pinIdentifiers();
-                this.company_coq.markup.applyToDOM(this.layout.proof);
-            }
             this.pprint.adjustBreaks($(this.layout.proof));
             /* Notice: in Pp-formatted text, line breaks are handled by
              * FormatPrettyPrint rather than by the layout.
