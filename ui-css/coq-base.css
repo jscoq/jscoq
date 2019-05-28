@@ -24,9 +24,8 @@ a, a:link, a:visited, a:active {
 }
 
 #ide-wrapper {
-  /*padding-left: 0;*/
   padding-right: 45%;
-  /*transition: all 0.5s ease;*/
+  transition: padding 0.5s ease;
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
@@ -37,13 +36,16 @@ a, a:link, a:visited, a:active {
   padding-right: 0px;
 }
 
+#ide-wrapper #document {
+  max-width: 51em;
+}
+
 .on-hold * {
   cursor: progress !important;
 }
 
 #code-wrapper {
   margin-left: 0px;
-  transition: padding-right 0.5s ease;
   overscroll-behavior: none;
 }
 
@@ -82,7 +84,6 @@ a, a:link, a:visited, a:active {
   height: 100%;
   transition: all 0.5s ease;
   z-index: 6;
-  /* border-left: 1px solid #222; */
 }
 
 #ide-wrapper.toggled #panel-wrapper {
@@ -152,11 +153,7 @@ a, a:link, a:visited, a:active {
 .flex-panel.collapsed > .caption:after {
   transform: none;
 }
-/*
-.flex-panel.collapsed > .content {
-  opacity: 0;
-}
-*/
+
 #goal-panel {
   flex: 2000 1;
   position: relative;
@@ -321,14 +318,10 @@ a, a:link, a:visited, a:active {
 }
 
 /* Proper  */
-#code-wrapper {
-}
 
 #document {
   margin: auto;
   position: relative;
-  padding: auto;
-  width: 51em;
   padding: 15px;
 }
 
