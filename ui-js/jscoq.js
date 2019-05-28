@@ -95,11 +95,13 @@ class CoqWorker {
                                      content.byteOffset + content.byteLength);
         }
 
+        var transferOwnership = content instanceof ArrayBuffer;
+
         var msg = ["Put", filename, content];
         if(this.options.debug) {
             console.debug("Posting file: ", msg);
         }
-        this.worker.postMessage(msg, [content]);
+        this.worker.postMessage(msg, transferOwnership ? [content] : []);
         /* Notice: ownership of the 'content' buffer is transferred to the worker
          * (for efficiency)
          */
