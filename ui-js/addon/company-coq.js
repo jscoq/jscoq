@@ -514,7 +514,6 @@ class CompanyCoq {
     }
 
     attach(cm) {
-        console.log(cm.curOp);
         this.markup.attach(cm);
         this.completion.attach(cm);
         this.observe.attach(cm);
