@@ -259,7 +259,10 @@
         return 'bracket';
       }
 
-      stream.eatWhile(/\w/);
+      /* Identifier or keyword*/
+      if (/\w/.test(ch))
+        stream.eatWhile(/[\w']/);
+
       var cur = stream.current(),
           kind = words[cur] || 'variable';
 
