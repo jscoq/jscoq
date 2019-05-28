@@ -204,7 +204,8 @@ class CoqManager {
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
-            editor: { /* codemirror options */ }
+            coq:       { /* Coq option values */ },
+            editor:    { /* codemirror options */ }
             // Disabled on 8.6
             // 'coquelicot', 'flocq', 'tlc', 'sf', 'cpdt', 'color', 'relalg', 'unimath',
             // 'plugin-utils', 'extlib', 'mirrorcore']
@@ -387,7 +388,9 @@ class CoqManager {
             this.layout.log(msg, 'Info');
     }
 
-    // The first state is ready.
+    /**
+     * Called when the first state is ready.
+     */
     coqReady(sid) {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
@@ -661,12 +664,31 @@ class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false},
+        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
+                         coq_options: this._parseOptions(this.options.coq || {})},
             load_path = this.packages.getLoadPath(),
             load_lib = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [];
 
         this.coq.init(init_opts, load_lib, load_path);
         // Almost done!
+    }
+
+    /**
+     * Creates a JSON-able version of the startup Coq options.
+     * E.g. {'Default Timeout': 10}  -->  [[['Default'm 'Timeout'], ['IntValue', 10]]]
+     * @param {object} coq_options option name to value dictionary
+     */
+    _parseOptions(coq_options) {
+        function makeValue(value) {
+            if      (Array.isArray(value))       return value;
+            else if (typeof value === 'number')  return ['IntValue', value];
+            else if (typeof value === 'string')  return ['StringValue', value];
+            else if (typeof value === 'boolean') return ['BoolValue', value]
+
+            throw new Error(`invalid option value ${value}`);
+        }
+        return Object.entries(coq_options)
+                     .map(([k, v]) => [k.split(/\s+/), makeValue(v)]);
     }
 
     goPrev(update_focus) {

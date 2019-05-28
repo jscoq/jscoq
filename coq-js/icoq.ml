@@ -37,6 +37,9 @@ type coq_opts = {
   (* name of the top-level module *)
   top_name     : string;
 
+  (* Initial values for Coq options *)
+  opt_values   : (string list * Goptions.option_value) list;
+
   (* callback to load cma/cmo files *)
   ml_load    : string -> unit;
 
@@ -52,6 +55,14 @@ type 'a seq = 'a Seq.t
 
 
 let feedback_id = ref None
+
+
+let set_options opt_values =
+  let open Goptions in
+  let new_val v old = v in
+  List.iter
+    (fun (opt, value) -> set_option_value new_val opt value)
+    opt_values
 
 
 (**************************************************************************)
@@ -83,6 +94,7 @@ let coq_init opts =
   Global.set_engagement Declarations.PredicativeSet;
   Global.set_VM false;
   Global.set_native_compiler false;
+  set_options opts.opt_values;
 
   (**************************************************************************)
   (* Feedback setup                                                         *)

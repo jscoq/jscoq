@@ -75,6 +75,12 @@ class CoqWorker {
         return rid;
     }
 
+    getOpt(option_name) {
+        if (typeof option_name === 'string')
+            option_name = option_name.split(/\s+/);
+        this.sendCommand(["GetOpt", option_name]);
+    }
+
     loadPkg(base_path, pkg) {
         this.sendCommand(["LoadPkg", base_path, pkg]);
     }
