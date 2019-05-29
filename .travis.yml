@@ -1,6 +1,14 @@
-dist: xenial
-sudo: required
-language: c
+language: node_js
+
+node_js:
+- "8"
+
+matrix:
+  include:
+  - os: linux
+    env: JSCOQ_ARCH=32
+  - os: osx
+    env: JSCOQ_ARCH=64
 
 branches:
   only:
@@ -10,43 +18,36 @@ branches:
   - v8.10
   - v8.11
 
-cache:
-  apt: true
-  directories:
-  - $HOME/.opam
 addons:
   apt:
     packages:
     - gcc-multilib
+  homebrew:
+    update: true
+    packages:
+    - opam
+
+cache:
+  apt: true
+  directories:
+  - /usr/local/Homebrew
+  - $HOME/.opam
+
 env:
   global:
   - NJOBS="2"
   - OPAMROOTISOK="true"
   - OPAMYES="true"
   - OPAMJOBS="2"
-  - JSCOQ_ARCH="32"
+  - OPAM_LINUX_URL=https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux
 
-matrix:
-  include:
-    - dist: xenial
-    - os: osx
-      cache:
-        ccache: true
-        directories:
-          - $HOME/.opam
-          - $HOME/Library/Caches/Homebrew
-      before_cache:
-        - brew cleanup
-      env:
-        - JSCOQ_ARCH="64"
-      before_install: |
-        set -e
-        brew update
-        brew install ccache opam
+before_install:
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
+    sudo chmod 755 /usr/bin/opam; fi
 
-before_install: |
-  sudo curl -sL https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux -o /usr/bin/opam
-  sudo chmod 755 /usr/bin/opam
+before_cache:
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; fi
 
 install:
 - opam init -y --bare --disable-sandboxing || true
@@ -59,6 +60,7 @@ install:
 - git submodule update --remote
 
 script:
+- echo 'Using Node.js:' && node --version
 - set -e
 - echo 'Building Coq...' && echo -en 'travis_fold:start:coq.build\\r'
 - make coq-get
