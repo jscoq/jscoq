@@ -14,6 +14,7 @@
  - Timeout support and worker reset button (@corwin-of-amber)
  - Splash image (@corwin-of-amber)
  - [bugfix] Scrolling issue with special symbols in company-coq (@corwin-of-amber)
+ - Asynchronous document management to circumvent various race conditions (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
