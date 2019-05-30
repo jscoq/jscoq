@@ -445,12 +445,13 @@ div.Pp_box[data-mode="horizontal"] {
 
 #goal-panel div.contextual-info {
   position: absolute;
-  bottom: 2px;
-  left: 3px;
+  bottom: 0;
+  left: 0;
   background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(0,0,0,0.25);
   font-family: monospace;
   font-size: 9pt;
-  border-top: 1px solid rgba(0,0,0,0.25);
+  padding: 0 0.75em 2px 3px;
   white-space: pre-wrap;
   max-height: 60%;
   overflow-y: auto;

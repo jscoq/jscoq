@@ -1006,6 +1006,7 @@ class CoqContextualInfo {
 
     onMouseDown(evt)  {
         this.showFor(evt.target, evt.altKey);
+        $(evt.target).addClass('contextual-focus');
         this.is_sticky = true;
         evt.stopPropagation();
     }
