@@ -703,6 +703,16 @@ class CoqManager {
     }
 
     /**
+     * Focus the snippet containing the stm and place the cursor at
+     * the end of the sentence.
+     */
+    focus(stm) {
+        this.currentFocus = stm.sp;
+        this.currentFocus.focus();
+        this.provider.cursorToEnd(stm);
+    }
+
+    /**
      * Document processing state machine.
      * Synchronizes the managers document (this.doc) with the Stm document
      * held by the worker.
@@ -782,16 +792,6 @@ class CoqManager {
         }
 
         this.doc.sentences.splice(stm_index);
-    }
-
-    /**
-     * Focus the snippet containing the stm and place the cursor at
-     * the end of the sentence.
-     */
-    focus(stm) {
-        this.currentFocus = stm.sp;
-        this.currentFocus.focus();
-        this.provider.cursorToEnd(stm);
     }
 
     // Error handler.
