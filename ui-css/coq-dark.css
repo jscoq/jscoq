@@ -36,13 +36,26 @@
   border-bottom: 1px solid #272727;
 }
 
-.jscoq-theme-dark .flex-panel > .caption {
-  background: #666;
-  color: #ccc;
+.jscoq-theme-dark #buttons button {
+  filter: brightness(170%);
+}
+
+.jscoq-theme-dark #buttons button:active {
+  filter: brightness(250%);
+  opacity: 1;
+}
+
+.jscoq-theme-dark #buttons button:disabled {
+  opacity: 0.6;
 }
 
 .jscoq-theme-dark .link-to-github::after {
   background-image: url(../ui-images/themes/dark/github.png);
+}
+
+.jscoq-theme-dark .flex-panel > .caption {
+  background: #666;
+  color: #ccc;
 }
 
 /* Code settings */
