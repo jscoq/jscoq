@@ -36,6 +36,9 @@ type coq_opts = {
   (* name of the top-level module *)
   top_name     : string;
 
+  (* Initial values for Coq options *)
+  opt_values   : (string list * Goptions.option_value) list;
+
   (* callback to load cma/cmo files *)
   ml_load    : string -> unit;
 

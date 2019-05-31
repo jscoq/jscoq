@@ -22,6 +22,7 @@
  - [x] Decentralized build mode for addons.
  - [ ] Dark theme - color scheme and icon set
  - [ ] Printer-friendly formatting in documents.
+ - [ ] [feature] Setting Coq options through jsCoq configuration argument.
 
 Pending worker tasks:
 

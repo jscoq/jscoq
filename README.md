@@ -71,7 +71,7 @@ Some further ideas behind jsCoq are also discussed in
 ## Collacoq
 
 A small pastebin-like server based on haste is available at
-https://x80.org/collacoq
+https://x80.org/collacoq.
 Note that this service is totally experimental, data loss is guaranteed.
 
 See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
@@ -95,9 +95,9 @@ your particular application, blog, or webpage. The basic pattern to
 add jsCoq to webpage with Coq code is:
 
 ```javascript
-  <script src="$path/js/jscoq-loader.js" type="text/javascript"></script>
+  <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
-    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, [$options]) );
+    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, {$options}) );
   </script>
 ```
 
@@ -105,18 +105,42 @@ where `$path` is the path the jsCoq distribution, `$list_of_ids` is
 the list of textareas that will form the Coq document. See below for
 available `$options`.
 
-The jsCoq [landing webpage](index.html) is a good actually running example.
+The jsCoq [landing webpage](index.html) is a good running example.
 
 ### Options
 
 JsCoq accepts the following options as an optional second parameter to
-the constructor:
+the `CoqManager` constructor:
 
-* `base_path`: Path where jsCoq is installed.
-* `wrapper_id`: id of the div where to attach the panel.
-* `all_pkgs`, `init_pkgs`: List of Coq's packages to show/preload.
-* `prelude: bool`: Whether to load Coq's prelude or not.
-* `implicit_libs`: Whether to make the initial libraries path implicit (that is to say, no `From Coq` etc... required)
+| Key             | Type            | Default         | Description                                                                                                   |
+|-----------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
+| `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
+| `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
+| `all_pkgs`      | array of string | (see below)     | List of available packages that will be listed in the packages panel.                                         |
+| `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
+| `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
+| `implicit_libs` | boolean         | `false`         | Allow `Require`ing modules by short name only (e.g., `Require Arith.`).                                       |
+| `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
+| `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
+| `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |
+
+The list of available packages defaults to all Coq libraries and addons
+available with the current version of jsCoq. At the moment, it is:
+```js
+['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',  
+ 'math-comp', 'elpi', 'equations', 'ltac2',
+ 'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color']
+```
+
+The `editor` property may contain any option supported by CodeMirror
+(see [here](https://codemirror.net/doc/manual.html#config)).
+
+The `coq` property may hold a list of Coq properties mapped to their
+values, and is case sensitive (see [here](https://coq.inria.fr/refman/coq-optindex.html)).
+For example:
+```js
+{'Implicit Arguments': true, 'Default Timeout': 10}
+```
 
 ## Examples
 

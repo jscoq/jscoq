@@ -17,18 +17,22 @@ open Jser_goals
 
 let jscoq_version = "0.10.0~beta1"
 
-type jscoq_options =
-  { top_name: string      [@default "JsCoq"]
-  ; implicit_libs: bool   [@default true]
-  ; stm_debug: bool       [@default false]
-  }
-  [@@deriving yojson]
-
-let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; }
-
 type gvalue =
   [%import: Goptions.option_value]
   [@@deriving yojson]
+
+type coq_options = (string list * gvalue) list [@@deriving yojson]
+
+type jscoq_options =
+  { top_name: string           [@default "JsCoq"]
+  ; implicit_libs: bool        [@default true]
+  ; stm_debug: bool            [@default false]
+  ; coq_options: coq_options   [@default []]
+  }
+  [@@deriving yojson]
+
+let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; 
+                 coq_options = [] }
 
 type search_query =
   | All
@@ -82,11 +86,10 @@ type jscoq_answer =
   (* Main feedback *)
   | Cancelled of Stateid.t list
 
-  (* Goals must be printed better *)
-  | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
+  | GoalInfo  of Stateid.t   * Pp.t reified_goal ser_goals option
 
-  | CoqOpt    of gvalue
-  | Log       of level     * Pp.t
+  | CoqOpt    of string list * gvalue
+  | Log       of level       * Pp.t
   | Feedback  of feedback
 
   | SearchResults of Feedback.route_id * Libnames.full_path seq
@@ -233,6 +236,7 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
                      ) lib_path;
       top_name     = set_opts.top_name;
+      opt_values   = set_opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
@@ -241,10 +245,10 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
     })
 
 (* I refuse to comment on this part of Coq code... *)
-let exec_getopt on =
+let exec_getopt opt =
   let open Goptions in
   let tbl = get_tables () in
-  (OptionMap.find on tbl).opt_value
+  (OptionMap.find opt tbl).opt_value
 
 let coq_exn_info exn =
     let (e, info) = CErrors.push exn                   in
@@ -360,7 +364,7 @@ let jscoq_execute =
     if Jslibmng.is_bytecode filename then
       Jslibmng.register_cma ~file_path:filename
 
-  | GetOpt on           -> out_fn @@ CoqOpt (exec_getopt on)
+  | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
 
   | Init(set_opts, lib_init, lib_path) ->
     let ndoc, iid = exec_init set_opts lib_init lib_path in
