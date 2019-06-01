@@ -120,10 +120,11 @@ class Markup {
      */
     _maxLineHack() {
         var display = this.cm.display, curOp = this.cm.curOp;
+        const CLEARANCE = 3;  /* space added to the right, in characters */
         display.maxLineChanged = false;
         if (curOp) {
             curOp.updateMaxLine = false;
-            curOp.adjustWidthTo = display.maxLine.text.length * 
+            curOp.adjustWidthTo = (display.maxLine.text.length + CLEARANCE) *
                                   this.cm.defaultCharWidth();
             // Force the size using the actual character count.
             // May result in too much horizontal scrolling, but that is
