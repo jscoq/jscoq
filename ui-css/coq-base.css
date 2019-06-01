@@ -16,7 +16,7 @@ body {
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   line-height: normal;
   font-size: 11pt;
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 a, a:link, a:visited, a:active {
@@ -29,7 +29,6 @@ a, a:link, a:visited, a:active {
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
-  overscroll-behavior: none;
 }
 
 #ide-wrapper.toggled {
@@ -44,23 +43,9 @@ a, a:link, a:visited, a:active {
   cursor: progress !important;
 }
 
-#code-wrapper {
-  margin-left: 0px;
-  overscroll-behavior: none;
-}
-
-#code-wrapper > div:first-child:last-child {
-  height: 100%;
-  overflow: auto;
-}
-
-#code-wrapper .CodeMirror span[role=presentation] {
+#ide-wrapper .CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
   font-family: monospace, times, Arial Unicode MS;
-}
-
-#ide-wrapper.toggled #code-wrapper {
-  padding-right: 0;
 }
 
 #script-panel {
@@ -143,7 +128,7 @@ a, a:link, a:visited, a:active {
   /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: contain;
 }
 
 .flex-panel.collapsed {
