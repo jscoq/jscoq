@@ -768,6 +768,11 @@ class CoqManager {
             this.coq.cancel(stm.coq_sid);
             break;
         }
+
+        this.cancelled(stm);
+    }
+
+    cancelled(stm) {
         delete this.doc.stm_id[stm.coq_sid];
         delete stm.coq_sid;
 
@@ -788,7 +793,7 @@ class CoqManager {
         }
         
         for (let follow of this.doc.sentences.slice(stm_index)) {
-            this.cancel(follow);
+            this.cancelled(follow);
         }
 
         this.doc.sentences.splice(stm_index);
