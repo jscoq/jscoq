@@ -82,7 +82,7 @@ a, a:link, a:visited, a:active {
   position: fixed;
   width: 45%;
   height: 100%;
-  transition: all 0.5s ease;
+  transition: width 0.5s ease;
   z-index: 6;
 }
 
@@ -500,6 +500,7 @@ div.hint-package {
   }
 
   #panel-wrapper {
+    position: absolute;  /* prevents panel reoccurring on every page */
     height: calc(100% - 2px);  /* otherwise border does not show... */
     border-bottom: 1px solid #aaa;
   }
