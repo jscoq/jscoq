@@ -94,7 +94,8 @@ class Markup {
 
     _flush(change_obj) {
         for (let ln = change_obj.from.line; ln <= change_obj.to.line; ln++) {
-            delete this.cm.getLineHandle(ln)._cc_recorded_styles;
+            let lineh = this.cm.getLineHandle(ln);
+            if (lineh) delete lineh._cc_recorded_styles;
         }
 
         if (this.cm.display.maxLine) {
