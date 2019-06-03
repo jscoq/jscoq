@@ -90,7 +90,7 @@ var loadJsCoq, JsCoq;
     };
 
     JsCoq = {
-        base_path: scriptDir ? `${scriptDir}..` : "./",
+        base_path: scriptDir ? `${scriptDir}../` : "./",
 
         load(base_path, node_modules_path) {
             return loadJsCoq(base_path, node_modules_path);
@@ -108,8 +108,8 @@ var loadJsCoq, JsCoq;
             if (args.length > 0) console.warn('too many arguments to JsCoq.start()');
 
             // Umm.
-            jscoq_opts.base_path = jscoq_opts.base_path || base_path;
-            base_path = base_path || jscoq_opts.base_path;
+            jscoq_opts.base_path = jscoq_opts.base_path || base_path || JsCoq.base_path;
+            base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
 
             return this.load(base_path, node_modules_path).then(() =>
                 new CoqManager(jscoq_ids, jscoq_opts)
