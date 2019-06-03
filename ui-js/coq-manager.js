@@ -1028,7 +1028,7 @@ class CoqContextualInfo {
 
     onMouseDown(evt)  {
         this.showFor(evt.target, evt.altKey);
-        $(evt.target).addClass('contextual-focus');
+        this.stick(evt.target);
         this.is_sticky = true;
         evt.stopPropagation();
     }
@@ -1084,7 +1084,7 @@ class CoqContextualInfo {
     }
 
     hide() {
-        this.container.find('.contextual-focus').removeClass('contextual-focus');
+        this.unstick();
         this.el.hide();
         this.is_visible = false;
         this.is_sticky = false;
@@ -1099,6 +1099,15 @@ class CoqContextualInfo {
 
     hideCancel() {
         this.request_hide = false;
+    }
+
+    stick(dom) {
+        this.unstick();
+        $(dom).addClass('contextual-focus');        
+    }
+
+    unstick() {
+        this.container.find('.contextual-focus').removeClass('contextual-focus');        
     }
 
     /**
