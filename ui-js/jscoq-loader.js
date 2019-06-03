@@ -60,6 +60,7 @@ var loadJsCoq, JsCoq;
         loadCss(node_modules_path + 'codemirror/theme/blackboard');
         loadCss(node_modules_path + 'codemirror/theme/darcula');
         loadCss(node_modules_path + 'codemirror/addon/hint/show-hint');
+        loadCss(node_modules_path + 'codemirror/addon/dialog/dialog');
         loadCss(base_path + 'ui-css/coq-log');
         loadCss(base_path + 'ui-css/coq-base');
         loadCss(base_path + 'ui-css/coq-light');
