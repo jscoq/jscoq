@@ -68,7 +68,7 @@ class FormatPrettyPrint {
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
-            return $('<span>').addClass(ct).append(this.pp2DOM(pp[2]));
+            return this._wrapTrimmed(this.pp2DOM(pp[2]), $('<span>').addClass(ct));
 
         // ["Pp_force_newline"]
         case "Pp_force_newline":
@@ -338,6 +338,34 @@ class FormatPrettyPrint {
 
         if (jdom.children().length == 0)
             jdom.addClass("text-only");
+    }
+
+    /**
+     * Auxiliary method that wraps a node with an element, but excludes
+     * leading and trailing spaces. These are attached outside the wrapper.
+     * 
+     * So _wrapTrimmed(" ab", <span>) becomes " "<span>"ab"</span>.
+     */
+    _wrapTrimmed(jdom, wrapper_jdom) {
+        if (jdom.length === 0) return wrapper_jdom;  // degenerate case
+
+        var first = jdom[0], last = jdom[jdom.length - 1],
+            lead, trail;
+
+        if (first.nodeType === Node.TEXT_NODE) {
+            lead = first.nodeValue.match(/^\s*/)[0];
+            first.nodeValue = first.nodeValue.substring(lead.length);
+        }
+
+        if (last.nodeType === Node.TEXT_NODE) { // note: it can be the same node
+            trail = last.nodeValue.match(/\s*$/);
+            last.nodeValue = last.nodeValue.substring(0, trail.index);
+            trail = trail[0];
+        }
+
+        return $([lead && document.createTextNode(lead),
+                  wrapper_jdom.append(jdom)[0], 
+                  trail && document.createTextNode(trail)].filter(x => x));
     }
 
 }
