@@ -191,7 +191,7 @@ class Markup {
     }
 
     tokenize(s) {
-        return s.split(/(\s+)/).filter(s => s);
+        return s.split(/(\w+)/).filter(s => s);
     }
 
     /**
