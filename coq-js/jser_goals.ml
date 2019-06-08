@@ -1,4 +1,5 @@
 open Jser_names
+open Jser_feedback
 
 type 'a hyp =
   [%import: 'a Serapi_goals.hyp]

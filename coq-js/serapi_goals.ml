@@ -24,6 +24,7 @@ type 'a ser_goals =
   ; stack : ('a list * 'a list) list
   ; shelf : 'a list
   ; given_up : 'a list
+  ; bullet : Pp.t option
   }
 
 (** XXX: Do we need to perform evar normalization? *)
@@ -58,6 +59,9 @@ let process_goal_gen ppx sigma g : 'a reified_goal =
   let hyps      = List.map (get_hyp ppx sigma) ctx                          in
   { name = Goal.uid g; ty = get_goal_type ppx sigma g; hyp = hyps }
 
+let if_not_empty (pp : Pp.t) =
+  if pp = Pp.mt() then None else Some pp
+
 let get_goals_gen (ppx : Environ.env -> Evd.evar_map -> Constr.t -> 'a) ~doc sid
   : 'a reified_goal ser_goals option =
   match Stm.state_of_id ~doc sid with
@@ -69,6 +73,7 @@ let get_goals_gen (ppx : Environ.env -> Evd.evar_map -> Constr.t -> 'a) ~doc sid
       ; stack = List.map (fun (g1,g2) -> ppx g1, ppx g2) stack
       ; shelf = ppx shelf
       ; given_up = ppx given_up
+      ; bullet = if_not_empty @@ Proof_bullet.suggest proof
       }
   | `Expired | `Error _ | `Valid _ -> None
 
