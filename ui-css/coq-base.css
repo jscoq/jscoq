@@ -387,13 +387,20 @@ div.Pp_box[data-mode="horizontal"] {
   display: block;
 }
 
-#goal-text p.num-goals {
+#goal-text p.num-goals,
+#goal-text p.no-goals {
   margin-top: .2em;
   margin-bottom: 1em;
+  white-space: normal;
 }
 
 #goal-text .coq-env {
   padding-left: 1.25em;
+}
+
+#goal-text p.aside {
+  white-space: normal;
+  color: #777;
 }
 
 .coq-hypothesis > label::after {

@@ -273,13 +273,29 @@ class FormatPrettyPrint {
      *                       ({goals, stack, shelf, given_up})
      */
     goals2DOM(goals) {
-        if (goals.goals.length == 0) {
-            return $(document.createTextNode("No more goals"));
+        var ngoals = goals.goals.length,
+            on_stack = this.flatLength(goals.stack),
+            on_shelf = goals.shelf.length,
+            given_up = goals.given_up.length;
+
+        if (ngoals === 0) {
+            /* Empty goals; choose the appropriate message to display */
+            let msg = on_stack ? "This subproof is complete, but there are some unfocused goals."
+                    : (on_shelf ? "All the remaining goals are on the shelf."
+                        : "No more goals."),
+                notices = given_up ? 
+                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [];
+
+            return $('<div>').append(
+                $('<p>').addClass('no-goals').text(msg),
+                notices.map(txt => $('<p>').addClass('aside').text(txt))
+            );
         } 
         else {
-            let ngoals = goals.goals.length;
+            /* Construct a display of all the subgoals (first is focused) */
             let head = $('<p>').addClass('num-goals')
-                .text(ngoals === 1 ? `1 goal.` : `${ngoals} goals`);
+                .text(ngoals === 1 ? `1 goal` : `${ngoals} goals`),
+                notices = on_shelf ? [`(shelved: ${on_shelf})`] : [];
 
             let focused_goal = this.goal2DOM(goals.goals[0]);
 
@@ -288,7 +304,11 @@ class FormatPrettyPrint {
                     .append($('<label>').text(i + 2))
                     .append(this.pp2DOM(goal.ty)));
 
-            return $('<div>').append(head, focused_goal, pending_goals);
+            return $('<div>').append(
+                head,
+                notices.map(txt => $('<p>').addClass('aside').text(txt)),
+                focused_goal, pending_goals
+            );
         }
     }
 
@@ -304,6 +324,12 @@ class FormatPrettyPrint {
                 .append(this.pp2DOM(h[2])));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
+    }
+
+    flatLength(l) {
+        return Array.isArray(l) 
+            ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
+            : 1;
     }
 
     adjustBox(jdom) {
