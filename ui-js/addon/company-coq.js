@@ -34,6 +34,7 @@ class Markup {
     constructor() {
         this.special_tokens = {};
         this.special_patterns = [];
+        this.reserved = {tokens: [], types: ['comment']};
         this.className = 'markup';
     }
     
@@ -52,7 +53,8 @@ class Markup {
     applyToLine(line) {
         this.clearFromLine(line);
         for (let tok of this.cm.getLineTokens(line)) {
-            if (tok.type === 'comment') continue;
+            if ((this.reserved.types || []).includes(tok.type) ||
+                (this.reserved.tokens || []).includes(tok.string)) continue;
 
             if (this.special_tokens.hasOwnProperty(tok.string)) {
                 let lit = this.special_tokens[tok.string],
@@ -505,6 +507,10 @@ class CompanyCoq {
             {re: /(__)([^_].*)$/,  make: (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
                                                   {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
         ];
+        this.reserved = {
+            tokens: ['Int31', 'Int63', 'Utf8', 'Coq88', 'Coq89', 'Coq810'],
+            types:  ['comment', 'tactic']
+        }
 
         this.markup = new Markup();
         this.completion = new AutoComplete();
@@ -512,6 +518,7 @@ class CompanyCoq {
 
         this.markup.special_tokens = this.special_tokens;
         this.markup.special_patterns = this.special_patterns;
+        this.markup.reserved = this.reserved;
         this.markup.className = 'company-coq';
     }
 
