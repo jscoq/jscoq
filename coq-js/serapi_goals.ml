@@ -60,7 +60,7 @@ let process_goal_gen ppx sigma g : 'a reified_goal =
   { name = Goal.uid g; ty = get_goal_type ppx sigma g; hyp = hyps }
 
 let if_not_empty (pp : Pp.t) =
-  if pp = Pp.mt() then None else Some pp
+  if Pp.(repr pp = Ppcmd_empty) then None else Some pp
 
 let get_goals_gen (ppx : Environ.env -> Evd.evar_map -> Constr.t -> 'a) ~doc sid
   : 'a reified_goal ser_goals option =
