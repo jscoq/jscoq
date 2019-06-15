@@ -27,15 +27,25 @@
         base_path: '../',
         init_pkgs: ['init'],
         all_pkgs:  ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'math-comp'],
+        file_dialog: true,
         implicit_libs: true,
         editor: { mode: { 'company-coq': true }, keyMap: 'default' }
     };
 
     /* Global reference */
-    var coq;
+    var coq, last_filename = localStorage['scratchpad.last_filename'];
+
+    if (last_filename)
+      document.getElementById('ide-wrapper')
+              .setAttribute('data-filename', last_filename);
 
     loadJsCoq(jscoq_opts.base_path)
         .then( () => coq = new CoqManager(jscoq_ids, jscoq_opts) );
+
+    window.addEventListener('beforeunload', () => {
+      var sp = coq.provider.snippets[0];
+      localStorage['scratchpad.last_filename'] = sp.filename;
+    });
   </script>
 </body>
 </html>

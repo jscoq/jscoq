@@ -68,7 +68,7 @@ a, a:link, a:visited, a:active {
   width: 45%;
   height: 100%;
   transition: width 0.5s ease;
-  z-index: 6;
+  z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
 }
 
 #ide-wrapper.toggled #panel-wrapper {
@@ -303,6 +303,18 @@ a, a:link, a:visited, a:active {
 /* overloads */
 .CodeMirror {
   height: 100%;
+}
+
+.CodeMirror-dialog {
+  padding: .75em;
+}
+
+.CodeMirror-dialog a.dialog-link {
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: sans-serif;
+  font-size: 80%;
+  padding-left: 2em;
 }
 
 /* Proper  */

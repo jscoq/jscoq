@@ -16,6 +16,7 @@
  - Splash image (@corwin-of-amber)
  - [bugfix] Scrolling issue with special symbols in company-coq (@corwin-of-amber)
  - A scratchpad - a page with just an empty editor (@corwin-of-amber)
+ - Open/save file dialogs that support local persistence (in the browser) and files (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.

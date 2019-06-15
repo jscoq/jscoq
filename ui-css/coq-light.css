@@ -84,6 +84,19 @@ body {
     background: #f1f1f1;
 }
 
+.cm-s-default .CodeMirror-dialog {
+  border-bottom: 1px solid #bbb;
+  box-shadow: 0px 1px 5px 0px #00000059;
+}
+
+.cm-s-default .CodeMirror-dialog a.dialog-link {
+  color: #22f;
+}
+
+.cm-s-default .CodeMirror-dialog a.dialog-link:active {
+  color: #228;
+}
+
 /* Vernaculars */
 .cm-builtin {
   color: #00FFFF;
