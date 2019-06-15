@@ -403,6 +403,11 @@ div.Pp_box[data-mode="horizontal"] {
   color: #777;
 }
 
+#goal-text p.num-goals + p.aside {
+  margin-top: -1em;
+  margin-bottom: 1em;
+}
+
 .coq-hypothesis > label::after {
   content: ":";
   margin: 0 .5em;

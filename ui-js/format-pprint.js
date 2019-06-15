@@ -278,23 +278,29 @@ class FormatPrettyPrint {
             on_shelf = goals.shelf.length,
             given_up = goals.given_up.length;
 
+        function aside(msg) {
+            var p = $('<p>').addClass('aside');
+            return (typeof msg === 'string') ? p.text(msg) : p.append(msg);
+        }
+
         if (ngoals === 0) {
             /* Empty goals; choose the appropriate message to display */
             let msg = on_stack ? "This subproof is complete, but there are some unfocused goals."
                     : (on_shelf ? "All the remaining goals are on the shelf."
                         : "No more goals."),
-                notices = given_up ? 
-                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [];
+                bullet_notice = goals.bullet ? [this.pp2DOM(goals.bullet)] : [],
+                given_up_notice = given_up ? 
+                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [],
+                notices = bullet_notice.concat(given_up_notice);
 
             return $('<div>').append(
                 $('<p>').addClass('no-goals').text(msg),
-                notices.map(txt => $('<p>').addClass('aside').text(txt))
+                notices.map(aside)
             );
         } 
         else {
             /* Construct a display of all the subgoals (first is focused) */
-            let head = $('<p>').addClass('num-goals')
-                .text(ngoals === 1 ? `1 goal` : `${ngoals} goals`),
+            let head = ngoals === 1 ? `1 goal` : `${ngoals} goals`,
                 notices = on_shelf ? [`(shelved: ${on_shelf})`] : [];
 
             let focused_goal = this.goal2DOM(goals.goals[0]);
@@ -305,8 +311,8 @@ class FormatPrettyPrint {
                     .append(this.pp2DOM(goal.ty)));
 
             return $('<div>').append(
-                head,
-                notices.map(txt => $('<p>').addClass('aside').text(txt)),
+                $('<p>').addClass('num-goals').text(head),
+                notices.map(aside),
                 focused_goal, pending_goals
             );
         }

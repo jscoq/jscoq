@@ -5,6 +5,7 @@
  - Port to Coq 8.10 (@ejgallego)
  - Miscellaneous improvements on the build system (@corwin-of-amber)
  - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
+ - Goal display improvements using code from serlib (@ejgallego, @corwin-of-amber)
  - Improvements on printing of feedback messages (@corwin-of-amber)
  - Preliminary support for .vo compilation (@corwin-of-amber)
  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
