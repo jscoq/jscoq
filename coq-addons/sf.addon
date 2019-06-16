@@ -5,13 +5,11 @@ include coq-addons/common.mk
 
 LF_URL=https://www.cis.upenn.edu/~bcpierce/sf/lf-current/lf.tgz
 LF_HOME=$(ADDONS_PATH)/lf
-LF_DEST=coq-pkgs/LF
+LF_DEST=$(COQPKGS_ROOT)/LF
 
 PLF_URL=https://www.cis.upenn.edu/~bcpierce/sf/plf-current/plf.tgz
 PLF_HOME=$(ADDONS_PATH)/plf
-PLF_DEST=coq-pkgs/PLF
-
-SF_DEST=$(COQPKGS_ROOT)/sf
+PLF_DEST=$(COQPKGS_ROOT)/PLF
 
 .PHONY: nothing get build jscoq-install
 
@@ -26,6 +24,11 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(PLF_HOME) && $(MAKE)
 
 jscoq-install:
-	$(PKGBUILD) --projects $(LF_HOME),$(PLF_HOME)          \
-	            --create-package $(SF_DEST).coq-pkg        \
-	            --create-manifest $(SF_DEST).json
+	$(SYNCVO) $(LF_HOME)/ $(LF_DEST)
+	$(SYNCVO) $(PLF_HOME)/ $(PLF_DEST)
+	$(PKGBUILD) --project $(LF_HOME)                 \
+	            --create-package $(LF_DEST).coq-pkg  \
+	            --create-manifest $(LF_DEST).json
+	$(PKGBUILD) --project $(PLF_HOME)                \
+	            --create-package $(PLF_DEST).coq-pkg \
+	            --create-manifest $(PLF_DEST).json
