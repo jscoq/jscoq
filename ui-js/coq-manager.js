@@ -358,7 +358,7 @@ class CoqManager {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
-                { lemmas: bunch.map(CoqIdentifier.ofFullPath) },
+                { lemmas: bunch.map(fp => CoqIdentifier.ofFullPath(fp)) },
                 'locals', /*replace_existing=*/true)
         });
     }
