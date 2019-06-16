@@ -68,7 +68,7 @@ class FormatPrettyPrint {
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
-            return $('<span>').addClass(ct).append(this.pp2DOM(pp[2]));
+            return this._wrapTrimmed(this.pp2DOM(pp[2]), $('<span>').addClass(ct));
 
         // ["Pp_force_newline"]
         case "Pp_force_newline":
@@ -273,13 +273,35 @@ class FormatPrettyPrint {
      *                       ({goals, stack, shelf, given_up})
      */
     goals2DOM(goals) {
-        if (goals.goals.length == 0) {
-            return $(document.createTextNode("No more goals"));
+        var ngoals = goals.goals.length,
+            on_stack = this.flatLength(goals.stack),
+            on_shelf = goals.shelf.length,
+            given_up = goals.given_up.length;
+
+        function aside(msg) {
+            var p = $('<p>').addClass('aside');
+            return (typeof msg === 'string') ? p.text(msg) : p.append(msg);
+        }
+
+        if (ngoals === 0) {
+            /* Empty goals; choose the appropriate message to display */
+            let msg = on_stack ? "This subproof is complete, but there are some unfocused goals."
+                    : (on_shelf ? "All the remaining goals are on the shelf."
+                        : "No more goals."),
+                bullet_notice = goals.bullet ? [this.pp2DOM(goals.bullet)] : [],
+                given_up_notice = given_up ? 
+                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [],
+                notices = bullet_notice.concat(given_up_notice);
+
+            return $('<div>').append(
+                $('<p>').addClass('no-goals').text(msg),
+                notices.map(aside)
+            );
         } 
         else {
-            let ngoals = goals.goals.length;
-            let head = $('<p>').addClass('num-goals')
-                .text(ngoals === 1 ? `1 goal.` : `${ngoals} goals`);
+            /* Construct a display of all the subgoals (first is focused) */
+            let head = ngoals === 1 ? `1 goal` : `${ngoals} goals`,
+                notices = on_shelf ? [`(shelved: ${on_shelf})`] : [];
 
             let focused_goal = this.goal2DOM(goals.goals[0]);
 
@@ -288,7 +310,11 @@ class FormatPrettyPrint {
                     .append($('<label>').text(i + 2))
                     .append(this.pp2DOM(goal.ty)));
 
-            return $('<div>').append(head, focused_goal, pending_goals);
+            return $('<div>').append(
+                $('<p>').addClass('num-goals').text(head),
+                notices.map(aside),
+                focused_goal, pending_goals
+            );
         }
     }
 
@@ -304,6 +330,12 @@ class FormatPrettyPrint {
                 .append(this.pp2DOM(h[2])));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
+    }
+
+    flatLength(l) {
+        return Array.isArray(l) 
+            ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
+            : 1;
     }
 
     adjustBox(jdom) {
@@ -338,6 +370,34 @@ class FormatPrettyPrint {
 
         if (jdom.children().length == 0)
             jdom.addClass("text-only");
+    }
+
+    /**
+     * Auxiliary method that wraps a node with an element, but excludes
+     * leading and trailing spaces. These are attached outside the wrapper.
+     * 
+     * So _wrapTrimmed(" ab", <span>) becomes " "<span>"ab"</span>.
+     */
+    _wrapTrimmed(jdom, wrapper_jdom) {
+        if (jdom.length === 0) return wrapper_jdom;  // degenerate case
+
+        var first = jdom[0], last = jdom[jdom.length - 1],
+            lead, trail;
+
+        if (first.nodeType === Node.TEXT_NODE) {
+            lead = first.nodeValue.match(/^\s*/)[0];
+            first.nodeValue = first.nodeValue.substring(lead.length);
+        }
+
+        if (last.nodeType === Node.TEXT_NODE) { // note: it can be the same node
+            trail = last.nodeValue.match(/\s*$/);
+            last.nodeValue = last.nodeValue.substring(0, trail.index);
+            trail = trail[0];
+        }
+
+        return $([lead && document.createTextNode(lead),
+                  wrapper_jdom.append(jdom)[0], 
+                  trail && document.createTextNode(trail)].filter(x => x));
     }
 
 }

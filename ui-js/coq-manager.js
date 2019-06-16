@@ -31,6 +31,9 @@ Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
 Object.defineProperty(Array.prototype, "findLast", {enumerable: false});
 Object.defineProperty(Array.prototype, "equals",   {enumerable: false});
 
+if (typeof navigator !== 'undefined')
+    navigator.isMac = /Mac/.test(navigator.platform);
+
 
 /***********************************************************************/
 /* A Provider Container aggregates several containers, the main deal   */
@@ -204,6 +207,7 @@ class CoqManager {
             all_pkgs:  ['init', 'math-comp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
+            file_dialog: false,
             coq:       { /* Coq option values */ },
             editor:    { /* codemirror options */ }
             // Disabled on 8.6
@@ -868,35 +872,45 @@ class CoqManager {
         if (e.keyCode === 119) // F8
             this.layout.toggle();
 
-        // All other keybindings are prefixed by alt.
-        if (!e.altKey) return true;
+        // Navigation keybindings are prefixed by alt.
+        if (e.altKey) {
+            const goCursor = () => this.goCursor(),
+                  goNext   = () => this.goNext(true),
+                  goPrev   = () => this.goPrev(true);
+            const nav_bindings = {
+                'Enter': goCursor, 'ArrowRight': goCursor,
+                'n': goNext,       'ArrowDown': goNext,
+                'p': goPrev,       'ArrowUp': goPrev
+            };
 
-        // When navigation is disabled, suppress keystrokes
-        if (!this.navEnabled && [13, 39, 78, 40, 80, 38].includes(e.keyCode)) {
-            e.preventDefault();
-            e.stopPropagation();
-            return true;
+            var op = nav_bindings[e.key];
+            if (op) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.navEnabled) op();
+                return true;
+            }
         }
 
-        switch (e.keyCode) {
-            case 13: // ENTER
-            case 39: // Right arrow
-                this.goCursor();
+        // File keybindings are prefixed by ctrl / cmd
+        if (this.options.file_dialog &&
+            (navigator.isMac ? e.metaKey : e.ctrlKey)) {
+            const file_bindings = {
+                'o':  () => sp.openLocalDialog(),
+                '_o': () => sp.openFileDialog(),
+                's':  () => sp.saveLocal(),
+                'S':  () => sp.saveLocalDialog()
+            };
+
+            var sp = this.provider.currentFocus || this.provider.snippets[0],
+                key = (e.altKey ? '_' : '') + (e.shiftKey ? e.key.toUpperCase() : e.key),
+                op = file_bindings[key];
+            if (sp && op) {
                 e.preventDefault();
                 e.stopPropagation();
-                break;
-            case 78: // N
-            case 40: // Down arrow
-                this.goNext(true);
-                e.preventDefault();
-                e.stopPropagation();
-                break;
-            case 80: // P
-            case 38: // Up arrow
-                this.goPrev(true);
-                e.preventDefault();
-                e.stopPropagation();
-                break;
+                op();
+                return true;
+            }
         }
     }
 
@@ -1067,7 +1081,7 @@ class CoqContextualInfo {
 
     onMouseDown(evt)  {
         this.showFor(evt.target, evt.altKey);
-        $(evt.target).addClass('contextual-focus');
+        this.stick(evt.target);
         this.is_sticky = true;
         evt.stopPropagation();
     }
@@ -1123,7 +1137,7 @@ class CoqContextualInfo {
     }
 
     hide() {
-        this.container.find('.contextual-focus').removeClass('contextual-focus');
+        this.unstick();
         this.el.hide();
         this.is_visible = false;
         this.is_sticky = false;
@@ -1138,6 +1152,15 @@ class CoqContextualInfo {
 
     hideCancel() {
         this.request_hide = false;
+    }
+
+    stick(dom) {
+        this.unstick();
+        $(dom).addClass('contextual-focus');        
+    }
+
+    unstick() {
+        this.container.find('.contextual-focus').removeClass('contextual-focus');        
     }
 
     /**

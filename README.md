@@ -121,6 +121,7 @@ the `CoqManager` constructor:
 | `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
 | `implicit_libs` | boolean         | `false`         | Allow `Require`ing modules by short name only (e.g., `Require Arith.`).                                       |
 | `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
+| `file_dialog`   | boolean         | `false`         | Enables UI for loading and saving files (^O/^S, or ⌘O/⌘S on Mac).                                             |
 | `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
 | `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |
 

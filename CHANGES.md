@@ -5,6 +5,7 @@
  - Port to Coq 8.10 (@ejgallego)
  - Miscellaneous improvements on the build system (@corwin-of-amber)
  - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
+ - Goal display improvements using code from serlib (@ejgallego, @corwin-of-amber)
  - Improvements on printing of feedback messages (@corwin-of-amber)
  - Preliminary support for .vo compilation (@corwin-of-amber)
  - Bind Ctrl-Space to auto-completion (@corwin-of-amber)
@@ -14,6 +15,8 @@
  - Timeout support and worker reset button (@corwin-of-amber)
  - Splash image (@corwin-of-amber)
  - [bugfix] Scrolling issue with special symbols in company-coq (@corwin-of-amber)
+ - A scratchpad - a page with just an empty editor (@corwin-of-amber)
+ - Open/save file dialogs that support local persistence (in the browser) and files (@corwin-of-amber)
  - Asynchronous document management to circumvent various race conditions (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.

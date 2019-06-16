@@ -66,9 +66,21 @@
 /*.CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background-color: #000; }*/
 /*.CodeMirror { color: #fff; }*/
 
+.cm-s-blackboard .CodeMirror-dialog,
+.cm-s-darcula .CodeMirror-dialog {
+  background: #333;
+  border-bottom: 1px solid #999;
+  box-shadow: 0 1px 4px #666;
+}
+
+.cm-s-blackboard .CodeMirror-dialog a.dialog-link,
+.cm-s-darcula .CodeMirror-dialog a.dialog-link {
+  color: #bbf;
+}
+
 .cm-s-blackboard .CodeMirror-gutters {
-    background: #000;
-    border-right: 1px solid #272727;
+  background: #000;
+  border-right: 1px solid #272727;
 }
 
 .cm-s-blackboard .coq-eval-ok {

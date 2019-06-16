@@ -34,6 +34,7 @@ class Markup {
     constructor() {
         this.special_tokens = {};
         this.special_patterns = [];
+        this.reserved = {tokens: [], types: ['comment']};
         this.className = 'markup';
     }
     
@@ -52,7 +53,8 @@ class Markup {
     applyToLine(line) {
         this.clearFromLine(line);
         for (let tok of this.cm.getLineTokens(line)) {
-            if (tok.type === 'comment') continue;
+            if ((this.reserved.types || []).includes(tok.type) ||
+                (this.reserved.tokens || []).includes(tok.string)) continue;
 
             if (this.special_tokens.hasOwnProperty(tok.string)) {
                 let lit = this.special_tokens[tok.string],
@@ -94,7 +96,8 @@ class Markup {
 
     _flush(change_obj) {
         for (let ln = change_obj.from.line; ln <= change_obj.to.line; ln++) {
-            delete this.cm.getLineHandle(ln)._cc_recorded_styles;
+            let lineh = this.cm.getLineHandle(ln);
+            if (lineh) delete lineh._cc_recorded_styles;
         }
 
         if (this.cm.display.maxLine) {
@@ -120,10 +123,11 @@ class Markup {
      */
     _maxLineHack() {
         var display = this.cm.display, curOp = this.cm.curOp;
+        const CLEARANCE = 3;  /* space added to the right, in characters */
         display.maxLineChanged = false;
         if (curOp) {
             curOp.updateMaxLine = false;
-            curOp.adjustWidthTo = display.maxLine.text.length * 
+            curOp.adjustWidthTo = (display.maxLine.text.length + CLEARANCE) *
                                   this.cm.defaultCharWidth();
             // Force the size using the actual character count.
             // May result in too much horizontal scrolling, but that is
@@ -189,7 +193,7 @@ class Markup {
     }
 
     tokenize(s) {
-        return s.split(/(\s+)/).filter(s => s);
+        return s.split(/(\w+)/).filter(s => s);
     }
 
     /**
@@ -233,49 +237,8 @@ class WorkQueue {
     }
 }
 
-// Builtin tactics are copied from coq-mode.
-// TODO: order tactics most common first rather than alphabetically.
-var vocab = {
-    locals: {lemmas: [], tactics: []},  /* keep locals before globals */
-    globals: {
-        lemmas: [],
-        tactics: [
-            /* Terminators */
-            'assumption',
-            'by',
-            'contradiction',
-            'discriminate',
-            'easy',
-            'exact',
-            'now',
-            'omega',
-            'reflexivity',
-            'tauto',
-            /* Other tactics */
-            'after', 'apply', 'assert', 'auto', 'autorewrite',
-            'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
-            'congr', 'cut', 'cutrewrite',
-            'dependent', 'destruct',
-            'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
-            'field', 'firstorder', 'fold', 'fourier',
-            'generalize',
-            'have', 'hnf',
-            'induction', 'injection', 'instantiate', 'intro', 'intros', 'inversion',
-            'left',
-            'move',
-            'pattern', 'pose',
-            'refine', 'remember', 'rename', 'repeat', 'replace', 'revert', 'rewrite',
-            'right', 'ring',
-            'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
-            'transitivity', 'trivial', 'try',
-            'unfold', 'unlock', 'using',
-            'vm_compute',
-            'where', 'wlog'
-        ]
-    }
-};
 
-var kinds = {lemmas: 'lemma', tactics: 'tactic'};
+var vocab_kinds = {lemmas: 'lemma', tactics: 'tactic'};
 
 
 /**
@@ -284,8 +247,8 @@ var kinds = {lemmas: 'lemma', tactics: 'tactic'};
 class AutoComplete {
 
     constructor() {
-        this.vocab = vocab;
-        this.kinds = kinds;
+        this.vocab = {};
+        this.kinds = vocab_kinds;
 
         this.max_matches = 100;  // threshold to prevent UI slowdown
     }
@@ -441,7 +404,7 @@ class AutoComplete {
 class ObserveIdentifier {
 
     constructor() {
-        this.vocab = vocab;
+        this.vocab = {};
         this._makeVocabIndex();
     }
 
@@ -483,6 +446,71 @@ class ObserveIdentifier {
 
 }
 
+/* -- Configuration Section -- */
+
+const special_tokens = {
+        '->': '→', '<-': '←', '<->': '↔', '=>': '⇒', '|-': '⊢',
+        '/\\': '∧', '\\/': '∨',
+        '<=': '≤', '>=': '≥', '<>': '≠',
+        'fun': 'λ', 'forall': '∀', 'exists': '∃', 
+        'Real': 'ℝ', 'nat': 'ℕ', 'Prop': 'ℙ'
+    },
+    index_sub =      (mo) => [{from: 1, to: mo[0].length, className: 'company-coq-sub'}],
+    underscore_sub = (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
+                              {from: 2, to: mo[0].length, className: 'company-coq-sub'}],
+    special_patterns = [
+        {re: /[^\d_](\d+)$/,   make: index_sub},
+        {re: /(__)([^_].*)$/,  make: underscore_sub}
+    ],
+    reserved = {
+        tokens: ['Int31', 'Int63', 'Utf8', 'Coq88', 'Coq89', 'Coq810'],
+        types:  ['comment', 'tactic']
+    };
+
+// Builtin tactics are copied from coq-mode.
+// TODO: order tactics most common first rather than alphabetically.
+const vocab = {
+    locals: {lemmas: [], tactics: []},  /* keep locals before globals */
+    globals: {
+        lemmas: [],
+        tactics: [
+            /* Terminators */
+            'assumption',
+            'by',
+            'contradiction',
+            'discriminate',
+            'easy',
+            'exact',
+            'now',
+            'omega',
+            'reflexivity',
+            'tauto',
+            /* Other tactics */
+            'after', 'apply', 'assert', 'auto', 'autorewrite',
+            'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
+            'congr', 'cut', 'cutrewrite',
+            'dependent', 'destruct',
+            'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
+            'field', 'firstorder', 'fold', 'fourier',
+            'generalize',
+            'have', 'hnf',
+            'induction', 'injection', 'instantiate', 'intro', 'intros', 'inversion',
+            'left',
+            'move',
+            'pattern', 'pose',
+            'refine', 'remember', 'rename', 'repeat', 'replace', 'revert', 'rewrite',
+            'right', 'ring',
+            'set', 'simpl', 'specialize', 'split', 'subst', 'suff', 'symmetry',
+            'transitivity', 'trivial', 'try',
+            'unfold', 'unlock', 'using',
+            'vm_compute',
+            'where', 'wlog'
+        ]
+    }
+};
+
+/* --                       -- */
+
 /**
  * Main CompanyCoq entry point.
  * - Creates markup and configures it with specific tokens.
@@ -491,26 +519,16 @@ class ObserveIdentifier {
 class CompanyCoq {
 
     constructor() {
-        this.special_tokens = {
-            '->': '→', '<-': '←', '<->': '↔', '=>': '⇒', '|-': '⊢',
-            '/\\': '∧', '\\/': '∨',
-            '<=': '≤', '>=': '≥', '<>': '≠',
-            'fun': 'λ', 'forall': '∀', 'exists': '∃', 
-            'Real': 'ℝ', 'nat': 'ℕ', 'Prop': 'ℙ'
-        };
-        this.special_patterns = [
-            {re: /[^\d_](\d+)$/,   make: (mo) => [{from: 1, to: mo[0].length, className: 'company-coq-sub'}]},
-            {re: /(__)([^_].*)$/,  make: (mo) => [{from: 0, to: 2, replacedWith: $('<span>')[0]},
-                                                  {from: 2, to: mo[0].length, className: 'company-coq-sub'}]}
-        ];
-
         this.markup = new Markup();
         this.completion = new AutoComplete();
         this.observe = ObserveIdentifier.instance;
 
-        this.markup.special_tokens = this.special_tokens;
-        this.markup.special_patterns = this.special_patterns;
+        this.markup.special_tokens = special_tokens;
+        this.markup.special_patterns = special_patterns;
+        this.markup.reserved = reserved;
         this.markup.className = 'company-coq';
+
+        this.completion.vocab = CompanyCoq.vocab;
     }
 
     attach(cm) {
@@ -547,8 +565,9 @@ class CompanyCoq {
 
     static init() {
         CompanyCoq.vocab = vocab;
-        CompanyCoq.kinds = kinds;
+        CompanyCoq.kinds = vocab_kinds;
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
+        ObserveIdentifier.instance.vocab = vocab;
         CodeMirror.CompanyCoq = CompanyCoq;
 
         CodeMirror.defineInitHook(cm => {

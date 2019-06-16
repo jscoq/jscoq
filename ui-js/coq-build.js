@@ -101,8 +101,8 @@ class CoqProject {
         }
     }
 
-    createManifest(name, archive) {
-        var manifest = {desc: name || '', deps: [], pkgs: []},
+    createManifest(name=undefined, props={}) {
+        var manifest = Object.assign({desc: name || '', deps: [], pkgs: []}, props),
             vo_files_logical = this.vfiles.map(vf => this.toLogicalName(vf)),
             pkgs = [];
 
@@ -117,28 +117,27 @@ class CoqProject {
         }
 
         manifest.pkgs = pkgs;
-        if (archive) manifest.archive = archive;
 
         return manifest;
     }
 
-    createManifestJSON(name, archive) {
-        return neatjson.neatJSON(this.createManifest(name, archive), 
+    createManifestJSON(name=undefined, props={}) {
+        return neatjson.neatJSON(this.createManifest(name, props), 
                                  this.json_format_opts);
     }
 
-    writeManifest(to_file, name /*optional*/, archive /*optional*/) {
+    writeManifest(to_file, name=undefined, props={}) {
         name = name || this._guessName(to_file);
-        this.fsif.fs.writeFileSync(to_file, this.createManifestJSON(name, archive));
+        this.fsif.fs.writeFileSync(to_file, this.createManifestJSON(name, props));
     }
 
-    toZip(save_as, name /*optional*/) {
+    toZip(save_as, name=undefined, props={}) {
         const JSZip = require('jszip');
               
         if (save_as) name = name || this._guessName(save_as);
 
-        var z = new JSZip(), promises = [];
-        z.file('coq-pkg.json', this.createManifestJSON(name));
+        var z = new JSZip();
+        z.file('coq-pkg.json', this.createManifestJSON(name, props));
         for (let fn of this.vfiles) {
             let logical_name = this.toLogicalName(fn);
             if (logical_name) {
@@ -770,11 +769,12 @@ if (module && module.id == '.') {
         .option('--project <dir>',               'use project at dir (must contain a _CoqProject file)')
         .option('--projects <dir,...>',          'use a comma-separated list of project directories')
         .option('--name <name>',                 'set package name; if unspecified, inferred from output filename')
+        .option('--deps <pkg,...>',              'set package dependencies; defaults to none')
         .parse(process.argv);
 
     const path = require('path');
 
-    var proj, pkg;
+    var proj, pkg, props = {};
 
     if (typeof opts.name !== 'string') opts.name = undefined; // name is a function otherwise :/
 
@@ -789,19 +789,24 @@ if (module && module.id == '.') {
 
         proj = projs.reduce((proj1, proj2) => proj1.join(proj2));
     }
-        
+
+    if (opts.deps) {
+        props.deps = opts.deps.split(/,/).map(s => s.trim());
+    }
+
     if (opts.createPackage) {
         pkg = opts.createPackage;
         if (proj)
-            proj.toZip(opts.createPackage, opts.name);
+            proj.toZip(opts.createPackage, opts.name, props);
         else
             console.error("Create package from what? Use --project to specify source.");
     }
 
     if (opts.createManifest) {
-        if (proj)
-            proj.writeManifest(opts.createManifest, opts.name, 
-                pkg ? path.basename(pkg) : undefined);
+        if (proj) {
+            if (pkg) props.archive = path.basename(pkg);
+            proj.writeManifest(opts.createManifest, opts.name, props);
+        }
         else
             console.error("Create manifest of what? Use --project to specify source.");
     }

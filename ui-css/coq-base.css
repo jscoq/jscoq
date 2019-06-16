@@ -16,7 +16,7 @@ body {
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   line-height: normal;
   font-size: 11pt;
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 a, a:link, a:visited, a:active {
@@ -29,7 +29,6 @@ a, a:link, a:visited, a:active {
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
-  overscroll-behavior: none;
 }
 
 #ide-wrapper.toggled {
@@ -44,23 +43,9 @@ a, a:link, a:visited, a:active {
   cursor: progress !important;
 }
 
-#code-wrapper {
-  margin-left: 0px;
-  overscroll-behavior: none;
-}
-
-#code-wrapper > div:first-child:last-child {
-  height: 100%;
-  overflow: auto;
-}
-
-#code-wrapper .CodeMirror span[role=presentation] {
+#ide-wrapper .CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
   font-family: monospace, times, Arial Unicode MS;
-}
-
-#ide-wrapper.toggled #code-wrapper {
-  padding-right: 0;
 }
 
 #script-panel {
@@ -82,8 +67,8 @@ a, a:link, a:visited, a:active {
   position: fixed;
   width: 45%;
   height: 100%;
-  transition: all 0.5s ease;
-  z-index: 6;
+  transition: width 0.5s ease;
+  z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
 }
 
 #ide-wrapper.toggled #panel-wrapper {
@@ -143,7 +128,7 @@ a, a:link, a:visited, a:active {
   /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: contain;
 }
 
 .flex-panel.collapsed {
@@ -320,6 +305,18 @@ a, a:link, a:visited, a:active {
   height: 100%;
 }
 
+.CodeMirror-dialog {
+  padding: .75em;
+}
+
+.CodeMirror-dialog a.dialog-link {
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: sans-serif;
+  font-size: 80%;
+  padding-left: 2em;
+}
+
 /* Proper  */
 
 #document {
@@ -402,13 +399,25 @@ div.Pp_box[data-mode="horizontal"] {
   display: block;
 }
 
-#goal-text p.num-goals {
+#goal-text p.num-goals,
+#goal-text p.no-goals {
   margin-top: .2em;
   margin-bottom: 1em;
+  white-space: normal;
 }
 
 #goal-text .coq-env {
   padding-left: 1.25em;
+}
+
+#goal-text p.aside {
+  white-space: normal;
+  color: #777;
+}
+
+#goal-text p.num-goals + p.aside {
+  margin-top: -1em;
+  margin-bottom: 1em;
 }
 
 .coq-hypothesis > label::after {
@@ -500,6 +509,7 @@ div.hint-package {
   }
 
   #panel-wrapper {
+    position: absolute;  /* prevents panel reoccurring on every page */
     height: calc(100% - 2px);  /* otherwise border does not show... */
     border-bottom: 1px solid #aaa;
   }

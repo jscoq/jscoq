@@ -26,6 +26,7 @@ type 'a ser_goals =
   ; stack : ('a list * 'a list) list
   ; shelf : 'a list
   ; given_up : 'a list
+  ; bullet : Pp.t option
   }
 
 (** [pp_of_goals ~doc sid] returns a pp representing the current goals *)
