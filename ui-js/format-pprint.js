@@ -324,15 +324,23 @@ class FormatPrettyPrint {
      * @param {object} goal current goal record ({name, hyp, ty})
      */
     goal2DOM(goal) {
-        let hyps = goal.hyp.reverse().map(h => {
-            let h_names = h[0].map(n => n[1]); // Remove `Id` from `[Id, n]`, should be a more principled IdToDom
-            let h_def = h[1];                  // XXX Unused, we should print `a := foo : nat` if h_def is not null
-            let h_type = h[2];
-            return $('<div>').addClass('coq-hypothesis')
-                .append($('<label>').text(h_names))
-                .append(this.pp2DOM(h_type))});
+        let mklabel = (id) =>
+                $('<label>').text(this.constructor._idToString(id)),
+            mkdef = (pp) =>
+                $('<span>').addClass('def').append(this.pp2DOM(pp));
+
+        let hyps = goal.hyp.reverse().map(([h_names, h_def, h_type]) =>
+            $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
+                .append(h_names.map(mklabel))
+                .append(h_def && mkdef(h_def))
+                .append(this.pp2DOM(h_type)));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
+    }
+
+    static _idToString(id) { // this is, unfortunately, duplicated from CoqManager :/
+        /**/ console.assert(id[0] === 'Id') /**/
+        return id[1];
     }
 
     flatLength(l) {
