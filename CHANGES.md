@@ -1,7 +1,7 @@
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
 
- - Use Dune as build system (@ejgallego)
+ - Use Dune as build system (@ejgallego @corwin-of-amber)
  - Port to Coq 8.10 (@ejgallego)
  - Miscellaneous improvements on the build system (@corwin-of-amber)
  - [bugfix] Error with goCursor + active error stms (@corwin-of-amber)
@@ -18,10 +18,12 @@
  - A scratchpad - a page with just an empty editor (@corwin-of-amber)
  - Open/save file dialogs that support local persistence (in the browser) and files (@corwin-of-amber)
  - Asynchronous document management to circumvent various race conditions (@corwin-of-amber)
+ - Use serlib for serialization of Coq datatypes to JSON (@ejgallego)
+ - New query `Ast` which does return a traversable Ast representation (@ejgallego)
 
+ - [ ] Use sertop / serlib [partially done]
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
- - [ ] Use sertop / serlib
  - [ ] Support for UI layouts.
  - [x] Decentralized build mode for addons.
  - [ ] Dark theme - color scheme and icon set

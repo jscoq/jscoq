@@ -324,12 +324,23 @@ class FormatPrettyPrint {
      * @param {object} goal current goal record ({name, hyp, ty})
      */
     goal2DOM(goal) {
-        let hyps = goal.hyp.reverse().map(h => 
-            $('<div>').addClass('coq-hypothesis')
-                .append($('<label>').text(h[0]))
-                .append(this.pp2DOM(h[2])));
+        let mklabel = (id) =>
+                $('<label>').text(this.constructor._idToString(id)),
+            mkdef = (pp) =>
+                $('<span>').addClass('def').append(this.pp2DOM(pp));
+
+        let hyps = goal.hyp.reverse().map(([h_names, h_def, h_type]) =>
+            $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
+                .append(h_names.map(mklabel))
+                .append(h_def && mkdef(h_def))
+                .append(this.pp2DOM(h_type)));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
+    }
+
+    static _idToString(id) { // this is, unfortunately, duplicated from CoqManager :/
+        /**/ console.assert(id[0] === 'Id') /**/
+        return id[1];
     }
 
     flatLength(l) {

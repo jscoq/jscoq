@@ -421,8 +421,20 @@ div.Pp_box[data-mode="horizontal"] {
 }
 
 .coq-hypothesis > label::after {
+  content: ",";
+  margin-right: 0.25em;
+}
+
+.coq-hypothesis > label:last-of-type::after,
+.coq-hypothesis > span.def::after {
   content: ":";
   margin: 0 .5em;
+}
+
+.coq-hypothesis.coq-has-def > label:last-of-type::after {
+  content: ":=";
+  margin: 0 .5em;
+  color: #777;
 }
 
 .coq-env hr {

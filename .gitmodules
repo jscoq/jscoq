@@ -2,3 +2,7 @@
 	path = ui-external/CodeMirror-TeX-input
 	url = https://github.com/ejgallego/CodeMirror-TeX-input.git
 	branch = master
+[submodule "coq-serapi"]
+	path = coq-serapi
+	url = https://github.com/ejgallego/coq-serapi.git
+	branch = v8.10

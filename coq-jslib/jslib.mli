@@ -13,7 +13,7 @@
  *)
 
 (* JSON handling *)
-open Yojson.Safe
+module J = Yojson.Safe
 
 type coq_pkg = {
   pkg_id    : string list;
@@ -21,8 +21,8 @@ type coq_pkg = {
   cma_files : (string * Digest.t) list;
 }
 
-val coq_pkg_to_yojson : coq_pkg -> json
-val coq_pkg_of_yojson : json -> (coq_pkg, string) Result.result
+val coq_pkg_to_yojson : coq_pkg -> J.t
+val coq_pkg_of_yojson : J.t -> (coq_pkg, string) Result.result
 
 val to_dir  : coq_pkg -> string
 val to_desc : coq_pkg -> string
@@ -33,8 +33,8 @@ type coq_bundle = {
   deps      : string list;
   pkgs      : coq_pkg list;
   archive   : string option;
-  modDeps   : Yojson.Safe.json option;
+  modDeps   : J.t option;
 }
 
-val coq_bundle_to_yojson : coq_bundle -> json
-val coq_bundle_of_yojson : json -> (coq_bundle, string) Result.result
+val coq_bundle_to_yojson : coq_bundle -> J.t
+val coq_bundle_of_yojson : J.t -> (coq_bundle, string) Result.result

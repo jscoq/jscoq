@@ -358,7 +358,7 @@ class CoqManager {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
-                { lemmas: bunch.map(CoqIdentifier.ofFullPath) },
+                { lemmas: bunch.map(fp => CoqIdentifier.ofFullPath(fp)) },
                 'locals', /*replace_existing=*/true)
         });
     }
@@ -1219,6 +1219,11 @@ class CoqIdentifier {
 
     toString() { return [...this.prefix, this.label].join('.'); }
 
+    equals(other) {
+        return other instanceof CoqIdentifier &&
+            this.prefix.equals(other.prefix) && this.label === other.label;
+    }
+
     /**
      * Constructs an identifier from a Coq Names.KerName.t.
      * @param {array} param0 serialized form of KerName.
@@ -1231,16 +1236,26 @@ class CoqIdentifier {
             modpath = modpath[1];
         }
         /**/ console.assert(modpath[0] === 'MPfile'); /**/
-        return new CoqIdentifier(modpath[1].slice().reverse()
-                                 .concat(modsuff), label);
+        /**/ console.assert(modpath[1][0] === 'DirPath'); /**/
+        return new CoqIdentifier(
+            modpath[1][1].slice().reverse().map(this._idToString).concat(modsuff),
+            this._idToString(label));
     }
 
     /**
      * Constructs an identifier from a Libnames.full_path.
-     * @param {array} param0 serialized form of full_path (from SearchResults).
+     * @param {array} fp serialized form of full_path (from SearchResults).
      */
-    static ofFullPath([dirpath, basename]) {
-        return new CoqIdentifier(dirpath.slice().reverse(), basename);
+    static ofFullPath(fp) {
+        /**/ console.assert(fp.dirpath[0] === 'DirPath') /**/
+        return new CoqIdentifier(
+            fp.dirpath[1].slice().reverse().map(this._idToString),
+            this._idToString(fp.basename));
+    }
+
+    static _idToString(id) {
+        /**/ console.assert(id[0] === 'Id') /**/
+        return id[1];
     }
 
     dequalify(dirpaths) {
