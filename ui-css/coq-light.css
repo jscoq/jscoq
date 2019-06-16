@@ -134,8 +134,17 @@ body {
   color: red;
 }
 
+.cm-s-default .cm-coq-bullet {
+  color: #448252;
+  font-weight: bold;
+}
+
+.cm-s-default .cm-coq-focus {
+  color: #777;
+}
+
 .CodeMirror span.CodeMirror-matchingbracket {
-  color: #939;
+  color: #939 !important;
   outline: 1px solid rgba(200, 0, 0, 0.3);
   outline-offset: -1px;
   text-shadow: 0 -1px #939;

@@ -137,8 +137,8 @@
       'Admitted'
     ];
 
-    const lex_operators = 
-      /=>|:=|<:|<<:|:>|->|<->?|\\\/|\/\\|>=|<=|<>|\+\+|::|\|\||&&|\.\./;
+    const lex_operators =   /* multi-character operators */
+      /=+>|:=|<:|<<:|:>|-+>|<-+>?|\\\/|\/\\|>=|<=+|<>|\+\+|::|\|\||&&|\.\./;
       
     const lex_brackets = /\.\(|\{\||\|\}|`\{|`\(/;
 
@@ -201,16 +201,21 @@
       if(stream.eatSpace())
         return null;
 
-      if (stream.match(lex_operators)) return 'operator';
+      if (stream.match(lex_operators)) {
+        state.begin_sentence = false;
+        return 'operator';
+      }
 
       //if (stream.match(lex_brackets))  return 'bracket';
       // ^ skipped, for the time being, because matchbracket does not support
       //   multi-character brackets.
 
-      var ch = stream.next();
+      if (at_sentence_start) {
+        if (stream.match(/[-*+{}]/)) return 'coq-bullet';
+        if (stream.match(/\d+\s*:/)) return 'coq-focus';
+      }
 
-      if(at_sentence_start && (/[-*+{}]/.test(ch)))
-        return 'coq-bullet';
+      var ch = stream.next();
 
       // Preserve begin sentence after comment.
       if (ch === '(') {
@@ -269,6 +274,10 @@
       if (at_sentence_start) {
         state.sentence_kind = kind;
         state.is_head = true;
+      }
+      else if (kind === 'tactic' && state.sentence_kind === 'builtin') {
+        /* tactics should not occur in vernac (unless "ltac:" is used?) */
+        kind = 'variable';
       }
 
       return kind;
