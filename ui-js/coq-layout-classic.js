@@ -36,7 +36,7 @@ class CoqLayoutClassic {
         <i>js+</i><!--
         --><a href="https://coq.inria.fr"><!--
           --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle">
-        <a>
+        </a>
         <!-- 
         <a href="http://feever.fr/" target="_blank">
           <img src="${base_path}/ui-images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"

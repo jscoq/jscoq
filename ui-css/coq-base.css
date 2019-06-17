@@ -247,6 +247,7 @@ a, a:link, a:visited, a:active {
   vertical-align: middle;
   margin-left: .3em;
   padding-bottom: 5px;
+  box-sizing: content-box;
 }
 
 #buttons {
