@@ -10,15 +10,53 @@ class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        this._worker_script = scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.bc.js");
+        if (worker) {
+            this.worker = worker;
+            this.when_created = Promise.resolve();
+        }
+        else {
+            this.when_created = 
+                this.createWorker(scriptPath ||
+                                  this.constructor.defaultScriptPath());
+        }
+    }
 
-        // Create actual worker. Ideally, CoqWorker would extend
-        // Worker, but this is not supported at the moment.
-        this.worker = worker || new Worker(this._worker_script)
+    /**
+     * Default location for worker script -- computed relative to the URL
+     * where this script is loaded from.
+     */
+    static defaultScriptPath() {
+        return new URL("../coq-js/jscoq_worker.bc.js", this.scriptUrl).href;
+    }
+
+    /**
+     * Alternate script path, for when serving for source tree.
+     * (Basically removes `.bc` from the suffix.)
+     */
+    static alternateScriptPath(script_path) {
+        return script_path.replace(/\.bc\.js$/, '.js');
+    }
+
+    async createWorker(script_path) {
+        let alt_script_path = this.constructor.alternateScriptPath(script_path);
+
+        this._worker_script = await
+            this.constructor._searchResource([script_path, alt_script_path]);
+
+        this.worker = new Worker(this._worker_script)
         this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.worker.terminate());
+    }
+
+    static async _searchResource(urls) {
+        let head = (url) => new Promise((resolve, reject) =>
+            $.ajax({type: "HEAD", url}).then(() => resolve(url)).fail(reject));
+
+        for (let url of urls) {
+            try { return await head(url); } catch { }
+        }
     }
 
     sendCommand(msg) {
@@ -300,7 +338,7 @@ class PromiseFeedbackRoute extends Future {
 
 
 if (typeof document !== 'undefined' && document.currentScript)
-    CoqWorker.scriptDir = document.currentScript.attributes.src.value.replace(/[^/]*$/, '');
+    CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
 
 if (typeof module !== 'undefined')
     module.exports = {CoqWorker, Future, PromiseFeedbackRoute}

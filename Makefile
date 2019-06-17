@@ -76,11 +76,12 @@ libs-pkg: force
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js
-	ln -sf ../_build/$(BUILD_CONTEXT)/ui-js/coq-build.browser.js ui-js
+	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.js
+#	ln -sf ../_build/$(BUILD_CONTEXT)/ui-js/coq-build.browser.js ui-js
 
 links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.bc.js ui-js/coq-build.browser.js
+	rm -f coq-pkgs coq-js/jscoq_worker.js
+#	ui-js/coq-build.browser.js
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb: coq-pkgs/%.json

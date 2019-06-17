@@ -284,7 +284,8 @@ class CoqManager {
         this.navEnabled = false;
 
         // The fun starts: Load the set of packages.
-        this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+        this.coq.when_created.then(() =>
+            this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs));
     }
 
     // Provider setup
