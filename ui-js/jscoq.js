@@ -10,7 +10,7 @@ class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        this._worker_script = scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.js");
+        this._worker_script = scriptPath || (CoqWorker.scriptDir + "../coq-js/jscoq_worker.bc.js");
 
         // Create actual worker. Ideally, CoqWorker would extend
         // Worker, but this is not supported at the moment.
