@@ -113,12 +113,14 @@ dist: jscoq
 	mkdir -p $(DISTDIR)
 	rsync -avpR --delete $(BUILDOBJ) $(DISTDIR)
 
-NPMOBJ = ${filter-out %/node_modules, $(BUILDOBJ)} package.json package-lock.json
+NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
+NPMOBJ += package.json package-lock.json
 NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
 
 dist-npm:
 	mkdir -p $(DISTDIR)
 	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(DISTDIR)
+	cp docs/npm-landing.html $(DISTDIR)/index.html
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
 	    -C $(DISTDIR) --exclude '*.tar.gz' .
 
