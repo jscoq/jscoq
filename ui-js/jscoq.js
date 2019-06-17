@@ -23,7 +23,7 @@ class CoqWorker {
 
     /**
      * Default location for worker script -- computed relative to the URL
-     * where this script is loaded from.
+     * from which this script is loaded.
      */
     static defaultScriptPath() {
         return new URL("../coq-js/jscoq_worker.bc.js", this.scriptUrl).href;
@@ -57,6 +57,7 @@ class CoqWorker {
         for (let url of urls) {
             try { return await head(url); } catch { }
         }
+        throw new Error(`resource not found; [${urls}]`);
     }
 
     sendCommand(msg) {
