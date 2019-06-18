@@ -17,8 +17,8 @@ module J = Yojson.Safe
 
 type coq_pkg = {
   pkg_id    : string list;
-  vo_files  : (string * Digest.t) list;
-  cma_files : (string * Digest.t) list;
+  vo_files  : (string * Digest.t option) list;
+  cma_files : (string * Digest.t option) list;
 }
 
 val coq_pkg_to_yojson : coq_pkg -> J.t

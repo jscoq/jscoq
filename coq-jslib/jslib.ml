@@ -20,8 +20,8 @@ type digest =
 
 type coq_pkg =
   { pkg_id    : string list
-  ; vo_files  : (string * digest) list
-  ; cma_files : (string * digest) list
+  ; vo_files  : (string * digest option) list
+  ; cma_files : (string * digest option) list
   } [@@deriving yojson]
 
 let to_dir   pkg = String.concat "/" pkg.pkg_id

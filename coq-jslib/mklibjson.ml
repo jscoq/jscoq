@@ -41,7 +41,6 @@ let select (l : string list) (sel : Dl.selector) =
   | Except s -> List.filter (fun fn -> not @@ List.mem fn s) l
 
 let build_pkg pkg ((pid, sel) : string list * Dl.selector) : Jslib.coq_pkg =
-  let dummy_d   = Digest.string ""                 in
   let dir       = Dl.prefix ^ "/" ^ Dl.to_dir pid  in
   let pkg_stats = ref (Hashtbl.find_opt stats pkg
                        |> or_zeroed)               in
@@ -61,8 +60,8 @@ let build_pkg pkg ((pid, sel) : string list * Dl.selector) : Jslib.coq_pkg =
   Hashtbl.replace stats pkg !pkg_stats;
   {
     Jslib.pkg_id    = pid;
-    vo_files  = List.map (fun s -> (s, dummy_d)) vo_files;
-    cma_files = List.map (fun s -> (s, dummy_d)) cma_files;
+    vo_files  = List.map (fun s -> (s, None)) vo_files;   (* digests are disabled, for now *)
+    cma_files = List.map (fun s -> (s, None)) cma_files;
   }
 
 let out_pref = "coq-pkgs/"
