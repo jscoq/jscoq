@@ -30,8 +30,8 @@ addons:
 cache:
   apt: true
   directories:
-  - /usr/local/Homebrew
   - $HOME/.opam
+  - $HOME/Library/Caches/Homebrew
 
 env:
   global:
