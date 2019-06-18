@@ -250,6 +250,7 @@ class CoqManager {
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
+        $(document).on('keydown keyup', evt => this.modifierKeyHandler(evt));
 
         // Panel setup 2: packages panel.
         // XXX: In the future this may also manage the downloads.
@@ -302,7 +303,7 @@ class CoqManager {
         };
 
         provider.onMouseEnter = (stm, ev) => {
-            if (stm.coq_sid && ev.altKey) {
+            if (stm.coq_sid && ev.ctrlKey) {
                 if (this.doc.goals[stm.coq_sid] !== undefined)
                     this.updateGoals(this.doc.goals[stm.coq_sid]);
                 else
@@ -866,44 +867,46 @@ class CoqManager {
         return this.packages.loadDeps(pkgs).then(() => this.coqInit());
     }
 
-    // Keyboard handling
+    /**
+     * Key bindings event handler.
+     * @param {KeyboardEvent} e a keydown event
+     */
     keyHandler(e) {
 
-        if (e.keyCode === 119) // F8
-            this.layout.toggle();
+        // Poor-man's keymap
+        let key = ((navigator.isMac ? e.metaKey : e.ctrlKey) ? '^' : '') + 
+                  (e.altKey ? '_' : '') + (e.shiftKey ? e.key.toUpperCase() : e.key);
 
-        // Navigation keybindings are prefixed by alt.
-        if (e.altKey) {
-            const goCursor = () => this.goCursor(),
-                  goNext   = () => this.goNext(true),
-                  goPrev   = () => this.goPrev(true);
-            const nav_bindings = {
-                'Enter': goCursor, 'ArrowRight': goCursor,
-                'n': goNext,       'ArrowDown': goNext,
-                'p': goPrev,       'ArrowUp': goPrev
-            };
+        // Navigation keybindings
+        const goCursor = () => this.goCursor(),
+              goNext   = () => this.goNext(true),
+              goPrev   = () => this.goPrev(true),
+              toggle   = () => this.layout.toggle();
+        const nav_bindings = {
+            '_Enter': goCursor, '_ArrowRight': goCursor,
+            '_n': goNext,       '_ArrowDown': goNext,
+            '_p': goPrev,       '_ArrowUp': goPrev,
+            'F8': toggle
+        };
 
-            var op = nav_bindings[e.key];
-            if (op) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (this.navEnabled) op();
-                return true;
-            }
+        var op = nav_bindings[key];
+        if (op) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.navEnabled) op();
+            return true;
         }
 
-        // File keybindings are prefixed by ctrl / cmd
-        if (this.options.file_dialog &&
-            (navigator.isMac ? e.metaKey : e.ctrlKey)) {
+        // File keybindings
+        if (this.options.file_dialog) {
             const file_bindings = {
-                'o':  () => sp.openLocalDialog(),
-                '_o': () => sp.openFileDialog(),
-                's':  () => sp.saveLocal(),
-                'S':  () => sp.saveLocalDialog()
+                '^o':  () => sp.openLocalDialog(),
+                '^_o': () => sp.openFileDialog(),
+                '^s':  () => sp.saveLocal(),
+                '^S':  () => sp.saveLocalDialog()
             };
 
             var sp = this.provider.currentFocus || this.provider.snippets[0],
-                key = (e.altKey ? '_' : '') + (e.shiftKey ? e.key.toUpperCase() : e.key),
                 op = file_bindings[key];
             if (sp && op) {
                 e.preventDefault();
@@ -911,6 +914,16 @@ class CoqManager {
                 op();
                 return true;
             }
+        }
+    }
+
+    modifierKeyHandler(evt) {
+        console.log(evt);
+        if (evt.key === 'Control') {
+            if (evt.ctrlKey)
+                this.layout.ide.classList.add('coq-crosshair');
+            else
+                this.layout.ide.classList.remove('coq-crosshair');
         }
     }
 
