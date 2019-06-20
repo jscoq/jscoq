@@ -121,8 +121,9 @@ dist-npm:
 	mkdir -p $(DISTDIR)
 	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(DISTDIR)
 	cp docs/npm-landing.html $(DISTDIR)/index.html
+	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(DISTDIR)/ui-js/jscoq-loader.js
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
-	    -C $(DISTDIR) --exclude '*.tar.gz' .
+	    -C $(DISTDIR) --exclude '*.bak' --exclude '*.tar.gz' .
 
 ########################################################################
 # Local stuff and distributions
