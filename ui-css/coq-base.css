@@ -24,7 +24,6 @@ a, a:link, a:visited, a:active {
 }
 
 #ide-wrapper {
-  transition: padding 0.5s ease;
   height: 100vh;
   margin-right: auto;
   margin-left: auto;
@@ -39,10 +38,6 @@ a, a:link, a:visited, a:active {
   flex-shrink: 1;
   overflow-x: hidden;
   max-height: 100%;
-}
-
-#ide-wrapper.toggled {
-  padding-right: 0px;
 }
 
 #ide-wrapper #document {
@@ -547,12 +542,28 @@ div.hint-package {
     border-bottom: 1px dashed #ccc;
   }
 
-  #panel-wrapper {
-    height: calc(100% - 2px);  /* otherwise border does not show... */
-    border-bottom: 1px solid #aaa;
+  /* Multi-page documents with flex are not portable (e.g. Firefox) */
+  /* falling back to absolute positioning + padding */
+
+  #ide-wrapper {
+    display: block;
+    padding-right: 45%;
+    transition: none;
+  }
+
+  #ide-wrapper.toggled {
+    padding-right: 0;
   }
 
   #ide-wrapper > * {
-    max-height: initial;  /* to allow multi-page documents */
+    max-height: initial;
   }
+
+  #panel-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-bottom: 1px solid #aaa;
+  }
+
 }
