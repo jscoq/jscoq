@@ -9,16 +9,46 @@ We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
 jsCoq v8.10+0.10.0~beta supporting Coq 8.10, try it:
 
-<https://x80.org/rhino-coq/v8.10>
+<https://jscoq.github.io>
 
-JsCoq is written in ES2015, thus any recent standard-compliant browser
+JsCoq is written in ES2017, thus any recent standard-compliant browser
 should work. jsCoq also runs in my 8-year old Galaxy Nexus. Browser
 performance is quite variable these days, see the [Troubleshooting](#Troubleshooting) section if you have problems.
 
-Coq is compiled to javascript using the `js_of_ocaml` compiler. No
+Coq is compiled to JavaScript using the [`js_of_ocaml`](http://ocsigen.org/js_of_ocaml) compiler. No
 servers or external programs are needed.
 We want to _strongly thank_ the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
+
+## Basic Usage
+
+The main page showcases jsCoq by walking through a proof for the infinitude of primes using
+[`math-comp`](https://github.com/math-comp/math-comp), due to Georges Gonthier.
+Once jsCoq finishes loading, you can step through the proof using the arrow buttons on the toolbar (top right),
+or using these keyboard shortcuts:
+
+| Shortcut           | Action           |
+|--------------------|------------------|
+| Alt-N or Alt-↓     | Go to next       |
+| Alt-P or Alt-↑     | Go to previous   |
+| Alt-Enter or Alt-→ | Go to cursor     |
+
+You can open a blank editor and experiment with your own Coq developments using the
+[scratchpad](https://jscoq.github.io/node_modules/jscoq/examples/scratchpad.html).
+The same keyboard shortcuts apply here.
+
+The scratchpad's contents are saved in your browser's local storage (IndexedDB, specifically),
+so they are not lost if you close the browser window or refresh the page.
+You can, in fact, store more than one document using the local open/save file dialogs:
+
+| Shortcut           | Action                                                        |
+|--------------------|---------------------------------------------------------------|
+| Ctrl-S             | Save file (with the last name provided, or `untitled.v`)      |
+| Ctrl-Shift-S       | Save file as (prompts for file name)                          |
+| Ctrl-O             | Open file (prompts for file name, supports tab completion)    |
+| Ctrl-Alt-O         | Open file from disk (using the browser's Open dialog)         |
+
+On Mac, replace Ctrl with ⌘ (command) and Alt with ⌥ (option), as is traditional.
 
 ## Development Version
 
