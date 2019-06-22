@@ -875,7 +875,7 @@ class CoqManager {
 
         // Poor-man's keymap
         let key = ((navigator.isMac ? e.metaKey : e.ctrlKey) ? '^' : '') + 
-                  (e.altKey ? '_' : '') + (e.shiftKey ? e.key.toUpperCase() : e.key);
+                  (e.altKey ? '_' : '') + (e.shiftKey ? '+' : '') + e.code;
 
         // Navigation keybindings
         const goCursor = () => this.goCursor(),
@@ -883,11 +883,17 @@ class CoqManager {
               goPrev   = () => this.goPrev(true),
               toggle   = () => this.layout.toggle();
         const nav_bindings = {
-            '_Enter': goCursor, '_ArrowRight': goCursor,
-            '_n': goNext,       '_ArrowDown': goNext,
-            '_p': goPrev,       '_ArrowUp': goPrev,
+            '_Enter':     goCursor, '_ArrowRight': goCursor,
+            '_ArrowDown': goNext,
+            '_ArrowUp':   goPrev,
             'F8': toggle
         };
+        if (!navigator.isMac) {
+            Object.assign(nav_bindings, {
+                '_KeyN': goNext,
+                '_KeyP': goPrev
+            }); /* Alt-N and Alt-P create accent characters on Mac */
+        }
 
         var op = nav_bindings[key];
         if (op) {
@@ -900,10 +906,10 @@ class CoqManager {
         // File keybindings
         if (this.options.file_dialog) {
             const file_bindings = {
-                '^o':  () => sp.openLocalDialog(),
-                '^_o': () => sp.openFileDialog(),
-                '^s':  () => sp.saveLocal(),
-                '^S':  () => sp.saveLocalDialog()
+                '^KeyO':   () => sp.openLocalDialog(),
+                '^_KeyO':  () => sp.openFileDialog(),
+                '^KeyS':   () => sp.saveLocal(),
+                '^+KeyS':  () => sp.saveLocalDialog()
             };
 
             var sp = this.provider.currentFocus || this.provider.snippets[0],
@@ -918,7 +924,6 @@ class CoqManager {
     }
 
     modifierKeyHandler(evt) {
-        console.log(evt);
         if (evt.key === 'Control') {
             if (evt.ctrlKey)
                 this.layout.ide.classList.add('coq-crosshair');
