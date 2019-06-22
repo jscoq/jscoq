@@ -48,6 +48,14 @@ a, a:link, a:visited, a:active {
   font-family: monospace, times, Arial Unicode MS;
 }
 
+#ide-wrapper.coq-crosshair .CodeMirror-lines {
+  cursor: crosshair;
+}
+
+#ide-wrapper .CodeMirror-crosshair {
+  cursor: text; /* overrides CodeMirror (normally set when Alt is held) */
+}
+
 #script-panel {
   height: calc(100% - 37px);
 }
