@@ -14,7 +14,6 @@ body {
   margin: 0;
   padding: 0;
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
-  line-height: normal;
   font-size: 11pt;
   overscroll-behavior-y: none;
 }
@@ -31,6 +30,7 @@ a, a:link, a:visited, a:active {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  line-height: 1.2;
 }
 
 #ide-wrapper > * {
@@ -321,6 +321,7 @@ a, a:link, a:visited, a:active {
 /* overloads */
 .CodeMirror {
   height: 100%;
+  line-height: initial;
 }
 
 .CodeMirror-dialog {
@@ -442,6 +443,15 @@ div.Pp_box[data-mode="horizontal"] {
   margin-bottom: 1em;
 }
 
+.coq-hypothesis {
+  margin-bottom: 2px;
+}
+
+.coq-hypothesis > label {
+  font-weight: normal;  /* override bootstrap */
+  margin: 0;
+}
+
 .coq-hypothesis > label::after {
   content: ",";
   margin-right: 0.25em;
@@ -517,7 +527,7 @@ div.hint-package {
 .company-coq-sub {
   font-size: 70%;
   position: relative;
-  top: 0.15em;
+  top: 0.1em;
   /* using position: relative prevents line-height increase */
   padding-top: 0.4em;
   /* the padding is to align the background with the rest of the line;
