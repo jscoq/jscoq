@@ -228,7 +228,7 @@ class CoqManager {
         this.setupDragDrop();
 
         // Setup the Coq worker.
-        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.js');
+        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
         this.coq.options   = this.options;
         this.coq.observers.push(this);
 
@@ -283,8 +283,14 @@ class CoqManager {
         this.error = [];
         this.navEnabled = false;
 
-        // The fun starts: Load the set of packages.
-        this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+        // The fun starts: commence loading packages (asynchronously)
+        (async () => {
+            try {
+                await this.coq.when_created;
+                this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+            }
+            catch (err) { this.handleLaunchFailure(err); }
+        })();
     }
 
     // Provider setup
@@ -826,6 +832,20 @@ class CoqManager {
 
         this.truncate(err_stm);
         this.coq.cancel(sid);
+    }
+
+    /**
+     * Handles a critial error during worker load/launch.
+     * Typically, failure to fetch the jscoq_worker script.
+     * @param {Error} err load error
+     */
+    handleLaunchFailure(err) {
+        this.layout.log("Failed to start jsCoq worker.", 'Error');
+        if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+            this.layout.log($('<span>').html(
+                "(Serving from local file;\n" +
+                "has <i>--allow-file-access-from-files</i> been set?)"), 'Info');
+        }
     }
 
     clearErrors() {

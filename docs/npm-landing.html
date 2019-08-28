@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <title>Using jsCoq with NPM (a template)</title>
+
+    <!-- important: this will not work from *within* the jsCoq package dir; -->
+    <!-- this template is meant to be copied to your project dir and edited -->
+    <script src="./ui-js/jscoq-loader.js"></script>
+  </head>
+
+<body>
+  <div id="ide-wrapper" class="toggled">
+    <div id="code-wrapper">
+      <div id="document">
+        <h1>Welcome to your own jsCoq development</h1>
+        <p>
+            Want to create a document like this one?
+            Copy <tt>node_modules/jscoq/examples/npm-template.html</tt>
+            and start editing.
+        </p>
+        <textarea id="coq-devel-1">
+(* Your document can embed Coq snippets! *)
+Inductive and_they_run := too(*!*).
+</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- jsCoq configuration part -->
+  <script type="text/javascript">
+
+    var jscoq_ids  = ['coq-devel-1'];
+    var jscoq_opts = {
+        prelude:   true,
+        base_path: './',
+        editor:    { mode: { 'company-coq': true }, keyMap: 'default' },
+        init_pkgs: ['init'],
+        all_pkgs:  ['init', 'math-comp', 'iris', 'elpi', 'equations', 'ltac2', 'stdpp',
+                    'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'lf', 'plf', 'cpdt']
+    };
+
+    JsCoq.start(jscoq_opts.base_path, '..', jscoq_ids, jscoq_opts);
+  </script>
+</body>

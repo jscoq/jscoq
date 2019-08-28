@@ -76,11 +76,12 @@ libs-pkg: force
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.js coq-js
-	ln -sf ../_build/$(BUILD_CONTEXT)/ui-js/coq-build.browser.js ui-js
+	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.js
+#	ln -sf ../_build/$(BUILD_CONTEXT)/ui-js/coq-build.browser.js ui-js
 
 links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.js ui-js/coq-build.browser.js
+	rm -f coq-pkgs coq-js/jscoq_worker.js
+#	ui-js/coq-build.browser.js
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb: coq-pkgs/%.json
@@ -100,12 +101,29 @@ clean:
 ########################################################################
 
 BUILDDIR=_build/$(BUILD_CONTEXT)
-BUILDOBJ=$(addprefix $(BUILDDIR)/./, index.html node_modules coq-js/jscoq_worker.bc.js coq-pkgs ui-js ui-css ui-images examples ui-external/CodeMirror-TeX-input)
+BUILDOBJ=${addprefix $(BUILDDIR)/./, \
+	index.html coq-js/jscoq_worker.bc.js \
+	coq-pkgs ui-js ui-css ui-images examples \
+	node_modules ui-external/CodeMirror-TeX-input}
 DISTDIR=_build/dist
+
+PACKAGE_VERSION = ${shell node -e 'console.log(require("./package.json").version)'}
 
 dist: jscoq
 	mkdir -p $(DISTDIR)
 	rsync -avpR --delete $(BUILDOBJ) $(DISTDIR)
+
+NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
+NPMOBJ += package.json package-lock.json
+NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
+
+dist-npm:
+	mkdir -p $(DISTDIR)
+	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(DISTDIR)
+	cp docs/npm-landing.html $(DISTDIR)/index.html
+	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(DISTDIR)/ui-js/jscoq-loader.js
+	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
+	    -C $(DISTDIR) --exclude '*.bak' --exclude '*.tar.gz' .
 
 ########################################################################
 # Local stuff and distributions
