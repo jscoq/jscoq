@@ -102,7 +102,10 @@
       'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
       'congr', 'cut', 'cutrewrite',
       'dependent', 'destruct',
-      'eapply', 'eassumption', 'eauto', 'econstructor', 'elim', 'exists',
+      'eapply', 'eassumption', 'eauto', 'ecase', 'econstructor', 'edestruct',
+      'ediscriminate', 'eelim', 'eenough', 'eexists', 'eexact', 'einduction',
+      'einjection', 'eleft', 'epose', 'eright', 'esplit',
+      'elim', 'enough', 'exists',
       'field', 'firstorder', 'fold', 'fourier',
       'generalize',
       'have', 'hnf',
@@ -138,7 +141,7 @@
     ];
 
     const lex_operators =   /* multi-character operators */
-      /=+>|:=|<:|<<:|:>|-+>|<-+>?|\\\/|\/\\|>=|<=+|<>|\+\+|::|\|\||&&|\.\./;
+      /=+>|:=|<:|<<:|:>|-+>|[<>]-+>?|\\\/|\/\\|>=|<=+|<>|\+\+|::|\|\||&&|\.\./;
       
     const lex_brackets = /\.\(|\{\||\|\}|`\{|`\(/;
 

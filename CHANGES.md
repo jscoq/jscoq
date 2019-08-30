@@ -30,6 +30,7 @@
  - [ ] Dark theme - color scheme and icon set
  - [ ] Printer-friendly formatting in documents.
  - [ ] [feature] Setting Coq options through jsCoq configuration argument.
+ - [ ] Further fine-tuning of auto-completion
 
 Pending worker tasks:
 

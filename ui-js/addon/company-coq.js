@@ -238,7 +238,7 @@ class WorkQueue {
 }
 
 
-var vocab_kinds = {lemmas: 'lemma', tactics: 'tactic'};
+var vocab_kinds = {lemmas: 'lemma', tactics: 'tactic', keywords: 'keyword'};
 
 
 /**
@@ -257,8 +257,8 @@ class AutoComplete {
         cm.on('change', (cm, evt) => this.senseContext(cm, evt));
     }
 
-    lemmaHint(cm, options) { return this.hint(cm, options, 'lemmas'); }
-    tacticHint(cm, options) { return this.hint(cm, options, 'tactics'); }
+    lemmaHint(cm, options) { return this.hint(cm, options, ['keywords', 'lemmas']); }
+    tacticHint(cm, options) { return this.hint(cm, options, ['tactics']); }
 
     hint(cm, _options, family) {
         var cur = cm.getCursor(), 
@@ -300,8 +300,8 @@ class AutoComplete {
      * Determines what kind of hint, if any, should be displayed when the
      * document is being edited.
      * Called on 'change' event; relies on coq-mode to recover context.
-     * Hint completion is invoked when typing an identifier token of two or more
-     * characters.
+     * Hint completion is invoked when typing an identifier token of three or
+     * more characters.
      * @param {CodeMirror} cm editor instance
      * @param {ChangeEvent} evt document modification object
      *   (if omitted, shows hints unconditionally)
@@ -313,7 +313,7 @@ class AutoComplete {
                 kind = token.state.sentence_kind;
 
             if (!evt || ((is_head || kind === 'tactic' || kind === 'terminator') &&
-                         /^[a-zA-Z_]./.exec(token.string))) {
+                         /^[a-zA-Z_]../.exec(token.string))) {
                 var hint = is_head ? this.tacticHint : this.lemmaHint;
                 requestAnimationFrame(() =>
                     cm.showHint({
@@ -357,17 +357,21 @@ class AutoComplete {
         return [token, tokenStart, tokenEnd];
     }
 
-    _matches(match, family) {
-        var matching = [], kind = this.kinds[family];
-    
-        for (let scope of Object.values(this.vocab)) {
-            for (let entry of scope[family]) {
-                var name = entry.label || entry;
-                if ( name.indexOf(match) > -1 ) {
-                    matching.push({
-                        text: name, label: name, kind, prefix: entry.prefix || []
-                    });
-                    if (matching.length > this.max_matches) break;
+    _matches(match, families) {
+        var matching = []
+
+        for (let family of families) {
+            var kind = this.kinds[family];
+
+            for (let scope of Object.values(this.vocab)) {
+                for (let entry of scope[family] || []) {
+                    var name = entry.label || entry;
+                    if ( name.indexOf(match) > -1 ) {
+                        matching.push({
+                            text: name, label: name, kind, prefix: entry.prefix || []
+                        });
+                        if (matching.length > this.max_matches) break;
+                    }
                 }
             }
         }
@@ -449,7 +453,7 @@ class ObserveIdentifier {
 /* -- Configuration Section -- */
 
 const special_tokens = {
-        '->': '→', '<-': '←', '<->': '↔', '=>': '⇒', '|-': '⊢',
+        '->': '→', '<-': '←', '<->': '↔', '>->': '↣', '=>': '⇒', '|-': '⊢',
         '/\\': '∧', '\\/': '∨',
         '<=': '≤', '>=': '≥', '<>': '≠',
         'fun': 'λ', 'forall': '∀', 'exists': '∃', 
@@ -505,6 +509,9 @@ const vocab = {
             'unfold', 'unlock', 'using',
             'vm_compute',
             'where', 'wlog'
+        ],
+        keywords: [
+            'in', 'as', 'with'
         ]
     }
 };
