@@ -27,13 +27,25 @@ a, a:link, a:visited, a:active {
   margin-right: auto;
   margin-left: auto;
   overscroll-behavior: none;
+}
+
+#ide-wrapper.layout-fixed {
+  padding-right: 45%;
+  transition: padding 0.5s ease;
+}
+
+#ide-wrapper.layout-flex {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   line-height: 1.2;
 }
 
-#ide-wrapper > * {
+#ide-wrapper.layout-fixed.toggled {
+  padding-right: 0px;
+}
+
+#ide-wrapper.layout-flex > * {
   flex-grow: 1;
   flex-shrink: 1;
   overflow-x: hidden;
@@ -77,15 +89,24 @@ a, a:link, a:visited, a:active {
 
 #panel-wrapper {
   padding: 0;
-  position: relative; /* for the power button */
   width: 45%;
-  max-width: 37em;
   height: 100%;
   transition: width 0.5s ease;
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
+  overflow: visible;
+}
+
+#ide-wrapper.layout-fixed #panel-wrapper {
+  top: 0;
+  right: 0;
+  position: fixed;
+}
+
+#ide-wrapper.layout-flex #panel-wrapper {
+  position: relative; /* for the power button */
+  max-width: 41em;
   flex-shrink: 0;
   flex-grow: 0;
-  overflow: visible;
 }
 
 #ide-wrapper.toggled #panel-wrapper {

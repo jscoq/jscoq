@@ -95,6 +95,7 @@ class CoqLayoutClassic {
 
         // Our reference to the IDE, goal display & query buffer.
         this.ide   = document.getElementById(options.wrapper_id);
+        this.ide.classList.add(`layout-${options.layout || 'flex'}`);
 
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
