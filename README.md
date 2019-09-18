@@ -146,6 +146,7 @@ the `CoqManager` constructor:
 |-----------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
 | `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
+| `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).               |
 | `all_pkgs`      | array of string | (see below)     | List of available packages that will be listed in the packages panel.                                         |
 | `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
 | `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
