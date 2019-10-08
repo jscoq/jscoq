@@ -25,6 +25,11 @@ build:
 
 jscoq-install:
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(COQPKGS_ROOT)/mathcomp/
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/algebra $(COQPKGS_ROOT)/mathcomp/
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/character $(COQPKGS_ROOT)/mathcomp/
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/field $(COQPKGS_ROOT)/mathcomp/
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/fingroup $(COQPKGS_ROOT)/mathcomp/	
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/solvable $(COQPKGS_ROOT)/mathcomp/	
 	$(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
 	            --create-package $(MATHCOMP_DEST).coq-pkg  \
 	            --create-manifest $(MATHCOMP_DEST).json
