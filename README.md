@@ -309,7 +309,7 @@ $ make coq
 $ make jscoq
 ```
 
-For more detailed description and prerequisites, see [docs/Build.md](./docs/Build.md).
+For more detailed description and prerequisites, see [docs/build.md](./docs/build.md).
 
 ### Addon Packages:
 
