@@ -235,10 +235,6 @@ class CoqManager {
         // Setup pretty printer for feedback and goals
         this.pprint = new FormatPrettyPrint();
 
-        // Setup contextual info bar
-        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
-                                                     this.coq, this.pprint);
-
         // Setup company-coq
         if (this.options.editor.mode && this.options.editor.mode['company-coq'])
             this.company_coq = new CodeMirror.CompanyCoq();
@@ -246,6 +242,10 @@ class CoqManager {
         // Setup autocomplete
         this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
         this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
+
+        // Setup contextual info bar
+        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+                                                     this.coq, this.pprint, this.company_coq);
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -1079,11 +1079,13 @@ class CoqContextualInfo {
      * @param {jQuery} container <div> element to show info in
      * @param {CoqWorker} coq jsCoq worker for querying types and definitions
      * @param {FormatPrettyPrint} pprint formatter for Pp data
+     * @param {CompanyCoq} company_coq (optional) further beautification
      */
-    constructor(container, coq, pprint) {
+    constructor(container, coq, pprint, company_coq) {
         this.container = container;
         this.coq = coq;
         this.pprint = pprint;
+        this.company_coq = company_coq;
         this.el = $('<div>').addClass('contextual-info').hide();
         this.is_visible = false;
         this.is_sticky = false;
@@ -1221,7 +1223,19 @@ class CoqContextualInfo {
     }
 
     formatMessages(msgs) {
-        return msgs.map(feedback => this.pprint.pp2HTML(feedback.msg)).join("<hr/>");
+        var ppmsgs = msgs.map(feedback => this.pprint.pp2DOM(feedback.msg)),
+            frag = $(document.createDocumentFragment());
+
+        for (let e of ppmsgs) {
+            if (frag.children().length > 0) frag.append($('<hr/>'));
+            frag.append(e);
+        }
+
+        if (this.company_coq) {
+            this.company_coq.markup.applyToDOM(frag[0]);
+        }
+
+        return frag;
     }
 
     formatName(name) {
