@@ -397,7 +397,8 @@ class AutoComplete {
                 $('<div>').addClass('hint-package').text(pkg)
             );
         // Make element active on hover (mostly in order to show tips)
-        $(el).mouseenter(() => {
+        // but only if the mouse is actually moved
+        $(el).mousemove(() => {
             var cA = cm.state.completionActive;
             if (cA && cA.widget)
                 cA.widget.changeActive($(el).index());
