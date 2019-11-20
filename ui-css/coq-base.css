@@ -104,7 +104,7 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.layout-flex #panel-wrapper {
   position: relative; /* for the power button */
-  max-width: 41em;
+  max-width: 48em;
   flex-shrink: 0;
   flex-grow: 0;
 }
