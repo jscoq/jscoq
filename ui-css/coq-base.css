@@ -300,8 +300,8 @@ a, a:link, a:visited, a:active {
 #buttons button {
   background: none;
   border: none;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   background-size: 100%;
   vertical-align: middle;
   cursor: pointer;
@@ -324,19 +324,22 @@ a, a:link, a:visited, a:active {
 
 #buttons button[name=up] {
   background-image: url(../ui-images/up.png);
+  width: 20px;
+  height: 20px;
 }
 #buttons button[name=down] {
   background-image: url(../ui-images/down.png);
+  width: 20px;
+  height: 20px;
 }
 #buttons button[name=to-cursor] {
   background-image: url(../ui-images/to-cursor.png);
-  width: 25px;
-  height: 25px;
+}
+#buttons button[name=interrupt] {
+  background-image: url(../ui-images/stop.png);
 }
 #buttons button[name=reset] {
   background-image: url(../ui-images/reset.png);
-  width: 25px;
-  height: 25px;
 }
 
 /* overloads */

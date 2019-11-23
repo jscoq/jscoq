@@ -1,11 +1,25 @@
+diff --git a/kernel/byterun/coq_interp.c b/kernel/byterun/coq_interp.c
+index 1b348ae..b41ba96 100644
+--- a/kernel/byterun/coq_interp.c
++++ b/kernel/byterun/coq_interp.c
+@@ -1593,3 +1593,6 @@ value coq_interprete_byte(value* argv, int argn){
+ value coq_eval_tcode (value tcode, value t, value g, value e) {
+   return coq_interprete_ml(tcode, Val_unit, t, g, e, 0);
+ }
++
++// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
++value interrupt_pending() { return Val_false; }
 diff --git a/lib/control.ml b/lib/control.ml
-index 9054507..694129b 100644
+index 9054507..6898658 100644
 --- a/lib/control.ml
 +++ b/lib/control.ml
-@@ -16,7 +16,14 @@ let steps = ref 0
+@@ -16,8 +16,18 @@ let steps = ref 0
  
  let enable_thread_delay = ref false
  
++(* implemented in coq-js/js_stub/interrupt.js *)
++external interrupt_pending : unit -> bool = "interrupt_pending"
++
 +let timeout_deadline : (float * (unit -> unit)) option ref = ref None
 +let jscoq_timeout_yield () =
 +  match !timeout_deadline with
@@ -13,11 +27,13 @@ index 9054507..694129b 100644
 +  | None -> ()
 +
  let check_for_interrupt () =
+-  if !interrupt then begin interrupt := false; raise Sys.Break end;
 +  jscoq_timeout_yield ();
-   if !interrupt then begin interrupt := false; raise Sys.Break end;
++  if !interrupt || interrupt_pending() then begin interrupt := false; raise Sys.Break end;
    incr steps;
    if !enable_thread_delay && !steps = 1000 then begin
-@@ -79,11 +86,30 @@ let windows_timeout n f x e =
+     Thread.delay 0.001;
+@@ -79,11 +89,31 @@ let windows_timeout n f x e =
      let e = Backtrace.add_backtrace e in
      Exninfo.iraise e
  
@@ -27,13 +43,14 @@ index 9054507..694129b 100644
 +  with e -> protect (); raise e
 +
 +let jscoq_timeout n f x e =
-+  let killed = ref false in
++  let expired = ref false in
 +  timeout_deadline := Some (Unix.gettimeofday () +. float_of_int n,
-+                            fun () -> killed := true; interrupt := true);
++                            fun () -> expired := true; interrupt := true);
 +  let protect () = jscoq_timeout_yield (); timeout_deadline := None;
 +                   interrupt := false in
-+  let res = try unwind ~protect (fun () -> f x) with Sys.Break -> raise e in
-+  if !killed then raise e;
++  let res = try unwind ~protect (fun () -> f x)
++            with Sys.Break -> raise @@ if !expired then e else Sys.Break in
++  if !expired then raise e;
 +  res
 +
  type timeout = { timeout : 'a 'b. int -> ('a -> 'b) -> 'a -> exn -> 'b }

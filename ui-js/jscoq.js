@@ -52,7 +52,7 @@ class CoqWorker {
 
     static async _searchResource(urls) {
         let head = (url) => new Promise((resolve, reject) =>
-            $.ajax({type: "HEAD", url}).then(() => resolve(url)).fail(reject));
+            $.ajax({type: 'HEAD', dataType: 'text', url}).then(() => resolve(url)).fail(reject));
 
         for (let url of urls) {
             try { return await head(url); } catch { }
@@ -155,6 +155,23 @@ class CoqWorker {
 
     register(filename) {
         this.sendCommand(["Register", filename]);
+    }
+
+    interruptSetup() {
+        if (typeof SharedArrayBuffer !== 'undefined') {
+            this.intvec = new Int32Array(new SharedArrayBuffer(4));
+            this.sendCommand(["InterruptSetup", this.intvec]);
+        }
+        else {
+            console.warn('SharedArrayBuffer is not available -- interrupts disabled');
+        }
+    }
+
+    interrupt() {
+        if (this.intvec)
+            Atomics.add(this.intvec, 0, 1);
+        else
+            console.warn("interrupt requested but has not been set up");
     }
 
     restart() {
