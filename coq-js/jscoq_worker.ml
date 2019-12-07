@@ -52,8 +52,6 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.t =
 (* This is an internal js_of_ocaml primitive... *)
 external string_bytes : string -> Typed_array.uint8Array Js.t = "caml_array_of_string"
 
-external interrupt_setup : Typed_array.int32Array Js.t -> unit = "interrupt_setup"
-
 (* (following is a reference implementation)
 let string_bytes s : Typed_array.uint8Array Js.t =
   let ta = new%js Typed_array.uint8Array (String.length s) in
@@ -68,6 +66,8 @@ let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :|
   else
     let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
     new%js Typed_array.uint8Array_fromBuffer buffer, buffer
+
+external interrupt_setup : Typed_array.int32Array Js.t -> unit = "interrupt_setup"
 
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in

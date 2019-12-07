@@ -26,12 +26,3 @@ function interrupt_pending() {
     }
     return false;
 }
-
-// Provides: interrupt_request
-// Requires: interrupt_setup
-function interrupt_request() {
-    var Atomics = joo_global_object.Atomics;
-
-    if (Atomics && interrupt_setup.vec)
-        Atomics.add(interrupt_setup.vec, 0, 1);
-}
