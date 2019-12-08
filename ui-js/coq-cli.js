@@ -288,7 +288,7 @@ module.exports = {HeadlessCoqManager, HeadlessCoqWorker}
 if (module && module.id == '.') {
     var requires = [], require_pkgs = [],
         opts = require('commander')
-        .version('0.10.0', '-v, --version')
+        .version('0.11.0', '-v, --version')
         .option('--noinit',                                 'start without loading the Init library')
         .option('--require <path>',                         'load Coq library path and import it (Require Import path.)')
         .option('--require-pkg <json>',                     'load a package and Require all modules included in it')

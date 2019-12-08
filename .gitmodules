@@ -5,4 +5,4 @@
 [submodule "coq-serapi"]
 	path = coq-serapi
 	url = https://github.com/ejgallego/coq-serapi.git
-	branch = v8.10
+	branch = v8.11

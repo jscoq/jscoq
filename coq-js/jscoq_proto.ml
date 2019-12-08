@@ -110,7 +110,7 @@ type jscoq_answer =
   (* Goals must be printed better *)
   | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
 
-  | Ast       of Vernacexpr.vernac_control Loc.located option
+  | Ast       of Vernacexpr.vernac_control option
   | CoqOpt    of string list * Goptions.option_value
   | Log       of Feedback.level * Pp.t
   | Feedback  of Feedback.feedback

@@ -222,7 +222,7 @@ let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
     if last unix_prefix = Some "." then unix_prefix
                                    else unix_prefix @ lib_path
   in
-  Mltop.{
+  Loadpath.{
     path_spec = VoPath {
         unix_path = String.concat "/" phys_path;
         coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);

@@ -202,3 +202,51 @@ function coq_set_drawinstr()      { vm_ll('coq_set_drawinstr', arguments); }
 // Provides: coq_tcode_array
 // Requires: vm_ll
 function coq_tcode_array()        { vm_ll('coq_tcode_array', arguments); }
+
+// Provides: coq_fadd_byte
+function coq_fadd_byte(r1, r2) {
+  return r1 + r2;
+}
+
+// Provides: coq_fsub_byte
+function coq_fsub_byte(r1, r2) {
+  return r1 - r2;
+}
+
+// Provides: coq_fmul_byte
+function coq_fmul_byte(r1, r2) {
+  return r1 * r2;
+}
+
+// Provides: coq_fdiv_byte
+function coq_fdiv_byte(r1, r2) {
+  return r1 / r2;
+}
+
+// Provides: coq_fsqrt_byte
+// Requires: vm_ll
+function coq_fsqrt_byte() {
+  vm_ll('coq_fsqrt_byte', arguments);
+  return;
+}
+
+// Provides: coq_is_double
+// Requires: vm_ll
+  function coq_is_double() {
+    vm_ll('coq_is_double', arguments);
+  return;
+}
+
+// Provides: coq_next_down_byte
+// Requires: vm_ll
+  function coq_next_down_byte() {
+    vm_ll('coq_next_down_byte', arguments);
+  return;
+}
+
+// Provides: coq_next_up_byte
+// Requires: vm_ll
+  function coq_next_up_byte() {
+    vm_ll('coq_next_up_byte', arguments);
+  return;
+}

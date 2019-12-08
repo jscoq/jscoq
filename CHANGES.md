@@ -1,3 +1,9 @@
+# JsCoq 0.11 "<-lib->"
+-----------------------------------------
+
+ - Port to Coq 8.11 (@ejgallego)
+ - Check if libraries using primitive floats may not be usable in jsCoq.
+
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
 

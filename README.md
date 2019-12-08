@@ -1,13 +1,13 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.10)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/ejgallego/jscoq.svg?branch=v8.11)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq v8.10+0.10.0~beta supporting Coq 8.10, try it:
+jsCoq v8.11+0.11.0~beta supporting Coq 8.11, try it:
 
 <https://jscoq.github.io>
 
@@ -59,10 +59,10 @@ On Mac, replace Ctrl with ⌘ (command) and Alt with ⌥ (option), as is traditi
 
 ## Development Version
 
-Development for jsCoq 0.10 takes place in the `v8.10` branch. A
-preview build of jsCoq 0.10 is usually available at:
+Development for jsCoq 0.11 takes place in the `v8.11` branch. A
+preview build of jsCoq 0.11 is usually available at:
 
-<https://x80.org/rhino-coq/v8.10/>
+<https://x80.org/rhino-coq/v8.11/>
 
 jsCoq is easy to develop using the Chrome developer tools; the jsCoq
 object has a `debug` flag, and it is possible to compile Coq with

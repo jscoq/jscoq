@@ -39,7 +39,7 @@ env:
   - OPAMROOTISOK="true"
   - OPAMYES="true"
   - OPAMJOBS="2"
-  - OPAM_LINUX_URL=https://github.com/ocaml/opam/releases/download/2.0.4/opam-2.0.4-x86_64-linux
+  - OPAM_LINUX_URL=https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then

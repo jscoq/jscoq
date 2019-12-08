@@ -11,7 +11,7 @@ open Js_of_ocaml
 open Jscoqlib
 open Jscoq_proto.Proto
 
-let jscoq_version = "0.10.0~beta1"
+let jscoq_version = "0.11.0~beta1"
 
 let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; coq_options = [] }
 
@@ -123,7 +123,7 @@ let post_file filename content : unit =
 let update_loadpath (msg : lib_event) : unit =
   match msg with
   | LibLoaded (_,bundle) ->
-    List.iter Mltop.add_coq_path
+    List.iter Loadpath.add_coq_path
       (Jslibmng.coqpath_of_bundle ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
   [@@warning "-4"]
@@ -177,7 +177,7 @@ let coq_exn_info exn =
 
 let requires ast =
   match ast with
-  | Vernacexpr.VernacExpr (_, Vernacexpr.VernacRequire (prefix, _export, module_refs)) ->
+  | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs)} ->
     let prefix_str = match prefix with
     | Some ref -> Jslibmng.module_name_of_qualid ref
     | _ -> [] in
@@ -317,7 +317,7 @@ let jscoq_execute =
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
-    List.iter (fun (path_el, phys) -> Mltop.add_coq_path
+    List.iter (fun (path_el, phys) -> Loadpath.add_coq_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
   | Load filename ->

@@ -17,7 +17,7 @@ val parse :
   doc:ser_doc        ->
   ontop:Stateid.t    ->
   string             ->
-  Vernacexpr.vernac_control CAst.t
+  Vernacexpr.vernac_control
 
 val add :
   doc:ser_doc        ->

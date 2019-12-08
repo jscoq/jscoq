@@ -25,7 +25,7 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
 
   (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  iload_path   : Mltop.coq_path list;
+  iload_path   : Loadpath.coq_path list;
 
   (* Libs to require prior to STM init *)
   require_libs : (string * string option * bool option) list;

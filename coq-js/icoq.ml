@@ -26,7 +26,7 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
 
   (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  iload_path   : Mltop.coq_path list;
+  iload_path   : Loadpath.coq_path list;
 
   (* Libs to require prior to STM init *)
   require_libs : (string * string option * bool option) list;
@@ -119,8 +119,9 @@ let coq_init opts =
   ndoc, nsid
 
 let context_of_st m = match m with
-  | `Valid (Some { Vernacstate.proof = Some pstate ; _ } ) ->
-    Pfedit.get_current_context pstate
+  | `Valid (Some { Vernacstate.lemmas = Some lemma ; _ } ) ->
+    Vernacstate.LemmaStack.with_top_pstate lemma
+      ~f:(fun pstate -> Pfedit.get_current_context pstate)
   | _ ->
     let env = Global.env () in Evd.from_env env, env
 
@@ -191,10 +192,9 @@ let compile_vo ~doc =
   (* freeze and un-freeze to to allow "snapshot" compilation *)
   (*  (normally, save_library_to closes the lib)             *)
   let frz = Vernacstate.freeze_interp_state ~marshallable:false in
-  Library.save_library_to ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
+  Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
   Vernacstate.unfreeze_interp_state frz;
   Js_of_ocaml.Sys_js.read_file ~name:tmp_vo_fn
-	
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

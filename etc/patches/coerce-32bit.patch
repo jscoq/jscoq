@@ -1,28 +1,14 @@
 diff --git a/kernel/uint63_x86.ml b/kernel/uint63_x86.ml
 index 461184c..b7b3f5b 100644
---- a/kernel/uint63_x86.ml
-+++ b/kernel/uint63_x86.ml
-@@ -11,7 +11,7 @@
- (* Invariant: the msb should be 0 *)
- type t = Int64.t
+--- a/kernel/uint63_63.ml
++++ b/kernel/uint63_63.ml
+@@ -11,6 +11,6 @@
+ type t = int
  
--let _ = assert (Sys.word_size = 32)
-+(*let _ = assert (Sys.word_size = 32)*)
+-let _ = assert (Sys.word_size = 64)
++(*let _ = assert (Sys.word_size = 64)*)
  
  let uint_size = 63
- 
-diff --git a/kernel/write_uint63.ml b/kernel/write_uint63.ml
-index beb59ce..a3b6ef4 100644
---- a/kernel/write_uint63.ml
-+++ b/kernel/write_uint63.ml
-@@ -31,7 +31,7 @@ let ml_file_copy input output =
- 
- let write_uint63 () =
-   ml_file_copy
--    (if max_int = 1073741823 (* 32-bits *) then "uint63_x86.ml"
-+    (if true (* 32-bits *) then "uint63_x86.ml"
-      else (* 64 bits *) "uint63_amd64.ml")
-     "uint63.ml"
  
 diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
 index eac26ad..072d8b5 100644
