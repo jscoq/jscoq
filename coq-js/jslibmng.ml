@@ -18,9 +18,6 @@ module JL = Js_of_ocaml_lwt
 
 let verb = false
 
-external dummy : unit -> unit = "MlFakeDevice_monkeypatch"
-let _ = dummy ()
-
 (* Main file_cache, indexed by url *)
 type cache_entry =
   { file_content : string   (* file_content is backed by a TypedArray, thanks to @hhugo *)
