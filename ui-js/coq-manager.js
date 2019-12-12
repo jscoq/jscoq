@@ -215,6 +215,8 @@ class CoqManager {
         this.options = {
             prelude: true,
             debug:   true,
+            show:    true,
+            focus:   true,
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
@@ -278,7 +280,8 @@ class CoqManager {
         // Display packages panel:
         this.packages.expand();
 
-        requestAnimationFrame(() => this.layout.show());
+        if (this.options.show)
+            requestAnimationFrame(() => this.layout.show());
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -984,7 +987,9 @@ class CoqManager {
     enable() {
         this.navEnabled = true;
         this.layout.toolbarOn();
-        this.provider.focus();
+        if (this.options.focus) {
+            this.provider.focus();
+        }
     }
 
     // Disable the IDE.
