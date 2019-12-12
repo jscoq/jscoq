@@ -6,11 +6,11 @@
 
 /* Toggle Styles */
 
-* {
+body:not(.hands-off) * {
   box-sizing: border-box;
 }
 
-body {
+body:not(.hands-off) {
   margin: 0;
   padding: 0;
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
@@ -39,7 +39,6 @@ a, a:link, a:visited, a:active {
   justify-content: space-between;
   align-items: flex-start;
 }
-
 #ide-wrapper.layout-fixed.toggled {
   padding-right: 0px;
 }
@@ -64,17 +63,37 @@ a, a:link, a:visited, a:active {
   cursor: progress !important;
 }
 
-#ide-wrapper .CodeMirror span[role=presentation] {
+/* CodeMirror */
+
+.jscoq.CodeMirror {
+  font-size: 11pt;
+  height: 100%;  /* auto-size to fit content */
+  line-height: initial;
+}
+
+.jscoq.CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
   font-family: monospace, times, Arial Unicode MS;
 }
 
-#ide-wrapper.coq-crosshair .CodeMirror-lines {
+.coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
   cursor: crosshair;
 }
 
-#ide-wrapper .CodeMirror-crosshair {
+.jscoq.CodeMirror .CodeMirror-crosshair {
   cursor: text; /* overrides CodeMirror (normally set when Alt is held) */
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog {
+  padding: .75em;
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog a.dialog-link {
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: sans-serif;
+  font-size: 80%;
+  padding-left: 2em;
 }
 
 /*
@@ -91,12 +110,18 @@ a, a:link, a:visited, a:active {
   font-size: 80%;
 }
 
+/* Panel and sub-panels */
+
 #panel-wrapper {
   padding: 0;
   width: 45%;
   height: 100%;
   transition: width 0.5s ease;
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
+}
+
+#panel-wrapper * {
+  box-sizing: border-box;
 }
 
 #ide-wrapper.layout-fixed #panel-wrapper {
@@ -246,6 +271,8 @@ a, a:link, a:visited, a:active {
   fill: #f20000
 }
 
+/* Toolbar */
+
 #toolbar {
   white-space: nowrap;
   border-bottom: 1px solid #ddd;
@@ -345,23 +372,6 @@ a, a:link, a:visited, a:active {
   background-image: url(../ui-images/reset.png);
 }
 
-/* overloads */
-.CodeMirror {
-  height: 100%;
-  line-height: initial;
-}
-
-.CodeMirror-dialog {
-  padding: .75em;
-}
-
-.CodeMirror-dialog a.dialog-link {
-  cursor: pointer;
-  text-decoration: underline;
-  font-family: sans-serif;
-  font-size: 80%;
-  padding-left: 2em;
-}
 
 /* Proper  */
 

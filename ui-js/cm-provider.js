@@ -51,6 +51,8 @@ class CmCoqProvider {
             this.editor = new CodeMirror(element, cmOpts);
         }
 
+        this.editor.getWrapperElement().classList.add('jscoq');
+
         this.filename = element.getAttribute('data-filename');
         this.autosave_interval = 20000 /*ms*/;
 

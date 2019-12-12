@@ -2,11 +2,11 @@
 
 /* Panel/body settings */
 
-body {
+body:not(.hands-off) {
   background: #e4e4e4;
 }
 
-#document {
+body:not(.hands-off) #document {
   background: #fff;
 }
 
