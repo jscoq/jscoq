@@ -57,6 +57,10 @@ type search_query =
   | Locals
   [@@deriving yojson]
 
+type opaque = Js_of_ocaml.Js.Unsafe.any
+let opaque_to_yojson x = `Null
+let opaque_of_yojson x = Result.Error "opaque value"
+
 (* Main RPC calls *)
 type jscoq_cmd =
   | InfoPkg of string * string list
@@ -81,6 +85,8 @@ type jscoq_cmd =
 
   (* XXX: Not well founded... *)
   | GetOpt  of string list
+
+  | InterruptSetup of opaque
 
   | ReassureLoadPath of (string list * string list) list
   | Load    of string

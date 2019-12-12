@@ -48,6 +48,7 @@ class CoqLayoutClassic {
         <button name="up"          alt="Up (Meta-P)"             title="Up (Meta-P)"></button><!--
      --><button name="down"        alt="Down (Meta-N)"           title="Down (Meta-N)"></button>
         <button name="to-cursor"   alt="To cursor (Meta-Enter)"  title="To cursor (Meta-Enter)"></button>
+        <button name="interrupt"   alt="Interrupt Worker (Esc)"  title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"            title="Reset worker"></button>
       </span>
       <div class="exits right">

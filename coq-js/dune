@@ -17,6 +17,7 @@
     js_stub/unix.js
     js_stub/str.js
     js_stub/coq_vm.js
+    js_stub/interrupt.js
     marshal-arch.js)
   (flags :standard (:include .extraflags) --dynlink +dynlink.js +toplevel.js))
  (link_flags -linkall -no-check-prims)

@@ -22,6 +22,7 @@
  - New query `Ast` which does return a traversable Ast representation (@ejgallego)
  - NPM package build for publishing (@corwin-of-amber)
  - New layout using CSS flexbox (@corwin-of-amber)
+ - Button to interrupt long-running tactics (@corwin-of-amber)
 
  - [ ] Use sertop / serlib [partially done]
  - [ ] Automatic parsing mode.

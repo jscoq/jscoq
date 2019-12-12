@@ -67,6 +67,8 @@ let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :|
     let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
     new%js Typed_array.uint8Array_fromBuffer buffer, buffer
 
+external interrupt_setup : Typed_array.int32Array Js.t -> unit = "interrupt_setup"
+
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
   let json_str = Yojson.Safe.to_string json_msg                        in
@@ -311,6 +313,8 @@ let jscoq_execute =
         return @@ out_fn @@ CoqInfo (header1 ^ header2)
       ))
 
+  | InterruptSetup shmem -> interrupt_setup (Js.Unsafe.coerce shmem)
+
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
     List.iter (fun (path_el, phys) -> Mltop.add_coq_path
@@ -344,19 +348,29 @@ let jscoq_protect f =
   try f ()
   with | exn -> post_answer @@ coq_exn_info exn
 
+let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
+  let open Js.Unsafe in
+  (* check if the given cobj is a "special" command *)
+  (* that cannot be serialized by Yojson            *)
+  let cmd = Js.array_get (coerce cobj) 0 in
+  let o = Js.Optdef.bind cmd (fun cmd -> 
+    if Js.to_string cmd = "InterruptSetup" then
+      let arg = Js.array_get (coerce cobj) 1 in
+      Js.Optdef.return @@ Result.Ok (InterruptSetup (inject arg))
+    else Js.undefined) in
+  Js.Optdef.get o (fun () -> jscoq_cmd_of_yojson @@ obj_to_json cobj)
+
 (* Message from the main thread *)
 let on_msg doc msg =
-
-  let json_obj = obj_to_json msg in
 
   let log_cmd cmd =
     let str = match cmd with
       | Put (filename,_) -> "[\"Put\", \"" ^ filename ^ "\", ...]"  (* "Put" commands are too long *)
-      | _ -> Yojson.Safe.to_string json_obj [@@warning "-4"] in
+      | _ -> Js.to_string (Js._JSON##(stringify msg)) [@@warning "-4"] in
     post_answer (Log (Debug, Pp.str str))
   in
 
-  match jscoq_cmd_of_yojson json_obj with
+  match jscoq_cmd_of_obj msg with
   | Result.Ok cmd  -> jscoq_protect (fun () -> log_cmd cmd ;
                                                jscoq_execute doc cmd)
   | Result.Error s -> post_answer @@

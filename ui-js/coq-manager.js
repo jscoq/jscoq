@@ -287,6 +287,7 @@ class CoqManager {
         (async () => {
             try {
                 await this.coq.when_created;
+                this.coq.interruptSetup();
                 this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
             }
             catch (err) { this.handleLaunchFailure(err); }
@@ -713,6 +714,13 @@ class CoqManager {
         }
     }
 
+    interruptRequest() {
+        // Avoid spurious interrupts by only requesting an interrupt
+        // if there are still sentences being processed
+        if (this.doc.sentences.some(x => x.phase == Phases.PROCESSING))
+            this.coq.interrupt();
+    }
+
     /**
      * Focus the snippet containing the stm and place the cursor at
      * the end of the sentence.
@@ -898,15 +906,17 @@ class CoqManager {
                   (e.altKey ? '_' : '') + (e.shiftKey ? '+' : '') + e.code;
 
         // Navigation keybindings
-        const goCursor = () => this.goCursor(),
-              goNext   = () => this.goNext(true),
-              goPrev   = () => this.goPrev(true),
-              toggle   = () => this.layout.toggle();
+        const goCursor  = () => this.goCursor(),
+              goNext    = () => this.goNext(true),
+              goPrev    = () => this.goPrev(true),
+              toggle    = () => this.layout.toggle(),
+              interrupt = () => this.interruptRequest();
         const nav_bindings = {
             '_Enter':     goCursor, '_ArrowRight': goCursor,
             '_ArrowDown': goNext,
             '_ArrowUp':   goPrev,
-            'F8': toggle
+            'F8': toggle,
+            'Escape': interrupt
         };
         if (!navigator.isMac) {
             Object.assign(nav_bindings, {
@@ -982,6 +992,10 @@ class CoqManager {
 
         case 'down' :
             this.goNext(true);
+            break;
+
+        case 'interrupt':
+            this.interruptRequest();
             break;
 
         case 'reset':
