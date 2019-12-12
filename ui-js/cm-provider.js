@@ -17,7 +17,7 @@ class CmSentence {
 // A CodeMirror-based Provider of coq statements.
 class CmCoqProvider {
 
-    constructor(element, options) {
+    constructor(element, options, replace) {
 
         var cmOpts =
             { mode : { name : "coq",
@@ -45,7 +45,7 @@ class CmCoqProvider {
         if (element.tagName === 'TEXTAREA') {
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
         } else {
-            this.editor = new CodeMirror(element, cmOpts);
+            this.editor = this.createEditor(element, cmOpts, replace);
         }
 
         this.editor.getWrapperElement().classList.add('jscoq');
@@ -83,6 +83,16 @@ class CmCoqProvider {
         this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries[0], false));
         this.editor.on('hintOut',       ()             => this.onTipOut());
         this.editor.on('endCompletion', cm             => this.onTipOut());
+    }
+
+    createEditor(element, opts, replace) {
+        var text = replace && $(element).text(),
+            editor = new CodeMirror(element, opts);
+        if (replace) {
+            editor.setValue(Deprettify.cleanup(text));
+            element.replaceWith(editor.getWrapperElement());
+        }
+        return editor;
     }
 
     focus() {
@@ -536,6 +546,28 @@ class CmCoqProvider {
             }
         }
     }
+}
+
+
+/**
+ * For HTML-formatted Coq snippets created by coqdoc.
+ * This reverses the modifications made during pretty-printing
+ * to allow the text to be placed in an editor.
+ */
+class Deprettify {
+
+    static trim(element) {
+        if (element.firstChild.nodeType === Node.TEXT_NODE)
+            element.removeChild(element.firstChild);
+        if (element.lastChild.nodeType === Node.TEXT_NODE)
+            element.removeChild(element.lastChild);
+        return element;
+    }
+
+    static cleanup(text) {
+        return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>');
+    }
+
 }
 
 // Local Variables:

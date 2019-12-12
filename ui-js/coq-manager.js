@@ -62,13 +62,16 @@ class ProviderContainer {
         // Create sub-providers
         for (let element of this.findElements(elementRefs)) {
 
+            if (this.options.replace)
+                element = Deprettify.trim(element);
+
             // Init.
-            var cm = new CmCoqProvider(e, this.options.editor);
+            var cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
             cm.idx = idx++;
             this.snippets.push(cm);
 
             // Track focus XXX (make generic)
-            cm.editor.on('focus', evt => { this.currentFocus = cm; });
+            cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
             // Track invalidate
             cm.onInvalidate = stm       => { this.onInvalidate(stm); };
