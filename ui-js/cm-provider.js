@@ -42,9 +42,6 @@ class CmCoqProvider {
         if (options)
             copyOptions(options, cmOpts);
 
-        if (typeof element === 'string' || element instanceof String) {
-            element = document.getElementById(element);
-        }
         if (element.tagName === 'TEXTAREA') {
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
         } else {

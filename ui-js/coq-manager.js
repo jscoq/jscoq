@@ -42,7 +42,7 @@ if (typeof navigator !== 'undefined')
 /***********************************************************************/
 class ProviderContainer {
 
-    constructor(elms, options) {
+    constructor(elementRefs, options) {
 
         this.options = options ? options : {};
 
@@ -59,8 +59,8 @@ class ProviderContainer {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
 
-        // for (e of elms) not very covenient here due to the closure.
-        elms.forEach(e => {
+        // Create sub-providers
+        for (let element of this.findElements(elementRefs)) {
 
             // Init.
             var cm = new CmCoqProvider(e, this.options.editor);
@@ -77,7 +77,21 @@ class ProviderContainer {
 
             cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
             cm.onTipOut   = ()             => { this.onTipOut(); }
-        });
+        }
+    }
+
+    findElements(elementRefs) {
+        var elements = [];
+        for (let e of elementRefs) {
+            var els = (typeof e === 'string') ? 
+                [document.getElementById(e), ...document.querySelectorAll(e)] : e;
+            els = els.filter(x => x);
+            if (els.length === 0) {
+                console.warn(`[jsCoq] element(s) not found: '${e}'`);
+            }
+            elements.push(...els);
+        }
+        return elements;
     }
 
     // Get the next candidate and mark it.
