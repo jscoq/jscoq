@@ -39,6 +39,7 @@ a, a:link, a:visited, a:active {
   justify-content: space-between;
   align-items: flex-start;
 }
+
 #ide-wrapper.layout-fixed.toggled {
   padding-right: 0px;
 }
