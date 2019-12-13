@@ -36,7 +36,8 @@ class CmCoqProvider {
                   'Tab': 'indentMore',
                   'Shift-Tab': 'indentLess',
                   'Ctrl-Space': 'autocomplete'
-              }
+              },
+              className         : "jscoq"
             };
 
         if (options)
@@ -48,7 +49,9 @@ class CmCoqProvider {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
 
-        this.editor.getWrapperElement().classList.add('jscoq');
+        var classNames = (typeof cmOpts.className == 'string') ?
+                            cmOpts.className.split(/\s+/) : cmOpts.className;
+        this.editor.getWrapperElement().classList.add(...classNames);
 
         this.filename = element.getAttribute('data-filename');
         this.autosave_interval = 20000 /*ms*/;
@@ -61,11 +64,14 @@ class CmCoqProvider {
         this.onMouseLeave = (stm, ev) => {};
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
+        this.onResize = (lineCount) => {};
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
 
         this.editor.on('cursorActivity', (cm) => 
             cm.operation(() => this._adjustWidgetsInSelection()));
+
+        this.trackLineCount();
 
         // Handle mouse hover events
         var editor_element = $(this.editor.getWrapperElement());
@@ -93,6 +99,15 @@ class CmCoqProvider {
             element.replaceWith(editor.getWrapperElement());
         }
         return editor;
+    }
+
+    trackLineCount() {
+        this.lineCount = this.editor.lineCount();
+        this.editor.on('change', ev => {
+            let lineCount = this.editor.lineCount();
+            if (lineCount != this.lineCount)
+                this.onResize(this.lineCount = lineCount);
+        });
     }
 
     focus() {

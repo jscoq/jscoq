@@ -49,9 +49,6 @@ class ProviderContainer {
         // Code snippets.
         this.snippets = [];
 
-        // Debug variables
-        var idx = 0;
-
         // Event handlers (to be overridden by CoqManager)
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
@@ -59,28 +56,38 @@ class ProviderContainer {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
 
-        // Create sub-providers
-        for (let element of this.findElements(elementRefs)) {
+        // Create sub-providers.
+        //   Do this asynchronously to avoid locking the page when there is
+        //   a large number of snippets.
+        (async () => {
+            for (let [idx, element] of this.findElements(elementRefs).entries()) {
 
-            if (this.options.replace)
-                element = Deprettify.trim(element);
+                if (this.options.replace)
+                    element = Deprettify.trim(element);
 
-            // Init.
-            let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
-            cm.idx = idx++;
-            this.snippets.push(cm);
+                // Init.
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
+                cm.idx = idx;
+                this.snippets.push(cm);
 
-            // Track focus XXX (make generic)
-            cm.editor.on('focus', ev => { this.currentFocus = cm; });
+                // Track focus XXX (make generic)
+                cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
-            // Track invalidate
-            cm.onInvalidate = stm       => { this.onInvalidate(stm); };
-            cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
-            cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
+                // Track invalidate
+                cm.onInvalidate = stm       => { this.onInvalidate(stm); };
+                cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
+                cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
-            cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
-            cm.onTipOut   = ()             => { this.onTipOut(); }
-        }
+                cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
+                cm.onTipOut   = ()             => { this.onTipOut(); }
+
+                // Running line numbers
+                if (idx > 0) this.renumber(idx - 1);
+                cm.onResize = () => { this.renumber(idx); }
+
+                await this.yield();
+            }
+        })();
     }
 
     findElements(elementRefs) {
@@ -95,6 +102,26 @@ class ProviderContainer {
             elements.push(...els);
         }
         return elements;
+    }
+
+    /**
+     * Readjust line numbering flowing from one editor to the next.
+     * @param {number} startIndex index where renumbering should start
+     */
+    async renumber(startIndex) {
+        let snippet = this.snippets[startIndex],
+            line = snippet.editor.getOption('firstLineNumber') + snippet.lineCount;
+
+        for (let index = startIndex + 1; index < this.snippets.length; index++) {
+            let snippet = this.snippets[index];
+            snippet.editor.setOption('firstLineNumber', line);
+            line += snippet.lineCount;
+            await this.yield();
+        }
+    }
+
+    yield() {
+        return new Promise(resolve => setTimeout(resolve, 0));
     }
 
     // Get the next candidate and mark it.
