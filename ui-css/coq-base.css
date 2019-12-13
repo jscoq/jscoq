@@ -38,7 +38,6 @@ a, a:link, a:visited, a:active {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  line-height: 1.2;
 }
 
 #ide-wrapper.layout-fixed.toggled {
@@ -50,6 +49,11 @@ a, a:link, a:visited, a:active {
   flex-shrink: 1;
   overflow-x: hidden;
   max-height: 100%;
+  box-sizing: border-box;
+}
+
+#ide-wrapper.layout-flex > #panel-wrapper {
+  overflow-x: visible;  /* needed for power button to be visible */
 }
 
 #ide-wrapper #document {
@@ -93,7 +97,6 @@ a, a:link, a:visited, a:active {
   height: 100%;
   transition: width 0.5s ease;
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
-  overflow: visible;
 }
 
 #ide-wrapper.layout-fixed #panel-wrapper {
