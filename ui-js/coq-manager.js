@@ -274,11 +274,6 @@ class CoqManager {
 
         this.setupDragDrop();
 
-        // Setup the Coq worker.
-        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
-        this.coq.options   = this.options;
-        this.coq.observers.push(this);
-
         // Setup pretty printer for feedback and goals
         this.pprint = new FormatPrettyPrint();
 
@@ -286,30 +281,10 @@ class CoqManager {
         if (this.options.editor.mode && this.options.editor.mode['company-coq'])
             this.company_coq = new CodeMirror.CompanyCoq();
 
-        // Setup autocomplete
-        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
-        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
-
-        // Setup contextual info bar
-        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
-                                                     this.coq, this.pprint, this.company_coq);
-
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
         $(document).on('keydown keyup', evt => this.modifierKeyHandler(evt));
-
-        // Panel setup 2: packages panel.
-        // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
-                                           this.options.all_pkgs,
-                                           this.coq);
-
-        // Display packages panel:
-        this.packages.expand();
-
-        if (this.options.show)
-            requestAnimationFrame(() => this.layout.show());
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -332,14 +307,10 @@ class CoqManager {
         this.navEnabled = false;
 
         // The fun starts: commence loading packages (asynchronously)
-        (async () => {
-            try {
-                await this.coq.when_created;
-                this.coq.interruptSetup();
-                this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
-            }
-            catch (err) { this.handleLaunchFailure(err); }
-        })();
+        this.launch();
+
+        if (this.options.show)
+            requestAnimationFrame(() => this.layout.show());
     }
 
     // Provider setup
@@ -417,6 +388,44 @@ class CoqManager {
                 { lemmas: bunch.map(fp => CoqIdentifier.ofFullPath(fp)) },
                 'locals', /*replace_existing=*/true)
         });
+    }
+
+    /**
+     * Starts a Worker and commences loading of packages and initialization
+     * of STM.
+     */
+    async launch() {
+        try {
+            // Setup the Coq worker.
+            this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
+            this.coq.options   = this.options;
+            this.coq.observers.push(this);
+
+            await this.coq.when_created;
+            this.coq.interruptSetup();
+
+            // Setup package loader
+            this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
+                this.options.all_pkgs,
+                this.coq);
+            
+            this.packages.expand();
+
+            // Setup autocomplete
+            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
+            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
+
+            // Setup contextual info bar
+            this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+                                                        this.coq, this.pprint, this.company_coq);
+
+            // The fun start: fetch package infos;
+            // this will trigger loads of init packages.
+            this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+        }
+        catch (err) {
+            this.handleLaunchFailure(err);
+        }
     }
 
     // Feedback Processing
