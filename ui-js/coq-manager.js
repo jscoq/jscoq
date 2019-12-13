@@ -66,7 +66,7 @@ class ProviderContainer {
                 element = Deprettify.trim(element);
 
             // Init.
-            var cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
+            let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
             cm.idx = idx++;
             this.snippets.push(cm);
 
@@ -226,6 +226,7 @@ class CoqManager {
             all_pkgs:  ['init', 'mathcomp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
+            init_import: [],
             file_dialog: false,
             coq:       { /* Coq option values */ },
             editor:    { /* codemirror options */ }
@@ -648,7 +649,11 @@ class CoqManager {
         let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
                          coq_options: this._parseOptions(this.options.coq || {})},
             load_path = this.packages.getLoadPath(),
-            load_lib = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [];
+            load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
+
+        for (let pkg of this.options.init_import || []) {
+            load_lib.push(PKG_ALIASES[pkg] || pkg.split('.'));
+        }
 
         this.coq.init(init_opts, load_lib, load_path);
         // Almost done!
@@ -1109,6 +1114,11 @@ const Phases = {
     PROCESSING: 'processing', PROCESSED: 'processed',
     ERROR: 'error'
 };
+
+const PKG_ALIASES = {
+    prelude: ["Coq", "Init", "Prelude"],
+    utf8: ["Coq", "Unicode", "Utf8"]
+}
 
 
 class CoqContextualInfo {
