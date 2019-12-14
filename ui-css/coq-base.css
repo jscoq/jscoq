@@ -119,6 +119,9 @@ a, a:link, a:visited, a:active {
   height: 100%;
   transition: width 0.5s ease;
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
+
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+  font-size: 11pt;
 }
 
 #panel-wrapper * {

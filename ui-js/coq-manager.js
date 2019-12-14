@@ -240,10 +240,11 @@ class CoqManager {
 
         // Default options
         this.options = {
-            prelude: true,
-            debug:   true,
-            show:    true,
-            focus:   true,
+            prelaunch:  false,
+            prelude:    true,
+            debug:      true,
+            show:       true,
+            focus:      true,
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
@@ -271,6 +272,11 @@ class CoqManager {
         this.layout = new CoqLayoutClassic(this.options);
         this.layout.splash();
         this.layout.onAction = this.toolbarClickHandler.bind(this);
+
+        this.layout.onToggle = ev => {
+            if (ev.shown && !this.coq) this.launch();
+            if (this.coq) this.layout.onToggle = () => {};
+        };
 
         this.setupDragDrop();
 
@@ -306,8 +312,9 @@ class CoqManager {
         this.error = [];
         this.navEnabled = false;
 
-        // The fun starts: commence loading packages (asynchronously)
-        this.launch();
+        // Launch time
+        if (this.options.prelaunch)
+            this.launch();
 
         if (this.options.show)
             requestAnimationFrame(() => this.layout.show());

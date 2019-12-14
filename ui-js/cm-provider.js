@@ -572,9 +572,9 @@ class CmCoqProvider {
 class Deprettify {
 
     static trim(element) {
-        if (element.firstChild.nodeType === Node.TEXT_NODE)
+        if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE)
             element.removeChild(element.firstChild);
-        if (element.lastChild.nodeType === Node.TEXT_NODE)
+        if (element.lastChild && element.lastChild.nodeType === Node.TEXT_NODE)
             element.removeChild(element.lastChild);
         return element;
     }
