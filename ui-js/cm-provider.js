@@ -19,6 +19,8 @@ class CmCoqProvider {
 
     constructor(element, options, replace) {
 
+        this.constructor._config();
+
         var cmOpts =
             { mode : { name : "coq",
                        version: 4,
@@ -48,10 +50,6 @@ class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
-
-        var classNames = (typeof cmOpts.className == 'string') ?
-                            cmOpts.className.split(/\s+/) : cmOpts.className;
-        this.editor.getWrapperElement().classList.add(...classNames);
 
         this.filename = element.getAttribute('data-filename');
         this.autosave_interval = 20000 /*ms*/;
@@ -408,6 +406,15 @@ class CmCoqProvider {
             this.onMouseEnter(this.hover[0].stm, evt);
     }
 
+    static _config() {
+        CodeMirror.defineOption('className', null, (cm, val) => {
+            if (val) {
+                var vals = (typeof val == 'string') ? val.split(/\s+/) : val;
+                cm.getWrapperElement().classList.add(...vals);
+            }
+        });
+        this._config = () => {};
+    }
 
     // CM specific functions.
 
