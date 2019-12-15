@@ -20,6 +20,13 @@ servers or external programs are needed.
 We want to _strongly thank_ the `js_of_ocaml` developers. Without
 their great and quick support jsCoq wouldn't have been possible.
 
+## Are you a jsCoq user?
+
+Have you developed a course **using jsCoq**? If so, please submit a
+pull request or an issue so we can add your lectures to the list of
+[jsCoq users](#jsCoq-Users) This is essential to guarantee future
+funding of the project.
+
 ## Basic Usage
 
 The main page showcases jsCoq by walking through a proof for the infinitude of primes using
@@ -291,6 +298,7 @@ Incomplete list of places where jsCoq has been used:
   https://specfun.inria.fr/amahboub/Jncf18/cours2.html
 * [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
 * Coq Winter School 2018-2019 (SSReflect & MathComp)  https://team.inria.fr/marelle/en/coq-winter-school-2018-2019-ssreflect-mathcomp/
+* CASS 2020, Coq Andes Summer School https://cass.pleiad.cl/
 
 ### jsCoq in the press
 
