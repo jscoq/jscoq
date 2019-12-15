@@ -5,7 +5,7 @@
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
 
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-
+    <style>kbd { background: #0003; color: #333; }</style>
     <title>Use Coq in Your Browser: The Js Coq Theorem Prover Online IDE!</title>
   </head>
 
@@ -23,20 +23,23 @@
     <h4>Instructions:</h4>
     <p>
       JsCoq is open source. If you find any problem or want to make
-      any contribution you are extremely welcome! We await your
+      any contribution, you are extremely welcome! We await your
       feedback at <a href="https://github.com/ejgallego/jscoq">github</a>.
     </p>
     <h5>Saving your own proof scripts:</h5>
     <p>
+      The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
+      storage functionality.
       Please go to <a href="https://x80.org/collacoq/">CollaCoq</a> if
-      you want a page with Save/Load capabilities.
+      you want to share your developments with other users.
     </p>
 
     <h5>Key bindings:</h5>
     <p>
-      <strong>Alt-Enter</strong> (Cmd should work in Macs too) goes to
-      the current point; <strong>Alt-N/P</strong> or <strong>Alt-Down/Up</strong> will
-      move through the proof; <strong>F8</strong> or the power icon toggles
+      <kbd>Alt</kbd>+<kbd>Enter</kbd> or <kbd>Alt</kbd>+<kbd>→</kbd> goes to
+      the current point; 
+      <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd> or <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd>
+      will move through the proof; <strong>F8</strong> or the power icon toggles
       the goal panel.
     </p>
     <h4>A First Example: The Infinitude of Primes</h4>
