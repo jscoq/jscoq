@@ -404,7 +404,7 @@ class CmCoqProvider {
 
     keyHandler(evt) {
         /* re-issue mouse enter when modifier key is pressed or released */
-        if (this.hover[0] && (evt.key === 'Ctrl'))
+        if (this.hover[0] && (evt.key === 'Control'))
             this.onMouseEnter(this.hover[0].stm, evt);
     }
 

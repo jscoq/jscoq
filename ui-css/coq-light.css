@@ -56,7 +56,7 @@ body:not(.hands-off) #document {
 }
 
 .coq-eval-ok.coq-highlight {
-  background: #ccd;
+  background: #ebeebd;
 }
   
 .coq-eval-pending {
