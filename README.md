@@ -299,6 +299,7 @@ Incomplete list of places where jsCoq has been used:
 * [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
 * Coq Winter School 2018-2019 (SSReflect & MathComp)  https://team.inria.fr/marelle/en/coq-winter-school-2018-2019-ssreflect-mathcomp/
 * CASS 2020, Coq Andes Summer School https://cass.pleiad.cl/
+* [Lectures on Separation Logic](https://madiot.fr/sepcourse/) by Jean-Marie Madiot in MPRI's course "Proofs of programs", using Arthur Charguéraud's material. [See it in action!](https://madiot.fr/sepcourse/coq/)
 
 ### jsCoq in the press
 
