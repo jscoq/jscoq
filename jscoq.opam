@@ -26,6 +26,10 @@ depends: [
   # We build a local, patched Coq, but however it is still a dep
   # "coq"                 { >= "8.9.0" & < "8.10" }
   "num"
+]
+
+# Optional dependency
+depopts: [
   "elpi"                { = "1.8.0" }
 ]
 
