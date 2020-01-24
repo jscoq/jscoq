@@ -4,8 +4,8 @@
 include coq-addons/common.mk
 
 MATHCOMP_GIT=https://github.com/math-comp/math-comp.git
-MATHCOMP_HOME=$(ADDONS_PATH)/math-comp
-MATHCOMP_DEST=$(COQPKGS_ROOT)/math-comp
+MATHCOMP_HOME=$(ADDONS_PATH)/mathcomp
+MATHCOMP_DEST=$(COQPKGS_ROOT)/mathcomp
 
 FASTLOAD_PATCH=$(PWD)/etc/patches/mathcomp-fast-load.patch
 
@@ -24,7 +24,8 @@ build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install
 
 jscoq-install:
-	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ssreflect $(COQPKGS_ROOT)/mathcomp/
-	$(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
-	            --create-package $(MATHCOMP_DEST).coq-pkg  \
-	            --create-manifest $(MATHCOMP_DEST).json
+	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ $(COQPKGS_ROOT)/mathcomp/
+# This needs adapting to the setting where node_modules are in _build
+# $(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
+#             --create-package $(MATHCOMP_DEST).coq-pkg  \
+#             --create-manifest $(MATHCOMP_DEST).json

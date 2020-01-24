@@ -4,7 +4,7 @@
 include coq-addons/common.mk
 
 ELPI_GIT=https://github.com/LPCIC/coq-elpi.git
-ELPI_BRANCH=coq-v8.9
+ELPI_BRANCH=coq-v8.11
 ELPI_HOME=$(ADDONS_PATH)/elpi
 ELPI_DEST=coq-pkgs/elpi
 

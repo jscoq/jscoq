@@ -204,7 +204,7 @@ class CoqManager {
             pkg_path:    "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
             implicit_libs: false,
             init_pkgs: ['init'],
-            all_pkgs:  ['init', 'math-comp',
+            all_pkgs:  ['init', 'mathcomp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
             file_dialog: false,

@@ -34,7 +34,13 @@ git clone --recursive git@github.com:ejgallego/jscoq.git (this repo)
  The switch will be called `jscoq+64bit` in this case, and the `Makefile` will
  use the workspace `dune-workspace-64` for the build.
 
+**Important Note:** if you plan to build any addons with ML code which
+is built using `coq_makefile` then you should perform an `opam switch
+jscoq+32bit` [or 64 bits] before starting the build process at
+all. Otherwise the wrong OCaml version will be fetched.
+
  3. Fetch Coq 8.10 sources from the repository and configure it for build.
+
 ```
 make coq
 ```

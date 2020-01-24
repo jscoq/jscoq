@@ -207,7 +207,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["CoLoR" ; "MannaNess"]
     ]
 
-  ; "dsp", ["math-comp"], all_of
+  ; "dsp", ["mathcomp"], all_of
     [ ["Dsp"] ]
 
   ; "relalg", ["coq-arith"], all_of

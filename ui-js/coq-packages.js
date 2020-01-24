@@ -168,7 +168,7 @@ class PackageManager {
 
     /**
      * Loads a package from the preconfigured path.
-     * @param {string} pkg_name name of package (e.g., 'init', 'math-comp')
+     * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
      */
     startPackageDownload(pkg_name) {
         var bundle = this.bundles[pkg_name], promise;
