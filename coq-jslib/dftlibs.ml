@@ -135,6 +135,15 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"] ]
 
+  (* This needs fixing, see mathcomp.addon and 021e50e *)
+  ; "mathcomp", ["coq-arith"], all_of
+    [ ["mathcomp"; "algebra"]
+    ; ["mathcomp"; "fingroup"]
+    ; ["mathcomp"; "solvable"]
+    ; ["mathcomp"; "field"]
+    ; ["mathcomp"; "character"]
+    ]
+
   ; "mtac", ["coq-arith"], all_of
     [ ["Mtac"]
     ]
