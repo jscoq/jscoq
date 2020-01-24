@@ -2,6 +2,10 @@
 -----------------------------------------
 
  - Port to Coq 8.11 (@ejgallego)
+ - Ltac2 is now built from the included Coq source
+
+## TODO:
+
  - Check if libraries using primitive floats may not be usable in jsCoq.
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"

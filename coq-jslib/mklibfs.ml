@@ -32,9 +32,9 @@ module Fileutils = struct
 
   let file_update source_filename target_filename =
     let source_stats = lstat source_filename in
-    let target_stats = try Some (lstat target_filename) 
+    let target_stats = try Some (lstat target_filename)
                        with Unix.Unix_error _ -> None in
-    let needs_update = option_map_default 
+    let needs_update = option_map_default
       (fun ts -> source_stats.st_mtime > ts.st_mtime) true target_stats in
     if needs_update then
       file_copy source_filename target_filename source_stats.st_perm
@@ -50,13 +50,17 @@ end
 let include_pat fn =
   Filename.(check_suffix fn ".vo" || check_suffix fn ".cma")
 
-
-let copy_subdir coqdir basepath dirpath =
-  let subdirpath = basepath :: List.tl dirpath                       in
+(* [extra_prefix] must be used for libraries such as the Coq stdlib
+   which are assumed to be built using -R instead of -Q *)
+let copy_subdir ?extra_prefix coqdir basepath dirpath =
+  let subdirpath = basepath :: dirpath                               in
   let desc       = Dl.to_dir subdirpath                              in
   let indir      = Dl.to_dir (coqdir :: subdirpath)                  in
-  let outdir     = Fileutils.mkdir_p (Dl.prefix :: dirpath) 0o755    in
+  let libpath    = option_map_default
+      (fun ep -> ep :: dirpath) dirpath extra_prefix                 in
+  let outdir     = Fileutils.mkdir_p (Dl.prefix :: libpath) 0o755    in
 
+  (* Format.eprintf "indir / outdir: %s / %s@\n%!" indir outdir; *)
   let copy_single_file fn =
     try
       Fileutils.file_update (indir / fn) (outdir / fn)
@@ -65,15 +69,16 @@ let copy_subdir coqdir basepath dirpath =
   in
 
   try
-    Sys.readdir indir |> Array.to_seq 
+    Sys.readdir indir |> Array.to_seq
       |> Seq.filter include_pat |> Seq.iter copy_single_file
   with Sys_error _ ->
-    eprintf " * @[missing subdirectory:@ %s@]\n%!" 
+    eprintf " * @[missing subdirectory:@ %s@]\n%!"
             (Dl.to_dir (basepath :: (List.tl dirpath)))
 
 let make_libfs coqdir =
-  List.iter (copy_subdir coqdir "plugins")  Dl.plugin_list;
-  List.iter (copy_subdir coqdir "theories") Dl.coq_theory_list
+  List.iter (copy_subdir ~extra_prefix:"Coq" coqdir "plugins")  Dl.plugin_list;
+  List.iter (copy_subdir ~extra_prefix:"Coq" coqdir "theories") Dl.coq_theory_list;
+  List.iter (copy_subdir coqdir "user-contrib") Dl.user_contrib_list
 
 
 let _ =

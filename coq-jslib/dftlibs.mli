@@ -9,6 +9,7 @@ val prefix : string
 
 val plugin_list : string list list
 val coq_theory_list : string list list
+val user_contrib_list : string list list
 
 val pkgs : (string * string list * (string list * selector) list) list
 

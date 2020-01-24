@@ -52,7 +52,7 @@ export COQBUILDDIR
 export ADDONS_PATH
 export COQPKGS_ROOT
 
-ADDONS = mathcomp # iris ltac2 elpi equations dsp
+ADDONS = mathcomp # elpi iris equations dsp
 
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
