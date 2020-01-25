@@ -1,4 +1,6 @@
-all:
+all: dspsupport.vo
+
+dspsupport.vo: dspsupport.v
 	coqc -R . Dsp dspsupport.v
 
 clean:

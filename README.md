@@ -186,38 +186,40 @@ The main page includes a proof of the infinitude of primes by
 G. Gonthier. We provide some more examples as a showcase of the tool:
 
 - The Logical Foundations suite:
-  + https://x80.org/rhino-coq/v8.9/examples/lf/
-  + https://x80.org/rhino-coq/v8.9/examples/plf/
+  + https://x80.org/rhino-coq/v8.11/examples/lf/
+  + https://x80.org/rhino-coq/v8.11/examples/plf/
 
-- dft.v: https://x80.org/rhino-coq/v8.9/examples/dft.html
+- dft.v: https://x80.org/rhino-coq/v8.11/examples/dft.html
 
   A small development of the theory of the Fourier Transform following
   Julius Orion Smith III's "The Mathematics of the Discrete Fourier
   Transform"
 
+- Stlc: The "Simply Typed Lambda Calculus" chapter from Software
+  Foundations by Benjamin Pierce et al:
+
+  https://x80.org/rhino-coq/v8.11/examples/Stlc.html
+
+### Outdated examples [but still working]
+
 - The IRIS program logic, by Robbert Krebbers et al.
 
   https://x80.org/rhino-coq/v8.9/examples/iris.html
-
-### Outdated examples [but still working]
 
 - Mtac: The Mtac tutorial by Beta Zilliani:
 
   https://x80.org/rhino-coq/v8.5/examples/mtac_tutorial.html
 
-- Stlc: The "Simply Typed Lambda Calculus" chapter from Software
-  Foundations by Benjamin Pierce et al:
-
-  https://x80.org/rhino-coq/v8.6/examples/Stlc.html
-
 - StackMachine: The First chapter of the book "Certified Programming
   with Dependent Types" by Adam Chlipala:
 
-  https://x80.org/rhino-coq/examples/Cpdt.StackMachine.html
+  https://x80.org/rhino-coq/v8.5/examples/Cpdt.StackMachine.html
 
 - MirrorCore:
+
   - A simple demo:
     https://x80.org/rhino-coq/v8.5/examples/mirrorcore.html
+
   - A demo of developing a cancellation algorithm for commutative
     monoids:
     https://x80.org/rhino-coq/v8.5/examples/mirror-core-rtac-demo.html

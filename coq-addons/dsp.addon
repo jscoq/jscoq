@@ -11,6 +11,7 @@ DSP_DEST=coq-pkgs/Dsp
 nothing:
 
 get:
+	cp -a coq-external/dsp $(ADDONS_PATH)
 
 build:
 	export PATH=$(COQDIR)/bin:$$PATH; cd $(DSP_HOME); $(MAKE)
