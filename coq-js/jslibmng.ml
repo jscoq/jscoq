@@ -107,13 +107,18 @@ let parse_bundle base_path file : coq_bundle Lwt.t =
   let open JL.XmlHttpRequest in
   let file_url = base_path ^ file ^ ".json" in
   get file_url >>= fun res ->
-  match Jslib.coq_bundle_of_yojson (Yojson.Safe.from_string res.content) with
-  | Result.Ok bundle -> return bundle
-  | Result.Error s   ->
-    Format.eprintf "JSON parsing error in parse_bundle for file %s: %s\n%!" file s;
-    Lwt.fail (Failure s)
-  | exception Yojson.Json_error s ->
-    Format.eprintf "JSON conversion error in parse_bundle for file %s: %s\n%!" file s;
+  if res.code == 200 then
+    match Jslib.coq_bundle_of_yojson (Yojson.Safe.from_string res.content) with
+    | Result.Ok bundle -> return bundle
+    | Result.Error s   ->
+      Format.eprintf "JSON parsing error in parse_bundle for file %s: %s\n%!" file s;
+      Lwt.fail (Failure s)
+    | exception Yojson.Json_error s ->
+      Format.eprintf "JSON conversion error in parse_bundle for file %s: %s\n%!" file s;
+      Lwt.fail (Failure s)
+  else
+    let s = Format.sprintf "%s: not found (%d)" file_url res.code in
+    Format.eprintf "%s\n%!" s;
     Lwt.fail (Failure s)
 
 let load_under_way = ref ([])
