@@ -195,6 +195,11 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
   Julius Orion Smith III's "The Mathematics of the Discrete Fourier
   Transform"
 
+- equations: https://x80.org/rhino-coq/v8.11/examples/equations_intro.htmla
+
+  Introduction to the [Coq Equations](https://github.com/mattam82/Coq-Equations) package from
+  the official documentation.
+
 - Stlc: The "Simply Typed Lambda Calculus" chapter from Software
   Foundations by Benjamin Pierce et al:
 
