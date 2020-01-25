@@ -54,6 +54,7 @@ let coq_theory_list =
   ; ["Sorting"]
   ; ["Wellfounded"]
   ; ["Strings"]
+  ; ["Floats"]
 
   ; ["Numbers"]
   ; ["Numbers"; "NatInt"]
@@ -128,6 +129,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "ZArith"], All
     ; ["Coq"; "QArith"], All
     ; ["Coq"; "omega"], All
+    ; ["Coq"; "Floats"], All
     ]
 
   ; "coq-reals", ["coq-arith"], all_of

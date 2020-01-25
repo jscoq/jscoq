@@ -2,11 +2,15 @@
 -----------------------------------------
 
  - Port to Coq 8.11 (@ejgallego)
- - Ltac2 is now built from the included Coq source
-
-## TODO:
-
- - Check if libraries using primitive floats may not be usable in jsCoq.
+ - Ltac2 is now built from the included Coq source and loaded by
+   default by the init package (@ejgallego)
+ - Primitive floats are available. Note that writing .vo files that
+   use primitive floats is not possible from jsCoq; this is due to the
+   js runtime representation for integers being already a float, so
+   `Marshall` will be confused. Only writing `.vo` files is
+   problematic tho, you can however use primitive floats normally, and
+   load .vo files that where compiled with `coqc` using primitive
+   floats normally (@ejgallego)
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
