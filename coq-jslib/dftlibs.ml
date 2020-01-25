@@ -129,14 +129,15 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "ZArith"], All
     ; ["Coq"; "QArith"], All
     ; ["Coq"; "omega"], All
-    ; ["Coq"; "Floats"], All
     ]
 
   ; "coq-reals", ["coq-arith"], all_of
     [ ["Coq"; "fourier"]
     ; ["Coq"; "micromega"]
     ; ["Coq"; "nsatz"]
-    ; ["Coq"; "Reals"] ]
+    ; ["Coq"; "Reals"]
+    ; ["Coq"; "Floats"]
+    ]
 
   ; "mtac", ["coq-arith"], all_of
     [ ["Mtac"]
