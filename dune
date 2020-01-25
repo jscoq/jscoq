@@ -50,8 +50,8 @@
   (deps
     coq-js/jscoq_worker.js))
 
-(alias
- (name libs-pkg)
+(rule
+ (alias libs-pkg)
  (deps coq-pkgs)
  (action
    (progn

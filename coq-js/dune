@@ -9,7 +9,7 @@
 (executable
  (name jscoq_worker)
  (modules jscoq_worker)
- (modes byte)
+ (modes byte js)
  (preprocess (staged_pps lwt_ppx js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
   (javascript_files
