@@ -166,9 +166,8 @@ the `CoqManager` constructor:
 The list of available packages defaults to all Coq libraries and addons
 available with the current version of jsCoq. At the moment, it is:
 ```js
-['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',  
- 'math-comp', 'elpi', 'equations', 'ltac2',
- 'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color']
+['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',
+ 'math-comp', 'elpi', 'lf', 'plf']
 ```
 
 The `editor` property may contain any option supported by CodeMirror

@@ -84,6 +84,7 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "Unicode"]
     ; ["Coq"; "ssrmatching"]
     ; ["Coq"; "ssr"]
+    ; ["Ltac2"]
     ; ["mathcomp"; "ssreflect"]
     ]
   ; "coq-base", [], all_of
@@ -362,7 +363,4 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; [ "Equations" ; "Prop" ]
     ]
 
-  ; "ltac2", [ ], all_of
-    [ [ "Ltac2" ]
-    ]
   ]

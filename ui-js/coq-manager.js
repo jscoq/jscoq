@@ -205,7 +205,7 @@ class CoqManager {
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'mathcomp',
-                        'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations', 'ltac2',
+                        'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
             file_dialog: false,
             coq:       { /* Coq option values */ },
