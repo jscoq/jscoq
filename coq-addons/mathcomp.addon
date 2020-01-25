@@ -25,7 +25,6 @@ build:
 
 jscoq-install:
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ $(COQPKGS_ROOT)/mathcomp/
-# This needs adapting to the setting where node_modules are in _build
-# $(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
-#             --create-package $(MATHCOMP_DEST).coq-pkg  \
-#             --create-manifest $(MATHCOMP_DEST).json
+	$(PKGBUILD) --project $(MATHCOMP_HOME)/mathcomp        \
+		--create-package $(MATHCOMP_DEST).coq-pkg  \
+		--create-manifest $(MATHCOMP_DEST).json

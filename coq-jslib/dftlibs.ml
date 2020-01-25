@@ -135,15 +135,6 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"] ]
 
-  (* This needs fixing, see mathcomp.addon and 021e50e *)
-  ; "mathcomp", ["coq-arith"], all_of
-    [ ["mathcomp"; "algebra"]
-    ; ["mathcomp"; "fingroup"]
-    ; ["mathcomp"; "solvable"]
-    ; ["mathcomp"; "field"]
-    ; ["mathcomp"; "character"]
-    ]
-
   ; "mtac", ["coq-arith"], all_of
     [ ["Mtac"]
     ]
@@ -161,6 +152,8 @@ let pkgs : (string * string list * (string list * selector) list) list =
   ; "tlc", ["coq-reals"], all_of
     [ ["TLC"] ]
 
+  (* This remains here even if we build the packages using coq-build.js as
+     it seems the dependencies on coq-reals is not detected properly a*)
   ; "lf", ["coq-reals"], all_of
     [ ["LF"] ]
 
