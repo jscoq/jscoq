@@ -22,19 +22,19 @@ module Seq = struct
 end
 
 type 'a hyp =
-  [%import: 'a Serapi_goals.hyp]
+  [%import: 'a Serapi.Serapi_goals.hyp]
   [@@deriving to_yojson]
 
 type info =
-  [%import: Serapi_goals.info]
+  [%import: Serapi.Serapi_goals.info]
   [@@deriving to_yojson]
 
 type 'a reified_goal =
-  [%import: 'a Serapi_goals.reified_goal]
+  [%import: 'a Serapi.Serapi_goals.reified_goal]
   [@@deriving to_yojson]
 
 type 'a ser_goals =
-  [%import: 'a Serapi_goals.ser_goals]
+  [%import: 'a Serapi.Serapi_goals.ser_goals]
   [@@deriving to_yojson]
 
 module Proto = struct

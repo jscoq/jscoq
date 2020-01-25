@@ -216,7 +216,7 @@ let symbols_for (q : search_query) env =
 
 let pp_of_goals =
   let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
-  Serapi_goals.get_goals_gen ppx
+  Serapi.Serapi_goals.get_goals_gen ppx
 
 let filter_by (q : search_query) =
   match q with
