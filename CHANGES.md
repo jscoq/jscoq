@@ -54,7 +54,7 @@ Pending worker tasks:
  - Decentralized build mode for addons (@corwin-of-amber)
  - [feature] Setting Coq options through jsCoq configuration argument (#108 @corwin-of-amber)
 
-  Released on: development use only, moved to 0.11 on Jan 24th 2020
+  Released on: 2020/01/27
 
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
