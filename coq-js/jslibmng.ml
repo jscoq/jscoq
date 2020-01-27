@@ -107,7 +107,7 @@ let parse_bundle base_path file : coq_bundle Lwt.t =
   let open JL.XmlHttpRequest in
   let file_url = base_path ^ file ^ ".json" in
   get file_url >>= fun res ->
-  if res.code == 200 then
+  if Int.equal res.code 200 then
     match Jslib.coq_bundle_of_yojson (Yojson.Safe.from_string res.content) with
     | Result.Ok bundle -> return bundle
     | Result.Error s   ->

@@ -61,7 +61,7 @@ let string_bytes s : Typed_array.uint8Array Js.t =
 let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :| *)
   let open Js.Unsafe in
   let buffer = array##.buffer in
-  if array##.byteOffset == 0 && array##.byteLength == buffer##.byteLength then
+  if Int.equal array##.byteOffset 0 && Int.equal array##.byteLength buffer##.byteLength then
     array, buffer
   else
     let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
@@ -259,7 +259,7 @@ let jscoq_execute =
     out_fn @@ GoalInfo (sid, goal_pp)
 
   | Query (sid, rid, query) ->
-    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
+    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
     begin try
       Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query;
       out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Complete }
@@ -270,7 +270,7 @@ let jscoq_execute =
     end
 
   | Inspect (sid, rid, q) ->
-    let sid = if Stateid.to_int sid == 0 then Jscoq_doc.tip !doc else sid in
+    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
     let _, env = Icoq.context_of_stm ~doc:(fst !doc) sid in
     let symbols = symbols_for q env in
     let results = Seq.filter (filter_by q) symbols in
