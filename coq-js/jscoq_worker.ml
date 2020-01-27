@@ -1,6 +1,8 @@
 (* Coq JavaScript API.
  *
- * Copyright (C) 2016-2017 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Copyright (C) 2018-2020 Shachar Itzhaky, Technion
+ * Copyright (C) 2019-2020 Emilio J. Gallego Arias, INRIA
  * LICENSE: GPLv3+
  *
  * We provide a message-based asynchronous API for communication with
@@ -10,8 +12,6 @@
 open Js_of_ocaml
 open Jscoqlib
 open Jscoq_proto.Proto
-
-let jscoq_version = "0.10.0~beta1"
 
 let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; coq_options = [] }
 
@@ -306,7 +306,7 @@ let jscoq_execute =
         let jsoov = Sys_js.js_of_ocaml_version                      in
         let header1 = Printf.sprintf
             "JsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
-            jscoq_version coqv cmag coqd ccd                        in
+            Jscoq_version.jscoq_version coqv cmag coqd ccd          in
         let header2 = Printf.sprintf
             "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
         Jslibmng.info_pkg post_lib_event base pkgs                  >>= fun () ->
