@@ -52,11 +52,13 @@
 
 (alias
  (name libs-pkg)
- (deps coq-pkgs)
+ (deps
+   coq-pkgs
+   %{env:COQBUILDDIR_REL=}/.vfiles.d)
  (action
    (progn
     ; Pending on proper support for globs inside directory targets
     (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/init.json coq-pkgs/coq-*.json")
-    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR=}/.vfiles.d"))))
+    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR_REL=}/.vfiles.d"))))
 
 (dirs (:standard _vendor+*))
