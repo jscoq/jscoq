@@ -35,7 +35,8 @@ ADDONS_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
 COQSRC := $(ADDONS_PATH)/coq/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/_vendor+$(COQ_VERSION)$(VARIANT)/coq
+COQBUILDDIR_REL := _vendor+$(COQ_VERSION)$(VARIANT)/coq
+COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/$(COQBUILDDIR_REL)
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
 COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
@@ -49,6 +50,7 @@ export BUILD_CONTEXT
 
 export COQDIR
 export COQBUILDDIR
+export COQBUILDDIR_REL
 export ADDONS_PATH
 export COQPKGS_ROOT
 
