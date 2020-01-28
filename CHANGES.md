@@ -23,25 +23,9 @@
  - NPM package build for publishing (@corwin-of-amber)
  - New layout using CSS flexbox (@corwin-of-amber)
  - Button to interrupt long-running tactics (@corwin-of-amber)
+ - Decentralized build mode for addons (@corwin-of-amber)
 
- - [ ] Use sertop / serlib [partially done]
- - [ ] Automatic parsing mode.
- - [ ] Execution gutters.
- - [ ] Support for UI layouts.
- - [x] Decentralized build mode for addons.
- - [ ] Dark theme - color scheme and icon set
- - [ ] Printer-friendly formatting in documents.
- - [ ] [feature] Setting Coq options through jsCoq configuration argument.
- - [ ] Further fine-tuning of auto-completion
-
-Pending worker tasks:
-
-+ Race: we cancel, then we add before the cancelled event arrives.
-+ Be careful about re-execing states, as this brings back the parser to an improper state.
-+ quick prev/next creates problems in long commands.
-+ we are reusing span_ids and this is not ok for the STM.
-
-  Released on:
+  Released on: 2020/01/27
 
 # JsCoq 0.9 "The idea kills the idea"
 -------------------------------------
