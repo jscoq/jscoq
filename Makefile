@@ -109,14 +109,20 @@ BUILDOBJ=${addprefix $(BUILDDIR)/./, \
 	node_modules ui-external/CodeMirror-TeX-input}
 DISTDIR=_build/dist
 
-PACKAGE_VERSION = ${shell node -e 'console.log(require("./package.json").version)'}
+PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
 dist: jscoq
 	mkdir -p $(DISTDIR)
-	rsync -avpR --delete $(BUILDOBJ) $(DISTDIR)
+	rsync -avpR --delete README.md $(BUILDOBJ) $(DISTDIR)
+
+TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
+
+dist-tarball: dist
+	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
+	    -C $(DISTDIR) $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' .
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
-NPMOBJ += package.json package-lock.json
+NPMOBJ += README.md package.json package-lock.json
 NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
 
 dist-npm:
@@ -124,7 +130,7 @@ dist-npm:
 	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(DISTDIR)
 	cp docs/npm-landing.html $(DISTDIR)/index.html
 	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(DISTDIR)/ui-js/jscoq-loader.js
-	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
+	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
 	    -C $(DISTDIR) --exclude '*.bak' --exclude '*.tar.gz' .
 
 ########################################################################
