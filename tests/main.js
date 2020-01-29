@@ -19,6 +19,7 @@ function cliSubprocessSync(flags) {
 
 describe('qa0 - sanity test', function() {
     this.timeout(10000); 
+
     describe('nonzeros', function() {
         var rc = cliSubprocessSync(['-l', 'tests/qa0/nonzeros.v']);
         it('should run without error', function() {
@@ -26,7 +27,15 @@ describe('qa0 - sanity test', function() {
             assert.equal(rc.stderr, "");
         });
         it('should produce correct output', function() {
-            var expected = fs.readFileSync('tests/qa0/nonzeros.out');
+            var expected = fs.readFileSync('tests/qa0/nonzeros.out', 'utf-8');
+            assert.equal(rc.stdout, expected);
+        });
+    });
+
+    describe('timeout', function() {
+        var rc = cliSubprocessSync(['-l', 'tests/qa0/timeout.v']);
+        it('should report a timeout', function() {
+            var expected = fs.readFileSync('tests/qa0/timeout.out', 'utf-8');
             assert.equal(rc.stdout, expected);
         });
     });
