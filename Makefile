@@ -118,8 +118,11 @@ dist: jscoq
 TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
 
 dist-tarball: dist
+	# Hack to make the tar contain a jscoq-x.x directory
+	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
-	    -C $(DISTDIR) $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' .
+	    -C _build $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' \
+	    --dereference jscoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
 NPMOBJ += README.md package.json package-lock.json
