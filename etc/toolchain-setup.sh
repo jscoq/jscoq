@@ -8,6 +8,9 @@ WORD_SIZE=32
 
 WRITE_CONFIG=no
 
+if [ -e config.inc ] ; then . config.inc
+else WRITE_CONFIG=yes ; fi
+
 for i in "$@"; do
   case $i in
     --32) WORD_SIZE=32; WRITE_CONFIG=yes ;;
@@ -51,9 +54,6 @@ post_install() {
   esac
 
 }
-
-if [ -e config.inc ] ; then . config.inc
-else WRITE_CONFIG=yes ; fi
 
 if [ $WRITE_CONFIG == yes ] ; then echo "WORD_SIZE=$WORD_SIZE" > config.inc ; fi
 
