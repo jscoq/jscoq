@@ -193,3 +193,6 @@ addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
 addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
 
 addons: addons-get addons-build
+
+test:
+	npx mocha tests/main.js
