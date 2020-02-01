@@ -160,7 +160,12 @@ class CoqWorker {
     interruptSetup() {
         if (typeof SharedArrayBuffer !== 'undefined') {
             this.intvec = new Int32Array(new SharedArrayBuffer(4));
-            this.sendCommand(["InterruptSetup", this.intvec]);
+            try {
+                this.sendCommand(["InterruptSetup", this.intvec]);
+            }
+            catch (e) {  /* this fails in Firefox 72 even with SharedArrayBuffer enabled */
+                console.warn('SharedArrayBuffer is available but not serializable -- interrupts disabled');
+            }
         }
         else {
             console.warn('SharedArrayBuffer is not available -- interrupts disabled');

@@ -848,6 +848,7 @@ class CoqManager {
      * @param {Error} err load error
      */
     handleLaunchFailure(err) {
+        console.error('launch failure', err);
         this.layout.log("Failed to start jsCoq worker.", 'Error');
         if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
             this.layout.log($('<span>').html(
