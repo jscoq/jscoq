@@ -11,6 +11,8 @@
    problematic tho, you can however use primitive floats normally, and
    load .vo files that where compiled with `coqc` using primitive
    floats normally (@ejgallego)
+ - Enforce explicit module prefix in `Require` statements for non-Coq
+   packages, to avoid ambiguity (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
