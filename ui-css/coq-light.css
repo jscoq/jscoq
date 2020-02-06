@@ -2,11 +2,11 @@
 
 /* Panel/body settings */
 
-body:not(.hands-off) {
+body.jscoq-main {
   background: #e4e4e4;
 }
 
-body:not(.hands-off) #document {
+body.jscoq-main #document {
   background: #fff;
 }
 
