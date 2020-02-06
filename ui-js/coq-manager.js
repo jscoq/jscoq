@@ -245,6 +245,7 @@ class CoqManager {
             debug:      true,
             show:       true,
             focus:      true,
+            replace:    false,
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
@@ -704,7 +705,7 @@ class CoqManager {
 
     /**
      * Creates a JSON-able version of the startup Coq options.
-     * E.g. {'Default Timeout': 10}  -->  [[['Default'm 'Timeout'], ['IntValue', 10]]]
+     * E.g. {'Default Timeout': 10}  -->  [[['Default', 'Timeout'], ['IntValue', 10]]]
      * @param {object} coq_options option name to value dictionary
      */
     _parseOptions(coq_options) {
