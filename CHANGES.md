@@ -15,6 +15,8 @@
    packages, to avoid ambiguity (@corwin-of-amber)
  - Init options for finer control of jsCoq's behavior: `show`, `focus`,
    `replace`, and `init_import` (@corwin-of-amber)
+ - Line numbers continue across code snippets on the same page. Useful
+   for `coqdoc`-generated pages (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.

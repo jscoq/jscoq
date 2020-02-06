@@ -163,6 +163,7 @@ the `CoqManager` constructor:
 | `show`          | boolean         | `true`          | Opens up the jsCoq panel on startup.                                                                          |
 | `focus`         | boolean         | `true`          | Sets the focus to the editor once jsCoq is ready.                                                             |
 | `replace`       | boolean         | `false`         | Replace `<div>`(s) referred to by `jscoq_ids` with jsCoq editors, moving the text content.                    |
+| `line_numbers`  | string          | `continue`      | Line numbering policy; across code snippets on page (`continue`) or separate per snippet (`restart`).         |
 | `file_dialog`   | boolean         | `false`         | Enables UI for loading and saving files (^O/^S, or ⌘O/⌘S on Mac).                                             |
 | `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
 | `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |

@@ -82,8 +82,10 @@ class ProviderContainer {
                 cm.onTipOut   = ()             => { this.onTipOut(); }
 
                 // Running line numbers
-                if (idx > 0) this.renumber(idx - 1);
-                cm.onResize = () => { this.renumber(idx); }
+                if (this.options.line_numbers === 'continue') {
+                    if (idx > 0) this.renumber(idx - 1);
+                    cm.onResize = () => { this.renumber(idx); }
+                }
 
                 await this.yield();
             }
@@ -257,6 +259,7 @@ class CoqManager {
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
             init_import: [],
             file_dialog: false,
+            line_numbers: 'continue',
             coq:       { /* Coq option values */ },
             editor:    { /* codemirror options */ }
             // Disabled on 8.6
