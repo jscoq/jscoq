@@ -49,7 +49,6 @@ class PackageManager {
 
         this.panel.insertBefore(div, place_before /* null == at end */ );
 
-        var desc = pkg_info.desc;
         var pkgs = pkg_info.pkgs;
         var no_files = 0;
 
@@ -110,15 +109,19 @@ class PackageManager {
 
     searchBundleInfo(prefix, module_name, exact=false) {
         // Look for a .vo file matching the given prefix and module name
-        var suffix = module_name.slice(0, -1),
+        var implicit = (prefix.length === 0),
+            suffix = module_name.slice(0, -1),
             basename = module_name.slice(-1)[0],
             possible_filenames = ['.vo', '.vio'].map(x => basename + x);
 
         let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
         let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
 
+        let isIntrinsic = (arr) => arr[0] === 'Coq';
+
         let pkg_matches = exact ? pkg_id => pkg_id.equals(suffix)
-                                : pkg_id => startsWith(pkg_id, prefix) &&
+                                : pkg_id => (implicit ? isIntrinsic(pkg_id)
+                                                      : startsWith(pkg_id, prefix)) &&
                                             endsWith(pkg_id, suffix);
 
         for (let bundle_key in this.bundles) {

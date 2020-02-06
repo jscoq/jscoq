@@ -222,6 +222,10 @@ let rec last = function
     | [x] -> Some x
     | _ :: t -> last t
 
+let is_intrinsic = function
+    | "Coq" :: t -> true
+    | _ -> false
+
 let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
   let phys_path =  (* HACK to allow manual override of dir path *)
     if last unix_prefix = Some "." then unix_prefix
@@ -232,7 +236,7 @@ let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
         unix_path = String.concat "/" phys_path;
         coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
         has_ml = AddTopML;
-        implicit = implicit;
+        implicit = implicit && is_intrinsic lib_path;
       };
     recursive = false;
   }
