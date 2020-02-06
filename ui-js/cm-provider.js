@@ -579,11 +579,16 @@ class CmCoqProvider {
 class Deprettify {
 
     static trim(element) {
-        if (element.firstChild && element.firstChild.nodeType === Node.TEXT_NODE)
+        if (element.firstChild && Deprettify.isWS(element.firstChild))
             element.removeChild(element.firstChild);
-        if (element.lastChild && element.lastChild.nodeType === Node.TEXT_NODE)
+        if (element.lastChild && Deprettify.isWS(element.lastChild))
             element.removeChild(element.lastChild);
         return element;
+    }
+
+    static isWS(element) {
+        return element.nodeType === Node.TEXT_NODE &&
+               element.nodeValue.match(/^\s*$/);
     }
 
     static cleanup(text) {
