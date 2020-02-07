@@ -80,7 +80,7 @@ Previous Coq versions can be accessed at:
 ## Publications
 
 A paper describing the ideas behind jsCoq has been published in the
-proceeding of the [UITP 2016 workshop](http://www.informatik.uni-bremen.de/uitp/current/). The
+proceeding of the [UITP 2016 workshop](https://web.archive.org/web/20190319183042/http://www.informatik.uni-bremen.de/uitp/). The
 paper is available from the open access
 [EPTCS](http://eptcs.web.cse.unsw.edu.au/paper.cgi?UITP2016.2)
 proceedings. The recommended citation is:
