@@ -1,20 +1,34 @@
-diff --git a/kernel/uint63_x86.ml b/kernel/uint63_x86.ml
-index 461184c..b7b3f5b 100644
---- a/kernel/uint63_63.ml
-+++ b/kernel/uint63_63.ml
-@@ -11,6 +11,6 @@
- type t = int
+diff --git a/kernel/dune b/kernel/dune
+index 5f7502e..b22c763 100644
+--- a/kernel/dune
++++ b/kernel/dune
+@@ -16,7 +16,7 @@
  
--let _ = assert (Sys.word_size = 64)
-+(*let _ = assert (Sys.word_size = 64)*)
+ (rule
+  (targets uint63.ml)
+- (deps (:gen-file uint63_%{ocaml-config:int_size}.ml))
++ (deps (:gen-file uint63_31.ml))
+  (action (copy# %{gen-file} %{targets})))
+ 
+ (documentation
+diff --git a/kernel/uint63_31.ml b/kernel/uint63_31.ml
+index 445166f..2c17e02 100644
+--- a/kernel/uint63_31.ml
++++ b/kernel/uint63_31.ml
+@@ -11,7 +11,7 @@
+ (* Invariant: the msb should be 0 *)
+ type t = Int64.t
+ 
+-let _ = assert (Sys.word_size = 32)
++(* let _ = assert (Sys.word_size = 32) *)
  
  let uint_size = 63
  
 diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
-index eac26ad..072d8b5 100644
+index febf4fa..3255c53 100644
 --- a/theories/Numbers/Cyclic/Int63/Int63.v
 +++ b/theories/Numbers/Cyclic/Int63/Int63.v
-@@ -1170,8 +1170,8 @@ Proof.
+@@ -1164,8 +1164,8 @@ Proof.
   apply to_Z_inj.
   rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
   pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
@@ -26,10 +40,10 @@ index eac26ad..072d8b5 100644
  Lemma addmuldiv_spec x y p :
    [| p |] <= [| digits |] ->
 diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index d230435..3c6833c 100644
+index 6ddf8ea..2d753ff 100644
 --- a/theories/Numbers/Cyclic/Int63/Ring63.v
 +++ b/theories/Numbers/Cyclic/Int63/Ring63.v
-@@ -58,8 +58,10 @@ Add Ring Int63Ring : Int63Ring
+@@ -60,8 +60,10 @@ Add Ring Int63Ring : Int63Ring
   (decidable eq31_correct,
    constants [Int63cst]).
  
@@ -37,7 +51,6 @@ index d230435..3c6833c 100644
  Section TestRing.
  Let test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
  intros. ring.
--Qed.
-+Admitted.
+ Qed.
  End TestRing.
 +*)
