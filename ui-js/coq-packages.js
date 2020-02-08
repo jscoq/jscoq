@@ -70,17 +70,20 @@ class PackageManager {
         this.dispatchEvent(new Event('change'));
     }
 
-    addBundleZip(bname, zip, pkg_info) {
+    async addBundleZip(bname, resource, pkg_info) {
         pkg_info = pkg_info || {};
 
-        var archive = new CoqPkgArchive(zip);
+        var archive = await new CoqPkgArchive(resource).load();
 
         return archive.getPackageInfo().then(pi => {
+            bname = bname || pi.desc;
+
             for (let k in pi)
                 if (!pkg_info[k]) pkg_info[k] = pi[k];
 
             this.addBundleInfo(bname, pkg_info);
             this.bundles[bname].archive = archive;
+            return this.bundles[bname];
         });
     }
 
@@ -235,6 +238,18 @@ class PackageManager {
         $(bundle.div).find('button.download-icon').addClass('checked');
     }
 
+    /**
+     * Adds a package from a dropped file and immediately downloads it.
+     * @param {Blob} file a dropped File or a Blob that contains an archive
+     */
+    dropPackage(file) {
+        this.expand();
+        this.addBundleZip(undefined, file).then(bundle => {
+            bundle.div.scrollIntoViewIfNeeded();
+            this.startPackageDownload(bundle.info.desc);
+        });
+    }
+
     onBundleStart(bname) {
         this.showPackageProgress(bname);
     }
@@ -323,6 +338,8 @@ class CoqPkgArchive {
     constructor(resource) {
         if (resource instanceof URL)
             this.url = resource;
+        else if (resource instanceof Blob)
+            this.blob = resource;
         else if (resource.file /* JSZip-like */)
             this.zip = resource;
         else
@@ -339,16 +356,21 @@ class CoqPkgArchive {
     }
 
     download() {
-        // Here comes some boilerplate
-        return new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest();
-            xhr.responseType = 'arraybuffer';
-            xhr.onload = () => resolve(xhr.response);
-            xhr.onprogress = (evt) => requestAnimationFrame(() => this.onProgress(evt));
-            xhr.onerror = () => reject(new Error("download failed"));
-            xhr.open('GET', this.url);
-            xhr.send();
-        });
+        if (this.blob) {
+            return this.blob.arrayBuffer();
+        }
+        else {
+            // Here comes some boilerplate
+            return new Promise((resolve, reject) => {
+                var xhr = new XMLHttpRequest();
+                xhr.responseType = 'arraybuffer';
+                xhr.onload = () => resolve(xhr.response);
+                xhr.onprogress = (evt) => requestAnimationFrame(() => this.onProgress(evt));
+                xhr.onerror = () => reject(new Error("download failed"));
+                xhr.open('GET', this.url);
+                xhr.send();
+            });
+        }
     }
 
     readManifest() {

@@ -374,8 +374,12 @@ class CoqManager {
             // TODO better check file type and size before
             //  opening
             var file = evt.originalEvent.dataTransfer.files[0];
-            if (file)
-                this.provider.openFile(file);
+            if (file) {
+                if (file.name.match(/[.](coq-pkg|zip)$/))
+                    this.packages.dropPackage(file);
+                else
+                    this.provider.openFile(file);
+            }
         });
     }
 
