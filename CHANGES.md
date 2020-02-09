@@ -17,6 +17,8 @@
    `replace`, and `init_import` (@corwin-of-amber)
  - Line numbers continue across code snippets on the same page. Useful
    for `coqdoc`-generated pages (@corwin-of-amber)
+ - Accept dropped `.coq-pkg` files as packages to add to the current
+   session (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
