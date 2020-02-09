@@ -42,15 +42,12 @@ if (typeof navigator !== 'undefined')
 /***********************************************************************/
 class ProviderContainer {
 
-    constructor(elms, options) {
+    constructor(elementRefs, options) {
 
         this.options = options ? options : {};
 
         // Code snippets.
         this.snippets = [];
-
-        // Debug variables
-        var idx = 0;
 
         // Event handlers (to be overridden by CoqManager)
         this.onInvalidate = (mark) => {};
@@ -59,25 +56,74 @@ class ProviderContainer {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
 
-        // for (e of elms) not very covenient here due to the closure.
-        elms.forEach(e => {
+        // Create sub-providers.
+        //   Do this asynchronously to avoid locking the page when there is
+        //   a large number of snippets.
+        (async () => {
+            for (let [idx, element] of this.findElements(elementRefs).entries()) {
 
-            // Init.
-            var cm = new CmCoqProvider(e, this.options.editor);
-            cm.idx = idx++;
-            this.snippets.push(cm);
+                if (this.options.replace)
+                    element = Deprettify.trim(element);
 
-            // Track focus XXX (make generic)
-            cm.editor.on('focus', evt => { this.currentFocus = cm; });
+                // Init.
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
+                cm.idx = idx;
+                this.snippets.push(cm);
 
-            // Track invalidate
-            cm.onInvalidate = stm       => { this.onInvalidate(stm); };
-            cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
-            cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
+                // Track focus XXX (make generic)
+                cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
-            cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
-            cm.onTipOut   = ()             => { this.onTipOut(); }
-        });
+                // Track invalidate
+                cm.onInvalidate = stm       => { this.onInvalidate(stm); };
+                cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
+                cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
+
+                cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
+                cm.onTipOut   = ()             => { this.onTipOut(); }
+
+                // Running line numbers
+                if (this.options.line_numbers === 'continue') {
+                    if (idx > 0) this.renumber(idx - 1);
+                    cm.onResize = () => { this.renumber(idx); }
+                }
+
+                await this.yield();
+            }
+        })();
+    }
+
+    findElements(elementRefs) {
+        var elements = [];
+        for (let e of elementRefs) {
+            var els = (typeof e === 'string') ? 
+                [document.getElementById(e), ...document.querySelectorAll(e)] : e;
+            els = els.filter(x => x);
+            if (els.length === 0) {
+                console.warn(`[jsCoq] element(s) not found: '${e}'`);
+            }
+            elements.push(...els);
+        }
+        return elements;
+    }
+
+    /**
+     * Readjust line numbering flowing from one editor to the next.
+     * @param {number} startIndex index where renumbering should start
+     */
+    async renumber(startIndex) {
+        let snippet = this.snippets[startIndex],
+            line = snippet.editor.getOption('firstLineNumber') + snippet.lineCount;
+
+        for (let index = startIndex + 1; index < this.snippets.length; index++) {
+            let snippet = this.snippets[index];
+            snippet.editor.setOption('firstLineNumber', line);
+            line += snippet.lineCount;
+            await this.yield();
+        }
+    }
+
+    yield() {
+        return new Promise(resolve => setTimeout(resolve, 0));
     }
 
     // Get the next candidate and mark it.
@@ -196,8 +242,12 @@ class CoqManager {
 
         // Default options
         this.options = {
-            prelude: true,
-            debug:   true,
+            prelaunch:  false,
+            prelude:    true,
+            debug:      true,
+            show:       true,
+            focus:      true,
+            replace:    false,
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
@@ -207,7 +257,9 @@ class CoqManager {
             all_pkgs:  ['init', 'mathcomp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations',
                         'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
+            init_import: [],
             file_dialog: false,
+            line_numbers: 'continue',
             coq:       { /* Coq option values */ },
             editor:    { /* codemirror options */ }
             // Disabled on 8.6
@@ -225,12 +277,12 @@ class CoqManager {
         this.layout.splash();
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
-        this.setupDragDrop();
+        this.layout.onToggle = ev => {
+            if (ev.shown && !this.coq) this.launch();
+            if (this.coq) this.layout.onToggle = () => {};
+        };
 
-        // Setup the Coq worker.
-        this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
-        this.coq.options   = this.options;
-        this.coq.observers.push(this);
+        this.setupDragDrop();
 
         // Setup pretty printer for feedback and goals
         this.pprint = new FormatPrettyPrint();
@@ -239,29 +291,10 @@ class CoqManager {
         if (this.options.editor.mode && this.options.editor.mode['company-coq'])
             this.company_coq = new CodeMirror.CompanyCoq();
 
-        // Setup autocomplete
-        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
-        this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
-
-        // Setup contextual info bar
-        this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
-                                                     this.coq, this.pprint, this.company_coq);
-
         // Keybindings setup
         // XXX: This should go in the panel init.
         document.addEventListener('keydown', evt => this.keyHandler(evt), true);
         $(document).on('keydown keyup', evt => this.modifierKeyHandler(evt));
-
-        // Panel setup 2: packages panel.
-        // XXX: In the future this may also manage the downloads.
-        this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
-                                           this.options.all_pkgs,
-                                           this.coq);
-
-        // Display packages panel:
-        this.packages.expand();
-
-        requestAnimationFrame(() => this.layout.show());
 
         // This is a sid-based index of processed statements.
         this.doc = {
@@ -283,15 +316,12 @@ class CoqManager {
         this.error = [];
         this.navEnabled = false;
 
-        // The fun starts: commence loading packages (asynchronously)
-        (async () => {
-            try {
-                await this.coq.when_created;
-                this.coq.interruptSetup();
-                this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
-            }
-            catch (err) { this.handleLaunchFailure(err); }
-        })();
+        // Launch time
+        if (this.options.prelaunch)
+            this.launch();
+
+        if (this.options.show)
+            requestAnimationFrame(() => this.layout.show());
     }
 
     // Provider setup
@@ -369,6 +399,44 @@ class CoqManager {
                 { lemmas: bunch.map(fp => CoqIdentifier.ofFullPath(fp)) },
                 'locals', /*replace_existing=*/true)
         });
+    }
+
+    /**
+     * Starts a Worker and commences loading of packages and initialization
+     * of STM.
+     */
+    async launch() {
+        try {
+            // Setup the Coq worker.
+            this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
+            this.coq.options   = this.options;
+            this.coq.observers.push(this);
+
+            await this.coq.when_created;
+            this.coq.interruptSetup();
+
+            // Setup package loader
+            this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
+                this.options.all_pkgs,
+                this.coq);
+            
+            this.packages.expand();
+
+            // Setup autocomplete
+            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
+            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
+
+            // Setup contextual info bar
+            this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+                                                        this.coq, this.pprint, this.company_coq);
+
+            // The fun start: fetch package infos;
+            // this will trigger loads of init packages.
+            this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+        }
+        catch (err) {
+            this.handleLaunchFailure(err);
+        }
     }
 
     // Feedback Processing
@@ -628,7 +696,11 @@ class CoqManager {
         let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
                          coq_options: this._parseOptions(this.options.coq || {})},
             load_path = this.packages.getLoadPath(),
-            load_lib = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [];
+            load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
+
+        for (let pkg of this.options.init_import || []) {
+            load_lib.push(PKG_ALIASES[pkg] || pkg.split('.'));
+        }
 
         this.coq.init(init_opts, load_lib, load_path);
         // Almost done!
@@ -636,7 +708,7 @@ class CoqManager {
 
     /**
      * Creates a JSON-able version of the startup Coq options.
-     * E.g. {'Default Timeout': 10}  -->  [[['Default'm 'Timeout'], ['IntValue', 10]]]
+     * E.g. {'Default Timeout': 10}  -->  [[['Default', 'Timeout'], ['IntValue', 10]]]
      * @param {object} coq_options option name to value dictionary
      */
     _parseOptions(coq_options) {
@@ -967,7 +1039,9 @@ class CoqManager {
     enable() {
         this.navEnabled = true;
         this.layout.toolbarOn();
-        this.provider.focus();
+        if (this.options.focus) {
+            this.provider.focus();
+        }
     }
 
     // Disable the IDE.
@@ -1087,6 +1161,11 @@ const Phases = {
     PROCESSING: 'processing', PROCESSED: 'processed',
     ERROR: 'error'
 };
+
+const PKG_ALIASES = {
+    prelude: ["Coq", "Init", "Prelude"],
+    utf8: ["Coq", "Unicode", "Utf8"]
+}
 
 
 class CoqContextualInfo {

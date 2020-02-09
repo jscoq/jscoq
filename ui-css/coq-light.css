@@ -2,11 +2,11 @@
 
 /* Panel/body settings */
 
-body {
+body.jscoq-main {
   background: #e4e4e4;
 }
 
-#document {
+body.jscoq-main #document {
   background: #fff;
 }
 
@@ -56,7 +56,7 @@ body {
 }
 
 .coq-eval-ok.coq-highlight {
-  background: #ccd;
+  background: #ebeebd;
 }
   
 .coq-eval-pending {

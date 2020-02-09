@@ -17,7 +17,9 @@ class CmSentence {
 // A CodeMirror-based Provider of coq statements.
 class CmCoqProvider {
 
-    constructor(element, options) {
+    constructor(element, options, replace) {
+
+        this.constructor._config();
 
         var cmOpts =
             { mode : { name : "coq",
@@ -36,19 +38,17 @@ class CmCoqProvider {
                   'Tab': 'indentMore',
                   'Shift-Tab': 'indentLess',
                   'Ctrl-Space': 'autocomplete'
-              }
+              },
+              className         : "jscoq"
             };
 
         if (options)
             copyOptions(options, cmOpts);
 
-        if (typeof element === 'string' || element instanceof String) {
-            element = document.getElementById(element);
-        }
         if (element.tagName === 'TEXTAREA') {
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
         } else {
-            this.editor = new CodeMirror(element, cmOpts);
+            this.editor = this.createEditor(element, cmOpts, replace);
         }
 
         this.filename = element.getAttribute('data-filename');
@@ -62,11 +62,14 @@ class CmCoqProvider {
         this.onMouseLeave = (stm, ev) => {};
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
+        this.onResize = (lineCount) => {};
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
 
         this.editor.on('cursorActivity', (cm) => 
             cm.operation(() => this._adjustWidgetsInSelection()));
+
+        this.trackLineCount();
 
         // Handle mouse hover events
         var editor_element = $(this.editor.getWrapperElement());
@@ -84,6 +87,25 @@ class CmCoqProvider {
         this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries[0], false));
         this.editor.on('hintOut',       ()             => this.onTipOut());
         this.editor.on('endCompletion', cm             => this.onTipOut());
+    }
+
+    createEditor(element, opts, replace) {
+        var text = replace && $(element).text(),
+            editor = new CodeMirror(element, opts);
+        if (replace) {
+            editor.setValue(Deprettify.cleanup(text));
+            element.replaceWith(editor.getWrapperElement());
+        }
+        return editor;
+    }
+
+    trackLineCount() {
+        this.lineCount = this.editor.lineCount();
+        this.editor.on('change', ev => {
+            let lineCount = this.editor.lineCount();
+            if (lineCount != this.lineCount)
+                this.onResize(this.lineCount = lineCount);
+        });
     }
 
     focus() {
@@ -380,10 +402,19 @@ class CmCoqProvider {
 
     keyHandler(evt) {
         /* re-issue mouse enter when modifier key is pressed or released */
-        if (this.hover[0] && (evt.key === 'Ctrl'))
+        if (this.hover[0] && (evt.key === 'Control'))
             this.onMouseEnter(this.hover[0].stm, evt);
     }
 
+    static _config() {
+        CodeMirror.defineOption('className', null, (cm, val) => {
+            if (val) {
+                var vals = (typeof val == 'string') ? val.split(/\s+/) : val;
+                cm.getWrapperElement().classList.add(...vals);
+            }
+        });
+        this._config = () => {};
+    }
 
     // CM specific functions.
 
@@ -537,6 +568,33 @@ class CmCoqProvider {
             }
         }
     }
+}
+
+
+/**
+ * For HTML-formatted Coq snippets created by coqdoc.
+ * This reverses the modifications made during pretty-printing
+ * to allow the text to be placed in an editor.
+ */
+class Deprettify {
+
+    static trim(element) {
+        if (element.firstChild && Deprettify.isWS(element.firstChild))
+            element.removeChild(element.firstChild);
+        if (element.lastChild && Deprettify.isWS(element.lastChild))
+            element.removeChild(element.lastChild);
+        return element;
+    }
+
+    static isWS(element) {
+        return element.nodeType === Node.TEXT_NODE &&
+               element.nodeValue.match(/^\s*$/);
+    }
+
+    static cleanup(text) {
+        return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>');
+    }
+
 }
 
 // Local Variables:

@@ -156,9 +156,14 @@ the `CoqManager` constructor:
 | `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
 | `all_pkgs`      | array of string | (see below)     | List of available packages that will be listed in the packages panel.                                         |
 | `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
+| `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |
 | `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
 | `implicit_libs` | boolean         | `false`         | Allow `Require`ing Coq built-in modules by short name only (e.g., `Require Arith.`).                          |
 | `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
+| `show`          | boolean         | `true`          | Opens up the jsCoq panel on startup.                                                                          |
+| `focus`         | boolean         | `true`          | Sets the focus to the editor once jsCoq is ready.                                                             |
+| `replace`       | boolean         | `false`         | Replace `<div>`(s) referred to by `jscoq_ids` with jsCoq editors, moving the text content.                    |
+| `line_numbers`  | string          | `continue`      | Line numbering policy; across code snippets on page (`continue`) or separate per snippet (`restart`).         |
 | `file_dialog`   | boolean         | `false`         | Enables UI for loading and saving files (^O/^S, or ⌘O/⌘S on Mac).                                             |
 | `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
 | `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |

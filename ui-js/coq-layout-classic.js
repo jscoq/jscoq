@@ -116,6 +116,7 @@ class CoqLayoutClassic {
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
+        this.onToggle = evt => {};
         this.panel.querySelector('#hide-panel')
             .addEventListener('click', evt => this.toggle() );
 
@@ -135,23 +136,20 @@ class CoqLayoutClassic {
 
     show() {
         this.ide.classList.remove('toggled');
+        this.onToggle({target: this, shown: true});
     }
 
     hide() {
         this.ide.classList.add('toggled');
+        this.onToggle({target: this, shown: false});
     }
 
-    toggled() {
-        return this.ide.classList.contains('toggled');
+    isVisible() {
+        return !this.ide.classList.contains('toggled');
     }
 
     toggle() {
-        if (this.toggled()) {
-            this.show();
-        }
-        else {
-            this.hide();
-        }
+        this.isVisible() ? this.hide() : this.show();
     }
 
     splash(version_info, msg, mode='wait') {

@@ -11,15 +11,32 @@
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
 
     <title>Use Coq in Your Browser: The Js Coq Theorem Prover Online IDE!</title>
+
+    <style>
+    kbd {
+      padding: 2px 4px;
+      font-size: 85%; 
+      background: #0003; color: #333; 
+      border-radius: 3px; line-height: 2em; margin: 1px;
+      box-shadow: inset -1px -1px 0 rgba(0,0,0,.25);
+    }
+    slash::after {
+      content: "/"; 
+      font-size: 120%; font-family: times;
+      position: relative;
+      top: 2px;
+    }
+    </style>
   </head>
 
-<body>
+<body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
   <div id="document">
     <p>
-    Alt+↑/↓ – move through proof; Alt+→ or Alt+⏎ – go to cursor. <br/>
-    Alt+hover executed sentences to watch intermediate steps. <br/>
+    <kbd>Alt</kbd>+<kbd>↓</kbd><slash></slash><kbd>↑</kbd> – move through proof; 
+    <kbd>Alt</kbd>+<kbd>→</kbd> or <kbd>Alt</kbd>+<kbd>⏎</kbd> – go to cursor. <br/>
+    <kbd>Ctrl</kbd>+hover executed sentences to watch intermediate proof steps. <br/>
     Hover identifiers in goals to view their types. Alt+hover to view definitions.<br/>
     <i style="color: rgb(51, 51, 150)">Company-coq</i> addon is enabled: it will auto-complete names of tactics and lemmas 
     from the standard library, and also show types of lemmas in the right pane.
