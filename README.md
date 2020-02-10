@@ -11,7 +11,7 @@ jsCoq v8.11+0.11.0 supporting Coq 8.11, try it:
 
 <https://jscoq.github.io>
 
-JsCoq is written in ES2017, thus any recent standard-compliant browser
+jsCoq is written in ES2017, thus any recent standard-compliant browser
 should work. jsCoq also runs in my 8-year old Galaxy Nexus. Browser
 performance is quite variable these days, see the [Troubleshooting](#Troubleshooting) section if you have problems.
 
@@ -127,7 +127,10 @@ are hard to fix; you may be stuck with them for a while.
 
 ## API / How to embed in your own webpage
 
-JsCoq provides a `coqManager` javascript object for embedding Coq in
+*For a more detailed tutorial, refer to* [docs/embedding.md](docs/embedding.md).
+
+jsCoq's main entry point is the `CoqManager` JavaScript object used for
+launching a Coq worker and embedding Coq functionality in
 your particular application, blog, or webpage. The basic pattern to
 add jsCoq to webpage with Coq code is:
 
@@ -138,15 +141,17 @@ add jsCoq to webpage with Coq code is:
   </script>
 ```
 
-where `$path` is the path the jsCoq distribution, `$list_of_ids` is
-the list of textareas that will form the Coq document. See below for
-available `$options`.
+where `$path` is the path the jsCoq distribution, and `$list_of_ids` is
+a list of `<textarea>`s or `<div>`s that will form the Coq document.
+CSS selectors are also allowed as part of `$list_of_ids`: all matching elements
+will be added to the document.
+See below for available `$options`.
 
 The jsCoq [landing webpage](index.html) is a good running example.
 
 ### Options
 
-JsCoq accepts the following options as an optional second parameter to
+jsCoq accepts the following options as an optional second parameter to
 the `CoqManager` constructor:
 
 | Key             | Type            | Default         | Description                                                                                                   |
@@ -321,7 +326,7 @@ Incomplete list of places where jsCoq has been used:
 
 You can download ready-to-use builds from
 https://github.com/ejgallego/jscoq-builds/ ; find below the
-instructions to build JsCoq yourself, it is reasonably easy:
+instructions to build jsCoq yourself, it is reasonably easy:
 ```shell
 $ git submodule update --remote
 $ ./etc/toolchain-setup.sh
@@ -329,7 +334,7 @@ $ make coq
 $ make jscoq
 ```
 
-For more detailed description and prerequisites, see [docs/build.md](./docs/build.md).
+*For more detailed description and prerequisites, see* [docs/build.md](./docs/build.md).
 
 ### Addon Packages:
 
@@ -343,7 +348,7 @@ For more detailed description and prerequisites, see [docs/build.md](./docs/buil
 
 ## Serialization
 
-JsCoq used to support serialization to Json or Sexps for Coq's
+jsCoq used to support serialization to Json or Sexps for Coq's
 internal data structures, but this effort has been split to an
 independent development. See https://github.com/ejgallego/coq-serapi
 for more information.

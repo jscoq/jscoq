@@ -9,7 +9,7 @@
     <script src="./ui-js/jscoq-loader.js"></script>
   </head>
 
-<body>
+<body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
     <div id="code-wrapper">
       <div id="document">
@@ -19,7 +19,7 @@
             Copy <tt>node_modules/jscoq/examples/npm-template.html</tt>
             and start editing.
         </p>
-        <textarea id="coq-devel-1">
+        <textarea class="coq-code">
 (* Your document can embed Coq snippets! *)
 Inductive and_they_run := too(*!*).
 </textarea>
@@ -30,7 +30,7 @@ Inductive and_they_run := too(*!*).
   <!-- jsCoq configuration part -->
   <script type="text/javascript">
 
-    var jscoq_ids  = ['coq-devel-1'];
+    var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {
         prelude:   true,
         base_path: './',
