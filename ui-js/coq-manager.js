@@ -269,6 +269,11 @@ class CoqManager {
 
         this.options = copyOptions(options, this.options);
 
+        if (Array.isArray(this.options.all_pkgs)) {
+            this.options.all_pkgs =
+                {[this.options.pkg_path]: this.options.all_pkgs};
+        }
+
         // Setup the Coq statement provider.
         this.provider = this.setupProvider(elems);
 
@@ -420,9 +425,8 @@ class CoqManager {
             this.coq.interruptSetup();
 
             // Setup package loader
-            this.packages = new PackageManager(this.layout.packages, this.options.pkg_path,
-                this.options.all_pkgs,
-                this.coq);
+            this.packages = new PackageManager(this.layout.packages,
+                this.options.all_pkgs, this.coq);
             
             this.packages.expand();
 
@@ -434,9 +438,12 @@ class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            // The fun start: fetch package infos;
-            // this will trigger loads of init packages.
-            this.coq.infoPkg(this.packages.pkg_root_path, this.options.all_pkgs);
+            // The fun starts: fetch package infos,
+            // and load init packages once they are available
+            this.packages.populate();
+
+            await this.packages.loadDeps(this.options.init_pkgs);
+            this.coqInit();
         }
         catch (err) {
             this.handleLaunchFailure(err);
@@ -680,10 +687,6 @@ class CoqManager {
             pkgs.length == 0 ? undefined : 
               "Loading libraries. Please wait.\n"
             + "(If you are having trouble, try cleaning your browser's cache.)");
-
-        this.packages.waitFor(pkgs)
-        .then(() => this.packages.loadDeps(pkgs))
-        .then(() => { this.coqInit(); });
     }
 
     // Coq Init: At this point, the required libraries are loaded

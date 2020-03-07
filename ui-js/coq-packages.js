@@ -6,19 +6,50 @@ class PackageManager {
      * Creates the packages UI and loading manager.
      *
      * @param {Element} panel_dom <div> element to hold the package entries
-     * @param {string} pkg_root_path base URL of package locations (coq-pkgs);
-     *   relative to the location of this script
-     * @param {array} pkg_names list of package names
+     * @param {object} packages an object containing package URLs and lists of 
+     *   names in the format
+     *   `{'base_uri1', ['pkg_name1', 'pkg_name2', ...], 'base_uri2': ...}`.
      * @param {CoqWorker} coq reference to the Coq worker instance to send
      *   load requests to
      */
-    constructor(panel_dom, pkg_root_path='../coq-pkgs/', pkg_names=[], coq) {
-        this.pkg_root_path = pkg_root_path + (pkg_root_path.endsWith('/') ? '' : '/');
-        this.pkg_names     = pkg_names;
+    constructor(panel_dom, packages, coq) {
         this.panel         = panel_dom;
         this.bundles       = {};
         this.loaded_pkgs   = [];
         this.coq           = coq;
+
+        this.initializePackageList(packages);
+    }
+
+    /**
+     * Creates CoqPkgInfo objects according to the paths in names in the given
+     * `packages` object.
+     * @param {object} packages (see constructor)
+     */
+    initializePackageList(packages) {
+        this.packages = [];
+        this.packages_by_name = {};
+        this.packages_by_uri = {};
+
+        // normalize all URI paths to end with a slash
+        let mkpath = path => path + (path.endsWith('/') ? '' : '/');
+
+        for (let [key, pkg_names] of Object.entries(packages)) {
+            let base_uri = mkpath(key);
+            this.packages_by_uri[base_uri] = pkg_names;
+
+            for (let pkg of pkg_names) {
+                let pkg_info = new CoqPkgInfo(pkg, base_uri);
+                this.packages.push(pkg_info);
+                this.packages_by_name[pkg] = pkg_info;
+            }
+        }
+    }
+
+    populate() {
+        for (let [base_uri, pkgs] of Object.entries(this.packages_by_uri)) {
+            this.coq.infoPkg(base_uri, pkgs);
+        }
     }
 
     addBundleInfo(bname, pkg_info) {
@@ -35,11 +66,12 @@ class PackageManager {
         row.append($('<span>').text(pkg_info.desc));
 
         // Find bundle's proper place in the order among existing entries
-        var place_before = null, idx = this.pkg_names.indexOf(bname);
+        var pkg_names = this.packages.map(p => p.name),
+            place_before = null, idx = pkg_names.indexOf(bname);
 
         if (idx > -1) {
             for (let e of $(this.panel).children()) {
-                let eidx = this.pkg_names.indexOf($(e).attr('data-name'));
+                let eidx = pkg_names.indexOf($(e).attr('data-name'));
                 if (eidx == -1 || eidx > idx) {
                     place_before = e;
                     break;
@@ -62,7 +94,7 @@ class PackageManager {
         this.bundles[bname] = { div: div, info: pkg_info };
 
         if (pkg_info.archive) {
-            var archive = new CoqPkgArchive(this.getUrl(pkg_info.archive));
+            var archive = new CoqPkgArchive(this.getUrl(bname, pkg_info.archive));
             archive.onProgress = evt => this.showPackageProgress(bname, evt);
             this.bundles[bname].archive = archive;
         }
@@ -92,7 +124,7 @@ class PackageManager {
 
     addBundleResource(bname, uri=undefined) {
         return new Promise((resolve, reject) => {
-            $.getJSON(uri || this.getUrl(`${bname}.json`)).then(json => {
+            $.getJSON(uri || this.getUrl(bname, `${bname}.json`)).then(json => {
                 this.addBundleInfo(bname || json.desc, json);
                 resolve(json);
             });
@@ -161,10 +193,8 @@ class PackageManager {
         return binfo;
     }
 
-    getUrl(resource) {
-        // Generate URL with the pkg_root_path as the base
-        return new URL(resource,
-                  new URL(this.pkg_root_path, PackageManager.scriptUrl))
+    getUrl(pkg_name, resource) {
+        return this.packages_by_name[pkg_name].getUrl(resource);
     }
 
     getLoadPath() {
@@ -274,17 +304,19 @@ class PackageManager {
         this.showPackageCompleted(bname);
     }
 
-    loadDeps(deps) {
+    async loadDeps(deps) {
+        await this.waitFor(deps);
         return Promise.all(
             deps.map(pkg => this.startPackageDownload(pkg)));
     }
 
     loadPkg(pkg_name) {
-        var bundle = this.bundles[pkg_name];
+        var bundle = this.bundles[pkg_name],
+            pkg = this.packages_by_name[pkg_name];
 
         return new Promise((resolve, reject) => {
             bundle._resolve = resolve 
-            this.coq.loadPkg(this.pkg_root_path, pkg_name);
+            this.coq.loadPkg(pkg.base_uri, pkg_name);
         });
     }
 
@@ -331,6 +363,20 @@ class PackageManager {
     dispatchEvent(evt)             { this.panel.dispatchEvent(evt); }
     addEventListener(type, cb)     { this.panel.addEventListener(type, cb); }
     removeEventListener(type, cb)  { this.panel.removeEventListener(type, cb); }
+}
+
+
+class CoqPkgInfo {
+    constructor(name, base_uri) {
+        this.name = name;
+        this.base_uri = base_uri;
+    }
+
+    getUrl(resource) {
+        // Generate URL with the package's base_uri as the base
+        return new URL(resource,
+                  new URL(this.base_uri, PackageManager.scriptUrl));
+    }
 }
 
 

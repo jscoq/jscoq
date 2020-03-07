@@ -159,7 +159,7 @@ the `CoqManager` constructor:
 | `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
 | `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
 | `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
-| `all_pkgs`      | array of string | (see below)     | List of available packages that will be listed in the packages panel.                                         |
+| `all_pkgs`      | array of string / object        | (see below)     | List of available packages that will be listed in the packages panel.                                         |
 | `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
 | `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |
 | `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
@@ -178,6 +178,13 @@ available with the current version of jsCoq. At the moment, it is:
 ```js
 ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',
  'math-comp', 'elpi', 'lf', 'plf']
+```
+
+By default, packages are loaded from jsCoq's `coq-pkgs` directory.
+This can be controlled by passing an object instead of an array; the keys of
+the object correspond to base directories where package files are located.
+```js
+{'../coq-pkgs': ['init', 'coq-base'], '/my-pkgs': ['cool-stuff']}
 ```
 
 The `editor` property may contain any option supported by CodeMirror
