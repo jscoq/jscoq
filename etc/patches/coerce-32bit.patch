@@ -1,3 +1,19 @@
+diff --git a/clib/hashset.ml b/clib/hashset.ml
+index b7a245a..c1ecb4f 100644
+--- a/clib/hashset.ml
++++ b/clib/hashset.ml
+@@ -223,9 +223,9 @@ module Combine = struct
+        this topic. Therefore, there must be room for improvement here. *)
+     let alpha = 65599
+     let beta  = 7
+-    let combine x y     = x * alpha + y
++    let combine x y     = (x * alpha + y) land 0x3fffffff
+     let combine3 x y z   = combine x (combine y z)
+     let combine4 x y z t = combine x (combine3 y z t)
+     let combine5 x y z t u = combine x (combine4 y z t u)
+-    let combinesmall x y = beta * x + y
++    let combinesmall x y = (beta * x + y) land 0x3fffffff
+ end
 diff --git a/kernel/dune b/kernel/dune
 index 5f7502e..b22c763 100644
 --- a/kernel/dune
@@ -24,6 +40,19 @@ index 445166f..2c17e02 100644
  
  let uint_size = 63
  
+diff --git a/lib/system.ml b/lib/system.ml
+index 2d68fd2..42aea12 100644
+--- a/lib/system.ml
++++ b/lib/system.ml
+@@ -184,7 +184,7 @@ let input_binary_int f ch =
+   | Failure s -> error_corrupted f s
+ let output_binary_int ch x = output_binary_int ch x; flush ch
+ 
+-let marshal_out ch v = Marshal.to_channel ch v []; flush ch
++let marshal_out ch v = Marshal.to_channel ch v [Marshal.Compat_32]; flush ch
+ let marshal_in filename ch =
+   try Marshal.from_channel ch
+   with
 diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
 index febf4fa..3255c53 100644
 --- a/theories/Numbers/Cyclic/Int63/Int63.v
