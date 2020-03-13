@@ -50,20 +50,16 @@ type coq_opts = {
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
-
 type 'a seq = 'a Seq.t
-
 
 let feedback_id = ref None
 
-
 let set_options opt_values =
   let open Goptions in
-  let new_val v old = v in
+  let new_val v _old = v in
   List.iter
     (fun (opt, value) -> set_option_value new_val opt value)
     opt_values
-
 
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)

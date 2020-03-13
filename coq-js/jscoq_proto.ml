@@ -58,8 +58,8 @@ type search_query =
   [@@deriving yojson]
 
 type opaque = Js_of_ocaml.Js.Unsafe.any
-let opaque_to_yojson x = `Null
-let opaque_of_yojson x = Result.Error "opaque value"
+let opaque_to_yojson _x = `Null
+let opaque_of_yojson _x = Result.Error "opaque value"
 
 (* Main RPC calls *)
 type jscoq_cmd =

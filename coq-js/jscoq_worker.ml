@@ -177,7 +177,7 @@ let coq_exn_info exn =
 
 let requires ast =
   match ast with
-  | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs)} ->
+  | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs); _ } ->
     let prefix_str = match prefix with
     | Some ref -> Jslibmng.module_name_of_qualid ref
     | _ -> [] in
