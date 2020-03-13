@@ -1,6 +1,6 @@
 (env
  (dev     (flags :standard -rectypes))
- (release (flags :standard -rectypes)))
+ (release (flags :standard -rectypes -w +27+32)))
 
 (rule
  (targets coq-pkgs)

@@ -33,7 +33,7 @@ index 9054507..d21b4f4 100644
    if !interrupt then begin interrupt := false; raise Sys.Break end;
    incr steps;
    if !enable_thread_delay && !steps = 1000 then begin
-@@ -79,11 +91,31 @@ let windows_timeout n f x e =
+@@ -79,11 +91,32 @@ let windows_timeout n f x e =
      let e = Backtrace.add_backtrace e in
      Exninfo.iraise e
  
@@ -61,6 +61,7 @@ index 9054507..d21b4f4 100644
  | _ -> { timeout = windows_timeout }
 +*)
 +
++let _ = windows_timeout, unix_timeout
 +let timeout_fun = { timeout = jscoq_timeout }
  
  let timeout_fun_ref = ref timeout_fun

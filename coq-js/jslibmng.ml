@@ -223,7 +223,7 @@ let rec last = function
     | _ :: t -> last t
 
 let is_intrinsic = function
-    | "Coq" :: t -> true
+    | "Coq" :: _ -> true
     | _ -> false
 
 let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
