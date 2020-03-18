@@ -19,6 +19,7 @@
    for `coqdoc`-generated pages (@corwin-of-amber)
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
+ - Allow multiple directories for package files (@corwin-of-amber)
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
