@@ -5,8 +5,28 @@
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
 
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <style>kbd { background: #0003; color: #333; }</style>
-    <title>Use Coq in Your Browser: The Js Coq Theorem Prover Online IDE!</title>
+    <style>
+      kbd { background: #0003; color: #333; font-size: 80%; }
+      table.doc-actions th, table.doc-actions td {
+        padding: .2em .5em;
+        vertical-align: top;
+        border: 1px solid #999;
+      }
+      table.doc-actions td {
+        padding-bottom: .25em;
+      }
+      h5 {
+        margin-top: 12px;
+        margin-bottom: 7px;
+        font-size: 110%;
+        font-style: italic;
+        color: #059;
+      }
+      span.jscoq-name {
+        color: #363;
+      }
+    </style>
+    <title>jsCoq – Use Coq in Your Browser</title>
   </head>
 
 <body class="jscoq-main">
@@ -14,18 +34,50 @@
   <div id="code-wrapper">
   <div id="document">
   <div>
-    <h3>Welcome to the JsCoq Interactive Online System!</h3>
+    <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
     <p>
-      Welcome to the JsCoq technology demo! JsCoq is an interactive,
+      Welcome to the <span class="jscoq-name">jsCoq</span> technology demo!
+      <span class="jscoq-name">jsCoq</span> is an interactive,
       web-based environment for the Coq Theorem prover, developed at
       the <a href="https://www.cri.ensmp.fr/">Centre de Recherche en Informatique</a> of <a href="http://www.mines-paristech.fr/">MINES ParisTech</a> (former École de Mines de Paris).
     </p>
-    <h4>Instructions:</h4>
     <p>
-      JsCoq is open source. If you find any problem or want to make
+      <span class="jscoq-name">jsCoq</span> is open source. If you find any problem or want to make
       any contribution, you are extremely welcome! We await your
       feedback at <a href="https://github.com/ejgallego/jscoq">github</a>.
     </p>
+    <h4>Instructions:</h4>
+    <p>
+      The following document contains embedded Coq code.
+      All the code is editable and can be run directly on the page.
+      Once <span class="jscoq-name">jsCoq</span> finishes loading, you are
+      free to experiment by stepping through the proof and viewing intermediate
+      proof states on the right panel.
+    </p>
+    <h5>Actions:</h5>
+    <table class="doc-actions">
+      <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
+      <tr>
+        <td><img src="ui-images/down.png" height="15px"><img src="ui-images/up.png" height="15px"></td>
+        <td>
+          <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
+          <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
+        </td>
+        <td>Move through the proof.</td>
+      </tr>
+      <tr>
+        <td><img src="ui-images/to-cursor.png" height="20px"></td>
+        <td>
+          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Alt</kbd>+<kbd>→</kbd>
+        </td>
+        <td>Run (or go back) to the current point.</td>
+      </tr>
+      <tr>
+        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
+        <td><kbd>F8</kbd></td>
+        <td>Toggles the goal panel.</td>
+      </tr>
+    </table>
     <h5>Saving your own proof scripts:</h5>
     <p>
       The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
@@ -34,14 +86,6 @@
       you want to share your developments with other users.
     </p>
 
-    <h5>Key bindings:</h5>
-    <p>
-      <kbd>Alt</kbd>+<kbd>Enter</kbd> or <kbd>Alt</kbd>+<kbd>→</kbd> goes to
-      the current point; 
-      <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd> or <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd>
-      will move through the proof; <strong>F8</strong> or the power icon toggles
-      the goal panel.
-    </p>
     <h4>A First Example: The Infinitude of Primes</h4>
     <p>
       We don't provide a Coq tutorial (yet), but as a showcase, we
@@ -63,7 +107,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive. </textarea>
   </div>
   <div>
-    <h4>Ready to do Proofs!</h4>
+    <h5>Ready to do Proofs!</h5>
     <p>
       Once the basic environment has been set up, we can proceed to
       the proof:
@@ -82,49 +126,57 @@ Proof. </textarea>
       implies that to show the existence of an object, we need to
       actually provide an algorithm that will construct it.
 
-      In this case, we need to find a prime number `p` greater than
-      `m`. What would be a suitable `p`?
+      In this case, we need to find a prime number <code>p</code>
+      greater than <code>m</code>.
+      What would be a suitable <code>p</code>?
 
-      Choosing as `p` the first prime divisor of `m! + 1` works.  As
-      we will shortly see, properties of divisibility will imply that
-      `p` is greater than `m`.
-      </p>
-      <textarea id="prime_above2" >
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.</textarea>
-      <p>
-        Our first step is thus to use the library-provided lemma
-        `pdivP`, which states that every number is divided by a
-        prime. Thus, we obtain a number `p` and the corresponding
-        hypotheses `pr_p : prime p` and `p_dv_m1` "p divides m! +
-        1". The ssreflect tactic `have` provides a convenient way to
-        instantiate this lemma and discard the side proof obligation
-        `1 &lt; m! + 1`.
-      </p>
+      Choosing as <code>p</code> the first prime divisor of <code>m! + 1</code>
+      works.
+      As we will shortly see, properties of divisibility will imply that
+      <code>p</code> must be greater than <code>m</code>.
+    </p>
+    <textarea id="prime_above2" >
+have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1
+  by rewrite addn1 ltnS fact_gt0.</textarea>
+    <p>
+      Our first step is thus to use the library-provided lemma
+      <code>pdivP</code>, which states that every number is divided by a
+      prime. Thus, we obtain a number <code>p</code> and the corresponding
+      hypotheses <code>pr_p : prime p</code> and <code>p_dv_m1</code>,
+      "p divides m! + 1".
+      The ssreflect tactic <code>have</code> provides a convenient way to
+      instantiate this lemma and discard the side proof obligation
+      <code>1 &lt; m! + 1</code>.
+    </p>
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
     <p>
-      It remains to prove that `p` is greater than `m`. We reason by
+      It remains to prove that <code>p</code> is greater than <code>p</code>.
+      We reason by
       contraposition with the divisibility hypothesis, which gives us
-      the goal "if `p &lt;= m` then `p` is not a prime divisor of `m! +
-      1`".
+      the goal "if <code>p &lt;= m</code> then <code>p</code> is not a prime divisor of 
+      <code>m! + 1</code>".
     </p>
     <textarea id="prime_above4" >
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.</textarea>
     <p>
       The goal follows from basic properties of divisibility, plus
-      from the fact that if `p &lt; m`, then `p` divides `m!`, but `p`
-      prime cannot divide 1, a necessary condition for `p` to divide
-      `m! + 1`.
+      from the fact that if <code>p &lt; m</code>, then <code>p</code> divides
+      <code>m!</code>, so that for <code>p</code> to to divide
+      <code>m! + 1</code> it must also divide 1,
+      in contradiction to <code>p</code> being prime.
+    </p>
+    <hr/>
+  <p>
+    <span class="jscoq-name">jsCoq</span> provides many other packages,
+    including Coq's standard library and the
+    <a href="https://math-comp.github.io"></a>mathematical components</a>
+    library.
+    Feel free to experiment, and bear with the beta status of this demo.
   </p>
   <p>
-    jsCoq provides many other packages, including Coq's standard
-    library and the mathematical components library. Feel free to
-    experiment, and bear with the alpha status of this demo.
-  </p>
-  <p>
-    JsCoq's homepage is at github <a href="https://github.com/ejgallego/jscoq">
-    https://github.com/ejgallego/jscoq</a> ¡Salut!
+    <i>¡Salut!</i>
   </p>
   </div> <!-- /#panel body -->
   </div> <!-- /#document -->
@@ -147,8 +199,7 @@ Qed.</textarea>
     /* Global reference */
     var coq;
 
-    loadJsCoq(jscoq_opts.base_path)
-        .then( () => coq = new CoqManager(jscoq_ids, jscoq_opts) );
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => coq = res);
   </script>
 </body>
 </html>
