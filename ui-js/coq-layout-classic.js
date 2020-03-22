@@ -33,9 +33,10 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <i>js+</i><!--
-        --><a href="https://coq.inria.fr"><!--
-          --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle">
+        <img height="18px" src="${base_path}/ui-images/js-logo.svg" 
+             style="vertical-align: top; margin-top: 5px"><!--
+        --><i style="color: #c96">+</i><a href="https://coq.inria.fr"><!--
+          --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle; margin-left: -1px">
         </a>
         <!-- 
         <a href="http://feever.fr/" target="_blank">
