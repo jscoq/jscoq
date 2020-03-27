@@ -28,7 +28,7 @@ class PackageManager {
      * @param {object} packages (see constructor)
      * @param {object} aliases (ditto)
      */
-    initializePackageList(packages, aliases) {
+    initializePackageList(packages, aliases={}) {
         this.packages = [];
         this.packages_by_name = {};
         this.packages_by_uri = {};

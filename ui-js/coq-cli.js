@@ -145,7 +145,7 @@ class HeadlessCoqManager {
     }
 
     coqReady() {
-        if (this.log_debug)
+        if (this.options.log_debug)
             console.log("Coq worker ready.")
 
         this.goNext() || process.nextTick(() => this.eof());

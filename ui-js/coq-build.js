@@ -1,5 +1,6 @@
 const {fsif_native, FileStore} = require('./fs-interface'),
-      neatjson = require('neatjson');
+      neatjson = require('neatjson'),
+      Vue = require('vue/dist/vue');
 
 require('./coq-manager'); // needed for Array.equals :\
 
@@ -635,10 +636,22 @@ class CoqBuild {
 
         this._ongoing.clear();
         this._updateView();
+
+        return this.coq.coq.when_created;
     }
 
-    start() {
+    async start() {
+        if (this.editor_provider && this.editor_provider.dirty)
+            await this.editor_provider.saveLocal();
+
         this.coqc.batchCompile(this.plan, this.options.upload);
+    }
+
+    restart() {
+        this.coqc.output.vo = {};
+        this.coqc.output.errors = {};
+
+        return this.start();
     }
 
     _openProject(dir="/") {
@@ -658,6 +671,7 @@ class CoqBuild {
             this._ongoing.delete(ev.entry.input);
         }
         this._updateView();
+        this._updateMarks();
     }
 
     // =======
@@ -694,6 +708,13 @@ class CoqBuild {
 
     withEditor(editor_provider) {
         this.editor_provider = editor_provider;
+
+        // Only one editor store can exist at any given time :/
+        const store = this.store;
+        CmCoqProvider.file_store = {
+            async getItem(filename) { return store.readFileSync(filename, 'utf-8'); },
+            async setItem(filename, content) { store.file_map.set(filename, content); }
+        };
     }
 
     onAction(ev) {
@@ -728,19 +749,23 @@ class CoqBuild {
             return 'error';
     }
 
-    _openSourceFile(filename) {
-        var text = this.store.readFileSync(filename, 'utf-8');
-        this.editor_provider.load(text, filename);
+    async _openSourceFile(filename) {
+        await this.editor_provider.openLocal(filename);
         this._updateMarks();
     }
 
     _updateMarks() {
         if (this.editor_provider) {
             var filename = this.editor_provider.filename;
+
+            for (let stm of this._active_marks || []) stm.mark.clear();
+            this._active_marks = [];
+
             if (filename && this.coqc.output.errors.hasOwnProperty(filename)) {
                 for (let e of this.coqc.output.errors[filename]) {
                     if (e.loc && e.loc.start && e.loc.end) {
                         var stm = {start: e.loc.start, end: e.loc.end};
+                        this._active_marks.push(stm);
                         this.editor_provider.mark(stm, 'error');
                     }
                 }
@@ -758,7 +783,7 @@ CoqBuild.BULLETS = {
 
 
 
-module.exports = {CoqProject, CoqDep, CoqC, CoqBuild}
+module.exports = {CoqProject, CoqDep, CoqC, CoqBuild, FileStore}
 
 
 

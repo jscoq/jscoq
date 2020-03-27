@@ -3,6 +3,10 @@
  * information as well.
  */
 
+const Vue = require('vue/dist/vue');
+
+
+
 Vue.component('problem-list', {
     props: ['problems'],
     data: function() { return {
