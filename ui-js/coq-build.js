@@ -1,5 +1,6 @@
 const {fsif_native, FileStore} = require('./fs-interface'),
-      neatjson = require('neatjson');
+      neatjson = require('neatjson'),
+      Vue = require('vue/dist/vue');
 
 require('./coq-manager'); // needed for Array.equals :\
 

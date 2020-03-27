@@ -1,0 +1,99 @@
+/* File list styles */
+
+ul.file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    font-size: 10pt;
+    line-height: 13pt;
+}
+
+ul.file-list li.file {
+    padding-left: 8px;
+    cursor: pointer;
+}
+
+ul.file-list li.file.selected {
+    background: rgb(46, 103, 160) !important;
+    color: white;
+}
+
+ul.file-list li.file:hover,
+ul.file-list li.folder > * > .entry:hover {
+    background: rgba(0,0,0,0.02);
+}
+
+ul.file-list li.folder > * > .entry {
+    color: #888;
+    font-weight: bold;
+}
+
+ul.file-list.level-0 {
+    background: #fbfbfb;
+}
+
+ul.file-list div.level-1 {
+    background: #f0f0f0;
+}
+
+ul.file-list div.level-2 {
+    background: #e6e6e6;
+}
+
+ul.file-list div.level-3 {
+    background: #dddddd;
+}
+
+ul.file-list div.level-4 {
+    background: #d6d6d6;
+}
+
+ul.file-list div.level-5 {
+    background: #d0d0d0;
+}
+
+ul.file-list > li.file.draghov,
+ul.file-list > li.folder.draghov > * > .entry {
+    border-bottom: 2px solid rgba(87, 87, 175, 0.8);
+    margin-bottom: -2px;
+}
+
+ul.file-list .dragged {
+    opacity: 0.5;
+}
+
+span.folder-knob {
+    cursor: pointer;
+    margin: 0 3px;
+}
+span.folder-knob::after {
+    display: inline-block;
+    width: .6em;
+    font-weight: bold;
+}
+
+span.folder-knob:not(.checked)::after {   
+    content: "▾"
+}
+
+span.folder-knob.checked::after {   
+    content: "▹";
+    color: #333;
+}
+
+ul.file-list div.entry {
+    display: flex;
+}
+
+ul.file-list div.entry .name {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+span[contenteditable=true] {
+    cursor: text;
+}
