@@ -9,30 +9,32 @@ class PackageManager {
      * @param {object} packages an object containing package URLs and lists of 
      *   names in the format
      *   `{'base_uri1', ['pkg_name1', 'pkg_name2', ...], 'base_uri2': ...}`.
+     * @param {object} pkg_path_aliases mnemonic for specific base URIs
      * @param {CoqWorker} coq reference to the Coq worker instance to send
      *   load requests to
      */
-    constructor(panel_dom, packages, coq) {
+    constructor(panel_dom, packages, pkg_path_aliases, coq) {
         this.panel         = panel_dom;
         this.bundles       = {};
         this.loaded_pkgs   = [];
         this.coq           = coq;
 
-        this.initializePackageList(packages);
+        this.initializePackageList(packages, pkg_path_aliases);
     }
 
     /**
      * Creates CoqPkgInfo objects according to the paths in names in the given
      * `packages` object.
      * @param {object} packages (see constructor)
+     * @param {object} aliases (ditto)
      */
-    initializePackageList(packages) {
+    initializePackageList(packages, aliases) {
         this.packages = [];
         this.packages_by_name = {};
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
-        let mkpath = path => path + (path.endsWith('/') ? '' : '/');
+        let mkpath = path => aliases[path] || path.replace(/(?<![/])$/, '/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
             let base_uri = mkpath(key);

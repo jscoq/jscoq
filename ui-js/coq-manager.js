@@ -270,8 +270,7 @@ class CoqManager {
         this.options = copyOptions(options, this.options);
 
         if (Array.isArray(this.options.all_pkgs)) {
-            this.options.all_pkgs =
-                {[this.options.pkg_path]: this.options.all_pkgs};
+            this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
         // Setup the Coq statement provider.
@@ -426,7 +425,7 @@ class CoqManager {
 
             // Setup package loader
             this.packages = new PackageManager(this.layout.packages,
-                this.options.all_pkgs, this.coq);
+                this.options.all_pkgs, {'+': this.options.pkg_path}, this.coq);
             
             this.packages.expand();
 
