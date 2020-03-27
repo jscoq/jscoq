@@ -22,20 +22,24 @@
     </style>
 
     <script>
-const {CoqBuild} = coqBuild;
+const {CoqBuild, FileStore} = coqBuild;
 
 var coq_build, pm, cm;
 
 async function setupPackageManager(coq_manager) {
-    var pm = new PackageManager($('#packages-panel')[0]);
-    pm.coq = coq_manager.coq;
+    const pkgs = {'../coq-pkgs/': ['init', 'coq-base', 'coq-collections',
+                                   'coq-arith', 'coq-reals']};
+
+    var pm = new PackageManager(
+        $('#packages-panel')[0], pkgs, {}, coq_manager.coq);
 
     // Load standard libs from coq-pkgs
-    var pkgs = ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'],
-        deps = pkgs;
+    pm.coq.observers.push({
+        coqLibInfo(name, info) { pm.addBundleInfo(name, info); }
+    })
 
-    await Promise.all(pkgs.map(pkg => pm.addBundleResource(pkg)));
-    await pm.loadDeps(deps);
+    pm.populate();
+    await pm.loadDeps(['init']);
     coq_manager.project.path.push(...pm.getLoadPath());
 
     return pm;
@@ -80,6 +84,17 @@ function setupDropZone(jdom) {
     });
 }
 
+async function sampleProject() {
+    // sample project
+    var fs = new FileStore();
+    fs.file_map.set('simple/_CoqProject', '-R . simple\n\nOne.v Two.v Three.v\n');
+    fs.file_map.set('simple/One.v', 'Check 1.\nFrom simple Require Import Two.');
+    fs.file_map.set('simple/Two.v', 'Definition two_of a := a + a.\n');
+    fs.file_map.set('simple/Three.v', 'From simple Require Import One Two.');
+
+    await coq_build.ofDirectory('simple', fs.fsif);
+    coq_build.prepare();
+}
 
 
 loadJsCoq().then(async () => {
@@ -87,7 +102,7 @@ loadJsCoq().then(async () => {
     coq_build = new CoqBuild();
 
     $(() => {
-        cm = new CmCoqProvider('code-pane');
+        cm = new CmCoqProvider(document.querySelector('#code-pane'));
 
         coq_build.withUI('#project-panel file-list', '#log-panel')
                  .withEditor(cm);
@@ -97,13 +112,15 @@ loadJsCoq().then(async () => {
         $('#open').click(() => $('#open-files').click());
         $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
         $('#build').click(() => coq_build.start());
+
+        //sampleProject();   // for testing
     });
     
     Object.assign(coq_build.options, {
         prelude: true, log_debug: true, debug: true
     });
 
-    coq_build.prepare();
+    await coq_build.prepare();
 
     pm = await setupPackageManager(coq_build.coq);
 
@@ -132,7 +149,10 @@ loadJsCoq().then(async () => {
       <div id="log-panel">
         <problem-list ref="problem_list" :problems="errors"/>
       </div>
-      <div id="packages-panel"><p>Packages</p></div>
+      <div id="packages-panel-wrapper">
+        <p>Packages</p>
+        <div id="packages-panel"></div>
+      </div>
     </div>
   </body>
 </html>

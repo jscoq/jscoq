@@ -635,6 +635,8 @@ class CoqBuild {
 
         this._ongoing.clear();
         this._updateView();
+
+        return this.coq.coq.when_created;
     }
 
     start() {
@@ -758,7 +760,7 @@ CoqBuild.BULLETS = {
 
 
 
-module.exports = {CoqProject, CoqDep, CoqC, CoqBuild}
+module.exports = {CoqProject, CoqDep, CoqC, CoqBuild, FileStore}
 
 
 

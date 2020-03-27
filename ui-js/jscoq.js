@@ -19,6 +19,10 @@ class CoqWorker {
                 this.createWorker(scriptPath ||
                                   this.constructor.defaultScriptPath());
         }
+
+        this.when_created.then(() => {
+            this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
+        });
     }
 
     /**
@@ -44,7 +48,6 @@ class CoqWorker {
             this.constructor._searchResource([script_path, alt_script_path]);
 
         this.worker = new Worker(this._worker_script)
-        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.worker.terminate());
