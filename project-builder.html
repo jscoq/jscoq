@@ -109,7 +109,7 @@ loadJsCoq().then(async () => {
         setupDropZone($('#outline-pane'));
         $('#open').click(() => $('#open-files').click());
         $('#open-files').change(ev => loadFromSelectedFiles(ev.originalEvent));
-        $('#build').click(() => coq_build.start());
+        $('#build').click(() => coq_build.restart());
 
         //sampleProject();   // for testing
     });
