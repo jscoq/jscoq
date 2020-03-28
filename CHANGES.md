@@ -1,6 +1,7 @@
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
 
+ - Project moved to https://github.com/jscoq/jscoq
  - Port to Coq 8.11 (@ejgallego)
  - Ltac2 is now built from the included Coq source and loaded by
    default by the init package (@ejgallego)
@@ -20,21 +21,6 @@
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
  - Allow multiple directories for package files (@corwin-of-amber)
- - Pin upstream Coq version to 8.11.1
-
- - [ ] Automatic parsing mode.
- - [ ] Execution gutters.
- - [ ] Support for UI layouts.
- - [ ] Dark theme - color scheme and icon set
- - [ ] Printer-friendly formatting in documents.
- - [ ] Further fine-tuning of auto-completion
-
-Pending worker tasks:
-
-+ Race: we cancel, then we add before the cancelled event arrives.
-+ Be careful about re-execing states, as this brings back the parser to an improper state.
-+ quick prev/next creates problems in long commands.
-+ we are reusing span_ids and this is not ok for the STM.
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
