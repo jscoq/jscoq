@@ -97,6 +97,14 @@ a, a:link, a:visited, a:active {
   padding-left: 2em;
 }
 
+body.jscoq-main .CodeMirror-scroll,
+body.jscoq-main .CodeMirror-sizer,
+body.jscoq-main .CodeMirror-gutter,
+body.jscoq-main .CodeMirror-gutters,
+body.jscoq-main .CodeMirror-linenumber {
+  box-sizing: content-box;  /* need to override `jscoq-main > *` */
+}
+
 /*
  * This is here for the time interval between document load and creation of
  * the CodeMirror editors from textareas.
