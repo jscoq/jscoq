@@ -1018,7 +1018,8 @@ class CoqManager {
                 '^KeyO':   () => sp.openLocalDialog(),
                 '^_KeyO':  () => sp.openFileDialog(),
                 '^KeyS':   () => sp.saveLocal(),
-                '^+KeyS':  () => sp.saveLocalDialog()
+                '^+KeyS':  () => sp.saveLocalDialog(),
+                '^_KeyS':  () => sp.saveToFile()
             };
 
             var sp = this.provider.currentFocus || this.provider.snippets[0],

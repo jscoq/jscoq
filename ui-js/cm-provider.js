@@ -528,10 +528,23 @@ class CmCoqProvider {
     }
 
     saveLocalDialog() {
-        var span = this._makeFileDialog("Save file: ");
+        var span = this._makeFileDialog("Save file: "),
+            a = $('<a>').addClass('dialog-link').text('To disk...')
+                        .mousedown(ev => ev.preventDefault())
+                        .click(() => this.saveToFile());
+
+        span.append(a);
 
         this.editor.openDialog(span[0], sel => this.saveLocal(sel), 
                                {value: this.filename});
+    }
+
+    saveToFile() {
+        var blob = new Blob([this.editor.getValue()]),
+            a = $('<a>').attr({href: URL.createObjectURL(blob),
+                               download: this.filename || 'untitled.v'});
+        a[0].click();
+        console.log(a);
     }
 
     _makeFileDialog(text) {

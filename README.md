@@ -48,12 +48,13 @@ The scratchpad's contents are saved in your browser's local storage (IndexedDB, 
 so they are not lost if you close the browser window or refresh the page.
 You can, in fact, store more than one document using the local open/save file dialogs:
 
-| Shortcut           | Action                                                        |
-|--------------------|---------------------------------------------------------------|
-| Ctrl-S             | Save file (with the last name provided, or `untitled.v`)      |
-| Ctrl-Shift-S       | Save file as (prompts for file name)                          |
-| Ctrl-O             | Open file (prompts for file name, supports tab completion)    |
-| Ctrl-Alt-O         | Open file from disk (using the browser's Open dialog)         |
+| Shortcut           | Action                                                                       |
+|--------------------|------------------------------------------------------------------------------|
+| Ctrl-S             | Save file (with the last name provided, or `untitled.v`)                     |
+| Ctrl-Shift-S       | Save file as (prompts for file name)                                         |
+| Ctrl-Alt-S         | Save file to disk (using the browser's Save dialog, or preset destination)   |
+| Ctrl-O             | Open file (prompts for file name, supports tab completion)                   |
+| Ctrl-Alt-O         | Open file from disk (using the browser's Open dialog)                        |
 
 On Mac, replace Ctrl with ⌘ (command) and Alt with ⌥ (option), as is traditional.
 
