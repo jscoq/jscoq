@@ -544,7 +544,6 @@ class CmCoqProvider {
             a = $('<a>').attr({href: URL.createObjectURL(blob),
                                download: this.filename || 'untitled.v'});
         a[0].click();
-        console.log(a);
     }
 
     _makeFileDialog(text) {
