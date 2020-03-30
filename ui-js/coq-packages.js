@@ -34,7 +34,7 @@ class PackageManager {
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
-        let mkpath = path => aliases[path] || path.replace(/(?<![/])$/, '/');
+        let mkpath = path => aliases[path] || path.replace(/([^/])$/, '$1/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
             let base_uri = mkpath(key);
