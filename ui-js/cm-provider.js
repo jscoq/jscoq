@@ -164,7 +164,7 @@ class CmCoqProvider {
     }
 
     // Mark a sentence with {clear, processing, error, ok}
-    mark(stm, mark_type) {
+    mark(stm, mark_type, loc_focus) {
 
         if (stm.mark) {
             let b = stm.mark.find();
@@ -183,9 +183,9 @@ class CmCoqProvider {
             this.markWithClass(stm, 'coq-eval-pending');
             break;
         case "error":
-            this.markWithClass(stm, 'coq-eval-failed');
+            this.markWithClass(stm, 'coq-eval-failed', loc_focus);
             // XXX: Check this is the right place.
-            this.editor.setCursor(stm.end);
+            this.editor.setCursor(stm.cursor);
             break;
         case "ok":
             this.markWithClass(stm, 'coq-eval-ok');
@@ -222,17 +222,25 @@ class CmCoqProvider {
         }
     }
 
-    markWithClass(stm, className) {
-        var doc = this.editor.getDoc();
+    markWithClass(stm, className, loc) {
+        var doc = this.editor.getDoc(),
+            {start, end} = stm;
+
+        if (loc) {
+            var idx = doc.indexFromPos(start);
+            start = doc.posFromIndex(idx + loc.bp);
+            end = doc.posFromIndex(idx + loc.ep);
+        }
 
         var mark = 
-            doc.markText(stm.start, stm.end, {className: className,
+            doc.markText(start, end, {className: className,
                 attributes: {'data-coq-sid': stm.coq_sid}});
 
-        this._markWidgetsAsWell(stm.start, stm.end, mark);
+        this._markWidgetsAsWell(start, end, mark);
 
         mark.stm = stm;
         stm.mark = mark;
+        stm.cursor = end;
     }
 
     /**
