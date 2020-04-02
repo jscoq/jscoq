@@ -15,15 +15,26 @@
       table.doc-actions td {
         padding-bottom: .25em;
       }
+      h4 {
+        background: #f6f9f9;
+        padding: 3px;
+        color: #089;
+        margin-top: 1em;
+      }
       h5 {
         margin-top: 12px;
         margin-bottom: 7px;
         font-size: 110%;
         font-style: italic;
-        color: #059;
+        color: #089;
       }
       span.jscoq-name {
         color: #363;
+      }
+      #team {
+        margin-top: 2em;
+        border: 1px solid #eee;
+        padding: 5px;
       }
     </style>
     <title>jsCoq – Use Coq in Your Browser</title>
@@ -38,13 +49,15 @@
     <p>
       Welcome to the <span class="jscoq-name">jsCoq</span> technology demo!
       <span class="jscoq-name">jsCoq</span> is an interactive,
-      web-based environment for the Coq Theorem prover, developed at
-      the <a href="https://www.cri.ensmp.fr/">Centre de Recherche en Informatique</a> of <a href="http://www.mines-paristech.fr/">MINES ParisTech</a> (former École de Mines de Paris).
+      web-based environment for the Coq Theorem prover, and is a collaborative
+      development effort. See the <a href="#team">list of contributors</a>
+      below.
     </p>
     <p>
       <span class="jscoq-name">jsCoq</span> is open source. If you find any problem or want to make
       any contribution, you are extremely welcome! We await your
-      feedback at <a href="https://github.com/ejgallego/jscoq">github</a>.
+      feedback at <a href="https://github.com/ejgallego/jscoq">GitHub</a>
+      and <a href="https://gitter.im/jscoq/Lobby">Gitter</a>.
     </p>
     <h4>Instructions:</h4>
     <p>
@@ -179,6 +192,30 @@ Qed.</textarea>
     <i>¡Salut!</i>
   </p>
   </div> <!-- /#panel body -->
+  <div id="team">
+    <a name="team"></a>
+      <p><i>The dev team</i></p>
+    <ul>
+      <li>
+        <a href="https://www.irif.fr/~gallego/">Emilio Jesús Gallego Arias</a>
+        (<a href="https://www.inria.fr">Inria</a>,
+         <a href="https://u-paris.fr">Université de Paris</a>,
+         <a href="https://www.irif.fr">IRIF</a>)
+      </li>
+      <li>
+        <a href="https://www.cs.technion.ac.il/~shachari/">Shachar Itzhaky</a>
+        (<a href="https://cs.technion.ac.il">Technion</a>)
+      </li>
+    </ul>
+    <p><i>Contributors</i></p>
+    <ul>
+      <li>
+        Benoît Pin
+        (<a href="https://www.cri.ensmp.fr/">CRI</a>,
+         <a href="http://www.mines-paristech.eu">MINES ParisTech</a>)
+      </li>
+    </ul>
+  </div>
   </div> <!-- /#document -->
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
@@ -190,6 +227,7 @@ Qed.</textarea>
     var jscoq_opts = {
         prelude:   false,
         implicit_libs: false,
+        focus: false,
         base_path: './',
         editor: { mode: { 'company-coq': true }, keyMap: 'default' },
         init_pkgs: ['init'],
