@@ -108,10 +108,11 @@ BUILDOBJ=${addprefix $(BUILDDIR)/./, \
 	coq-pkgs ui-js ui-css ui-images examples \
 	node_modules ui-external/CodeMirror-TeX-input}
 DISTDIR=_build/dist
+STAGEDIR=_build/staging
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
-dist: jscoq
+dist: jscoq libs-pkg
 	mkdir -p $(DISTDIR)
 	rsync -avpR --delete README.md $(BUILDOBJ) $(DISTDIR)
 
@@ -119,22 +120,24 @@ TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
 
 dist-tarball: dist
 	# Hack to make the tar contain a jscoq-x.x directory
+	rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tar.gz   \
+	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz   \
 	    -C _build $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' \
 	    --dereference jscoq-$(PACKAGE_VERSION)
+	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
 NPMOBJ += README.md package.json package-lock.json
 NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
 
 dist-npm:
-	mkdir -p $(DISTDIR)
-	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(DISTDIR)
-	cp docs/npm-landing.html $(DISTDIR)/index.html
-	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(DISTDIR)/ui-js/jscoq-loader.js
+	mkdir -p $(STAGEDIR) $(DISTDIR)
+	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(STAGEDIR)
+	cp docs/npm-landing.html $(STAGEDIR)/index.html
+	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(STAGEDIR)/ui-js/jscoq-loader.js
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
-	    -C $(DISTDIR) --exclude '*.bak' --exclude '*.tar.gz' .
+	    -C $(STAGEDIR) --exclude '*.bak' .
 
 ########################################################################
 # Local stuff and distributions
