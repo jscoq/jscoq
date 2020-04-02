@@ -273,6 +273,10 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #hide-panel {
   cursor: pointer;
+  width: 32px;
+  position: absolute;
+  left: -34px;
+  top: 2px
 }
 
 #hide-panel g path {
