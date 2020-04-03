@@ -109,7 +109,6 @@ BUILDOBJ=${addprefix $(BUILDDIR)/./, \
 	node_modules ui-external/CodeMirror-TeX-input}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR=_build/dist
-STAGEDIR=_build/staging
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
@@ -132,17 +131,18 @@ dist-tarball: dist
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
+NPMSTAGEDIR = _build/package
 NPMEXCLUDE = --delete-excluded --exclude '*.cma' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
 dist-npm:
-	mkdir -p $(STAGEDIR) $(DISTDIR)
-	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(STAGEDIR)
-	cp docs/npm-landing.html $(STAGEDIR)/index.html
-	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(STAGEDIR)/ui-js/jscoq-loader.js
+	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
+	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
+	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
+	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(NPMSTAGEDIR)/ui-js/jscoq-loader.js
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
-	    -C $(STAGEDIR) --exclude '*.bak' .
+	    -C ${dir $(NPMSTAGEDIR)} --exclude '*.bak' ${notdir $(NPMSTAGEDIR)}
 
 ########################################################################
 # Local stuff and distributions
