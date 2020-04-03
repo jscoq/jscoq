@@ -17,8 +17,8 @@
     "vue": "^2.6.10"
   },
   "devDependencies": {
-    "mocha": "^7.0.1",
-    "browserify": "^16.2.3"
+    "browserify": "^16.5.1",
+    "mocha": "^7.1.1"
   },
   "repository": {
     "type": "git",
