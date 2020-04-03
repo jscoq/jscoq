@@ -8,8 +8,7 @@
  (deps
    (package coq)
    (source_tree coq-addons)
-   ; (source_tree coq-external))
- )
+   (source_tree %{env:COQBUILDDIR_REL=}/user-contrib))
  (action
   (progn
    (run mklibfs %{env:COQBUILDDIR=})
