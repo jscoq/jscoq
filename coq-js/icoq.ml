@@ -90,6 +90,7 @@ let coq_init opts =
   Global.set_engagement Declarations.PredicativeSet;
   Global.set_VM false;
   Global.set_native_compiler false;
+  Flags.set_native_compiler false;
   set_options opts.opt_values;
 
   (**************************************************************************)

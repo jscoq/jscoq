@@ -121,12 +121,13 @@ TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
 
 dist-tarball: dist
 	# Hack to make the tar contain a jscoq-x.x directory
-	rm -f _build/jscoq-$(PACKAGE_VERSION)
+	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
 	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz   \
 	    -C _build $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' \
 	    --dereference jscoq-$(PACKAGE_VERSION)
 	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
+	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
 NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
