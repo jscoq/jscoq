@@ -67,7 +67,7 @@ class PackageDefinition {
         }
         if (save_as) {
             return new Promise((resolve, reject) =>
-              z.generateNodeStream()
+              z.generateNodeStream({compression: 'DEFLATE'})
                 .pipe(fs.createWriteStream(save_as))
                 .on('finish', () => { console.log(`wrote '${save_as}'.`); resolve(z); }));
         }

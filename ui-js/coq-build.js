@@ -151,7 +151,7 @@ class CoqProject {
                 console.warn(`skipped '${fn}' (not in path).`);
         }
         if (save_as) {
-            return z.generateNodeStream()
+            return z.generateNodeStream({compression: 'DEFLATE'})
                 .pipe(this.fsif.fs.createWriteStream(save_as))
                 .on('finish', () => { console.log(`wrote '${save_as}'.`); return z; });
         }

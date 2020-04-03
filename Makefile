@@ -43,7 +43,7 @@ COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
 
 DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
-NJOBS=4
+NJOBS ?= 4
 
 export NJOBS
 export BUILD_CONTEXT
@@ -115,9 +115,11 @@ PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
 dist: jscoq libs-pkg
 	mkdir -p $(DISTDIR)
-	rsync -avpR --delete $(DISTOBJ) $(DISTDIR)
+	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
-TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
+TAREXCLUDE = --exclude node_modules --exclude '*.cma' \
+    ${foreach dir, Coq Ltac2 mathcomp, \
+		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
 dist-tarball: dist
 	# Hack to make the tar contain a jscoq-x.x directory
@@ -130,11 +132,13 @@ dist-tarball: dist
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
-NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
+NPMEXCLUDE = --delete-excluded --exclude '*.cma' \
+    ${foreach dir, Coq Ltac2 mathcomp, \
+		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
 dist-npm:
 	mkdir -p $(STAGEDIR) $(DISTDIR)
-	rsync -avpR --delete $(NPMEXCLUDE) $(NPMOBJ) $(STAGEDIR)
+	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(STAGEDIR)
 	cp docs/npm-landing.html $(STAGEDIR)/index.html
 	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(STAGEDIR)/ui-js/jscoq-loader.js
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
