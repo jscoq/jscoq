@@ -104,9 +104,10 @@ clean:
 
 BUILDDIR=_build/$(BUILD_CONTEXT)
 BUILDOBJ=${addprefix $(BUILDDIR)/./, \
-	index.html coq-js/jscoq_worker.bc.js \
-	coq-pkgs ui-js ui-css ui-images examples \
+	coq-js/jscoq_worker.bc.js coq-pkgs \
+	ui-js ui-css ui-images examples \
 	node_modules ui-external/CodeMirror-TeX-input}
+DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR=_build/dist
 STAGEDIR=_build/staging
 
@@ -114,7 +115,7 @@ PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
 dist: jscoq libs-pkg
 	mkdir -p $(DISTDIR)
-	rsync -avpR --delete README.md $(BUILDOBJ) $(DISTDIR)
+	rsync -avpR --delete $(DISTOBJ) $(DISTDIR)
 
 TAREXCLUDE = --exclude node_modules --exclude '*.vo' --exclude '*.cma'
 
@@ -127,8 +128,7 @@ dist-tarball: dist
 	    --dereference jscoq-$(PACKAGE_VERSION)
 	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
 
-NPMOBJ = ${filter-out %/node_modules %/index.html, $(BUILDOBJ)}
-NPMOBJ += README.md package.json package-lock.json
+NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
 NPMEXCLUDE = --delete-excluded --exclude '*.vo' --exclude '*.cma'
 
 dist-npm:
