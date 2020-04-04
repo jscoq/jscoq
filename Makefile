@@ -1,6 +1,6 @@
 .PHONY: all clean force
 .PHONY: jscoq jscoq_worker libs-pkg links links-clean
-.PHONY: dist dist-upload dist-release
+.PHONY: dist dist-upload dist-release server
 
 -include ./config.inc
 
@@ -205,3 +205,7 @@ addons: addons-get addons-build
 
 test:
 	npx mocha tests/main.js
+
+server:
+	npx http-server _build/jscoq+32bit &
+	google-chrome http://127.0.0.1:8080 &
