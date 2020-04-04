@@ -132,18 +132,18 @@ Unset Printing Implicit Defensive. </textarea>
 Lemma prime_above m : {p | m < p & prime p}.
 Proof. </textarea>
     <p>
-      The lemma states that given a number m, there is a primer number
-      larger than m.
+      The lemma states that for any number <code>m</code>,
+      there is a prime number larger than <code>m</code>.
 
       Coq is a <em>constructive system</em>, which among other things
       implies that to show the existence of an object, we need to
       actually provide an algorithm that will construct it.
 
       In this case, we need to find a prime number <code>p</code>
-      greater than <code>m</code>.
+      that is greater than <code>m</code>.
       What would be a suitable <code>p</code>?
 
-      Choosing as <code>p</code> the first prime divisor of <code>m! + 1</code>
+      Choosing <code>p</code> to be the first prime divisor of <code>m! + 1</code>
       works.
       As we will shortly see, properties of divisibility will imply that
       <code>p</code> must be greater than <code>m</code>.
