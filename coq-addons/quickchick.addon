@@ -21,7 +21,7 @@ get:
 	rm -f $(QUICKCHICK_HOME)/src/dune
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(QUICKCHICK_HOME); make Makefile.coq && make -f Makefile.coq byte && make install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(QUICKCHICK_HOME); make plugin && make -f Makefile.coq byte && make install
 
 jscoq-install:
 	mkdir -p $(QUICKCHICK_DEST)
