@@ -54,7 +54,8 @@ export COQBUILDDIR_REL
 export ADDONS_PATH
 export COQPKGS_ROOT
 
-ADDONS = mathcomp # elpi equations dsp # iris
+# Addons supported in jsCoq 0.11
+ADDONS = mathcomp # extlib simpleio quickchick elpi equations dsp
 
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
