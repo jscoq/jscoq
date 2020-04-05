@@ -19,4 +19,4 @@ dist:
 
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \
-		bash -c "npx http-server _build/dist"
+		npx static-server -p 8080 _build/dist

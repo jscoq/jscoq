@@ -52,16 +52,18 @@ RUN git pull
 RUN eval $(opam env) && make coq && make jscoq
 
 # - addons
+#  (one per RUN, for easy resume)
 RUN eval $(opam env) && make addons ADDONS="mathcomp"
-
 RUN eval $(opam env) && opam install -y elpi.1.8.0 && make addons ADDONS="elpi"
-
 RUN eval $(opam env) && make addons ADDONS="equations"
+RUN eval $(opam env) && make addons ADDONS="extlib"
+RUN eval $(opam env) && make addons ADDONS="simpleio"
+RUN eval $(opam env) && make addons ADDONS="quickchick"
 
 # - remake packages after addon build
 #   (also creates `*.cma.js`)
 RUN eval $(opam env) && rm -rf _build/jscoq+64bit/coq-pkgs \
-       && make jscoq ADDONS="mathcomp elpi equations"
+       && make jscoq ADDONS="mathcomp elpi equations extlib simpleio quickchick"
 
 # - dist tarballs
 RUN eval $(opam env) && make dist-tarball && make dist-npm \
