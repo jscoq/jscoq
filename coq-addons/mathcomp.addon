@@ -21,7 +21,7 @@ get: $(MATHCOMP_HOME)
 	@true
 
 build:
-	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp/ssreflect; $(MAKE) -j $(NJOBS); $(MAKE) install
+	export PATH=$(COQDIR)/bin:$$PATH; cd $(MATHCOMP_HOME)/mathcomp; $(MAKE) -j $(NJOBS); $(MAKE) install
 
 jscoq-install:
 	$(SYNCVO) $(MATHCOMP_HOME)/mathcomp/ $(COQPKGS_ROOT)/mathcomp/
