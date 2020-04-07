@@ -166,9 +166,10 @@ all-dist: dist dist-release dist-upload
 # Externals
 ########################################################################
 
-.PHONY: coq coq-get coq-build
+.PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH=v8.11
+COQ_BRANCH=V8.11.1
+COQ_BRANCH_LATEST=v8.11
 COQ_REPOS=https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
@@ -184,6 +185,9 @@ coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 	dune build @vodeps $(DUNE_FLAGS)
 	cd $(COQSRC) && dune exec ./tools/coq_dune.exe $(DUNE_FLAGS) --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
+
+coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
+coq-get-latest: coq-get
 
 # Coq should be now be built by composition with the Dune setup
 coq-build:
