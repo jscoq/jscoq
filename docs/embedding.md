@@ -1,7 +1,8 @@
 # Embedding jsCoq
 
 This quick tutorial will allow you to embed jsCoq in your web page.
-It is especially useful when you have generated your page using `coqdoc`.
+It is especially useful when you have generated your page using
+`coqdoc`.
 
 ## Preparation
 
@@ -21,7 +22,6 @@ You will find it under `node_modules/jscoq`.
 To test your new setup, serve your project root directory over HTTP(S), and navigate to `node_modules/jscoq/index.html`.
 
 ![screenshot](npm-landing-screenshot.png)
-
 
 ## Combining with your Coq development
 
@@ -80,7 +80,7 @@ function jsCoqLoad() {
             window.addEventListener('beforeunload', () => { localStorage.jsCoqShow = coq.layout.isVisible(); });
             document.querySelector('#page').focus();
         });
-    
+
     if (jscoq_opts.show)
         document.body.classList.add('jscoq-launched');
 }
@@ -99,3 +99,85 @@ Copy it to <i>e.g.</i> `jscoq-embed.js` in your project, and then add the follow
 ```
 
 If you want to add those lines automatically as part as your build process, you can use [this nifty `gawk` script](./inject-jscoq.gawk).
+
+## Instrumenting CoqDoc to generate HTML
+
+An alternative to instrument CoqDoc vanilla HTML code is to use `udoc`.
+
+`udoc` is a `coqdoc` replacement that is better suited to produce
+jsCoq output while (mostly) remaining compatible is being developed at
+https://github.com/ejgallego/udoc
+
+It works OK for converting `coqdoc` files, but it may produce some
+artifacts and have bugs; feel free to submit improvements.
+
+## Main entry point from HTML and API
+
+jsCoq's main entry point is the `CoqManager` JavaScript object used for
+launching a Coq worker and embedding Coq functionality in
+your particular application, blog, or webpage. The basic pattern to
+add jsCoq to webpage with Coq code is:
+
+```javascript
+  <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, {$options}) );
+  </script>
+```
+
+where `$path` is the path the jsCoq distribution, and `$list_of_ids` is
+a list of `<textarea>`s or `<div>`s that will form the Coq document.
+CSS selectors are also allowed as part of `$list_of_ids`: all matching elements
+will be added to the document.
+See below for available `$options`.
+
+The jsCoq [landing webpage](index.html) is a good running example.
+
+### Options
+
+jsCoq accepts the following options as an optional second parameter to
+the `CoqManager` constructor:
+
+| Key             | Type            | Default         | Description                                                                                                   |
+|-----------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
+| `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
+| `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
+| `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
+| `all_pkgs`      | array of string / object        | (see below)     | List of available packages that will be listed in the packages panel.                                         |
+| `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
+| `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |
+| `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
+| `implicit_libs` | boolean         | `false`         | Allow `Require`ing Coq built-in modules by short name only (e.g., `Require Arith.`).                          |
+| `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
+| `show`          | boolean         | `true`          | Opens up the jsCoq panel on startup.                                                                          |
+| `focus`         | boolean         | `true`          | Sets the focus to the editor once jsCoq is ready.                                                             |
+| `replace`       | boolean         | `false`         | Replace `<div>`(s) referred to by `jscoq_ids` with jsCoq editors, moving the text content.                    |
+| `line_numbers`  | string          | `continue`      | Line numbering policy; across code snippets on page (`continue`) or separate per snippet (`restart`).         |
+| `file_dialog`   | boolean         | `false`         | Enables UI for loading and saving files (^O/^S, or ⌘O/⌘S on Mac).                                             |
+| `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
+| `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |
+
+The list of available packages defaults to all Coq libraries and addons
+available with the current version of jsCoq. At the moment, it is:
+```js
+['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',
+ 'math-comp', 'elpi', 'lf', 'plf']
+```
+
+By default, packages are loaded from jsCoq's `coq-pkgs` directory.
+This can be controlled by passing an object instead of an array; the keys of
+the object correspond to base directories where package files are located.
+```js
+{'../coq-pkgs': ['init', 'coq-base'], '/my-pkgs': ['cool-stuff']}
+```
+
+The `editor` property may contain any option supported by CodeMirror
+(see [here](https://codemirror.net/doc/manual.html#config)).
+
+The `coq` property may hold a list of Coq properties mapped to their
+values, and is case sensitive (see [here](https://coq.inria.fr/refman/coq-optindex.html)).
+For example:
+```js
+{'Implicit Arguments': true, 'Default Timeout': 10}
+```
+

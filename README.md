@@ -7,32 +7,32 @@ jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq v8.11+0.11.0 supporting Coq 8.11, try it:
+jsCoq v8.11+0.11.0 supporting Coq 8.11.1, try it:
 
 <https://jscoq.github.io>
 
-jsCoq is written in ES2017, thus any recent standard-compliant browser
-should work. jsCoq also runs in my 8-year old Galaxy Nexus. Browser
-performance is quite variable these days, see the [Troubleshooting](#Troubleshooting) section if you have problems.
+jsCoq is written to conform to ES2017, any recent standard-compliant
+browser. No servers or external programs are needed. See the
+[Troubleshooting](#Troubleshooting) section if you have problems.
 
-Coq is compiled to JavaScript using the [`js_of_ocaml`](http://ocsigen.org/js_of_ocaml) compiler. No
-servers or external programs are needed.
-We want to _strongly thank_ the `js_of_ocaml` developers. Without
-their great and quick support jsCoq wouldn't have been possible.
+jsCoq is community-developed by a [team of contributors](#Credits).
 
 ## Are you a jsCoq user?
 
-Have you developed a course **using jsCoq**? If so, please submit a
-pull request or an issue so we can add your lectures to the list of
-[jsCoq users](#jsCoq-Users) This is essential to guarantee future
-funding of the project.
+Have you developed or taught a course **using jsCoq**? Do you have some feedback for us?
+
+If so, please submit a pull request or an issue so we can add your
+lectures to the list of [jsCoq users](#jsCoq-Users). This is essential
+to guarantee future funding of the project.
 
 ## Basic Usage
 
 The main page showcases jsCoq by walking through a proof for the infinitude of primes using
 [`math-comp`](https://github.com/math-comp/math-comp), due to Georges Gonthier.
-Once jsCoq finishes loading, you can step through the proof using the arrow buttons on the toolbar (top right),
-or using these keyboard shortcuts:
+
+Once jsCoq finishes loading, you can step through the proof using the
+arrow buttons on the toolbar (top right), or using these keyboard
+shortcuts:
 
 | Shortcut           | Action           |
 |--------------------|------------------|
@@ -58,145 +58,41 @@ You can, in fact, store more than one document using the local open/save file di
 
 On Mac, replace Ctrl with ⌘ (command) and Alt with ⌥ (option), as is traditional.
 
-## Development Version
+## How to build your own jsCoq documents
 
-Development for jsCoq 0.11 takes place in the `v8.11` branch. A
-preview build of jsCoq 0.11 is usually available at:
+See the [dedicated page](docs/embedding.md) for information on advanced
+options and jsCoq HTML embedding API. A quick setup can be done with:
 
-<https://x80.org/rhino-coq/v8.11/>
-
-jsCoq is easy to develop using the Chrome developer tools; the jsCoq
-object has a `debug` flag, and it is possible to compile Coq with
-debug information by setting the makefile variable `JSCOQ_DEBUG=yes`.
-
-Previous Coq versions can be accessed at:
-
-- <https://x80.org/rhino-coq/v8.10/>
-- <https://x80.org/rhino-coq/v8.9/>
-- <https://x80.org/rhino-coq/v8.8/>
-- <https://x80.org/rhino-coq/v8.7/>
-- <https://x80.org/rhino-coq/v8.6/>
-- <https://x80.org/rhino-coq/v8.5/>
-
-## Publications
-
-A paper describing the ideas behind jsCoq has been published in the
-proceeding of the [UITP 2016 workshop](https://web.archive.org/web/20190319183042/http://www.informatik.uni-bremen.de/uitp/). The
-paper is available from the open access
-[EPTCS](http://eptcs.web.cse.unsw.edu.au/paper.cgi?UITP2016.2)
-proceedings. The recommended citation is:
-
-```bibtex
-@Inproceedings{gallego:uitp2016,
-  author    = {Gallego Arias, Emilio Jes\'us and Pin, Beno\^it and Jouvelot, Pierre},
-  year      = {2017},
-  title     = {{jsCoq}: Towards Hybrid Theorem Proving Interfaces},
-  editor    = {Autexier, Serge and Quaresma, Pedro},
-  booktitle = {{\rmfamily Proceedings of the 12th Workshop on} User Interfaces for Theorem Provers,
-               {\rmfamily Coimbra, Portugal, 2nd July 2016}},
-  series    = {Electronic Proceedings in Theoretical Computer Science},
-  volume    = {239},
-  publisher = {Open Publishing Association},
-  pages     = {15-27},
-  doi       = {10.4204/EPTCS.239.2},
-  issn      = {2075-2180}
-}
+```
+$ npm install jscoq
 ```
 
-Some further ideas behind jsCoq are also discussed in
-[SerAPI: Machine-Friendly, Data-Centric Serialization for COQ. Technical Report](https://hal-mines-paristech.archives-ouvertes.fr/hal-01384408)
+then copy and adapt the [template page](https://github.com/ejgallego/jscoq/blob/v8.11/examples/npm-template.html)
+page to your needs.
+
+*For a more detailed tutorial and information, refer to* [docs/embedding.md](docs/embedding.md).
 
 ## Collacoq
 
 A small pastebin-like server based on haste is available at
 https://x80.org/collacoq.
-Note that this service is totally experimental, data loss is guaranteed.
+Note that this service is experimental, data loss is guaranteed as we don't backup the server.
 
-See also the branch at https://github.com/ejgallego/haste-server/tree/collacoq
+The `haste` branch we use is available at https://github.com/ejgallego/haste-server/tree/collacoq
 Help with Collacoq is very welcome!
 
-## Troubleshooting
+##  Contributing and Developer Information
 
-**Are you getting a `StackOverflow` exception?** Unfortunately these
-are hard to fix; you may be stuck with them for a while.
+See the [dedicated page](docs/developing.md) for developer information
+as well as links to past versions and tools.
 
-* Clearing the browser cache usually solves lots of issues.
-* Change browser, if using Firefox try Chrome, if using Chrome try Firerox.
-* Consider using `--js-flags="--stack-size=65536"` in Chrome if you get `StackOverflows`.
-* Use the `--js-flags="--harmony-tailcalls"` command line flag.
-* Enable the `chrome://flags/#enable-javascript-harmony` flag if you get `StackOverflows`.
+This is a beta-status project, but any contribution or comment is
+really welcome! See [the contributing guide](CONTRIBUTING.md) for more
+information.
 
-## API / How to embed in your own webpage
+## Publications
 
-*For a more detailed tutorial, refer to* [docs/embedding.md](docs/embedding.md).
-
-jsCoq's main entry point is the `CoqManager` JavaScript object used for
-launching a Coq worker and embedding Coq functionality in
-your particular application, blog, or webpage. The basic pattern to
-add jsCoq to webpage with Coq code is:
-
-```javascript
-  <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, {$options}) );
-  </script>
-```
-
-where `$path` is the path the jsCoq distribution, and `$list_of_ids` is
-a list of `<textarea>`s or `<div>`s that will form the Coq document.
-CSS selectors are also allowed as part of `$list_of_ids`: all matching elements
-will be added to the document.
-See below for available `$options`.
-
-The jsCoq [landing webpage](index.html) is a good running example.
-
-### Options
-
-jsCoq accepts the following options as an optional second parameter to
-the `CoqManager` constructor:
-
-| Key             | Type            | Default         | Description                                                                                                   |
-|-----------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
-| `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
-| `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
-| `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
-| `all_pkgs`      | array of string / object        | (see below)     | List of available packages that will be listed in the packages panel.                                         |
-| `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
-| `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |
-| `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
-| `implicit_libs` | boolean         | `false`         | Allow `Require`ing Coq built-in modules by short name only (e.g., `Require Arith.`).                          |
-| `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
-| `show`          | boolean         | `true`          | Opens up the jsCoq panel on startup.                                                                          |
-| `focus`         | boolean         | `true`          | Sets the focus to the editor once jsCoq is ready.                                                             |
-| `replace`       | boolean         | `false`         | Replace `<div>`(s) referred to by `jscoq_ids` with jsCoq editors, moving the text content.                    |
-| `line_numbers`  | string          | `continue`      | Line numbering policy; across code snippets on page (`continue`) or separate per snippet (`restart`).         |
-| `file_dialog`   | boolean         | `false`         | Enables UI for loading and saving files (^O/^S, or ⌘O/⌘S on Mac).                                             |
-| `editor`        | object          | `{}`            | Additional options to be passed to CodeMirror.                                                                |
-| `coq`           | object          | `{}`            | Additional Coq option values to be set at startup.                                                            |
-
-The list of available packages defaults to all Coq libraries and addons
-available with the current version of jsCoq. At the moment, it is:
-```js
-['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',
- 'math-comp', 'elpi', 'lf', 'plf']
-```
-
-By default, packages are loaded from jsCoq's `coq-pkgs` directory.
-This can be controlled by passing an object instead of an array; the keys of
-the object correspond to base directories where package files are located.
-```js
-{'../coq-pkgs': ['init', 'coq-base'], '/my-pkgs': ['cool-stuff']}
-```
-
-The `editor` property may contain any option supported by CodeMirror
-(see [here](https://codemirror.net/doc/manual.html#config)).
-
-The `coq` property may hold a list of Coq properties mapped to their
-values, and is case sensitive (see [here](https://coq.inria.fr/refman/coq-optindex.html)).
-For example:
-```js
-{'Implicit Arguments': true, 'Default Timeout': 10}
-```
+See the [dedicated file](docs/papers.md)
 
 ## Examples
 
@@ -223,6 +119,8 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
   https://x80.org/rhino-coq/v8.11/examples/Stlc.html
 
+- Mike's Nahas Tutorial: https://corwin-of-amber.github.io/jscoq/tut/nahas/nahas_tutorial.html
+
 ### Outdated examples [but still working]
 
 - The IRIS program logic, by Robbert Krebbers et al.
@@ -246,61 +144,6 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
   - A demo of developing a cancellation algorithm for commutative
     monoids:
     https://x80.org/rhino-coq/v8.5/examples/mirror-core-rtac-demo.html
-
-## CoqDoc
-
-A `coqdoc` replacement that is better suited to produce jsCoq output
-while (mostly) remaining compatible is being developed at
-https://github.com/ejgallego/udoc
-
-It works OK for converting `coqdoc` files, but it may produce some
-artifacts and have bugs.
-
-## Mailing List ##
-
-You can subscribe to the jsCoq mailing list at:
-
-https://x80.org/cgi-bin/mailman/listinfo/jscoq
-
-The list archives should be also available through Gmane at group:
-
-`gmane.science.mathematics.logic.coq.jscoq`
-
-you can post to the list using nntp.
-
-## Contributing ##
-
-This is certainly an alpha-status project, but any contribution or
-comment is really welcome! Please submit your pull request for review
-to the mailing list using `git request-pull`. You can also submit a
-github PR, but it is not guaranteed that we'll look into it.
-
-## Reporting Bugs ##
-
-Feel free to use the issue tracker. Please include your
-browser/OS/user-agent and command line options.
-
-## CodeMirror ##
-
-[CodeMirror](https://codemirror.net/) has played a crucial role in the
-project, we are very happy with it, thanks a lot!
-
-Please consider supporting the development of CodeMirror with a donation.
-
-## What is broken ##
-
-* Loading ML modules is slow.
-* Loading `.vo` files is slow.
-* There surely are threading and performance problems.
-* `vm_compute` and `native_compute` are devired to regular `compute`.
-
-## Contact & Sponsorship ##
-
-![FEEVER Logo](/ui-images/feever-logo.png?raw=true "Feever Logo")
-
-jsCoq has been make possible thanks to funding by the [FEEVER](http://feever.fr) project.
-
-Contact: Emilio J. Gallego Arias `e+jscoq at x80.org`.
 
 ## jsCoq Users:
 
@@ -330,37 +173,78 @@ Incomplete list of places where jsCoq has been used:
 - http://www.mines-paristech.fr/Actualites/jsCoq-ou-Coq-dans-un-navigateur/2118
 - https://news.ycombinator.com/item?id=9836900
 
-## How to Install/Build
-
-You can download ready-to-use builds from
-https://github.com/ejgallego/jscoq-builds/ ; find below the
-instructions to build jsCoq yourself, it is reasonably easy:
-```shell
-$ git submodule update --remote
-$ ./etc/toolchain-setup.sh
-$ make coq
-$ make jscoq
-```
-
-*For more detailed description and prerequisites, see* [docs/build.md](./docs/build.md).
-
 ### Addon Packages:
 
-  One of jsCoq's strengths is its support for bundling addon
-  packages. In order to add your Coq package to jsCoq, you need to add
-  a definition file in the `coq-addons` repository. We recommend you
-  use one of the existing files as a model.
+One of jsCoq's strengths is its support for bundling addon
+packages. In order to add your Coq package to jsCoq, you need to add a
+definition file in the `coq-addons` repository. We recommend you use
+one of the existing files as a model.
 
-  Also, you need to define a jsCoq package by editing the
-  `coq-jslib//dftlibs.ml` file. Once that is done, calling `make jscoq` agian.
+Also, you need to define a jsCoq package by editing the
+`coq-jslib/dftlibs.ml` file. Once that is done, call `make jscoq`
+again.
 
-## Serialization
+## Troubleshooting
 
-jsCoq used to support serialization to Json or Sexps for Coq's
-internal data structures, but this effort has been split to an
-independent development. See https://github.com/ejgallego/coq-serapi
-for more information.
+**Are you getting a `StackOverflow` exception?** Unfortunately these
+are hard to fix; you may be stuck with them for a while.
+
+* Clearing the browser cache usually solves lots of issues.
+* Change browser, if using Firefox try Chrome, if using Chrome try Firefox.
+
+### Reporting Bugs ###
+
+Feel free to use the issue tracker. Please include your
+browser/OS/user-agent and command line options.
+
+### Contact and on-line help ###
+
+- [jsCoq's gitter](https://gitter.im/jscoq/Lobby): main developer chat
+
+- The jsCoq mailing list:
+  https://x80.org/cgi-bin/mailman/listinfo/jscoq
+
+  The list archives should be also available through Gmane at group:
+  `gmane.science.mathematics.logic.coq.jscoq`
+  you can post to the list using nntp.
+
+- Coq's discourse [use the jscoq tag] https://coq.discourse.group/
+- StackOverflow [use the jscoq tag] https://stackoverflow.com/
+
+### What is broken ###
+
+* Loading ML modules is slow.
+* Loading `.vo` files is slow.
+* There surely are threading and performance problems.
+* `vm_compute` and `native_compute` fall back to regular `compute`.
 
 ## Documents
 
 See the `etc/notes/` directory for some random notes about the project.
+
+## Credits
+
+### Core developer team
+
+- [Emilio Jesús Gallego Arias](https://www.irif.fr/~gallego/) , Inria, Université de Paris, IRIF
+- [Shachar Itzhaky](https://cs.technion.ac.il/~shachari/) , Technion
+
+### Past Contributors
+
+- Benoît Pin, [CRI, MINES ParisTech](https://www.cri.ensmp.fr)
+
+## Acknowledgements
+
+![FEEVER Logo](/ui-images/feever-logo.png?raw=true "Feever Logo")
+
+jsCoq was made possible thanks to funding by the
+[FEEVER](http://feever.fr) project and support from [MINES
+ParisTech](http://www.mines-paristech.eu)
+
+We want to _strongly thank_ the `js_of_ocaml` developers. Without
+their great and quick support jsCoq wouldn't have been possible.
+
+[CodeMirror](https://codemirror.net/) has played a crucial role in the
+project, we are very happy with it, thanks a lot!
+
+Please consider supporting the development of CodeMirror with a donation.
