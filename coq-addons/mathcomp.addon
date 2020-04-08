@@ -4,6 +4,7 @@
 include coq-addons/common.mk
 
 MATHCOMP_GIT=https://github.com/math-comp/math-comp.git
+MATHCOMP_TAG=mathcomp-1.10.0
 MATHCOMP_HOME=$(ADDONS_PATH)/mathcomp
 MATHCOMP_DEST=$(COQPKGS_ROOT)/mathcomp
 
@@ -14,7 +15,7 @@ FASTLOAD_PATCH=$(PWD)/etc/patches/mathcomp-fast-load.patch
 nothing:
 
 $(MATHCOMP_HOME):
-	git clone --depth=1 $(MATHCOMP_GIT) $@
+	git clone --depth=1 -b $(MATHCOMP_TAG) $(MATHCOMP_GIT) $@
 	cd $@ && git apply $(FASTLOAD_PATCH)
 
 get: $(MATHCOMP_HOME)
