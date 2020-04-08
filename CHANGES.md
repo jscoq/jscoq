@@ -20,6 +20,7 @@
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
  - Allow multiple directories for package files (@corwin-of-amber)
+ - Pin upstream Coq version to 8.11.1
 
  - [ ] Automatic parsing mode.
  - [ ] Execution gutters.
