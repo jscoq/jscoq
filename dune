@@ -6,9 +6,12 @@
  (targets coq-pkgs)
  ; (mode promote)  - blocked by https://github.com/ocaml/dune/issues/2070
  (deps
-   (package coq)
-   (source_tree coq-addons)
-   (source_tree %{env:COQBUILDDIR_REL=}/user-contrib))
+  (package coq)
+  (source_tree coq-addons)
+  ; We force generation of coq-pkgs each time as to workaround our
+  ; deficient addon build system, see
+  ; https://github.com/ejgallego/jscoq/issues/171
+  (universe))
  (action
   (progn
    (run mklibfs %{env:COQBUILDDIR=})
