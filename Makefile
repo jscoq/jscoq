@@ -1,5 +1,5 @@
 .PHONY: all clean force
-.PHONY: jscoq jscoq_worker libs-pkg links links-clean
+.PHONY: jscoq jscoq_worker links links-clean
 .PHONY: dist dist-upload dist-release server
 
 -include ./config.inc
@@ -61,7 +61,6 @@ all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
 	@echo "     jscoq: build jscoq [javascript and libraries]"
-	@echo "  libs-pkg: build packages bundle [experimental]"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
@@ -73,9 +72,6 @@ jscoq: force
 
 jscoq_worker:
 	ADDONS="$(ADDONS)" dune build @jscoq_worker $(DUNE_FLAGS)
-
-libs-pkg: force
-	ADDONS="$(ADDONS)" dune build @libs-pkg $(DUNE_FLAGS) --force
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
@@ -113,7 +109,7 @@ DISTDIR=_build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
-dist: jscoq libs-pkg
+dist: jscoq
 	mkdir -p $(DISTDIR)
 	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
