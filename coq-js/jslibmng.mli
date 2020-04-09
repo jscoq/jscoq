@@ -21,6 +21,7 @@ type lib_event =
   | LibInfo     of string * Jslib.coq_bundle (* Information about the bundle, we could well put the json here *)
   | LibProgress of progress_info             (* Information about loading progress *)
   | LibLoaded   of string * Jslib.coq_bundle (* Bundle [pkg] is loaded *)
+  | LibError    of string * string           (* Bundle failed to load *)
 
 type out_fn = lib_event -> unit
 

@@ -652,6 +652,10 @@ class CoqManager {
         this.packages.onBundleLoad(bname);
     }
 
+    coqLibError(bname, msg) {
+        this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
+    }
+
     coqCoqExn(loc, sids, msg) {
         console.error('Coq Exception', msg);
 

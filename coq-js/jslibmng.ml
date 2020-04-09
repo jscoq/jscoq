@@ -41,6 +41,7 @@ type lib_event =
   | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
   | LibProgress of progress_info        (* Information about loading progress *)
   | LibLoaded   of string * coq_bundle  (* Bundle [pkg] is loaded *)
+  | LibError    of string * string      (* Bundle failed to load *)
 
 type out_fn = lib_event -> unit
 
@@ -118,7 +119,6 @@ let parse_bundle base_path file : coq_bundle Lwt.t =
       Lwt.fail (Failure s)
   else
     let s = Format.sprintf "%s: not found (%d)" file_url res.code in
-    Format.eprintf "%s\n%!" s;
     Lwt.fail (Failure s)
 
 let load_under_way = ref ([])
@@ -148,8 +148,7 @@ let info_from_file out_fn base_path file =
     parse_bundle base_path file >>= fun bundle ->
     return @@ out_fn (LibInfo (file, bundle))
   with
-  | Failure _ ->
-    Lwt.return_unit
+  | Failure err -> return @@ out_fn (LibError(file, err))
 
 let info_pkg out_fn base_path pkgs =
   Lwt_list.iter_p (info_from_file out_fn base_path) pkgs
