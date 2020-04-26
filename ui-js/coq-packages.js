@@ -69,10 +69,10 @@ class PackageManager {
     }
 
     addRow(bname, desc = bname, parent) {
-        var row = $('<div>').addClass('row').attr('data-name', bname)
+        var row = $('<div>').addClass('package-row').attr('data-name', bname)
             .append($('<button>').addClass('download-icon')
                     .click(() => { this.startPackageDownload(bname); }))
-            .append($('<span>').text(desc)
+            .append($('<span>').addClass('desc').text(desc)
                     .click(() => { this._expandCollapseRow(row); }));
 
         if (parent) {
@@ -111,10 +111,14 @@ class PackageManager {
         }
 
         if (pkg_info.chunks) {
+            pkg.chunks = [];
+
             for (let chunk of pkg_info.chunks) {
                 var subpkg = new CoqPkgInfo(chunk.desc, pkg.base_uri);
                 this.addPackage(subpkg);
                 this.addBundleInfo(subpkg.name, chunk, bundle);
+                pkg.chunks.push(subpkg);
+                subpkg.parent = pkg;
             }
         }
 
@@ -254,7 +258,7 @@ class PackageManager {
     showPackage(bname) {
         var bundle = this.bundles[bname];
         if (bundle && bundle.row) {
-            bundle.row.parents('div.row').addClass('expanded');
+            bundle.row.parents('div.package-row').addClass('expanded');
             bundle.row[0].scrollIntoViewIfNeeded();
         }
     }
@@ -293,6 +297,28 @@ class PackageManager {
 
         bundle.row.children('.rel-pos').remove();
         bundle.row.children('button.download-icon').addClass('checked');
+
+        var pkg = this.getPackage(bname);
+        pkg.status = 'loaded';
+        if (pkg.parent) this.showLoadedChunks(pkg.parent);
+    }
+
+    showLoadedChunks(pkg) {
+        var bundle = this.bundles[pkg.name];
+        bundle.row.addClass('has-chunks');
+
+        var span = bundle.row.find('.loaded-chunks');
+        if (span.length === 0)
+            span = $('<span>').addClass('loaded-chunks')
+                              .insertAfter(bundle.row.children('.desc'));
+
+        span.empty();
+        for (let chunk of pkg.chunks) {
+            if (chunk.status === 'loaded')
+                span.append($('<span>').text(chunk.name));
+        }
+        if (pkg.chunks.every(chunk => chunk.status === 'loaded'))
+            this.showPackageCompleted(pkg.name);
     }
 
     /**
@@ -405,6 +431,8 @@ class CoqPkgInfo {
 
         this.info = undefined;
         this.archive = undefined;
+        this.chunks = undefined;
+        this.parent = undefined;
     }
 
     getUrl(resource) {
