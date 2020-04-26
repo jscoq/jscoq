@@ -2,7 +2,7 @@ import { FSInterface, fsif_native } from './fsif';
 import { CoqDep } from './coqdep';
 import arreq from 'array-equal';
 import JSZip from 'jszip';
-import {neatJSON} from 'neatjson';
+import { neatJSON } from 'neatjson';
 
 
 
@@ -148,23 +148,14 @@ class CoqProject {
 
         if (!filename.match(/[.][^./]+$/)) filename += '.coq-pkg';
         
-        var jsonfn = filename.replace(/[.][^./]+$/, '.json'),
-            manifest = neatJSON(postp(this.createManifest(), filename), this.opts.json);
+        var manifest = postp(this.createManifest(), filename),
+            manifest_fn = filename.replace(/[.][^./]+$/, '.json'),
+            manifest_json = neatJSON(manifest, this.opts.json);
 
-        return {
-            pkg: {filename, zip: await this.toZip(manifest, extensions, prep)},
-            manifest: {filename: jsonfn, json: manifest},
-            save() {
-                require('mkdirp').sync(path.dirname(this.manifest.filename));
-                fs.writeFileSync(this.manifest.filename, this.manifest.json);
-                return new Promise(async (resolve, reject) => {
-                    this.pkg.zip.generateNodeStream()
-                        .pipe(fs.createWriteStream(this.pkg.filename))
-                        .on('error', (e:any) => reject(e))
-                        .on('finish', () => resolve(this));
-                });
-            }
-        }
+        return new PackageResult(
+                {filename, zip: await this.toZip(manifest_json, extensions, prep)},
+                {filename: manifest_fn, json: manifest_json, object: manifest}
+        );
     }
 
 }
@@ -176,10 +167,34 @@ type PackageOptions = {
     zip: JSZip.JSZipFileOptions
 };
 
-type PackageResult = {
-    pkg:      {filename: string, zip: JSZip},
-    manifest: {filename: string, json: string},
-    save():   Promise<PackageResult>
+class PackageResult {
+    pkg:      {filename: string, zip: JSZip}
+    manifest: {filename: string, json: string, object: any}
+
+    constructor(pkg:      {filename: string, zip: JSZip},
+                manifest: {filename: string, json: string, object: any}) {
+        this.pkg = pkg;
+        this.manifest = manifest;
+    }
+
+    save(bundle?: {chunks?: any[]}): Promise<PackageResult> {
+        const mkdirp = require('mkdirp').sync;
+        mkdirp(path.dirname(this.pkg.filename));
+        if (bundle) {
+            if (!bundle.chunks) bundle.chunks = [];
+            bundle.chunks.push(this.manifest.object);
+        }
+        else {
+            mkdirp(path.dirname(this.manifest.filename));
+            fs.writeFileSync(this.manifest.filename, this.manifest.json);
+        }
+        return new Promise(async (resolve, reject) => {
+            this.pkg.zip.generateNodeStream()
+                .pipe(fs.createWriteStream(this.pkg.filename))
+                .on('error', (e:any) => reject(e))
+                .on('finish', () => resolve(this));
+        });
+    }
 };
 
 type PackagePreprocess = (mod: SearchPathElement) => (SearchPathElement & {ext?: string, payload?: Uint8Array})[];

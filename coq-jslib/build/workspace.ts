@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { neatJSON } from 'neatjson';
 import { CoqProject, SearchPath, ZipVolume } from './project';
 
 
@@ -53,6 +54,19 @@ class Workspace {
             "": { prefix, 'dirpaths': dirPaths }
         }, baseDir);
         this.addProject(proj);
+    }
+
+    createBundle(filename: string) {
+        var desc = path.basename(filename).replace(/[.]json$/, '');
+        if (!filename.match(/[.]json$/)) filename += '.json';
+
+        return {
+            manifest: {desc, deps: [], pkgs: [], chunks: []},
+            filename,
+            save() {
+                fs.writeFileSync(this.filename, neatJSON(this.manifest));
+            }
+        };        
     }
 
 }

@@ -411,12 +411,13 @@ body.jscoq-main .CodeMirror-linenumber {
   margin-bottom: 0.5em;
 }
 
-#packages-panel > div {
+#packages-panel div.row {
   padding-top: 1px;
   padding-bottom: 1px;
+  margin: 0;
 }
 
-#packages-panel > div > button {
+#packages-panel div.row > button {
   padding: 0;
   border: none;
   background: none;
@@ -424,6 +425,24 @@ body.jscoq-main .CodeMirror-linenumber {
   margin-right: 4px;
   vertical-align: middle;
   cursor: pointer;
+}
+
+#packages-panel div.row > div.row {
+  padding-left: 20px;
+  position: relative;
+  top: 0;
+  height: 22px;
+  transition-property: top, height, opacity, padding;
+  transition-duration: .5s;
+}
+
+#packages-panel div.row:not(.expanded) > div.row {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  top: -20px;
+  pointer-events: none;
+  opacity: 0;
 }
 
 button.download-icon::after {
