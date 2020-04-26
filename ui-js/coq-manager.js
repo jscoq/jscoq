@@ -699,7 +699,7 @@ class CoqManager {
     // and Coq is ready to be used.
     coqInit() {
 
-        //this.packages.collapse();
+        this.packages.collapse();
 
         this.layout.systemNotification(
             "===> JsCoq filesystem initialized successfully!\n" +
