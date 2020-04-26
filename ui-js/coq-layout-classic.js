@@ -153,12 +153,12 @@ class CoqLayoutClassic {
         this.isVisible() ? this.hide() : this.show();
     }
 
-    splash(version_info, msg, mode='wait') {
+    splash(version_info, msg, mode) {
         var above = $(this.proof).find('.splash-above'), 
             image = $(this.proof).find('.splash-image'), 
             below = $(this.proof).find('.splash-below');
 
-        var overlay = `${this.options.base_path}/ui-images/${mode}.gif`;
+        var overlay = mode && `${this.options.base_path}/ui-images/${mode}.gif`;
 
         if (!(above.length && image.length && below.length)) {
             $(this.proof).empty().append(
@@ -173,10 +173,12 @@ class CoqLayoutClassic {
         if (version_info) above.text(version_info);
         if (msg)          below.text(msg);
         
-        image[0].classList = [];
-        image.addClass(['splash-image', mode]);
-        var img = image.find('img');
-        if (img.attr('src') !== overlay) img.attr('src', overlay);
+        if (mode) {
+            image[0].classList = [];
+            image.addClass(['splash-image', mode]);
+            var img = image.find('img');
+            if (img.attr('src') !== overlay) img.attr('src', overlay);
+        }
     }
 
     /**

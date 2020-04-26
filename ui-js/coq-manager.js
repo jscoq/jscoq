@@ -278,7 +278,7 @@ class CoqManager {
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
-        this.layout.splash();
+        this.layout.splash(undefined, undefined, 'wait');
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
         this.layout.onToggle = ev => {
@@ -699,7 +699,7 @@ class CoqManager {
     // and Coq is ready to be used.
     coqInit() {
 
-        this.packages.collapse();
+        //this.packages.collapse();
 
         this.layout.systemNotification(
             "===> JsCoq filesystem initialized successfully!\n" +
