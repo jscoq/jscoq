@@ -5,7 +5,7 @@ Dear Coq users and developers,
 we are happy to announce the release of jsCoq 0.11.0, based on Coq 8.11.
 
 Since jsCoq 0.9, the 0.11 version does include numerous improvements
-and fine tuning, as well as all the changes from upstream Coq.
+and fine tunings, as well as all the changes from upstream Coq.
 
 Highlights since 0.9 are:
 
