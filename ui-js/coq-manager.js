@@ -253,6 +253,7 @@ class CoqManager {
             base_path:   "./",
             pkg_path:    "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
             implicit_libs: false,
+            time: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'mathcomp',
                         'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations',
@@ -706,8 +707,12 @@ class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
-                         coq_options: this._parseOptions(this.options.coq || {})},
+        let init_opts = {
+            implicit_libs: this.options.implicit_libs,
+            stm_debug: false,
+            time: this.options.time,
+            coq_options: this._parseOptions(this.options.coq || {})
+        },
             load_path = this.packages.getLoadPath(),
             load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 

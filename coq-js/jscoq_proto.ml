@@ -46,6 +46,7 @@ type jscoq_options =
   ; implicit_libs: bool   [@default true]
   ; stm_debug: bool       [@default false]
   ; coq_options: coq_options [@default []]
+  ; time: bool            [@default false]
   }
   [@@deriving yojson]
 

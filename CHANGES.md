@@ -1,3 +1,9 @@
+# JsCoq 0.11.1 "<-lib->'"
+-----------------------------------------
+
+ - Add "time" option that simulates Coq's command line `-time`
+   (@ejgallego)
+
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
 

@@ -13,7 +13,14 @@ open Js_of_ocaml
 open Jscoqlib
 open Jscoq_proto.Proto
 
-let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; coq_options = [] }
+let opts =
+  let dft_opts =
+    { top_name = "JsCoq"
+    ; implicit_libs = true
+    ; stm_debug = false
+    ; time = false
+    ; coq_options = [] }
+  in ref dft_opts
 
 let jsCoq = Js.Unsafe.obj [||]
 
@@ -235,7 +242,8 @@ let jscoq_execute =
           | Some ((prefix, module_names)) ->
             out_fn @@ Pending (newid, prefix, module_names)
           | _ ->
-            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
+            let time = !opts.time in
+            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid ~time stm in
             doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
           let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in

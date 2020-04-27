@@ -148,6 +148,7 @@ the `CoqManager` constructor:
 | `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |
 | `prelude`       | boolean         | `true`          | Load the Coq prelude (`Coq.Init.Prelude`) at startup. (If set, make sure that `init_pkgs` includes `'init'`.) |
 | `implicit_libs` | boolean         | `false`         | Allow `Require`ing Coq built-in modules by short name only (e.g., `Require Arith.`).                          |
+| `time`          | boolean         | `false`         | Print timing information for all sentences, as with `coqc -time`                                              |
 | `theme`         | string          | `'light'`       | IDE theme to use; includes icon set and color scheme. Supported values are `'light'` and `'dark'`.            |
 | `show`          | boolean         | `true`          | Opens up the jsCoq panel on startup.                                                                          |
 | `focus`         | boolean         | `true`          | Sets the focus to the editor once jsCoq is ready.                                                             |

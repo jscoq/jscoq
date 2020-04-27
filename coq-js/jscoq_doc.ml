@@ -72,19 +72,25 @@ let parse ~doc ~ontop stm =
   let entry = Pvernac.main_entry in
   Option.get @@ Stm.parse_sentence ~doc ~entry ontop pa
 
+let insert_time ~time east =
+  if time then
+    CAst.map (fun v -> Vernacexpr.{ v with control = ControlTime true :: v.control }) east
+  else east
+
 (* Main add logic; we check that the ontop state is present in the
  * document, as it could well happen that the user request to add
  * arrives out of order wrt to a cancel request demanded by Coq, even
  * if I think we agree this shouldn't be possible. Then, we add and
  * update our document.
  *)
-let add ~doc ~ontop ~newid stm =
+let add ~doc ~ontop ~newid ~time stm =
   let doc, sdoc = doc in
   let verb = false                                       in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
   let pa = Pcoq.Parsable.make (Stream.of_string stm)     in
   let entry = Pvernac.main_entry in
   let east = Option.get Stm.(parse_sentence ~doc ~entry ontop pa) in
+  let east = insert_time ~time east in
   let ndoc, new_st, foc = Stm.add ~doc ~ontop ~newtip:newid verb east in
   let new_sdoc = new_st :: sdoc in
   east.CAst.loc, foc, (ndoc,new_sdoc)

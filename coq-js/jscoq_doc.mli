@@ -23,6 +23,7 @@ val add :
   doc:ser_doc        ->
   ontop:Stateid.t    ->
   newid:Stateid.t    ->
+  time:bool          ->
   string             ->
   Loc.t option * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
 
