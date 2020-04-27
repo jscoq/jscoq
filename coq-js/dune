@@ -2,7 +2,7 @@
  (name jscoqlib)
  (modes byte)
  (modules :standard \ jscoq_worker jslog)
- (preprocess (staged_pps lwt_ppx js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
+ (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
  (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm coq.toplevel jslib coq-serapi.serlib coq-serapi.serapi_v8_11))
 
@@ -10,12 +10,11 @@
  (name jscoq_worker)
  (modules jscoq_worker)
  (modes byte js)
- (preprocess (staged_pps lwt_ppx js_of_ocaml.ppx ppx_import ppx_deriving_yojson))
+ (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
   (javascript_files
     js_stub/mutex.js
     js_stub/unix.js
-    js_stub/str.js
     js_stub/coq_vm.js
     js_stub/interrupt.js
     marshal-arch.js)

@@ -73,10 +73,6 @@ Files: examples/Stlc.html
 License: BSD
 Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
 
-Files: coq-js/js_stub/str.js
-License: LGPL2.1
-Comment: Derived from OCaml (https://github.com/ocaml/ocaml).
-
 Files: coq-js/js_stub/marshal*.js
 Licence: LGPL2.0
 Comment: Derived from js_of_ocaml (https://github.com/ocsigen/js_of_ocaml).
