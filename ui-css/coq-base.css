@@ -105,6 +105,12 @@ body.jscoq-main .CodeMirror-linenumber {
   box-sizing: content-box;  /* need to override `jscoq-main > *` */
 }
 
+.coq-squiggle {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
 /*
  * This is here for the time interval between document load and creation of
  * the CodeMirror editors from textareas.

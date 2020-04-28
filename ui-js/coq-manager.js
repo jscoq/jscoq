@@ -162,8 +162,8 @@ class ProviderContainer {
         }
     }
 
-    mark(stm, mark) {
-        stm.sp.mark(stm, mark);
+    mark(stm, mark, loc_focus) {
+        stm.sp.mark(stm, mark, loc_focus);
     }
 
     highlight(stm, flag) {
@@ -626,18 +626,19 @@ class CoqManager {
 
     coqLog(level, msg) {
 
-        let rmsg = this.pprint.pp2HTML(msg);
+        let fmsg = this.pprint.pp2DOM(msg);
 
         level = level[0];
 
         if (this.options.debug) {
             if (level === 'Debug')
-                console.debug(rmsg, level)
+                console.debug(fmsg, level)
             else
-                console.log(rmsg, level);
+                console.log(fmsg, level);
         }
 
-        this.layout.log(rmsg, level);
+        var item = this.layout.log(fmsg, level);
+        this.pprint.adjustBreaks(item);
     }
 
     coqLibInfo(bname, bi) {
@@ -663,8 +664,10 @@ class CoqManager {
         if (this.error.some(stm => stm.feedback.some(x => x.msg.equals(msg))))
             return;
 
-        var rmsg = this.pprint.pp2HTML(msg);
-        this.layout.log(rmsg, 'Error');
+        var fmsg = this.pprint.pp2DOM(msg);
+
+        var item = this.layout.log(fmsg, 'Error', {'data-coq-sid': sids[0]});
+        this.pprint.adjustBreaks(item);
     }
 
     coqJsonExn(msg) {
@@ -918,7 +921,7 @@ class CoqManager {
         err_stm.phase = Phases.ERROR;
         this.error.push(err_stm);
 
-        this.provider.mark(err_stm, 'error');
+        this.provider.mark(err_stm, 'error', loc);
 
         this.truncate(err_stm);
         this.coq.cancel(sid);

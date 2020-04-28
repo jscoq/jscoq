@@ -164,7 +164,7 @@ class CmCoqProvider {
     }
 
     // Mark a sentence with {clear, processing, error, ok}
-    mark(stm, mark_type) {
+    mark(stm, mark_type, loc_focus) {
 
         if (stm.mark) {
             let b = stm.mark.find();
@@ -184,14 +184,16 @@ class CmCoqProvider {
             break;
         case "error":
             this.markWithClass(stm, 'coq-eval-failed');
-            // XXX: Check this is the right place.
-            this.editor.setCursor(stm.end);
+            if (loc_focus) {
+                let foc = this.squiggle(stm, loc_focus, 'coq-squiggle');
+                this.editor.setCursor(foc.find().to);
+            }
+            else {
+                this.editor.setCursor(stm.end);
+            }
             break;
         case "ok":
             this.markWithClass(stm, 'coq-eval-ok');
-            // XXX: Check this is the right place.
-            // This interferes with the go to target.
-            // doc.setCursor(stm.end);
             break;
         }
     }
@@ -211,6 +213,10 @@ class CmCoqProvider {
         }
     }
 
+    squiggle(stm, loc, className) {
+        return this.markSubordinate(stm, this._subregion(stm, loc), className);
+    }
+
     /**
      * Removes all sentence marks
      */
@@ -223,16 +229,38 @@ class CmCoqProvider {
     }
 
     markWithClass(stm, className) {
-        var doc = this.editor.getDoc();
+        var doc = this.editor.getDoc(),
+            {start, end} = stm;
 
         var mark = 
-            doc.markText(stm.start, stm.end, {className: className,
+            doc.markText(start, end, {className: className,
                 attributes: {'data-coq-sid': stm.coq_sid}});
 
-        this._markWidgetsAsWell(stm.start, stm.end, mark);
+        this._markWidgetsAsWell(start, end, mark);
 
         mark.stm = stm;
         stm.mark = mark;
+    }
+
+    markSubordinate(stm, pos, className) {
+        var doc = this.editor.getDoc(),
+            {start, end} = pos;
+
+        var mark = 
+            doc.markText(start, end, {className: className});
+
+        this._markWidgetsAsWell(start, end, mark);
+
+        stm.mark.on('clear', () => mark.clear());
+        return mark;
+    }
+
+    _subregion(stm, loc) {
+        var doc = this.editor.getDoc(),
+            idx = doc.indexFromPos(stm.start);
+
+        return {start: doc.posFromIndex(idx + loc.bp),
+                end:   doc.posFromIndex(idx + loc.ep)}
     }
 
     /**

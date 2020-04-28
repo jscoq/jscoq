@@ -84,15 +84,15 @@
 }
 
 .cm-s-blackboard .coq-eval-ok {
-  background: #483D8B;
+  background-color: #483D8B;
 }
 
 .cm-s-blackboard .coq-eval-pending {
-  background: #94763a;
+  background-color: #94763a;
 }
 
 .cm-s-blackboard .coq-eval-failed {
-  background: #aa0000;
+  background-color: #aa0000;
 }
 
 /* Gallina keywords */

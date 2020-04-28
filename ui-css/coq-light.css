@@ -52,36 +52,36 @@ body.jscoq-main #document {
 /* Coq settings */
 
 .coq-eval-ok {
-  background: #ddd;
+  background-color: #ddd;
 }
 
 .coq-eval-ok.coq-highlight {
-  background: #ebeebd;
+  background-color: #ebeebd;
 }
   
 .coq-eval-pending {
-    background: #fc6;
+  background-color: #fc6;
 }
 
 .coq-eval-failed {
-    background: rgba(255, 00, 50, 0.4);
+  background-color: rgba(255, 00, 50, 0.2);
 }
 
 .coq-eval-ok.CodeMirror-selectedtext,
 .coq-eval-pending.CodeMirror-selectedtext,
 .coq-eval-failed.CodeMirror-selectedtext {
-    background: none;
+  background-color: none;
 }
 
 .coq-eval-ok.coq-highlight.CodeMirror-selectedtext {
-    background: #bbe; 
+  background-color: #bbe; 
 }
 
 
 /* Normal theme settings */
 
 .CodeMirror.cm-s-default {
-    background: #f1f1f1;
+  background: #f1f1f1;
 }
 
 .cm-s-default .CodeMirror-dialog {
