@@ -13,9 +13,9 @@ doc:          "https://ejgallego.github.io/jscoq/doc"
 depends: [
   "ocaml"               { >= "4.07.1"           }
   "dune"                { >= "2.4.0"            }
-  "js_of_ocaml"         { >= "3.5.2"            }
-  "js_of_ocaml-ppx"     { >= "3.5.2"            }
-  "js_of_ocaml-lwt"     { >= "3.5.2"            }
+  "js_of_ocaml"         { >= "3.6.0"            }
+  "js_of_ocaml-ppx"     { >= "3.6.0"            }
+  "js_of_ocaml-lwt"     { >= "3.6.0"            }
   "yojson"              { >= "1.7.0"            }
   "ppx_deriving_yojson" { >= "3.5.1"            }
   "ppx_import"          { build & >= "1.6.2"    }

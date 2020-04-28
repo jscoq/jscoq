@@ -23,6 +23,10 @@
  - Allow multiple directories for package files (@corwin-of-amber)
  - More accurate error location marker (@corwin-of-amber)
 
+## JsCoq 0.11.1
+
+ - Bump js_of_ocaml to 3.6.0 (@ejgallego)
+
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
 

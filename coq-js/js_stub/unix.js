@@ -134,13 +134,6 @@ function unix_getsockname() {
   return 0;
 }
 
-//Provides: unix_isatty
-//Requires: unix_ll
-function unix_isatty() {
-  unix_ll("unix_isatty", arguments);
-  return 0;
-}
-
 //Provides: unix_kill
 //Requires: unix_ll
 function unix_kill() {
