@@ -1,0 +1,56 @@
+{
+    "rootdir": "_vendor+v8.11+64bit/coq",
+    "builddir": "coq-pkgs",
+    "projects": {
+        "init": {
+            "theories": {
+                "prefix": "Coq",
+                "dirpaths": ["Init", "Bool", "Unicode"]
+            },
+            "plugins": {
+                "prefix": "Coq",
+                "dirpaths": ["ltac", "syntax", "btauto", "cc", "firstorder",
+                        "ssr", "ssrmatching"]
+            }
+        },
+        "coq-base": {
+            "theories": {
+                "prefix": "Coq",
+                "dirpaths": ["Logic", "Program", "Classes", "Structures",
+                        "Relations", "Setoids", "Wellfounded", "Strings",
+                        "Numbers"]
+            },
+            "plugins": {
+                "prefix": "Coq",
+                "dirpaths": ["extraction", "funind"]
+            }
+        },
+        "coq-collections": {
+            "theories": {
+                "prefix": "Coq",
+                "dirpaths": ["Lists", "Vectors", "Sets", "FSets", "MSets",
+                        "Sorting"]
+            }
+        },
+        "coq-arith": {
+            "theories": {
+                "prefix": "Coq",
+                "dirpaths": ["Arith", "NArith", "PArith", "ZArith", "QArith"]
+            },
+            "plugins": {
+                "prefix": "Coq",
+                "dirpaths": ["setoid_ring", "omega"]
+            }
+        },
+        "coq-reals": {
+            "theories": {
+                "prefix": "Coq",
+                "dirpaths": ["Reals", "Floats"]
+            },
+            "plugins": {
+                "prefix": "Coq",
+                "dirpaths": ["fourier", "micromega", "nsatz"]
+            }
+        }
+    }
+}

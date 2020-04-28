@@ -6,23 +6,10 @@
  (targets coq-pkgs)
  ; (mode promote)  - blocked by https://github.com/ocaml/dune/issues/2070
  (deps
-  (package coq)
-  (source_tree coq-addons)
-  ; We force generation of coq-pkgs each time as to workaround our
-  ; deficient addon build system, see
-  ; https://github.com/ejgallego/jscoq/issues/171
-  (universe))
+  (package coq))
  (action
   (progn
-   (run mklibfs %{env:COQBUILDDIR=})
-   (bash "for i in %{env:ADDONS=};
-          do if [ -d $ADDONS_PATH/$i ]; then make -sf coq-addons/$i.addon jscoq-install; fi; done")
-   ; This always rebuilds due to the cleaning of the target dir :(
-   (bash "for i in $(find coq-pkgs \\( -name *.cmo -or -name *.cma \\));
-          do if [ $i -nt $i.js ];
-          then js_of_ocaml ${JSCOQ_DEBUG+ --pretty --noinline --disable shortvar --debug-info} \
-                           --wrap-with-fun= -o $i.js $i; fi; done")
-   (run mklibjson))))
+   (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json} --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib))))
 
 (rule
  (targets node_modules)
@@ -40,27 +27,31 @@
    (source_tree ui-external)
    (source_tree examples)
    index.html
-   project-builder.html
    coq-pkgs
    node_modules
    coq-js/jscoq_worker.js
-   ui-js/coq-build.browser.js))
+   cli.js
+   jscoq.install))
+
+(rule
+ (targets cli.js cli.js.map)
+ (deps
+  (source_tree coq-jslib)
+  (source_tree ui-js)
+  webpack.config.js
+  tsconfig.json
+  node_modules)
+ (action
+  (bash "npx webpack coq-jslib/cli.ts && chmod +x cli.js")))
+
+(install
+ (section bin)
+ (files (cli.js as jscoq)))
 
 ; Just the worker
 (alias
   (name jscoq_worker)
   (deps
     coq-js/jscoq_worker.js))
-
-(rule
- (alias libs-pkg)
- (deps
-   coq-pkgs
-   %{env:COQBUILDDIR_REL=}/.vfiles.d)
- (action
-   (progn
-    ; Pending on proper support for globs inside directory targets
-    (bash "node %{dep:coq-jslib/mkpkg.js} coq-pkgs/init.json coq-pkgs/coq-*.json")
-    (bash "node %{dep:coq-jslib/mkdeps.js} coq-pkgs/init.json coq-pkgs/coq-*.json %{env:COQBUILDDIR_REL=}/.vfiles.d"))))
 
 (dirs (:standard _vendor+*))
