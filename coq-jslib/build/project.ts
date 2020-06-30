@@ -31,16 +31,21 @@ class CoqProject {
         };
     }
 
-    fromJson(json: {[root: string]: {prefix?: string, dirpaths?: string[]}},
+    fromJson(json: {[root: string]: {prefix?: string, dirpaths?: DirPathFlag[]}},
              baseDir: string = '', volume: FSInterface = this.volume) {
         for (let root in json) {
-            var prefix = this.searchPath.toDirPath(json[root].prefix) || [];
+            var prefix = this.toDirPath(json[root].prefix) || [];
+
             for (let sub of json[root].dirpaths || [""]) {
-                var dirpath = this.searchPath.toDirPath(sub),
+                var dirpath = this.toDirPath(sub),
                     physical = volume.path.join(baseDir, root, ...dirpath),
-                    logical = prefix.concat(dirpath);
-                this.searchPath.addRecursive({volume, physical, logical, 
-                    pkg: this.name});
+                    logical = prefix.concat(dirpath),
+                    pel = {volume, physical, logical, pkg: this.name};
+
+                if (typeof sub === 'string' || sub.rec)
+                    this.searchPath.addRecursive(pel);
+                else
+                    this.searchPath.add(pel);
             }
         }
         return this;
@@ -92,6 +97,11 @@ class CoqProject {
         for (let k of this.listModules())
             modules[k] = mdeps[k] ? {deps: mdeps[k]} : {};
         return {name: this.name, deps: this.deps, modules};
+    }
+
+    toDirPath(flag: DirPathFlag) {
+        return this.searchPath.toDirPath(
+            (typeof flag === 'string') ? flag : flag.logical);
     }
 
     /**
@@ -158,6 +168,8 @@ class CoqProject {
     }
 
 }
+
+type DirPathFlag = string | {logical: string, rec?: boolean};
 
 type PackageOptions = {
     json: any /* neatjson options */
