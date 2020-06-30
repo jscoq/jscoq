@@ -159,6 +159,7 @@ class PackageManager {
                                             endsWith(pkg_id, suffix);
 
         for (let pkg of this.packages) {
+            if (!pkg.info) continue;
             for (let prefix of pkg.info.pkgs) {
                 if (pkg_matches(prefix.pkg_id) &&
                     prefix.vo_files.some(entry => possible_filenames.indexOf(entry[0]) > -1))

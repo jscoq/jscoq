@@ -666,7 +666,7 @@ class CoqManager {
 
         var fmsg = this.pprint.pp2DOM(msg);
 
-        var item = this.layout.log(fmsg, 'Error', {'data-coq-sid': sids[0]});
+        var item = this.layout.log(fmsg, 'Error', sids && {'data-coq-sid': sids[0]});
         this.pprint.adjustBreaks(item);
     }
 
