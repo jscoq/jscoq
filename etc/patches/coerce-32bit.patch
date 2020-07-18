@@ -1,8 +1,8 @@
 diff --git a/clib/hashset.ml b/clib/hashset.ml
-index b7a245a..c1ecb4f 100644
+index 89136e7..4d89155 100644
 --- a/clib/hashset.ml
 +++ b/clib/hashset.ml
-@@ -223,9 +223,9 @@ module Combine = struct
+@@ -225,9 +225,9 @@ module Combine = struct
         this topic. Therefore, there must be room for improvement here. *)
      let alpha = 65599
      let beta  = 7
@@ -28,7 +28,7 @@ index 5f7502e..b22c763 100644
  
  (documentation
 diff --git a/kernel/uint63_31.ml b/kernel/uint63_31.ml
-index 445166f..2c17e02 100644
+index 5b2d934..ce7edb6 100644
 --- a/kernel/uint63_31.ml
 +++ b/kernel/uint63_31.ml
 @@ -11,7 +11,7 @@
@@ -41,7 +41,7 @@ index 445166f..2c17e02 100644
  let uint_size = 63
  
 diff --git a/lib/system.ml b/lib/system.ml
-index 2d68fd2..42aea12 100644
+index e25f758..a59c972 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
 @@ -184,7 +184,7 @@ let input_binary_int f ch =
@@ -54,10 +54,10 @@ index 2d68fd2..42aea12 100644
    try Marshal.from_channel ch
    with
 diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
-index febf4fa..3255c53 100644
+index 2c112c3..99459bb 100644
 --- a/theories/Numbers/Cyclic/Int63/Int63.v
 +++ b/theories/Numbers/Cyclic/Int63/Int63.v
-@@ -1164,8 +1164,8 @@ Proof.
+@@ -1162,8 +1162,8 @@ Proof.
   apply to_Z_inj.
   rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
   pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
@@ -67,9 +67,9 @@ index febf4fa..3255c53 100644
 +Admitted.
  
  Lemma addmuldiv_spec x y p :
-   [| p |] <= [| digits |] ->
+   φ p <= φ digits  ->
 diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index 6ddf8ea..2d753ff 100644
+index 1d93267..0d7fa12 100644
 --- a/theories/Numbers/Cyclic/Int63/Ring63.v
 +++ b/theories/Numbers/Cyclic/Int63/Ring63.v
 @@ -60,8 +60,10 @@ Add Ring Int63Ring : Int63Ring

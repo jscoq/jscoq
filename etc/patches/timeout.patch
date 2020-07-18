@@ -1,8 +1,8 @@
 diff --git a/kernel/byterun/coq_interp.c b/kernel/byterun/coq_interp.c
-index 1b348ae..b41ba96 100644
+index 7588c1c..77d03dd 100644
 --- a/kernel/byterun/coq_interp.c
 +++ b/kernel/byterun/coq_interp.c
-@@ -1593,3 +1593,6 @@ value coq_interprete_byte(value* argv, int argn){
+@@ -1844,3 +1844,6 @@ value coq_interprete_byte(value* argv, int argn){
  value coq_eval_tcode (value tcode, value t, value g, value e) {
    return coq_interprete_ml(tcode, Val_unit, t, g, e, 0);
  }
@@ -10,7 +10,7 @@ index 1b348ae..b41ba96 100644
 +// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
 +value interrupt_pending() { return Val_false; }
 diff --git a/lib/control.ml b/lib/control.ml
-index 9054507..d21b4f4 100644
+index bb42b57..51f87d4 100644
 --- a/lib/control.ml
 +++ b/lib/control.ml
 @@ -16,7 +16,19 @@ let steps = ref 0
@@ -33,11 +33,10 @@ index 9054507..d21b4f4 100644
    if !interrupt then begin interrupt := false; raise Sys.Break end;
    incr steps;
    if !enable_thread_delay && !steps = 1000 then begin
-@@ -79,11 +91,32 @@ let windows_timeout n f x e =
-     let e = Backtrace.add_backtrace e in
+@@ -79,11 +91,30 @@ let windows_timeout n f x e =
+     let () = killed := true in
      Exninfo.iraise e
  
-+
 +let unwind ~(protect:unit -> unit) f =
 +  try let y = f () in protect (); y
 +  with e -> protect (); raise e
@@ -60,7 +59,6 @@ index 9054507..d21b4f4 100644
  | "Unix" | "Cygwin" -> { timeout = unix_timeout }
  | _ -> { timeout = windows_timeout }
 +*)
-+
 +let _ = windows_timeout, unix_timeout
 +let timeout_fun = { timeout = jscoq_timeout }
  
