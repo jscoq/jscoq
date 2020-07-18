@@ -24,7 +24,7 @@ depends: [
   "sexplib"             { >= "v0.12.0"           }
   "ppx_sexp_conv"       { build   & >= "v0.12.0" }
   # We build a local, patched Coq, but however it is still a dep
-  # "coq"                 { >= "8.11.0" & < "8.12" }
+  # "coq"                 { >= "8.12.0" & < "8.13" }
   "num"
 ]
 

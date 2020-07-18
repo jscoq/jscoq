@@ -123,7 +123,7 @@ let post_file filename content : unit =
 let update_loadpath (msg : lib_event) : unit =
   match msg with
   | LibLoaded (_,bundle) ->
-    List.iter Loadpath.add_coq_path
+    List.iter Loadpath.add_vo_path
       (Jslibmng.coqpath_of_bundle ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
   [@@warning "-4"]
@@ -150,7 +150,8 @@ let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = (fun fb -> post_answer (Feedback (Jscoq_util.fb_opt fb)));
       require_libs = lib_require;
-      iload_path   = List.map (fun (path_el, phys) ->
+      ml_path      = [];
+      vo_path      = List.map (fun (path_el, phys) ->
                          Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
                      ) lib_path;
       top_name     = set_opts.top_name;
@@ -169,7 +170,7 @@ let exec_getopt opt =
   (OptionMap.find opt tbl).opt_value
 
 let coq_exn_info exn =
-    let (e, info) = CErrors.push exn                   in
+    let (e, info) = Exninfo.capture exn in
     let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
     CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
 
@@ -306,7 +307,7 @@ let jscoq_execute =
         let jsoov = Sys_js.js_of_ocaml_version                      in
         let header1 = Printf.sprintf
             "JsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
-            Jscoq_version.jscoq_version coqv cmag coqd ccd          in
+            Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
         let header2 = Printf.sprintf
             "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
         Jslibmng.info_pkg post_lib_event base pkgs                  >>= fun () ->
@@ -317,7 +318,7 @@ let jscoq_execute =
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
-    List.iter (fun (path_el, phys) -> Loadpath.add_coq_path
+    List.iter (fun (path_el, phys) -> Loadpath.add_vo_path
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
   | Load filename ->

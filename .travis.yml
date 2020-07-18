@@ -17,6 +17,7 @@ branches:
   - v8.9+worker
   - v8.10
   - v8.11
+  - v8.12
 
 addons:
   apt:

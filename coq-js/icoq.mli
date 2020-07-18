@@ -25,7 +25,8 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
 
   (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  iload_path   : Loadpath.coq_path list;
+  ml_path   : string list;
+  vo_path   : Loadpath.vo_path list;
 
   (* Libs to require prior to STM init *)
   require_libs : (string * string option * bool option) list;
@@ -52,7 +53,7 @@ type 'a seq = 'a Seq.t
 val coq_init : coq_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)
-val version : string * string * string * string * int
+val version : string * string * string * string * int32
 
 val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
 

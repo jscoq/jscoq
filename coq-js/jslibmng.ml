@@ -231,13 +231,11 @@ let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
                                    else unix_prefix @ lib_path
   in
   Loadpath.{
-    path_spec = VoPath {
-        unix_path = String.concat "/" phys_path;
-        coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path);
-        has_ml = AddTopML;
-        implicit = implicit && is_intrinsic lib_path;
-      };
-    recursive = false;
+    unix_path = String.concat "/" phys_path
+  ; coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path)
+  ; has_ml = true
+  ; implicit = implicit && is_intrinsic lib_path
+  ; recursive = false
   }
 
 let coqpath_of_bundle ?(implicit=false) bundle =

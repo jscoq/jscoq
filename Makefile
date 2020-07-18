@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION:=v8.11
+COQ_VERSION:=v8.12
 JSCOQ_BRANCH:=
 
 JSCOQ_VERSION:=$(COQ_VERSION)
@@ -164,8 +164,8 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH=V8.11.1
-COQ_BRANCH_LATEST=v8.11
+COQ_BRANCH=V8.12.0
+COQ_BRANCH_LATEST=v8.12
 COQ_REPOS=https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
@@ -179,8 +179,6 @@ $(COQSRC):
 
 coq-get: $(COQSRC)
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
-	dune build @vodeps $(DUNE_FLAGS)
-	cd $(COQSRC) && dune exec ./tools/coq_dune.exe $(DUNE_FLAGS) --context="$(BUILD_CONTEXT)" $(COQBUILDDIR)/.vfiles.d
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

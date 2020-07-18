@@ -1,5 +1,5 @@
 {
-    "rootdir": "_vendor+v8.11+64bit/coq",
+    "rootdir": "_vendor+v8.12+64bit/coq",
     "builddir": "coq-pkgs",
     "projects": {
         "init": {
@@ -49,7 +49,7 @@
             },
             "plugins": {
                 "prefix": "Coq",
-                "dirpaths": ["fourier", "micromega", "nsatz"]
+                "dirpaths": ["micromega", "nsatz"]
             }
         }
     }

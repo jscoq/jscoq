@@ -61,9 +61,9 @@ exception NoSuchState of Stateid.t
 
 let _ = CErrors.register_handler (function
     | NoSuchState sid ->
-      Pp.str ("Trying to add on top of non-existent span: " ^ Stateid.to_string sid)
+      Some (Pp.str ("Trying to add on top of non-existent span: " ^ Stateid.to_string sid))
     | _ ->
-      raise CErrors.Unhandled)
+      None)
 
 let parse ~doc ~ontop stm =
   let doc, sdoc = doc in

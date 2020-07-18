@@ -44,8 +44,8 @@ val is_bytecode : string -> bool
 val register_cma : file_path:string -> unit
 
 (* auxiliary functions to create and process paths *)
-val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list -> Loadpath.coq_path
-val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Loadpath.coq_path list
+val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list -> Loadpath.vo_path
+val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Loadpath.vo_path list
 
 val path_of_dirpath : Names.DirPath.t -> string list
 val module_name_of_qualid : Libnames.qualid -> string list

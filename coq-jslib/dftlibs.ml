@@ -21,7 +21,8 @@ let plugin_list =
   ; ["btauto"]
   ; ["rtauto"]  (* TODO add this to one of the bundles *)
 
-  ; ["fourier"]
+  (* Removed in 8.12 *)
+  (* ; ["fourier"] *)
   ; ["omega"]
   ; ["micromega"]
   ; ["nsatz"]
@@ -132,8 +133,8 @@ let pkgs : (string * string list * (string list * selector) list) list =
     ]
 
   ; "coq-reals", ["coq-arith"], all_of
-    [ ["Coq"; "fourier"]
-    ; ["Coq"; "micromega"]
+    (* [ ["Coq"; "fourier"] *)
+    [ ["Coq"; "micromega"]
     ; ["Coq"; "nsatz"]
     ; ["Coq"; "Reals"]
     ; ["Coq"; "Floats"]

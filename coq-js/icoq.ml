@@ -26,7 +26,8 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
 
   (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  iload_path   : Loadpath.coq_path list;
+  ml_path   : string list;
+  vo_path   : Loadpath.vo_path list;
 
   (* Libs to require prior to STM init *)
   require_libs : (string * string option * bool option) list;
@@ -78,7 +79,6 @@ let coq_init opts =
     {
     load_obj = opts.ml_load;
     (* We ignore all the other operations for now. *)
-    use_file = (fun _ -> ());
     add_dir  = (fun _ -> ());
     ml_loop  = (fun _ -> ());
   } in
@@ -108,10 +108,12 @@ let coq_init opts =
 
   (* Return the initial state of the STM *)
   let sertop_dp = Stm.TopLogical (Libnames.dirpath_of_string opts.top_name) in
-  let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp;
-               require_libs = opts.require_libs;
-               iload_path = opts.iload_path;
-               stm_options = Stm.AsyncOpts.default_opts } in
+  let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp
+             ; injections = List.map (fun x -> Stm.RequireInjection x) opts.require_libs
+             ; ml_load_path = opts.ml_path
+             ; vo_load_path = opts.vo_path
+             ; stm_options = Stm.AsyncOpts.default_opts
+             } in
   let ndoc, nsid = Stm.new_doc ndoc in
   ndoc, nsid
 
@@ -195,8 +197,8 @@ let compile_vo ~doc =
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =
-  Backtrace.record_backtrace debug;
+  Printexc.record_backtrace debug;
   Flags.debug := debug
 
 let version =
-  Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version, Coq_config.vo_magic_number
+  Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version, Coq_config.vo_version
