@@ -2,6 +2,7 @@
 -----------------------------------------
 
  - Port to Coq 8.12 (@ejgallego)
+ - [addons] Update mathcomp to 1.11 (@ejgallego)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
