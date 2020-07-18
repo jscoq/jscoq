@@ -421,10 +421,10 @@ body.jscoq-main .CodeMirror-linenumber {
 #packages-panel div.package-row > button {
   padding: 0;
   border: none;
-  background: none;
+  background-color: transparent;
   outline: none;
   margin-right: 4px;
-  vertical-align: middle;
+  vertical-align: bottom;
   cursor: pointer;
 }
 
@@ -470,12 +470,15 @@ body.jscoq-main .CodeMirror-linenumber {
   margin-right: 0.1em;
 }
 
-button.download-icon::after {
-  content:url("../ui-images/dl.png");
+button.download-icon {
+  width: 25px;
+  height: 20px;
+  background-image: url("../ui-images/dl.png");
+  background-repeat: no-repeat;
 }
 
-button.download-icon.checked::after {
-  content:url("../ui-images/checked.png");
+button.download-icon.checked {
+  background-image: url("../ui-images/checked.png");
 }
 
 .rel-pos {

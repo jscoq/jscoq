@@ -259,8 +259,13 @@ class PackageManager {
         var bundle = this.bundles[bname];
         if (bundle && bundle.row) {
             bundle.row.parents('div.package-row').addClass('expanded');
-            bundle.row[0].scrollIntoViewIfNeeded();
+            this._scrollTo(bundle.row[0]);
         }
+    }
+
+    _scrollTo(el) {
+        if (el.scrollIntoViewIfNeeded) el.scrollIntoViewIfNeeded();
+        else el.scrollIntoView();
     }
 
     /**
