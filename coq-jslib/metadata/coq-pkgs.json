@@ -1,24 +1,25 @@
 {
-    "rootdir": "_vendor+v8.12+64bit/coq",
+    "rootdir": "_vendor+v8.11+64bit/coq",
     "builddir": "coq-pkgs",
     "projects": {
         "init": {
             "theories": {
                 "prefix": "Coq",
-                "dirpaths": ["Init", "Bool", "Unicode"]
+                "dirpaths": ["Init", "Bool", "Unicode",
+                             "btauto", "ssr", "ssrmatching"]
             },
             "plugins": {
                 "prefix": "Coq",
                 "dirpaths": ["ltac", "syntax", "btauto", "cc", "firstorder",
-                        "ssr", "ssrmatching"]
+                             "ssr", "ssrmatching"]
             }
         },
         "coq-base": {
             "theories": {
                 "prefix": "Coq",
                 "dirpaths": ["Logic", "Program", "Classes", "Structures",
-                        "Relations", "Setoids", "Wellfounded", "Strings",
-                        "Numbers"]
+                             "Relations", "Setoids", "Wellfounded", "Strings",
+                             "Numbers", "extraction", "funind"]
             },
             "plugins": {
                 "prefix": "Coq",
@@ -29,13 +30,14 @@
             "theories": {
                 "prefix": "Coq",
                 "dirpaths": ["Lists", "Vectors", "Sets", "FSets", "MSets",
-                        "Sorting"]
+                             "Sorting"]
             }
         },
         "coq-arith": {
             "theories": {
                 "prefix": "Coq",
-                "dirpaths": ["Arith", "NArith", "PArith", "ZArith", "QArith"]
+                "dirpaths": ["Arith", "NArith", "PArith", "ZArith", "QArith",
+                             "setoid_ring", "omega"]
             },
             "plugins": {
                 "prefix": "Coq",
@@ -45,7 +47,8 @@
         "coq-reals": {
             "theories": {
                 "prefix": "Coq",
-                "dirpaths": ["Reals", "Floats"]
+                "dirpaths": ["Reals", "Floats",
+                             "micromega", "nsatz"]
             },
             "plugins": {
                 "prefix": "Coq",
