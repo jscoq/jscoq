@@ -3,6 +3,8 @@
 
  - Port to Coq 8.12 (@ejgallego)
  - [addons] Update mathcomp to 1.11 (@ejgallego)
+ - Chunked packages: split large library addons into multiple chunks,
+   which are loaded on demand. (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
@@ -32,8 +34,6 @@
 
  - Bump js_of_ocaml to 3.6.0 (@ejgallego)
  - More accurate error location marker (@corwin-of-amber)
- - Chunked packages: split large library addons into multiple chunks,
-   which are loaded on demand. (@corwin-of-amber)
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
