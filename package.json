@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "0.11.0",
+  "version": "0.12.0-rc1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "dependencies": {
     "array-equal": "^1.0.0",
