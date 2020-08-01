@@ -34,14 +34,14 @@ class PackageManager {
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
-        let mkpath = path => aliases[path] || path.replace(/([^/])$/, '$1/');
+        let mkpath = path => path && path.replace(/([^/])$/, '$1/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
-            let base_uri = mkpath(key);
-            this.packages_by_uri[base_uri] = pkg_names;
+            let base_uri = mkpath(aliases[key] || key);
 
             for (let pkg of pkg_names) {
-                this.addPackage(new CoqPkgInfo(pkg, base_uri));
+                var uri = mkpath(aliases[`${key}/${pkg}`]) || base_uri;
+                this.addPackage(new CoqPkgInfo(pkg, uri));
             }
         }
     }
@@ -55,6 +55,8 @@ class PackageManager {
     addPackage(pkg) {
         this.packages.push(pkg);
         this.packages_by_name[pkg.name] = pkg;
+        (this.packages_by_uri[pkg.base_uri] = 
+            this.packages_by_uri[pkg.base_uri] || []).push(pkg.name);
     }
 
     getPackage(pkg_name) {
@@ -317,10 +319,14 @@ class PackageManager {
             span = $('<span>').addClass('loaded-chunks')
                               .insertAfter(bundle.row.children('.desc'));
 
+        var prefix = pkg.name + '-',
+            shorten = name => name.startsWith(prefix) ? 
+                              name.substr(prefix.length) : name;
+
         span.empty();
         for (let chunk of pkg.chunks) {
             if (chunk.status === 'loaded')
-                span.append($('<span>').text(chunk.name));
+                span.append($('<span>').text(shorten(chunk.name)));
         }
         if (pkg.chunks.every(chunk => chunk.status === 'loaded'))
             this.showPackageCompleted(pkg.name);
@@ -442,8 +448,7 @@ class CoqPkgInfo {
 
     getUrl(resource) {
         // Generate URL with the package's base_uri as the base
-        return new URL(resource,
-                  new URL(this.base_uri, PackageManager.scriptUrl));
+        return this.base_uri + resource;//new URL(resource, new URL(this.base_uri));
     }
 
     setInfo(info) {
@@ -468,7 +473,7 @@ class CoqPkgInfo {
 class CoqPkgArchive {
 
     constructor(resource) {
-        if (resource instanceof URL)
+        if (resource instanceof URL || typeof resource === 'string')
             this.url = resource;
         else if (resource instanceof Blob)
             this.blob = resource;
