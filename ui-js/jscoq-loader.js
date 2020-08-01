@@ -50,12 +50,13 @@ var loadJsCoq, JsCoq;
 
     loadJsCoq = function(base_path, node_modules_path) {
 
-        base_path = base_path || JsCoq.base_path;
-        if (/[^/]$/.exec(base_path)) base_path += "/";
+        base_path = (base_path || JsCoq.base_path).replace(/([^/])$/, '$1/');
+        JsCoq.base_path = base_path;
 
-        node_modules_path = node_modules_path || 
-                            base_path + (JsCoq.is_npm ? "../" : "node_modules/");
-        if (/[^/]$/.exec(node_modules_path)) node_modules_path += "/";
+        node_modules_path = (node_modules_path ||
+                             base_path + (JsCoq.is_npm ? "../" : "node_modules/"))
+                            .replace(/([^/])$/, '$1/')
+        JsCoq.node_modules_path = node_modules_path;
 
         loadCss(node_modules_path + 'codemirror/lib/codemirror');
         loadCss(node_modules_path + 'codemirror/theme/blackboard');
@@ -93,6 +94,7 @@ var loadJsCoq, JsCoq;
 
     JsCoq = {
         base_path: scriptDir ? `${scriptDir}../` : "./",
+        node_modules_path: '',
 
         is_npm: false,  /* indicates that jsCoq was installed via `npm install` */
 

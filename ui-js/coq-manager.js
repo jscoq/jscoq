@@ -424,8 +424,14 @@ class CoqManager {
             this.coq.interruptSetup();
 
             // Setup package loader
+            var pkg_path_aliases = {
+                '+': this.options.pkg_path,
+                // Affiliated packages
+                '+/mathcomp': JsCoq.node_modules_path + '@jscoq/mathcomp/coq-pkgs'
+            };
+
             this.packages = new PackageManager(this.layout.packages,
-                this.options.all_pkgs, {'+': this.options.pkg_path}, this.coq);
+                this.options.all_pkgs, pkg_path_aliases, this.coq);
             
             this.packages.expand();
 
