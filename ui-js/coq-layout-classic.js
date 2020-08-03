@@ -33,9 +33,8 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <img height="18px" src="${base_path}/ui-images/js-logo.svg" 
-             style="vertical-align: top; margin-top: 5px"><!--
-        --><i style="color: #c96">+</i><a href="https://coq.inria.fr"><!--
+        <img height="20" src="${base_path}/ui-images/wa-logo.svg" style="vertical-align: top; margin-top: 3px"><i>+</i><!--
+        --><a href="https://coq.inria.fr"><!--
           --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle; margin-left: -1px">
         </a>
         <!-- 
@@ -53,7 +52,7 @@ class CoqLayoutClassic {
         <button name="reset"       alt="Reset worker"            title="Reset worker"></button>
       </span>
       <div class="exits right">
-        <a href="https://github.com/ejgallego/jscoq" class="link-to-github">Readme @</a>
+        <a href="https://github.com/ejgallego/jscoq" class="link-to-github"></a>
       </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
@@ -97,7 +96,7 @@ class CoqLayoutClassic {
 
         // Our reference to the IDE, goal display & query buffer.
         this.ide   = document.getElementById(options.wrapper_id);
-        this.ide.classList.add(`layout-${options.layout || 'flex'}`);
+        this.ide.classList.add('jscoq-ide', `layout-${options.layout || 'flex'}`);
 
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
@@ -136,11 +135,13 @@ class CoqLayoutClassic {
     }
 
     show() {
+        this.ide.classList.add('goals-active');
         this.ide.classList.remove('toggled');
         this.onToggle({target: this, shown: true});
     }
 
     hide() {
+        this.ide.classList.remove('goals-active');
         this.ide.classList.add('toggled');
         this.onToggle({target: this, shown: false});
     }
@@ -177,6 +178,13 @@ class CoqLayoutClassic {
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
+    }
+
+    createOutline() {
+        var outline_pane = $('<div>').attr('id', 'outline-pane');
+        $(this.ide).prepend(outline_pane);
+        requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
+        return this.outline = outline_pane[0];
     }
 
     /**
