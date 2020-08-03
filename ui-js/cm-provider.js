@@ -477,7 +477,7 @@ class CmCoqProvider {
     load(text, filename, dirty=false) {
         if (this.autosave && this.dirty) this.saveLocal();
 
-        this.editor.setValue(text);
+        this.editor.swapDoc(new CodeMirror.Doc(text, this.editor.getMode()));
         this.filename = filename;
         this.dirty = dirty;
         if (filename) this.startAutoSave();

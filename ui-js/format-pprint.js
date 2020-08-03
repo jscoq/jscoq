@@ -53,7 +53,7 @@ class FormatPrettyPrint {
 
         // ["Pp_glue", [...elements]]
         case "Pp_glue":
-            return ct.map(x => this.pp2DOM(x)).reduce((a, b) => a.add(b));
+            return ct.map(x => this.pp2DOM(x)).reduce((a, b) => a.add(b), $([]));
 
         // ["Pp_string", string]
         case "Pp_string":
