@@ -112,13 +112,8 @@
   </div>
   <div>
     <textarea id="addnC" >
-From Coq Require Import Init.Prelude Unicode.Utf8.
 From Coq Require Import ssreflect ssrfun ssrbool.
-From mathcomp Require Import eqtype ssrnat div prime.
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive. </textarea>
+From mathcomp Require Import eqtype ssrnat div prime. </textarea>
   </div>
   <div>
     <h5>Ready to do Proofs!</h5>
@@ -165,10 +160,10 @@ have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1
     <textarea id="prime_above3" >
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
     <p>
-      It remains to prove that <code>p</code> is greater than <code>p</code>.
+      It remains to prove that <code>p</code> is greater than <code>m</code>.
       We reason by
       contraposition with the divisibility hypothesis, which gives us
-      the goal "if <code>p &lt;= m</code> then <code>p</code> is not a prime divisor of 
+      the goal "if <code>p ≤ m</code> then <code>p</code> is not a prime divisor of 
       <code>m! + 1</code>".
     </p>
     <textarea id="prime_above4" >
@@ -176,8 +171,8 @@ by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.</textarea>
     <p>
       The goal follows from basic properties of divisibility, plus
-      from the fact that if <code>p &lt; m</code>, then <code>p</code> divides
-      <code>m!</code>, so that for <code>p</code> to to divide
+      from the fact that if <code>p ≤ m</code>, then <code>p</code> divides
+      <code>m!</code>, so that for <code>p</code> to divide
       <code>m! + 1</code> it must also divide 1,
       in contradiction to <code>p</code> being prime.
     </p>
@@ -226,7 +221,6 @@ Qed.</textarea>
 
     var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {
-        prelude:   false,
         implicit_libs: false,
         focus: false,
         base_path: './',
