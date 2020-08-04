@@ -4,7 +4,8 @@ class CoqWorker {
 
     constructor(scriptPath, worker) {
         this.options = {
-            debug: false
+            debug: false,
+            warn: true
         };
         this.observers = [this];
         this.routes = [this.observers];
@@ -20,9 +21,7 @@ class CoqWorker {
                                   this.constructor.defaultScriptPath());
         }
 
-        this.when_created.then(() => {
-            this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
-        });
+        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
     }
 
     /**
@@ -30,15 +29,8 @@ class CoqWorker {
      * from which this script is loaded.
      */
     static defaultScriptPath() {
-        return new URL("../coq-js/jscoq_worker.bc.js", this.scriptUrl).href;
-    }
-
-    /**
-     * Alternate script path, for when serving for source tree.
-     * (Basically removes `.bc` from the suffix.)
-     */
-    static alternateScriptPath(script_path) {
-        return script_path.replace(/\.bc\.js$/, '.js');
+        var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
+        return new URL(`${nmPath}/wacoq-bin/dist/worker.js`, this.scriptUrl).href;
     }
 
     /**
@@ -48,37 +40,32 @@ class CoqWorker {
         return uri.replace(/^[.][/]/, '../');  /** @todo */
     }
 
-    async createWorker(script_path) {
-        let alt_script_path = this.constructor.alternateScriptPath(script_path);
-
-        this._worker_script = await
-            this.constructor._searchResource([script_path, alt_script_path]);
+    createWorker(script_path) {
+        this._worker_script = script_path;
 
         this.worker = new Worker(this._worker_script);
 
         if (typeof window !== 'undefined')
-            window.addEventListener('unload', () => this.worker.terminate());
-    }
+            window.addEventListener('unload', () =>
+                this.worker && this.worker.terminate());
 
-    static async _searchResource(urls) {
-        let head = (url) => new Promise((resolve, reject) =>
-            $.ajax({type: 'HEAD', dataType: 'text', url}).then(() => resolve(url)).fail(reject));
-
-        for (let url of urls) {
-            try { return await head(url); } catch { }
-        }
-        throw new Error(`resource not found; [${urls}]`);
+        this._boot = new Future();
+        return this._boot.promise;
     }
 
     sendCommand(msg) {
         if(this.options.debug) {
             console.log("Posting: ", msg);
         }
-        this.worker.postMessage(msg);
+        this.worker.postMessage(JSON.stringify(msg));
+    }
+
+    sendDirective(msg) {   // directives are intercepted by the JS part of the worker
+        this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
     init(opts, lib_init, lib_path) {
-        this.sendCommand(["Init", opts, lib_init, lib_path]);
+        this.sendCommand(["Init", opts]); //, opts, lib_init, lib_path]);
     }
 
     getInfo() {
@@ -130,16 +117,17 @@ class CoqWorker {
         this.sendCommand(["GetOpt", option_name]);
     }
 
-    loadPkg(base_path, pkg) {
-        this.sendCommand(["LoadPkg", this.relativePath(base_path), pkg]);
+    loadPkg(url) {
+        if (url instanceof URL) url = url.href;
+        this.sendDirective(["LoadPkg", url]);
     }
 
     infoPkg(base_path, pkgs) {
         this.sendCommand(["InfoPkg", this.relativePath(base_path), pkgs]);
     }
 
-    reassureLoadPath(load_path) {
-        this.sendCommand(["ReassureLoadPath", load_path]);
+    refreshLoadPath(load_path) {
+        this.sendCommand(["RefreshLoadPath"]);
     }
 
     put(filename, content, transferOwnership=false) {
@@ -171,7 +159,7 @@ class CoqWorker {
         if (typeof SharedArrayBuffer !== 'undefined') {
             this.intvec = new Int32Array(new SharedArrayBuffer(4));
             try {
-                this.sendCommand(["InterruptSetup", this.intvec]);
+                this.sendDirective(["InterruptSetup", this.intvec]);
             }
             catch (e) {  /* this fails in Firefox 72 even with SharedArrayBuffer enabled */
                 console.warn('SharedArrayBuffer is available but not serializable -- interrupts disabled');
@@ -192,11 +180,11 @@ class CoqWorker {
     restart() {
         this.sids = [, new Future()];
 
+        this.worker.removeEventListener('message', this._handler);
         this.worker.terminate();  // kill!
 
         // Recreate worker
-        this.worker = new Worker(this._worker_script);
-        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
+        this.createWorker(this._worker_script);
     }
 
     // Promise-based APIs
@@ -261,9 +249,14 @@ class CoqWorker {
             }
          }
 
-         if (!handled) {
+         if (!handled && this.options.warn) {
             console.warn('Message ', msg, ' not handled');
         }
+    }
+
+    coqBoot() {
+        if (this._boot)
+            this._boot.resolve();
     }
 
     coqFeedback(fb_msg) {
@@ -285,7 +278,7 @@ class CoqWorker {
             }
         }
 
-        if (!handled) {
+        if (!handled && this.options.warn) {
             console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
         }
     }
@@ -302,7 +295,7 @@ class CoqWorker {
             }
         }
 
-        if (!handled) {
+        if (!handled && this.options.warn) {
             console.warn(`SearchResults not handled (route ${rid})`);
         }
     }
@@ -326,6 +319,8 @@ class Future {
 
     resolve(val) { if (!this._done) { this._done = this._success = true; this._resolve(val); } }
     reject(err) { if (!this._done) { this._done = true; this._reject(err); } }
+
+    then(cont)      { return this.promise.then(cont); }
 
     isDone()        { return this._done; }
     isSuccessful()  { return this._success; }

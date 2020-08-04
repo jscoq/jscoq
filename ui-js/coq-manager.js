@@ -251,7 +251,7 @@ class CoqManager {
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
-            pkg_path:    "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
+            pkg_path:    PackageManager.defaultPkgPath(),
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['init', 'mathcomp',
@@ -364,7 +364,7 @@ class CoqManager {
             if (entry.kind == 'lemma')
                 this.contextual_info.showCheck(fullname, /*opaque=*/true);
         };
-        provider.onTipOut = () => { this.contextual_info.hide(); };
+        provider.onTipOut = () => { if (this.contextual_info) this.contextual_info.hide(); };
 
         return provider;
     }
@@ -372,16 +372,31 @@ class CoqManager {
     setupDragDrop() {
         $(this.layout.ide).on('dragover', (evt) => {
             evt.preventDefault();
+            evt.originalEvent.dataTransfer.dropEffect = 'link';
         });
-        $(this.layout.ide).on('drop', (evt) => {
+        $(this.layout.ide).on('drop', async (evt) => {
             evt.preventDefault();
-            // TODO better check file type and size before
-            //  opening
-            var file = evt.originalEvent.dataTransfer.files[0];
-            if (file) {
-                if (file.name.match(/[.](coq-pkg|zip)$/))
+            var src = []
+            for (let item of evt.originalEvent.dataTransfer.items) {
+                var entry = item.webkitGetAsEntry && item.webkitGetAsEntry(),
+                    file = item.getAsFile && item.getAsFile();
+                if (file && file.name.match(/[.]coq-pkg$/))
                     this.packages.dropPackage(file);
                 else
+                    src.push({entry, file});
+            }
+            // Turn to source files
+            let project = () => this.project || 
+                                this.openProject().then(() => this.project);
+            if (src.length > 0) {
+                if (src.length > 1 || src[0].entry && src[0].entry.isDirectory)
+                    (await project()).openDirectory(
+                            src.map(({entry, file}) => entry || file));
+                else if (src[0].file && src[0].file.name.match(/[.]zip$/))
+                    (await project()).openZip(src[0].file, src[0].file.name);
+                else
+                    // TODO better check file type and size before
+                    //  opening
                     this.provider.openFile(file);
             }
         });
@@ -409,6 +424,25 @@ class CoqManager {
         });
     }
 
+    async openProject(name) {
+        var pane = this.layout.createOutline();
+        await this._load('ui-js/ide-project.browser.js');
+                         //'ui-js/ide-project.browser.css');   // if using Parcel
+
+        this.project = ideProject.ProjectPanel.attach(this, pane, name);
+    }
+
+    async _load(...hrefs) {
+        for (let href of hrefs) {
+            var uri = this.options.base_path + href,
+                el = href.endsWith('.css') ? 
+                    $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
+                : $('<script>').attr({type: 'text/javascript', src: uri});
+            document.head.appendChild(el[0]); // jQuery messes with load event
+            await new Promise(resolve => el.on('load', resolve));
+        }
+    }
+
     /**
      * Starts a Worker and commences loading of packages and initialization
      * of STM.
@@ -416,12 +450,12 @@ class CoqManager {
     async launch() {
         try {
             // Setup the Coq worker.
-            this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
+            this.coq           = new CoqWorker();
             this.coq.options   = this.options;
             this.coq.observers.push(this);
 
-            await this.coq.when_created;
-            this.coq.interruptSetup();
+            //await this.coq.when_created;
+            //this.coq.interruptSetup();
 
             // Setup package loader
             var pkg_path_aliases = {
@@ -446,9 +480,6 @@ class CoqManager {
             // The fun starts: fetch package infos,
             // and load init packages once they are available
             this.packages.populate();
-
-            await this.packages.loadDeps(this.options.init_pkgs);
-            this.coqInit();
         }
         catch (err) {
             this.handleLaunchFailure(err);
@@ -476,11 +507,18 @@ class CoqManager {
             this.layout.log(msg, 'Info');
     }
 
+    async coqBoot() {
+        await this.packages.loadDeps(this.options.init_pkgs);
+        this.coqInit();
+    }
+
     /**
      * Called when the first state is ready.
      */
     coqReady(sid) {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
+        this.doc.sentences[0].coq_sid = sid;
+        this.doc.fresh_id = sid + 1;
         this.enable();
     }
 
@@ -570,9 +608,8 @@ class CoqManager {
 
         var pkg_deps = new Set();
         for (let module_name of module_names) {
-            let binfo = this.packages.searchModule(prefix, module_name);
-            if (binfo)
-                for (let d of binfo.deps) pkg_deps.add(d);
+            let deps = this.packages.index.findPackageDeps(prefix, module_name)
+            for (let dep of deps) pkg_deps.add(dep);
         }
 
         for (let d of this.packages.loaded_pkgs) pkg_deps.delete(d);
@@ -590,7 +627,7 @@ class CoqManager {
 
         this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
             .then(() => {
-                this.coq.reassureLoadPath(this.packages.getLoadPath());
+                this.coq.refreshLoadPath();
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
                 cleanup();
             });
@@ -611,6 +648,14 @@ class CoqManager {
         }
 
         this.refreshGoals();
+    }
+
+    coqBackTo(sid) {
+        let new_tip = this.doc.stm_id[sid];
+        if (new_tip) {
+            this.truncate(new_tip, true);
+            this.refreshGoals();
+        }
     }
 
     coqGoalInfo(sid, goals) {
@@ -649,18 +694,6 @@ class CoqManager {
 
     coqLibInfo(bname, bi) {
         this.packages.addBundleInfo(bname, bi);
-    }
-
-    coqLibProgress(evt) {
-        this.packages.onPkgProgress(evt);
-    }
-
-    coqLibLoaded(bname) {
-        this.packages.onBundleLoad(bname);
-    }
-
-    coqLibError(bname, msg) {
-        this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
     }
 
     coqCoqExn(loc, sids, msg) {
@@ -712,9 +745,9 @@ class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
-                         coq_options: this._parseOptions(this.options.coq || {})},
-            load_path = this.packages.getLoadPath(),
+        let init_opts = {implicit_libs: this.options.implicit_libs},
+                        // @todo coq_options: this._parseOptions(this.options.coq || {})},
+            load_path = [], //this.packages.getLoadPath(),
             load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 
         for (let pkg of this.options.init_import || []) {
@@ -893,9 +926,19 @@ class CoqManager {
      * Removes all the sentences from stm to the end of the document.
      * If stm as an error sentence, leave the sentence itself (so that the
      * error mark remains visible), and remove all following sentences.
+     * @param stm a Sentence
+     * @param plus_one if `true`, will skip stm and set it to the
+     *   *following* sentence.
      */
-    truncate(stm) {
+    truncate(stm, plus_one=false) {
         let stm_index = this.doc.sentences.indexOf(stm);
+
+        if (stm_index === -1) return;
+
+        if (plus_one) {
+            stm = this.doc.sentences[++stm_index];
+            if (!stm) return;  /* this was the last sentence */
+        }
 
         if (stm.phase === Phases.ERROR) {
             // Do not clear the mark, to keep the error indicator.
