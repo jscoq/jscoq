@@ -413,8 +413,9 @@ function unix_open()                  { unix_ll("unix_open", arguments); }
 // Requires: unix_ll
 function unix_putenv()                { unix_ll("unix_putenv", arguments); }
 // Provides: unix_readlink
-// Requires: unix_ll
-function unix_readlink()              { unix_ll("unix_readlink", arguments); }
+// Requires: unix_ll, caml_raise_unix_error
+function unix_readlink()              { unix_ll("unix_readlink", arguments);
+                                        caml_raise_unix_error("not implemented: unix_readlink"); }
 // Provides: unix_recv
 // Requires: unix_ll
 function unix_recv()                  { unix_ll("unix_recv", arguments); }
