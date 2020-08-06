@@ -186,7 +186,7 @@ class CmCoqProvider {
             this.markWithClass(stm, 'coq-eval-failed');
             if (loc_focus) {
                 let foc = this.squiggle(stm, loc_focus, 'coq-squiggle');
-                this.editor.setCursor(foc.find().to);
+                if (foc) this.editor.setCursor(foc.find().to);
             }
             else {
                 this.editor.setCursor(stm.end);
@@ -214,7 +214,9 @@ class CmCoqProvider {
     }
 
     squiggle(stm, loc, className) {
-        return this.markSubordinate(stm, this._subregion(stm, loc), className);
+        var pos = this._subregion(stm, loc);
+        if (pos)
+            return this.markSubordinate(stm, pos, className);
     }
 
     /**
@@ -257,10 +259,11 @@ class CmCoqProvider {
 
     _subregion(stm, loc) {
         var doc = this.editor.getDoc(),
-            idx = doc.indexFromPos(stm.start);
+            idx = doc.indexFromPos(stm.start), end = doc.indexFromPos(stm.end);
 
-        return {start: doc.posFromIndex(idx + loc.bp),
-                end:   doc.posFromIndex(idx + loc.ep)}
+        if (loc.bp <= loc.ep && idx + loc.ep <= end)
+            return {start: doc.posFromIndex(idx + loc.bp),
+                    end:   doc.posFromIndex(idx + loc.ep)}
     }
 
     /**

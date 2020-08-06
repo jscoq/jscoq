@@ -458,10 +458,9 @@ class CoqManager {
             //this.coq.interruptSetup();
 
             // Setup package loader
-            var pkg_path_aliases = {
-                '+': this.options.pkg_path,
-                // Affiliated packages
-                '+/mathcomp': JsCoq.node_modules_path + '@jscoq/mathcomp/coq-pkgs'
+            var pkg_path_aliases = {'+': this.options.pkg_path,
+                ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
+                    [`+/${ap}`, `${JsCoq.node_modules_path}@jscoq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(this.layout.packages,
@@ -1228,7 +1227,12 @@ const Phases = {
 const PKG_ALIASES = {
     prelude: ["Coq", "Init", "Prelude"],
     utf8: ["Coq", "Unicode", "Utf8"]
-}
+};
+
+const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
+    'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
+    'software-foundations'
+];
 
 
 class CoqContextualInfo {
