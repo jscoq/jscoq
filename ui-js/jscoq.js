@@ -34,10 +34,11 @@ class CoqWorker {
     }
 
     /**
-     * Adjusts a given URI such that it is relative to the worker base URI.
+     * Adjusts a given URI so that it can be requested by the worker.
+     * (the worker may have a different base path than the page.)
      */
-    relativePath(uri) {
-        return uri.replace(/^[.][/]/, '../');  /** @todo */
+    resolveUri(uri) {
+        return new URL(uri, window.location).href;
     }
 
     createWorker(script_path) {
@@ -123,7 +124,7 @@ class CoqWorker {
     }
 
     infoPkg(base_path, pkgs) {
-        this.sendCommand(["InfoPkg", this.relativePath(base_path), pkgs]);
+        this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
     }
 
     refreshLoadPath(load_path) {
