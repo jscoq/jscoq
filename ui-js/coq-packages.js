@@ -46,6 +46,10 @@ class PackageManager {
         }
     }
 
+    static defaultPkgPath() {
+        return new URL('../coq-pkgs/', CoqWorker.scriptUrl).href;
+    }
+
     populate() {
         for (let [base_uri, pkgs] of Object.entries(this.packages_by_uri)) {
             this.coq.infoPkg(base_uri, pkgs);
