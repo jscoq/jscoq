@@ -407,6 +407,25 @@ class CoqManager {
         });
     }
 
+    async openProject(name) {
+        var pane = this.layout.createOutline();
+        await this._load('ui-js/ide-project.browser.js');
+                         //'ui-js/ide-project.browser.css');   // if using Parcel
+
+        this.project = ideProject.ProjectPanel.attach(this, pane, name);
+    }
+
+    async _load(...hrefs) {
+        for (let href of hrefs) {
+            var uri = this.options.base_path + href,
+                el = href.endsWith('.css') ? 
+                    $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
+                  : $('<script>').attr({type: 'text/javascript', src: uri});
+            document.head.appendChild(el[0]); // jQuery messes with load event
+            await new Promise(resolve => el.on('load', resolve));
+        }
+    }
+
     /**
      * Starts a Worker and commences loading of packages and initialization
      * of STM.

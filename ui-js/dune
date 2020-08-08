@@ -6,3 +6,11 @@
   ../node_modules)
  (action (bash "npx browserify coq-build.js -d -s coqBuild -o %{targets}"))
 )
+
+(rule
+ (targets ide-project.browser.js ide-project.browser.js.map)
+ (deps
+  (source_tree .)
+  (source_tree ../coq-jslib/build))
+ (action
+  (bash "npx webpack --config-name ide-project")))

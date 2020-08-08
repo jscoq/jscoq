@@ -505,6 +505,21 @@ button.download-icon.checked {
   width: 18px;
 }
 
+.jscoq-ide #outline-pane {
+  width: 0;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  transition: width 0.2s ease-in-out;
+}
+
+.jscoq-ide.outline-active #outline-pane {
+  width: 15%;
+}
+
+.jscoq-ide.goals-active.outline-active #outline-pane {
+  width: 9%;
+}
+
 /* Pretty-printing hacks */
 
 div.Pp_box {

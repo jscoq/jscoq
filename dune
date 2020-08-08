@@ -32,6 +32,7 @@
    coq-pkgs
    node_modules
    coq-js/jscoq_worker.js
+   ui-js/ide-project.browser.js
    cli.js
    jscoq.install))
 
@@ -44,7 +45,7 @@
   tsconfig.json
   node_modules)
  (action
-  (bash "npx webpack coq-jslib/cli.ts && chmod +x cli.js")))
+  (bash "npx webpack --config-name cli && chmod +x cli.js")))
 
 (install
  (section bin)
