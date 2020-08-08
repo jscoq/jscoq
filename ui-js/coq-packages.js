@@ -34,18 +34,20 @@ class PackageManager {
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
-        let mkpath = path => aliases[path] || path.replace(/([^/])$/, '$1/');
+        let mkpath = path => path && path.replace(/([^/])$/, '$1/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
-            let base_uri = mkpath(key);
-            this.packages_by_uri[base_uri] = pkg_names;
+            let base_uri = mkpath(aliases[key] || key);
 
             for (let pkg of pkg_names) {
-                let pkg_info = new CoqPkgInfo(pkg, base_uri);
-                this.packages.push(pkg_info);
-                this.packages_by_name[pkg] = pkg_info;
+                var uri = mkpath(aliases[`${key}/${pkg}`]) || base_uri;
+                this.addPackage(new CoqPkgInfo(pkg, uri));
             }
         }
+    }
+
+    static defaultPkgPath() {
+        return new URL('../coq-pkgs/', CoqWorker.scriptUrl).href;
     }
 
     populate() {
@@ -54,48 +56,76 @@ class PackageManager {
         }
     }
 
+    addPackage(pkg) {
+        this.packages.push(pkg);
+        this.packages_by_name[pkg.name] = pkg;
+        (this.packages_by_uri[pkg.base_uri] = 
+            this.packages_by_uri[pkg.base_uri] || []).push(pkg.name);
+    }
+
     getPackage(pkg_name) {
         var pkg = this.packages_by_name[pkg_name];
         if (!pkg) throw new Error(`internal error: unrecognized package '${pkg_name}'`);
         return pkg;
     }
 
-    addBundleInfo(bname, pkg_info) {
+    hasPackageInfo(pkg_name) {
+        var pkg = this.packages_by_name[pkg_name];
+        return pkg && pkg.info;
+    }
 
-        var div  = document.createElement('div');
-        var row = $(div);
+    addRow(bname, desc = bname, parent) {
+        var row = $('<div>').addClass('package-row').attr('data-name', bname)
+            .append($('<button>').addClass('download-icon')
+                    .click(() => { this.startPackageDownload(bname); }))
+            .append($('<span>').addClass('desc').text(desc)
+                    .click(() => { this._expandCollapseRow(row); }));
 
-        row.attr('data-name', bname);
-        row.data('info', pkg_info);
+        if (parent) {
+            parent.row.append(row);
+        }
+        else {
+            // Find bundle's proper place in the order among existing entries
+            var pkg_names = this.packages.map(p => p.name),
+                place_before = null, idx = pkg_names.indexOf(bname);
 
-        row.append($('<button>').addClass('download-icon')
-                   .click(() => { this.startPackageDownload(pkg_info.desc); }));
-
-        row.append($('<span>').text(pkg_info.desc));
-
-        // Find bundle's proper place in the order among existing entries
-        var pkg_names = this.packages.map(p => p.name),
-            place_before = null, idx = pkg_names.indexOf(bname);
-
-        if (idx > -1) {
-            for (let e of $(this.panel).children()) {
-                let eidx = pkg_names.indexOf($(e).attr('data-name'));
-                if (eidx == -1 || eidx > idx) {
-                    place_before = e;
-                    break;
+            if (idx > -1) {
+                for (let e of $(this.panel).children()) {
+                    let eidx = pkg_names.indexOf($(e).attr('data-name'));
+                    if (eidx == -1 || eidx > idx) {
+                        place_before = e;
+                        break;
+                    }
                 }
             }
+
+            this.panel.insertBefore(row[0], place_before /* null == at end */ );
         }
 
-        this.panel.insertBefore(div, place_before /* null == at end */ );
+        return this.bundles[bname] = { row };
+    }
+
+    addBundleInfo(bname, pkg_info, parent) {
+
+        var bundle = this.addRow(bname, pkg_info.desc, parent);
 
         var pkg = this.getPackage(bname);
         pkg.setInfo(pkg_info);
 
-        this.bundles[bname] = { div: div };
-
         if (pkg.archive) {
             pkg.archive.onProgress = evt => this.showPackageProgress(bname, evt);
+        }
+
+        if (pkg_info.chunks) {
+            pkg.chunks = [];
+
+            for (let chunk of pkg_info.chunks) {
+                var subpkg = new CoqPkgInfo(chunk.desc, pkg.base_uri);
+                this.addPackage(subpkg);
+                this.addBundleInfo(subpkg.name, chunk, bundle);
+                pkg.chunks.push(subpkg);
+                subpkg.parent = pkg;
+            }
         }
 
         this.dispatchEvent(new Event('change'));
@@ -126,7 +156,7 @@ class PackageManager {
     }
 
     waitFor(init_pkgs) {
-        let all_set = () => init_pkgs.every(x => this.getPackage(x).info);
+        let all_set = () => init_pkgs.every(x => this.hasPackageInfo(x));
 
         return new Promise((resolve, reject) => {
             var observe = () => {
@@ -210,7 +240,10 @@ class PackageManager {
 
         if (pkg.promise) return pkg.promise;  /* load issued already */
 
-        if (pkg.archive) {
+        if (pkg.info.chunks) {
+            promise = this.loadDeps(pkg.info.chunks.map(x => x.desc));
+        }
+        else if (pkg.archive) {
             promise = 
                 Promise.all([this.loadDeps(pkg.info.deps),
                              pkg.archive.unpack(this.coq)])
@@ -222,8 +255,23 @@ class PackageManager {
                              this.loadPkg(pkg_name)]);
         }
 
+        this.showPackage(pkg_name);
+
         pkg.promise = promise;
         return promise;
+    }
+
+    showPackage(bname) {
+        var bundle = this.bundles[bname];
+        if (bundle && bundle.row) {
+            bundle.row.parents('div.package-row').addClass('expanded');
+            this._scrollTo(bundle.row[0]);
+        }
+    }
+
+    _scrollTo(el) {
+        if (el.scrollIntoViewIfNeeded) el.scrollIntoViewIfNeeded();
+        else el.scrollIntoView();
     }
 
     /**
@@ -240,7 +288,7 @@ class PackageManager {
             bundle.egg = $('<div>').addClass('progress-egg');
 
             bundle.bar.append(bundle.egg);
-            $(bundle.div).append($('<div>').addClass('rel-pos').append(bundle.bar));
+            bundle.row.append($('<div>').addClass('rel-pos').append(bundle.bar));
         }
 
         if (info) {
@@ -258,8 +306,34 @@ class PackageManager {
     showPackageCompleted(bname) {
         var bundle = this.bundles[bname];
 
-        $(bundle.div).find('.rel-pos').remove();
-        $(bundle.div).find('button.download-icon').addClass('checked');
+        bundle.row.children('.rel-pos').remove();
+        bundle.row.children('button.download-icon').addClass('checked');
+
+        var pkg = this.getPackage(bname);
+        pkg.status = 'loaded';
+        if (pkg.parent) this.showLoadedChunks(pkg.parent);
+    }
+
+    showLoadedChunks(pkg) {
+        var bundle = this.bundles[pkg.name];
+        bundle.row.addClass('has-chunks');
+
+        var span = bundle.row.find('.loaded-chunks');
+        if (span.length === 0)
+            span = $('<span>').addClass('loaded-chunks')
+                              .insertAfter(bundle.row.children('.desc'));
+
+        var prefix = pkg.name + '-',
+            shorten = name => name.startsWith(prefix) ? 
+                              name.substr(prefix.length) : name;
+
+        span.empty();
+        for (let chunk of pkg.chunks) {
+            if (chunk.status === 'loaded')
+                span.append($('<span>').text(shorten(chunk.name)));
+        }
+        if (pkg.chunks.every(chunk => chunk.status === 'loaded'))
+            this.showPackageCompleted(pkg.name);
     }
 
     /**
@@ -269,7 +343,7 @@ class PackageManager {
     dropPackage(file) {
         this.expand();
         this.addBundleZip(undefined, file).then(pkg => {
-            this.bundles[pkg.name].div.scrollIntoViewIfNeeded();
+            this.bundles[pkg.name].row[0].scrollIntoViewIfNeeded();
             this.startPackageDownload(pkg.name);
         })
         .catch(err => { alert(`${file.name}: ${err}`); });
@@ -289,7 +363,7 @@ class PackageManager {
     onBundleLoad(bname) {
         this.loaded_pkgs.push(bname);
 
-        var pkg =  this.getPackage(bname);
+        var pkg = this.getPackage(bname);
         if (pkg._resolve) pkg._resolve();
 
         this.showPackageCompleted(bname);
@@ -329,6 +403,15 @@ class PackageManager {
         this.panel.parentNode.classList.remove('collapsed');
     }
 
+    _expandCollapseRow(row) {
+        row.toggleClass('expanded');
+        if (row.hasClass('expanded')) {
+            // account for CSS transition
+            var anim = setInterval(() => row[0].scrollIntoViewIfNeeded(), 40);
+            setTimeout(() => clearInterval(anim), 600);
+        }
+    }
+
     /**
      * (auxiliary method) traverses a graph spanned by a list of roots
      * and an adjacency functor. Implements DFS.
@@ -363,12 +446,13 @@ class CoqPkgInfo {
 
         this.info = undefined;
         this.archive = undefined;
+        this.chunks = undefined;
+        this.parent = undefined;
     }
 
     getUrl(resource) {
         // Generate URL with the package's base_uri as the base
-        return new URL(resource,
-                  new URL(this.base_uri, PackageManager.scriptUrl));
+        return this.base_uri + resource;//new URL(resource, new URL(this.base_uri));
     }
 
     setInfo(info) {
@@ -391,8 +475,9 @@ class CoqPkgInfo {
  * file that has to be downloaded or a local one.
  */
 class CoqPkgArchive {
+
     constructor(resource) {
-        if (resource instanceof URL)
+        if (resource instanceof URL || typeof resource === 'string')
             this.url = resource;
         else if (resource instanceof Blob)
             this.blob = resource;
@@ -480,72 +565,7 @@ class CoqPkgArchive {
         });
         await Promise.all(asyncs);
     }
-}
 
-// EG: This will be useful once we move file downloading to javascript.
-// PackagesManager
-
-class PackageDownloader {
-
-    constructor(row, panel) {
-        this.row = row;
-        this.bar = null;
-        this.egg = null;
-        this.bundle_name = row.datum().desc;
-        this.panel = panel;
-        this.progress = 0; // percent
-    }
-
-    // This method setups the download handling.
-    download() {
-
-        // Allow re-download
-        // this.row.select('img').on('click', null);
-
-        this.bar = this.row.append('div')
-            .attr('class', 'rel-pos')
-            .append('div')
-            .attr('class', 'progressbar');
-
-        this.egg = this.bar
-            .append('img')
-            .attr('src', 'ui-images/egg.png')
-            .attr('class', 'progress-egg');
-
-        var files_total_length = 0;
-        var files_loaded_cpt = 0;
-        var pkgs = this.row.datum().pkgs;
-
-        // Proceed to the main download.
-        for(var i = 0; i < pkgs.length; i++)
-            files_total_length += pkgs[i].no_files;
-
-        document.body.addEventListener('pkgProgress',
-            (evt) => {
-                if(evt.detail.bundle_name === this.bundle_name) {
-                    this.progress = ++files_loaded_cpt / files_total_length;
-                    this.updateProgress();
-                    if (files_loaded_cpt === files_total_length)
-                        this.finishDownload();
-                }
-            }
-        );
-
-        jsCoq.add_pkg(this.bundle_name);
-
-    }
-
-    updateProgress() {
-        var angle = (this.progress * 360 * 15) % 360;
-        this.egg.style('transform', 'rotate(' + angle + 'deg)');
-        this.bar.style('width', this.progress * 100 + '%');
-    }
-
-    finishDownload() {
-        this.row.select('.rel-pos').remove();
-        this.row.select('img')
-            .attr('src', 'ui-images/checked.png');
-    }
 }
 
 

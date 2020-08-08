@@ -251,12 +251,10 @@ class CoqManager {
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
-            pkg_path:    "../coq-pkgs/",  // this is awkward: package path is relative to the worker location (coq-js)
+            pkg_path:    PackageManager.defaultPkgPath(),
             implicit_libs: false,
             init_pkgs: ['init'],
-            all_pkgs:  ['init', 'mathcomp',
-                        'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'elpi', 'equations',
-                        'coquelicot', 'flocq', 'lf', 'plf', 'cpdt', 'color' ],
+            all_pkgs:  ['coq'].concat(PKG_AFFILIATES),
             init_import: [],
             file_dialog: false,
             line_numbers: 'continue',
@@ -278,7 +276,7 @@ class CoqManager {
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options);
-        this.layout.splash();
+        this.layout.splash(undefined, undefined, 'wait');
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
         this.layout.onToggle = ev => {
@@ -424,8 +422,13 @@ class CoqManager {
             this.coq.interruptSetup();
 
             // Setup package loader
+            var pkg_path_aliases = {'+': this.options.pkg_path,
+                ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
+                    [`+/${ap}`, `${JsCoq.node_modules_path}@jscoq/${ap}/coq-pkgs`]))
+            };
+
             this.packages = new PackageManager(this.layout.packages,
-                this.options.all_pkgs, {'+': this.options.pkg_path}, this.coq);
+                this.options.all_pkgs, pkg_path_aliases, this.coq);
             
             this.packages.expand();
 
@@ -1179,7 +1182,12 @@ const Phases = {
 const PKG_ALIASES = {
     prelude: ["Coq", "Init", "Prelude"],
     utf8: ["Coq", "Unicode", "Utf8"]
-}
+};
+
+const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
+    'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
+    'software-foundations'
+];
 
 
 class CoqContextualInfo {

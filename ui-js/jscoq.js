@@ -41,13 +41,21 @@ class CoqWorker {
         return script_path.replace(/\.bc\.js$/, '.js');
     }
 
+    /**
+     * Adjusts a given URI so that it can be requested by the worker.
+     * (the worker may have a different base path than the page.)
+     */
+    resolveUri(uri) {
+        return new URL(uri, window.location).href;
+    }
+
     async createWorker(script_path) {
         let alt_script_path = this.constructor.alternateScriptPath(script_path);
 
         this._worker_script = await
             this.constructor._searchResource([script_path, alt_script_path]);
 
-        this.worker = new Worker(this._worker_script)
+        this.worker = new Worker(this._worker_script);
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.worker.terminate());
@@ -124,11 +132,11 @@ class CoqWorker {
     }
 
     loadPkg(base_path, pkg) {
-        this.sendCommand(["LoadPkg", base_path, pkg]);
+        this.sendCommand(["LoadPkg", this.resolveUri(base_path), pkg]);
     }
 
     infoPkg(base_path, pkgs) {
-        this.sendCommand(["InfoPkg", base_path, pkgs]);
+        this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
     }
 
     reassureLoadPath(load_path) {

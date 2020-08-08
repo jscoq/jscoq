@@ -3,6 +3,8 @@
 
  - Port to Coq 8.12 (@ejgallego)
  - [addons] Update mathcomp to 1.11 (@ejgallego)
+ - Chunked packages: split large library addons into multiple chunks,
+   which are loaded on demand. (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
@@ -27,11 +29,11 @@
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
  - Allow multiple directories for package files (@corwin-of-amber)
- - More accurate error location marker (@corwin-of-amber)
 
 ## JsCoq 0.11.1
 
  - Bump js_of_ocaml to 3.6.0 (@ejgallego)
+ - More accurate error location marker (@corwin-of-amber)
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------

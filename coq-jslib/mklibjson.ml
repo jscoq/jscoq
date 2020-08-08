@@ -73,6 +73,7 @@ let build_bundle (pkg, deps, p_mod) =
   let ofmt   = formatter_of_out_channel out        in
   let p_mod  = map (build_pkg pkg) p_mod           in
   let bundle = { desc = pkg;
+                 chunks = None;
                  deps = deps;
                  archive = None;
                  pkgs = p_mod;

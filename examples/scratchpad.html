@@ -25,7 +25,8 @@
     var jscoq_opts = {
         prelude:   true,
         init_pkgs: ['init'],
-        all_pkgs:  ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'mathcomp', 'elpi', 'lf', 'plf'],
+        all_pkgs:  ['coq', 'mathcomp', 'extlib', 'simpleio', 'equations', 
+                    'elpi', 'quickchick'],
         file_dialog: true,
         implicit_libs: true,
         editor: { mode: { 'company-coq': true }, keyMap: 'default' }

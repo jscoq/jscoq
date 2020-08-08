@@ -83,13 +83,16 @@ class CLI {
 
         this.workspace.searchPath.createIndex();  // to speed up coqdep
 
+        var bundle = this.bundle(opts),
+            outfn = bundle ? undefined : opts.package;
+
         for (let pkgname in this.workspace.projs) {
             this.progress(`[${pkgname}] `, false);
             var p = await this.workspace.projs[pkgname]
-                    .toPackage(opts.package || path.join(outdir, pkgname),
+                    .toPackage(outfn || path.join(outdir, pkgname),
                                undefined, prep, postp);
-            try{
-                await p.save();    
+            try {
+                await p.save(bundle && bundle.manifest);    
                 this.progress(`wrote ${p.pkg.filename}.`, true);
             }
             catch (e) {
@@ -97,6 +100,16 @@ class CLI {
                 this.errors = true;
             }
         }
+
+        if (bundle) {
+            bundle.save();
+            this.progress(`wrote ${bundle.filename}.`, true);
+        }
+    }
+
+    bundle(opts = this.opts) {
+        if (opts.package && Object.keys(this.workspace.projs).length > 1)
+            return this.workspace.createBundle(opts.package);
     }
 
     static stdlib() {

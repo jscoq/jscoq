@@ -9,7 +9,9 @@
   (package coq))
  (action
   (progn
-   (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json} --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib))))
+   (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json}
+             --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib
+             --package coq-pkgs/coq))))
 
 (rule
  (targets node_modules)

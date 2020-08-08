@@ -66,12 +66,17 @@ all:
 	@echo ""
 	@echo "      dist: create a distribution suitable for a web server"
 	@echo "       coq: download and build Coq and addon libraries"
+	@echo "   install: install Coq and jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
 jscoq: force
 	ADDONS="$(ADDONS)" dune build @jscoq $(DUNE_FLAGS)
 
 jscoq_worker:
 	ADDONS="$(ADDONS)" dune build @jscoq_worker $(DUNE_FLAGS)
+
+install:
+	dune build $(COQBUILDDIR_REL)/coq.install jscoq.install $(DUNE_FLAGS)
+	dune install coq jscoq $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .

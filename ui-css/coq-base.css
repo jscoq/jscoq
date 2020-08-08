@@ -411,27 +411,74 @@ body.jscoq-main .CodeMirror-linenumber {
   margin-bottom: 0.5em;
 }
 
-#packages-panel > div {
+#packages-panel div.package-row {
   padding-top: 1px;
   padding-bottom: 1px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-#packages-panel > div > button {
+#packages-panel div.package-row > button {
   padding: 0;
   border: none;
-  background: none;
+  background-color: transparent;
   outline: none;
   margin-right: 4px;
-  vertical-align: middle;
+  vertical-align: bottom;
   cursor: pointer;
 }
 
-button.download-icon::after {
-  content:url("../ui-images/dl.png");
+#packages-panel div.package-row.has-chunks {
+  overflow: hidden;
 }
 
-button.download-icon.checked::after {
-  content:url("../ui-images/checked.png");
+#packages-panel div.package-row > div.package-row {
+  padding-left: 20px;
+  position: relative;
+  top: 0;
+  height: 22px;
+  transition-property: top, height, opacity, padding;
+  transition-duration: .5s;
+}
+
+#packages-panel div.package-row:not(.expanded) > div.package-row {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  top: -20px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#packages-panel div.package-row > .loaded-chunks {
+  margin-left: 2em;
+  color: #888;
+  font-size: 80%;
+}
+
+#packages-panel div.package-row > .loaded-chunks::before,
+#packages-panel div.package-row > .loaded-chunks::after,
+#packages-panel div.package-row > .loaded-chunks > span:not(:last-child)::after {
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+}
+
+#packages-panel div.package-row > .loaded-chunks::before { content: "["; }
+#packages-panel div.package-row > .loaded-chunks::after { content: "]"; }
+
+#packages-panel div.package-row > .loaded-chunks > span:not(:last-child)::after {
+  content: ",";
+  margin-right: 0.1em;
+}
+
+button.download-icon {
+  width: 25px;
+  height: 20px;
+  background-image: url("../ui-images/dl.png");
+  background-repeat: no-repeat;
+}
+
+button.download-icon.checked {
+  background-image: url("../ui-images/checked.png");
 }
 
 .rel-pos {
