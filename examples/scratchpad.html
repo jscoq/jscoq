@@ -39,9 +39,11 @@
       document.getElementById('ide-wrapper')
               .setAttribute('data-filename', last_filename);
 
-    (async () => {
-      coq = await JsCoq.start(jscoq_opts);
-    })();
+    JsCoq.start(jscoq_opts).then(res => {
+      coq = res;
+      if (location.search == '?project') coq.openProject();
+      else if (location.search == '?project=sample') coq.openProject('sample');
+    });
 
     window.addEventListener('beforeunload', () => {
       var sp = coq.provider.snippets[0];

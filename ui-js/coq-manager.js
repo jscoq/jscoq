@@ -435,7 +435,7 @@ class CoqManager {
             var uri = this.options.base_path + href,
                 el = href.endsWith('.css') ? 
                     $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
-                : $('<script>').attr({type: 'text/javascript', src: uri});
+                  : $('<script>').attr({type: 'text/javascript', src: uri});
             document.head.appendChild(el[0]); // jQuery messes with load event
             await new Promise(resolve => el.on('load', resolve));
         }

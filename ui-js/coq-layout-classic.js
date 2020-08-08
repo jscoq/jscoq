@@ -154,12 +154,12 @@ class CoqLayoutClassic {
         this.isVisible() ? this.hide() : this.show();
     }
 
-    splash(version_info, msg, mode) {
+    splash(version_info, msg, mode='wait') {
         var above = $(this.proof).find('.splash-above'), 
             image = $(this.proof).find('.splash-image'), 
             below = $(this.proof).find('.splash-below');
 
-        var overlay = mode && `${this.options.base_path}/ui-images/${mode}.gif`;
+        var overlay = `${this.options.base_path}/ui-images/${mode}.gif`;
 
         if (!(above.length && image.length && below.length)) {
             $(this.proof).empty().append(
@@ -174,12 +174,17 @@ class CoqLayoutClassic {
         if (version_info) above.text(version_info);
         if (msg)          below.text(msg);
         
-        if (mode) {
-            image[0].classList = [];
-            image.addClass(['splash-image', mode]);
-            var img = image.find('img');
-            if (img.attr('src') !== overlay) img.attr('src', overlay);
-        }
+        image[0].classList = [];
+        image.addClass(['splash-image', mode]);
+        var img = image.find('img');
+        if (img.attr('src') !== overlay) img.attr('src', overlay);
+    }
+
+    createOutline() {
+        var outline_pane = $('<div>').attr('id', 'outline-pane');
+        $(this.ide).prepend(outline_pane);
+        requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
+        return this.outline = outline_pane[0];
     }
 
     createOutline() {
