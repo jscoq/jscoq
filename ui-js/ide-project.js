@@ -2,7 +2,7 @@
 //  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
 
 import Vue from 'vue/dist/vue';
-import {VueContext} from 'vue-context';
+import { VueContext } from 'vue-context';
 import 'vue-context/src/sass/vue-context.scss';
 
 import { BatchWorker, CompileTask } from '../coq-jslib/build/batch';
@@ -40,10 +40,7 @@ class ProjectPanel {
     get $el() { return this.view.$el; }
 
     clear() {
-        this.project = null;
-        this.view.root = [];
-        this.view.files = [];
-        this.view.status = {};
+        this.open(new CoqProject('untitled', new LogicalVolume()));
     }
 
     open(project) {
@@ -83,6 +80,12 @@ class ProjectPanel {
             if (fl) this.openZip(fl, fl.name);
         });
         input[0].click();
+    }
+
+    async addFile(filename, content) {
+        if (content instanceof Blob) content = await content.text();
+        this.project.volume.writeFileSync(filename, content);
+        //this.view.files.push(filename);
     }
 
     withEditor(editor_provider /* CmCoqProvider */) {
@@ -168,11 +171,22 @@ class ProjectPanel {
     }
 
     onAction(ev) {
-        if (this.editor_provider 
-              && ev.type === 'select' && ev.kind === 'file') {
-            this.editor_provider.openLocal(`/${ev.path.join('/')}`);
-            if (this.report)
-                requestAnimationFrame(() => this.report._updateMarks());
+        switch (ev.type) {
+        case 'select':
+            if (this.editor_provider && ev.kind === 'file') {
+                this.editor_provider.openLocal(`/${ev.path.join('/')}`);
+                if (this.report)
+                    requestAnimationFrame(() => this.report._updateMarks());
+            };
+            break;
+        case 'move':
+            var target = [...ev.to, ...ev.from.slice(-1)];
+            this.project.volume.renameSync(
+                `/${ev.from.join('/')}`, `/${target.join('/')}`);
+            break;
+        case 'create':
+            this.addFile(`/${ev.path.join('/')}`, ev.content);
+            break;
         }
     }
 
@@ -190,7 +204,7 @@ class ProjectPanel {
      */
     static sample() {
         // sample project
-        var vol = new InMemoryVolume();
+        var vol = new LogicalVolume();
         vol.fs.writeFileSync('/simple/_CoqProject', '-R . simple\n\nOne.v Two.v Three.v\n');
         vol.fs.writeFileSync('/simple/One.v', 'Check 1.\nFrom simple Require Import Two.');
         vol.fs.writeFileSync('/simple/Two.v', 'From Coq Require Import List.\n\nDefinition two_of a := a + a.\n');
@@ -215,7 +229,7 @@ Vue.component('project-panel-default-layout', {
         {files: [], status: {}, root: [], building: false, compiled: false}
     ),
     template: `
-    <div class="project-panel">
+    <div class="project-panel vertical-pane">
         <div class="toolbar">
             <project-context-menu ref="menu" @action="$emit('menu:'+$event.name, $event)"/>
             <button @click="$emit('build')">{{building ? 'stop' : 'build'}}</button>

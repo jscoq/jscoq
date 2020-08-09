@@ -11,13 +11,13 @@
  * `<folder-knob>` internally.
  */
 
-const Vue = require('vue/dist/vue'),
-      _ = require('lodash');
+import Vue from 'vue/dist/vue';
+import _ from 'lodash';
 
 
 
 Vue.component('file-list', {
-    props: ['files', 'level', 'path', 'selection_'],
+    props: ['files', 'level', 'path', 'selection_', 'isFileAccepted'],
     data: function() { return {
         _level: this.level || 0,
         _path: typeof this.path === 'string' ? this.path.split('/') 
@@ -25,7 +25,8 @@ Vue.component('file-list', {
         _selection: []
     }; },
     template: `
-    <ul :class="['file-list', 'level-'+$data._level]">
+    <ul :class="['file-list', 'level-'+$data._level]" @drop="drop"
+            @dragover="dragover" @dragenter="dragover" @dragleave="dragout">
         <li v-for="f in files" :data-name="f.name" 
                 :class="{folder: f.files, file: !f.files, selected: isSelected([f.name])}"
                 @click="onclick" @mouseup="onrightclick"
@@ -65,6 +66,10 @@ Vue.component('file-list', {
             $(event.currentTarget).removeClass('dragged');
         },
         drop(ev) {
+            $(ev.currentTarget).removeClass('draghov');
+
+            if (ev.dataTransfer.files.length) return this.dropFiles(ev);
+
             var evdata = ev.dataTransfer.getData('text/json');
             if (!evdata) return;
 
@@ -80,8 +85,16 @@ Vue.component('file-list', {
                 to: to_path, 
                 after: after_name
             });
-            $(ev.currentTarget).removeClass('draghov');
             ev.stopPropagation();
+        },
+        dropFiles(ev) {
+            var dt = ev.dataTransfer;
+            console.log([...dt.files]);
+            for (let fl of [...dt.files]) {
+                this.action({type: 'create', path: [fl.name], kind: 'file', content: fl});
+            }
+            ev.stopPropagation();
+            ev.preventDefault();
         },
         dragover(ev) {
             if ($(ev.currentTarget).closest('.dragged').length === 0) {
@@ -101,6 +114,7 @@ Vue.component('file-list', {
                     case 'select': 
                         if (ev.kind === 'file') this.select(ev.path); break;
                     case 'move': this.move(ev.from, ev.to, ev.after); break;
+                    case 'create': this.create(ev.path, ev.type); break;
                 }
             }
             this.$emit('action', ev);
@@ -140,7 +154,7 @@ Vue.component('file-list', {
             return cwd;
         },
 
-        create(rel_path, type='file') {
+        create(rel_path, kind='file') {
             if (typeof rel_path === 'string')
                 rel_path = rel_path.split('/').filter(x => x);
 
@@ -154,7 +168,7 @@ Vue.component('file-list', {
                 }
                 cwd = e;
             }
-            if (type === 'folder' && !cwd.files)
+            if (kind === 'folder' && !cwd.files)
                 cwd.files = [];
             return cwd;
         },
@@ -163,6 +177,23 @@ Vue.component('file-list', {
             var subentry = this.$refs.entries.find(e => e.entry.name === rel_path[0]);
             if (subentry)
                 subentry.renameStart(rel_path);
+        },
+
+        collapseAll() {
+            for (let e of this.$refs.entries || []) {
+                if (e.$data.hasOwnProperty('_collapsed'))
+                    e.$data._collapsed = true;
+            }
+        },
+
+        *iter(cwd, prefix=[]) {
+            cwd = cwd || {name: '/', files: this.files};
+
+            for (let fl of cwd.files || []) {
+                var fn = [...prefix, fl.name];
+                yield {path: fn, kind: fl.files ? 'folder' : 'file', entry: fl};
+                if (fl.files) yield* this.iter(fl, fn);
+            }
         },
 
         clear() {
