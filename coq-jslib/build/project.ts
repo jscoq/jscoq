@@ -456,6 +456,17 @@ class InMemoryVolume extends StoreVolume {
         else return super.statSync(fp);
     }
 
+    renameSync(oldFilename: string, newFilename: string) {
+        if (oldFilename !== newFilename) {
+            this.fileMap.set(newFilename, this.readFileSync(oldFilename) as Uint8Array);
+            this.fileMap.delete(oldFilename);
+        }
+    }
+
+    unlinkSync(filename: string) {
+        this.fileMap.delete(filename);
+    }
+
 }
 
 
