@@ -426,6 +426,11 @@ class CoqManager {
         }
     }
 
+    getLoadPath() {
+        return [this.packages, this.project].map(p => 
+                    p ? p.getLoadPath() : []).flatten();
+    }
+
     /**
      * Starts a Worker and commences loading of packages and initialization
      * of STM.
@@ -606,7 +611,7 @@ class CoqManager {
 
         this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
             .then(() => {
-                this.coq.reassureLoadPath(this.packages.getLoadPath());
+                this.coq.reassureLoadPath(this.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
                 cleanup();
             });
@@ -730,14 +735,13 @@ class CoqManager {
         // Set startup parameters
         let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
                          coq_options: this._parseOptions(this.options.coq || {})},
-            load_path = this.packages.getLoadPath(),
             load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 
         for (let pkg of this.options.init_import || []) {
             load_lib.push(PKG_ALIASES[pkg] || pkg.split('.'));
         }
 
-        this.coq.init(init_opts, load_lib, load_path);
+        this.coq.init(init_opts, load_lib, this.getLoadPath());
         // Almost done!
     }
 

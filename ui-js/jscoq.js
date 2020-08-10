@@ -4,7 +4,8 @@ class CoqWorker {
 
     constructor(scriptPath, worker) {
         this.options = {
-            debug: false
+            debug: false,
+            warn: true
         };
         this.observers = [this];
         this.routes = [this.observers];
@@ -145,12 +146,8 @@ class CoqWorker {
 
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
-        if (content.buffer) {
-            content = (content.byteOffset === 0 && 
-                       content.byteLength === content.buffer.byteLength) ?
-                content.buffer :
-                content.buffer.slice(content.byteOffset, 
-                                     content.byteOffset + content.byteLength);
+        if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
+            content = this.arrayBufferOfBuffer(content);
         }
 
         var msg = ["Put", filename, content];
@@ -162,6 +159,14 @@ class CoqWorker {
          * transferred to the worker (for efficiency);
          * it becomes unusable in the original context.
          */
+    }
+
+    arrayBufferOfBuffer(buffer) {
+        return (buffer.byteOffset === 0 && 
+                buffer.byteLength === buffer.buffer.byteLength) ?
+            buffer.buffer :
+            buffer.buffer.slice(buffer.byteOffset, 
+                                buffer.byteOffset + buffer.byteLength);
     }
 
     register(filename) {
@@ -262,7 +267,7 @@ class CoqWorker {
             }
          }
 
-         if (!handled) {
+         if (!handled && this.options.warn) {
             console.warn('Message ', msg, ' not handled');
         }
     }
@@ -286,7 +291,7 @@ class CoqWorker {
             }
         }
 
-        if (!handled) {
+        if (!handled && this.options.warn) {
             console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
         }
     }
@@ -303,7 +308,7 @@ class CoqWorker {
             }
         }
 
-        if (!handled) {
+        if (!handled && this.options.warn) {
             console.warn(`SearchResults not handled (route ${rid})`);
         }
     }

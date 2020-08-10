@@ -1,6 +1,7 @@
 // Build with
 //  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
 
+import assert from 'assert';
 import Vue from 'vue/dist/vue';
 import { VueContext } from 'vue-context';
 import 'vue-context/src/sass/vue-context.scss';
@@ -25,7 +26,7 @@ class ProjectPanel {
         this.view.$on('action', ev => this.onAction(ev));
         this.view.$on('new', () => this.clear());
         this.view.$on('build', () => this.buildTask ? (this.buildTask.stop())
-             : this.build().catch(e => { if (e[0] != 'CoqExn') throw e; }));
+             : this.buildDeploy().catch(e => { if (e[0] != 'CoqExn') throw e; }));
         this.view.$on('download', () => this.download());
 
         this.view.$on('menu:new', () => this.clear());
@@ -112,10 +113,11 @@ class ProjectPanel {
             if (this.package_index || this.coq)
                 this.project.searchPath.packageIndex = this.package_index || this.coq.packages.index;
 
-            coq = coq || new CoqWorker();
+            coq = coq || await this._createBuildWorker();
             coq.options.warn = false;
 
-            var task = new CompileTask(new BatchWorker(coq.worker), this.project);
+            var task = new CompileTask(new BatchWorker(coq.worker), this.project,
+                {loadpath: this.coq && this.coq.packages.getLoadPath()});
             this.buildTask = task;
             task.on('progress', files => this._progress(files));
             task.on('report', e => this.report.add(e));
@@ -127,6 +129,36 @@ class ProjectPanel {
             this.view.building = false;
             this.view.compiled = !!this.out;
         }
+    }
+
+    deploy() {
+        if (this.out && this.coq) {
+            for (let vo of this.out.modulesByExt('.vo')) {
+                console.log(`> ${vo.physical}`);
+                this.coq.coq.put(vo.physical, vo.volume.readFileSync(vo.physical));
+            }
+        }
+    }
+
+    async buildDeploy(coq) {
+        await this.build(coq);
+        this.deploy();
+    }
+
+    getLoadPath() {
+        return this.out ? 
+            this.out.searchPath.path.map(pel => [pel.logical, ['/lib']]) : [];
+    }
+
+    async _createBuildWorker() {
+        var coq = new CoqWorker();
+        if (this.coq) {
+            await coq.when_created;
+            for (let pkg of this.coq.packages.loaded_pkgs) {
+                await this.coq.packages.packages_by_name[pkg].archive.unpack(coq);
+            }
+        }
+        return coq;
     }
 
     async downloadCompiled() {
