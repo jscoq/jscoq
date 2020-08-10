@@ -23,6 +23,15 @@ abstract class Batch {
         return replies;
     }
 
+    async loadPackages(pkgs: Set<string>): Promise<LoadPath> {
+        if (pkgs.size > 0)
+            await this.do(
+                ['LoadPkg', [...pkgs].map(pkg => `+${pkg}`)],
+                msg => msg[0] == 'LoadedPkg'
+            );
+        return undefined;
+    }
+
     isError(msg: any[]) {
         return ['JsonExn', 'CoqExn'].includes(msg[0]);
     }    
@@ -65,7 +74,7 @@ class CompileTask extends EventEmitter{
     outproj: CoqProject
     infiles: SearchPathElement[] = [];
     outfiles: SearchPathElement[] = [];
-    loadpath: [string[], string[]][] = [];
+    loadpath: LoadPath = [];
     volume: FSInterface
 
     opts: CompileTaskOptions
@@ -87,8 +96,7 @@ class CompileTask extends EventEmitter{
         var coqdep = this.inproj.computeDeps(),
             plan = coqdep.buildOrder();
 
-        await this.loadPackages(coqdep.extern);
-        this.loadpath = this.opts.loadpath;
+        this.loadpath = await this.batch.loadPackages(coqdep.extern);
 
         for (let mod of plan) {
             if (this._stop) break;
@@ -97,14 +105,6 @@ class CompileTask extends EventEmitter{
         }
     
         return this.output(outname);
-    }
-
-    async loadPackages(pkgs: Set<string>) {
-        if (pkgs.size > 0)
-            await this.batch.do(
-                ['LoadPkg', [...pkgs].map(pkg => `+${pkg}`)],
-                msg => msg[0] == 'LoadedPkg'
-            );
     }
 
     async compile(mod: SearchPathElement, opts=this.opts) {
@@ -168,10 +168,11 @@ class CompileTask extends EventEmitter{
 }
 
 type CompileTaskOptions = {
-    loadpath?: [string[], string[]][]
     continue?: boolean
     jscoq?: boolean
 };
+
+type LoadPath = [string[], string[]][];
 
 const PRELUDE = [["Coq", "Init", "Prelude"]];
 

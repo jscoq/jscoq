@@ -134,6 +134,8 @@ class PackageManager {
 
         this.index.add(pkg_info);
 
+        this.index.add(pkg_info);
+
         this.dispatchEvent(new Event('change'));
     }
 
@@ -175,35 +177,6 @@ class PackageManager {
             if (!observe())
                 this.addEventListener('change', observe);
         });
-    }
-
-    searchBundleInfo(prefix, module_name, exact=false) {
-        // Look for a .vo file matching the given prefix and module name
-        var implicit = (prefix.length === 0),
-            suffix = module_name.slice(0, -1),
-            basename = module_name.slice(-1)[0],
-            possible_filenames = ['.vo', '.vio'].map(x => basename + x);
-
-        let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
-        let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
-
-        let isIntrinsic = (arr) => arr[0] === 'Coq';
-
-        let pkg_matches = exact ? pkg_id => pkg_id.equals(suffix)
-                                : pkg_id => (implicit ? isIntrinsic(pkg_id)
-                                                      : startsWith(pkg_id, prefix)) &&
-                                            endsWith(pkg_id, suffix);
-
-        for (let pkg of this.packages) {
-            if (!pkg.info) continue;
-            for (let prefix of pkg.info.pkgs) {
-                if (pkg_matches(prefix.pkg_id) &&
-                    prefix.vo_files.some(entry => possible_filenames.indexOf(entry[0]) > -1))
-                    return { pkg: pkg.name,
-                             info: pkg.info, 
-                             module: prefix.pkg_id.concat([basename]) };
-            }
-        }
     }
 
     getUrl(pkg_name, resource) {
@@ -441,6 +414,7 @@ class PackageIndex {
 
     constructor() {
         this.moduleIndex = new Map();
+        this.intrinsicPrefix = "Coq";
     }
 
     add(pkgInfo) {
@@ -452,14 +426,16 @@ class PackageIndex {
         if (Array.isArray(prefix)) prefix = prefix.join('.');
         if (Array.isArray(suffix)) suffix = suffix.join('.');
 
-        prefix = prefix ? prefix + '.' : '';
         if (exact) {
+            prefix = prefix ? prefix + '.' : '';
             if (this.moduleIndex.has(prefix + suffix)) yield prefix + suffix;
         }
         else {
-            var dotsuffix = '.' + suffix;
+            var dotsuffix = '.' + suffix,
+                dotprefix = (prefix || this.intrinsicPrefix) + '.';
             for (let k of this.moduleIndex.keys()) {
-                if (k.startsWith(prefix) && (k == suffix || k.endsWith(dotsuffix)))
+                if (!prefix && k == suffix ||
+                        k.startsWith(dotprefix) && k.endsWith(dotsuffix))
                     yield k;
             }
         }
