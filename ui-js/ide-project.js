@@ -1,7 +1,6 @@
 // Build with
 //  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
 
-import assert from 'assert';
 import Vue from 'vue/dist/vue';
 import { VueContext } from 'vue-context';
 import 'vue-context/src/sass/vue-context.scss';
@@ -25,8 +24,7 @@ class ProjectPanel {
         this.view.$watch('status', v => this._update(this.view.files, v), {deep: true});
         this.view.$on('action', ev => this.onAction(ev));
         this.view.$on('new', () => this.clear());
-        this.view.$on('build', () => this.buildTask ? (this.buildTask.stop())
-             : this.buildDeploy().catch(e => { if (e[0] != 'CoqExn') throw e; }));
+        this.view.$on('build', () => this.buildAction());
         this.view.$on('download', () => this.download());
 
         this.view.$on('menu:new', () => this.clear());
@@ -101,10 +99,13 @@ class ProjectPanel {
         return this.withEditor(coq.provider.snippets[0]);
     }
 
-    async build(coq) {
+    async build(coqw) {
         this.view.building = true;
+        this.view.stopping = false;
         this.view.status = {};
         this.report.clear();
+
+        var pkgr = this.coq && this.coq.packages;
 
         try {
             if (this.editor_provider && this.editor_provider.dirty)
@@ -113,11 +114,11 @@ class ProjectPanel {
             if (this.package_index || this.coq)
                 this.project.searchPath.packageIndex = this.package_index || this.coq.packages.index;
 
-            coq = coq || await this._createBuildWorker();
-            coq.options.warn = false;
+            coqw = coqw || await this._createBuildWorker();
+            coqw.options.warn = false;
 
-            var task = new CompileTask(new BatchWorker(coq.worker), this.project,
-                {loadpath: this.coq && this.coq.packages.getLoadPath()});
+            var task = new CompileTask(new JsCoqBatchWorker(coqw, pkgr),
+                                       this.project);
             this.buildTask = task;
             task.on('progress', files => this._progress(files));
             task.on('report', e => this.report.add(e));
@@ -127,6 +128,7 @@ class ProjectPanel {
         finally {
             this.buildTask = null;
             this.view.building = false;
+            this.view.stopping = false;
             this.view.compiled = !!this.out;
         }
     }
@@ -143,6 +145,17 @@ class ProjectPanel {
     async buildDeploy(coq) {
         await this.build(coq);
         this.deploy();
+    }
+
+    buildAction() {
+        if (this.buildTask) {
+            this.view.stopping = true;
+            this.buildTask.stop();
+        }
+        else {
+            this.buildDeploy()
+            .catch(e => { if (e[0] != 'CoqExn') throw e; });
+        }      
     }
 
     getLoadPath() {
@@ -257,19 +270,41 @@ ProjectPanel.BULLETS = {
 
 
 Vue.component('project-panel-default-layout', {
-    data: () => (
-        {files: [], status: {}, root: [], building: false, compiled: false}
-    ),
+    data: () => ({
+        files: [], status: {}, root: [], building: false, compiled: false,
+        stopping: false, animStatus: ''
+    }),
     template: `
     <div class="project-panel vertical-pane">
         <div class="toolbar">
-            <project-context-menu ref="menu" @action="$emit('menu:'+$event.name, $event)"/>
-            <button @click="$emit('build')">{{building ? 'stop' : 'build'}}</button>
+            <project-context-menu ref="menu"
+                @action="$emit('menu:'+$event.name, $event)"/>
+            <button @click="$emit('build')" :disabled="stopping">
+                {{building ? 'stop' : 'build'}}</button>
+            <span class="build-status">{{animStatus}}</span>
         </div>
         <file-list ref="file_list" :files="root"
                    @action="$emit('action', $event)"/>
     </div>
-    `
+    `,
+    mounted() {
+        this.$watch('building', flag => 
+            flag ? this.setStatusAnimation() : this.clearStatusAnimation());
+    },
+    methods: {
+        setStatusAnimation() {
+            const l = [0,0,1,2,3].map(i => '⋅'.repeat(i));
+            var i = 2;
+            this.animStatus = l[i];
+            this._anim = setInterval(() => 
+                this.animStatus = l[++i % l.length], 250);
+        },
+        clearStatusAnimation() {
+            if (this._anim) clearInterval(this._anim);
+            delete this._anim;
+            this.animStatus = '';
+        }
+    }
 });
 
 Vue.component('project-context-menu', {
@@ -332,6 +367,33 @@ class LogicalVolume extends InMemoryVolume {
         return this;
     }
 
+}
+
+
+class JsCoqBatchWorker extends BatchWorker {
+    constructor(coqw, pkgr) {
+        super(coqw.worker);
+        this.coqw = coqw;     this.pkgr = pkgr;
+    }
+
+    async loadPackages(pkgs) {
+        var loadpath = [];
+        if (pkgs.size > 0) {
+            if (!this.pkgr) throw new Error('no PackageManager to load dependencies');
+            await this.coqw.when_created;
+            for (let pkg of pkgs) {
+                var pkgi = this.pkgr.getPackage(pkg);
+                await pkgi.archive.unpack(this.coqw);
+                loadpath.push(...this.loadpathFor(pkgi));
+                // Loading of non-archive pkgs currently not implemented
+            }
+        }
+        return loadpath;
+    }
+
+    loadpathFor(pkg) {
+        return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
+    }
 }
 
 
