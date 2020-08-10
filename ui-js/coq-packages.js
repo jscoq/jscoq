@@ -211,11 +211,7 @@ class PackageManager {
     }
 
     getLoadPath() {
-        return this.loaded_pkgs.map( pkg_name => {
-            let pkg = this.getPackage(pkg_name),
-                phys = pkg.archive ? ['/lib'] : [];
-            return pkg.info.pkgs.map( pkg => [pkg.pkg_id, phys] );
-        }).flatten();
+        return [];  /* currently hard-coded in waCoq */
     }
 
     showPackage(bname) {

@@ -45,12 +45,14 @@ let rec obj_to_json (cobj : < .. > Js.t) : Yojson.Safe.t =
       `List Array.(to_list @@ map obj_to_json @@ to_array @@ coerce cobj)
     else if instanceof cobj Typed_array.arrayBuffer then
       `String (Typed_array.String.of_arrayBuffer @@ coerce cobj)
+    else if instanceof cobj Typed_array.uint8Array then
+      `String (Typed_array.String.of_uint8Array @@ coerce cobj)
     else
       let json_string = Js.to_string (Json.output cobj) in
       Yojson.Safe.from_string json_string
 
 (* This is an internal js_of_ocaml primitive... *)
-external string_bytes : string -> Typed_array.uint8Array Js.t = "caml_array_of_string"
+external string_bytes : string -> Typed_array.uint8Array Js.t = "caml_convert_bytes_to_array"
 
 (* (following is a reference implementation)
 let string_bytes s : Typed_array.uint8Array Js.t =
@@ -58,7 +60,7 @@ let string_bytes s : Typed_array.uint8Array Js.t =
   String.iteri (fun i c -> Typed_array.set ta i (Char.code c)) s;
   ta *)
 
-let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.put  :| *)
+let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.arrayBufferOfBuffer  :| *)
   let open Js.Unsafe in
   let buffer = array##.buffer in
   if Int.equal array##.byteOffset 0 && Int.equal array##.byteLength buffer##.byteLength then
@@ -108,10 +110,10 @@ let post_answer (msg : jscoq_answer) : unit =
 let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
 
-let post_file filename content : unit =
+let post_file tag filename content : unit =
   let open Js.Unsafe in
   let array, buf = buffer_of_uint8array (string_bytes content) in
-  let msg = Js.array [|inject @@ Js.string "Got";
+  let msg = Js.array [|inject @@ Js.string tag;
                        inject @@ Js.string filename;
                        inject @@ array|] in
   if is_worker then
@@ -322,9 +324,10 @@ let jscoq_execute =
       (Jslibmng.path_to_coqpath ~implicit:!opts.implicit_libs ~unix_prefix:phys path_el)
     ) load_path
   | Load filename ->
-    doc := Jscoq_doc.load ~doc:!doc filename ~echo:false
+    doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
+    out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)
   | Compile filename ->
-    post_file filename (Icoq.compile_vo ~doc:(fst !doc))
+    post_file "Compiled" filename (Icoq.compile_vo ~doc:(fst !doc) filename)
 
 let setup_pseudo_fs () =
   (* '/static' is the default working directory of jsoo *)

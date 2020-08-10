@@ -133,12 +133,8 @@ class CoqWorker {
 
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
-        if (content.buffer) {
-            content = (content.byteOffset === 0 && 
-                       content.byteLength === content.buffer.byteLength) ?
-                content.buffer :
-                content.buffer.slice(content.byteOffset, 
-                                     content.byteOffset + content.byteLength);
+        if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
+            content = this.arrayBufferOfBuffer(content);
         }
 
         var msg = ["Put", filename, content];
@@ -150,6 +146,14 @@ class CoqWorker {
          * transferred to the worker (for efficiency);
          * it becomes unusable in the original context.
          */
+    }
+
+    arrayBufferOfBuffer(buffer) {
+        return (buffer.byteOffset === 0 && 
+                buffer.byteLength === buffer.buffer.byteLength) ?
+            buffer.buffer :
+            buffer.buffer.slice(buffer.byteOffset, 
+                                buffer.byteOffset + buffer.byteLength);
     }
 
     register(filename) {

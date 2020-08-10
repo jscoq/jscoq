@@ -62,6 +62,10 @@ let set_options opt_values =
     (fun (opt, value) -> set_option_value new_val opt value)
     opt_values
 
+let default_warning_flags = "-notation-overridden"
+
+let core_inited = ref false
+
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
@@ -86,11 +90,16 @@ let coq_init opts =
   Mltop.set_top ser_mltop;
 
   (* Core Coq initialization *)
+  if (not !core_inited) then begin  (* this part must be done only once *)
+    Global.set_engagement Declarations.PredicativeSet;
+    Global.set_VM false;
+    Global.set_native_compiler false;
+    Flags.set_native_compiler false;
+    CWarnings.set_flags default_warning_flags;
+    core_inited := true
+  end;
+
   Lib.init();
-  Global.set_engagement Declarations.PredicativeSet;
-  Global.set_VM false;
-  Global.set_native_compiler false;
-  Flags.set_native_compiler false;
   set_options opts.opt_values;
 
   (**************************************************************************)
@@ -184,16 +193,15 @@ let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
 
 (* Compilation *)
 
-let compile_vo ~doc =
+let compile_vo ~doc vo_out_fn =
   ignore(Stm.join ~doc);
-  let tmp_vo_fn = "/static/._JsCoq.vo" in   (* save to fake fs *)
   let dirp = Lib.library_dp () in
   (* freeze and un-freeze to to allow "snapshot" compilation *)
   (*  (normally, save_library_to closes the lib)             *)
   let frz = Vernacstate.freeze_interp_state ~marshallable:false in
-  Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp tmp_vo_fn (Global.opaque_tables ());
+  Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp vo_out_fn (Global.opaque_tables ());
   Vernacstate.unfreeze_interp_state frz;
-  Js_of_ocaml.Sys_js.read_file ~name:tmp_vo_fn
+  Js_of_ocaml.Sys_js.read_file ~name:vo_out_fn
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

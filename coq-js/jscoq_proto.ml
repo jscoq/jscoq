@@ -117,6 +117,9 @@ type jscoq_answer =
 
   | SearchResults of Feedback.route_id * Libnames.full_path Seq.t
 
+  | Loaded    of string * Stateid.t
+  | Compiled  of string
+
   (* Low-level *)
   | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
   | JsonExn   of string

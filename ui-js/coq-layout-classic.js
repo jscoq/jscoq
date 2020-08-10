@@ -230,6 +230,7 @@ class CoqLayoutClassic {
 
     // Add a log event received from Coq.
     log(text, level, attrs={}) {
+        attrs = attrs || {};  // attrs can be `null` as well
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error

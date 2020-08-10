@@ -65,6 +65,7 @@ class CompileTask extends EventEmitter{
     outproj: CoqProject
     infiles: SearchPathElement[] = [];
     outfiles: SearchPathElement[] = [];
+    loadpath: [string[], string[]][] = [];
     volume: FSInterface
 
     opts: CompileTaskOptions
@@ -87,6 +88,7 @@ class CompileTask extends EventEmitter{
             plan = coqdep.buildOrder();
 
         await this.loadPackages(coqdep.extern);
+        this.loadpath = this.opts.loadpath;
 
         for (let mod of plan) {
             if (this._stop) break;
@@ -113,17 +115,22 @@ class CompileTask extends EventEmitter{
         this.emit('progress', [{filename: physical, status: 'compiling'}]);
 
         try {
-            await this.batch.do(
-                ['Init', {top_name: logical.join('.')}],
+            let [, [, outfn_, vo]] = await this.batch.do(
+                ['Init', {top_name: logical.join('.')} /*, PRELUDE, this.loadpath*/],
                 ['Put', infn, volume.fs.readFileSync(physical)],
                 ['Load', infn],            msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 
             if (!this.batch.volume) {
-                let [[, , vo]] = await this.batch.do(
-                    ['Get', outfn],        msg => msg[0] == 'Got');            
+                if (!vo) {  /* wacoq worker does not return file content */
+                    [[, , vo]] = await this.batch.do(
+                        ['Get', outfn_],   msg => msg[0] == 'Got');
+                }
                 this.volume.fs.writeFileSync(outfn, vo);
             }
+
+            if (this.loadpath)            /* for subsequent compilations */
+                this.loadpath.push([logical.slice(0, -1), ["/lib"]]);
 
             this.outfiles.push({volume: this.volume, 
                                 logical, physical: outfn});
@@ -161,9 +168,12 @@ class CompileTask extends EventEmitter{
 }
 
 type CompileTaskOptions = {
+    loadpath?: [string[], string[]][]
     continue?: boolean
     jscoq?: boolean
 };
+
+const PRELUDE = [["Coq", "Init", "Prelude"]];
 
 
 class BuildError { }
