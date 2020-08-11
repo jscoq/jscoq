@@ -69,6 +69,25 @@ RUN eval $(opam env) && rm -rf _build/jscoq+64bit/coq-pkgs \
 RUN eval $(opam env) && make dist-tarball && make dist-npm \
         && mkdir dist && mv _build/dist/*.tar.gz dist
 
+# Addon packages
+
+# - install to OPAM for use by package builds
+RUN eval $(opam env) && make install &&   \
+    cd _build/jscoq+* && npm link
+
+ARG ADDONS_REPO=https://github.com/jscoq/addons
+ARG ADDONS_BRANCH=v8.12
+
+# - allow submodules with ssh urls
+RUN git config --global url."https://github.com/".insteadOf git@github.com:
+
+WORKDIR /root
+RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
+
+WORKDIR jscoq-addons
+RUN eval $(opam env) && make
+
+RUN make pack
 
 # jsCoq SDK
 

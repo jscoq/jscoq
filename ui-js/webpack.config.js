@@ -4,6 +4,9 @@ module.exports = {
   mode: 'development',
   entry: './ide-project.js',
   devtool: "source-map",
+  stats: {
+    hash: false, version: false, modules: false  // reduce verbosity
+  },
   output: {
     filename: 'ide-project.browser.js',
     path: __dirname,
