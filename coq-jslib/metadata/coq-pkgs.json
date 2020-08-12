@@ -1,6 +1,7 @@
 {
     "rootdir": "_vendor+v8.11+64bit/coq",
     "builddir": "coq-pkgs",
+    "bundle": "coq",
     "projects": {
         "init": {
             "theories": {

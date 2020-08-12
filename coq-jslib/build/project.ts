@@ -34,7 +34,7 @@ class CoqProject {
     fromJson(json: {[root: string]: {prefix?: string, dirpaths?: DirPathFlag[]}},
              baseDir: string = '', volume: FSInterface = this.volume) {
         for (let root in json) {
-            var prefix = this.toDirPath(json[root].prefix) || [];
+            var prefix = this.toDirPath(json[root].prefix || "");
 
             for (let sub of json[root].dirpaths || [""]) {
                 var dirpath = this.toDirPath(sub),
