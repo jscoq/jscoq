@@ -56,10 +56,26 @@ class ProviderContainer {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
 
+        class WhileScrolling {
+            constructor() {
+                this.handler = () => { 
+                    this.active = true;
+                    if (this.to) clearTimeout(this.to);
+                    this.to = setTimeout(() => this.active = false, 200);
+                };
+                window.addEventListener('scroll', this.handler, {capture: true});
+            }
+            destroy() {
+                window.removeEventListener('scroll', this.handler);
+            }
+        }
+
         // Create sub-providers.
         //   Do this asynchronously to avoid locking the page when there is
         //   a large number of snippets.
         (async () => {
+            var i = 0, scroll = new WhileScrolling();
+
             for (let [idx, element] of this.findElements(elementRefs).entries()) {
 
                 if (this.options.replace)
@@ -87,8 +103,10 @@ class ProviderContainer {
                     cm.onResize = () => { this.renumber(idx); }
                 }
 
-                await this.yield();
+                if (scroll.active || (++i) % 5 == 0) await this.yield();
             }
+
+            scroll.destroy();
         })();
     }
 
@@ -118,11 +136,11 @@ class ProviderContainer {
             let snippet = this.snippets[index];
             snippet.editor.setOption('firstLineNumber', line);
             line += snippet.lineCount;
-            await this.yield();
         }
     }
 
     yield() {
+        if (this.wait_for && !this.wait_for.isDone()) return this.wait_for.promise;
         return new Promise(resolve => setTimeout(resolve, 0));
     }
 
@@ -317,6 +335,7 @@ class CoqManager {
 
         this.error = [];
         this.navEnabled = false;
+        this.when_ready = new Future();
 
         // Launch time
         if (this.options.prelaunch)
@@ -460,6 +479,8 @@ class CoqManager {
             //await this.coq.when_created;
             //this.coq.interruptSetup();
 
+            this.provider.wait_for = this.when_ready;
+
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
@@ -470,6 +491,7 @@ class CoqManager {
                 this.options.all_pkgs, pkg_path_aliases, this.coq);
             
             this.packages.expand();
+            this.packages.populate();
 
             // Setup autocomplete
             this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
@@ -478,10 +500,6 @@ class CoqManager {
             // Setup contextual info bar
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
-
-            // The fun starts: fetch package infos,
-            // and load init packages once they are available
-            this.packages.populate();
         }
         catch (err) {
             this.handleLaunchFailure(err);
@@ -522,6 +540,7 @@ class CoqManager {
         this.doc.sentences[0].coq_sid = sid;
         this.doc.fresh_id = sid + 1;
         this.enable();
+        this.when_ready.resolve();
     }
 
     feedProcessed(nsid) {
