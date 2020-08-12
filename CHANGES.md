@@ -5,6 +5,11 @@
  - [addons] Update mathcomp to 1.11 (@ejgallego)
  - Chunked packages: split large library addons into multiple chunks,
    which are loaded on demand. (@corwin-of-amber)
+ - Streamlined packaging of `.coq-pkg` archives using a new `jscoq` CLI.
+   (@corwin-of-amber)
+ - Addons have been factored out of the main jsCoq build process. They
+   are now maintained in a seperate repository,
+   https://github.com/jscoq/addons. (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
