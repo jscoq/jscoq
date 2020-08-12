@@ -9,6 +9,7 @@ class Workspace {
 
     projs: {[name: string]: CoqProject} = {}
     searchPath = new SearchPath()
+    bundleName: string
     pkgDir = "bin/coq"
     outDir = ""
 
@@ -16,6 +17,7 @@ class Workspace {
         try {
             var json = JSON.parse(<any>fs.readFileSync(jsonFilename));
             if (json.builddir) this.outDir = json.builddir;
+            if (json.bundle) this.bundleName = json.bundle
             this.openProjects(json.projects, rootdir || json.rootdir);
         }
         catch (e) {
@@ -57,16 +59,16 @@ class Workspace {
     }
 
     createBundle(filename: string) {
-        var desc = path.basename(filename).replace(/[.]json$/, '');
+        var name = path.basename(filename).replace(/[.]json$/, '');
         if (!filename.match(/[.]json$/)) filename += '.json';
 
         return {
-            manifest: {desc, deps: [], pkgs: [], chunks: []},
+            manifest: {name, deps: [], pkgs: [], chunks: []},
             filename,
             save() {
                 fs.writeFileSync(this.filename, neatJSON(this.manifest));
             }
-        };        
+        };
     }
 
 }
