@@ -3,7 +3,7 @@
   "version": "0.12.0-rc1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
-      "jscoq" : "./cli.js"
+    "jscoq": "./cli.js"
   },
   "dependencies": {
     "array-equal": "^1.0.0",

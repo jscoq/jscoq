@@ -101,7 +101,7 @@ clean:
 ########################################################################
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	coq-js/jscoq_worker.bc.js coq-pkgs \
+	cli.js coq-js/jscoq_worker.bc.js coq-pkgs \
 	ui-js ui-css ui-images examples \
 	node_modules ui-external/CodeMirror-TeX-input}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)

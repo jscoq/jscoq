@@ -662,7 +662,8 @@ class Deprettify {
     static cleanup(text) {
         return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>')
                    .replace(/×/g, '*').replace(/→/g, '->')
-                   .replace(/←/g, '<-').replace(/^\n/, '');
+                   .replace(/←/g, '<-').replace(/\n☐/g, '')
+                   .replace(/^\n/, '');
     }
 
 }
