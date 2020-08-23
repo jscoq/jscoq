@@ -46,10 +46,6 @@
  (action
   (bash "npx webpack --config-name cli && chmod +x cli.js")))
 
-(install
- (section bin)
- (files (cli.js as jscoq)))
-
 ; Just the worker
 (alias
   (name jscoq_worker)
