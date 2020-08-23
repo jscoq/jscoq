@@ -45,8 +45,6 @@ a, a:link, a:visited, a:active {
 }
 
 #ide-wrapper.layout-flex > * {
-  flex-grow: 1;
-  flex-shrink: 1;
   overflow-x: hidden;
   max-height: 100%;
   box-sizing: border-box;
@@ -54,6 +52,11 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.layout-flex > #panel-wrapper {
   overflow-x: visible;  /* needed for power button to be visible */
+}
+
+#ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane) {
+  flex-grow: 1; /* take all remaining space */
+  width: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
 }
 
 #ide-wrapper #document {
@@ -503,6 +506,21 @@ button.download-icon.checked {
   right: 0;
   height: 18px;
   width: 18px;
+}
+
+.jscoq-ide #outline-pane {
+  width: 0;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  transition: width 0.2s ease-in-out;
+}
+
+.jscoq-ide.outline-active #outline-pane {
+  width: 15%;
+}
+
+.jscoq-ide.goals-active.outline-active #outline-pane {
+  width: 9%;
 }
 
 /* Pretty-printing hacks */

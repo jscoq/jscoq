@@ -10,8 +10,7 @@
  (action
   (progn
    (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json}
-             --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib
-             --package coq-pkgs/coq))))
+             --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib))))
 
 (rule
  (targets node_modules)
@@ -32,6 +31,7 @@
    coq-pkgs
    node_modules
    coq-js/jscoq_worker.js
+   ui-js/ide-project.browser.js
    cli.js
    jscoq.install))
 
@@ -44,7 +44,7 @@
   tsconfig.json
   node_modules)
  (action
-  (bash "npx webpack coq-jslib/cli.ts && chmod +x cli.js")))
+  (bash "npx webpack --config-name cli && chmod +x cli.js")))
 
 (install
  (section bin)

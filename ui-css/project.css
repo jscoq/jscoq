@@ -3,28 +3,18 @@
 
 /* Panel layout */
 
-#ide-container {
-    display: flex;
-    height: 100%;
-}
 #outline-pane {
     width: 15%;
-    flex-grow: 0;
-    flex-shrink: 0;
+    height: 100%;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    transition: width 0.2s ease-in-out;
 }
-#cnc-pane {
-    width: 20%;
-    flex-grow: 0;
-    flex-shrink: 0;
+.project-panel {
+    height: 100%;
 }
-#code-pane {
-    flex-grow: 1;
-    width: 200px; /* will serve as min width */
-}
-#project-panel {
-    margin-bottom: 1em;   
-}
-#log-panel {
+.project-panel > .file-list {
+    border-right: 1px solid #ddd;
     flex-grow: 1;
 }
 .vertical-pane {
@@ -39,16 +29,82 @@
 }
 
 .vertical-pane.draghov {
-    background: #e4e4ef;
+    background: #e4e4ff;
 }
 
 /* Toolbar styles */
 
-#project-panel button:disabled {
+.project-panel .toolbar {
+    min-height: 20px;
+}
+
+.project-panel button:disabled {
     color: gray;
 }
 
+/* Context menu */
+
+.project-context-menu {
+    float: right;
+    line-height: 1px;
+}
+.project-context-menu button {
+    border: none;
+    height: 20px;
+    width: 20px;
+    padding: 5px;
+}
+.project-context-menu button svg {
+    height: 100%;
+    vertical-align: top;
+}
+.project-context-menu button svg rect {
+    fill: #888;
+}
+.project-context-menu.open button {
+    background: #666;
+}
+.project-context-menu.open button svg rect {
+    fill: white;
+}
+
+.v-context {
+    font-family: sans-serif;
+    font-size: 10pt;
+    line-height: 15pt;
+    padding: 2px 0;
+    background: #eeee;
+}
+
+.v-context > li > a {
+    padding: 1px 1rem;
+}
+
+.v-context > li > a:hover {
+    background: rgb(46, 103, 160);
+    color: white;
+    cursor: default;
+}
+
+.v-context > li > a[disabled] {
+    color: #888;
+}
+.v-context > li > a[disabled]:hover {
+    color: #888;
+    background: transparent;
+}
+
+button:focus, button:active {
+    outline: none;
+}
+
 /* Problem list styles */
+
+.msg-area .Error .error-location {
+    margin: 0;
+    background: #fff8f8;
+    color: #866;
+}
 
 ul.problem-list {
     list-style: none;

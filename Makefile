@@ -5,10 +5,10 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION:=v8.12
-JSCOQ_BRANCH:=
+COQ_VERSION := v8.12
+JSCOQ_BRANCH :=
 
-JSCOQ_VERSION:=$(COQ_VERSION)
+JSCOQ_VERSION := $(COQ_VERSION)
 
 ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
@@ -26,6 +26,7 @@ VARIANT = +32bit
 endif
 
 BUILD_CONTEXT = jscoq$(VARIANT)
+BUILDDIR = _build/$(BUILD_CONTEXT)
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -54,9 +55,6 @@ export COQBUILDDIR_REL
 export ADDONS_PATH
 export COQPKGS_ROOT
 
-# Addons supported in jsCoq 0.11
-ADDONS = mathcomp # extlib simpleio quickchick elpi equations dsp
-
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
@@ -69,23 +67,21 @@ all:
 	@echo "   install: install Coq and jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
 jscoq: force
-	ADDONS="$(ADDONS)" dune build @jscoq $(DUNE_FLAGS)
+	dune build @jscoq $(DUNE_FLAGS)
 
 jscoq_worker:
-	ADDONS="$(ADDONS)" dune build @jscoq_worker $(DUNE_FLAGS)
+	dune build @jscoq_worker $(DUNE_FLAGS)
 
 install:
-	dune build $(COQBUILDDIR_REL)/coq.install jscoq.install $(DUNE_FLAGS)
-	dune install coq jscoq $(DUNE_FLAGS)
+	dune build $(COQBUILDDIR_REL)/coq.install $(DUNE_FLAGS)
+	dune install coq $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
 	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.js
-#	ln -sf ../_build/$(BUILD_CONTEXT)/ui-js/coq-build.browser.js ui-js
 
 links-clean:
 	rm -f coq-pkgs coq-js/jscoq_worker.js
-#	ui-js/coq-build.browser.js
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb: coq-pkgs/%.json
@@ -104,13 +100,12 @@ clean:
 # Dists                                                                #
 ########################################################################
 
-BUILDDIR=_build/$(BUILD_CONTEXT)
-BUILDOBJ=${addprefix $(BUILDDIR)/./, \
-	coq-js/jscoq_worker.bc.js coq-pkgs \
+BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
+	cli.js coq-js/jscoq_worker.bc.js coq-pkgs \
 	ui-js ui-css ui-images examples \
 	node_modules ui-external/CodeMirror-TeX-input}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
-DISTDIR=_build/dist
+DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
@@ -169,9 +164,9 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH=V8.12.0
-COQ_BRANCH_LATEST=v8.12
-COQ_REPOS=https://github.com/coq/coq.git
+COQ_BRANCH = V8.12.0
+COQ_BRANCH_LATEST = v8.12
+COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
@@ -183,32 +178,31 @@ $(COQSRC):
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq-get: $(COQSRC)
+	eval `opam env --switch=$(BUILD_CONTEXT)` && \
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get
 
-# Coq should be now be built by composition with the Dune setup
-coq-build:
-	true
+coq: coq-get
 
-coq: coq-get coq-build
+test:
+	@cp -r tests $(BUILDDIR)
+	cd $(BUILDDIR) && npx mocha tests/main.js
+
+server:
+	npx http-server $(BUILDDIR) -p 8012
+
+
+# - These are deprecated (use jscoq/addons repo instead)
 
 addon-%-get:
 	make -f coq-addons/$*.addon get
 
 addon-%-build:
 	make -f coq-addons/$*.addon build
-#	make -f coq-addons/$*.addon jscoq-install
 
 addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
 addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
 
 addons: addons-get addons-build
-
-test:
-	npx mocha tests/main.js
-
-server:
-	npx http-server _build/jscoq+32bit &
-	google-chrome http://127.0.0.1:8080 &

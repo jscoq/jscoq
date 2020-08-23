@@ -51,6 +51,8 @@ class PackageManager {
     }
 
     populate() {
+        this.index = new PackageIndex();
+
         for (let [base_uri, pkgs] of Object.entries(this.packages_by_uri)) {
             this.coq.infoPkg(base_uri, pkgs);
         }
@@ -128,6 +130,8 @@ class PackageManager {
             }
         }
 
+        this.index.add(pkg_info);
+
         this.dispatchEvent(new Event('change'));
     }
 
@@ -169,54 +173,6 @@ class PackageManager {
             if (!observe())
                 this.addEventListener('change', observe);
         });
-    }
-
-    searchBundleInfo(prefix, module_name, exact=false) {
-        // Look for a .vo file matching the given prefix and module name
-        var implicit = (prefix.length === 0),
-            suffix = module_name.slice(0, -1),
-            basename = module_name.slice(-1)[0],
-            possible_filenames = ['.vo', '.vio'].map(x => basename + x);
-
-        let startsWith = (arr, prefix) => arr.slice(0, prefix.length).equals(prefix);
-        let endsWith = (arr, suffix) => suffix.length == 0 || arr.slice(-suffix.length).equals(suffix);
-
-        let isIntrinsic = (arr) => arr[0] === 'Coq';
-
-        let pkg_matches = exact ? pkg_id => pkg_id.equals(suffix)
-                                : pkg_id => (implicit ? isIntrinsic(pkg_id)
-                                                      : startsWith(pkg_id, prefix)) &&
-                                            endsWith(pkg_id, suffix);
-
-        for (let pkg of this.packages) {
-            if (!pkg.info) continue;
-            for (let prefix of pkg.info.pkgs) {
-                if (pkg_matches(prefix.pkg_id) &&
-                    prefix.vo_files.some(entry => possible_filenames.indexOf(entry[0]) > -1))
-                    return { pkg: pkg.name,
-                             info: pkg.info, 
-                             module: prefix.pkg_id.concat([basename]) };
-            }
-        }
-    }
-
-    searchModule(prefix, module_name, exact=false) {
-        var binfo = this.searchBundleInfo(prefix, module_name, exact),
-            lookupDeps = (binfo, key) =>
-                (binfo && binfo.info.modDeps && binfo.info.modDeps.hasOwnProperty(key))
-                    ? binfo.info.modDeps[key] : [];
-        if (binfo) {
-            var pkgs = new Set([binfo.pkg]),
-                module_deps = lookupDeps(binfo, binfo.module.join('.'));
-            this._scan(module_deps,
-                m => {
-                    var binfo = this.searchBundleInfo([], m.split('.'), true);
-                    if (binfo) pkgs.add(binfo.pkg);
-                    return lookupDeps(binfo, m);
-                });
-            binfo.deps = [...pkgs.values()];
-        }
-        return binfo;
     }
 
     getUrl(pkg_name, resource) {
@@ -436,6 +392,73 @@ class PackageManager {
     dispatchEvent(evt)             { this.panel.dispatchEvent(evt); }
     addEventListener(type, cb)     { this.panel.addEventListener(type, cb); }
     removeEventListener(type, cb)  { this.panel.removeEventListener(type, cb); }
+}
+
+
+/**
+ * Holds list of modules in packages and resolves dependencies.
+ */
+class PackageIndex {
+
+    constructor() {
+        this.moduleIndex = new Map();
+        this.intrinsicPrefix = 'Coq';
+    }
+
+    add(pkgInfo) {
+        for (let {pkg_id, vo_files} of pkgInfo.pkgs || []) {
+            for (let [vo] of vo_files) {
+                var mod = [...pkg_id, vo.replace(/[.]vo$/, '')];
+                this.moduleIndex.set(mod.join('.'), pkgInfo);
+            }
+        }
+    }
+
+    *findModules(prefix, suffix, exact=false) {
+        if (Array.isArray(prefix)) prefix = prefix.join('.');
+        if (Array.isArray(suffix)) suffix = suffix.join('.');
+
+        if (exact) {
+            prefix = prefix ? prefix + '.' : '';
+            if (this.moduleIndex.has(prefix + suffix)) yield prefix + suffix;
+        }
+        else {
+            var dotsuffix = '.' + suffix,
+                dotprefix = (prefix || this.intrinsicPrefix) + '.';
+            for (let k of this.moduleIndex.keys()) {
+                if (!prefix && k == suffix ||
+                        k.startsWith(dotprefix) && k.endsWith(dotsuffix))
+                    yield k;
+            }
+        }
+    }
+
+    findPackageDeps(prefix, suffix, exact=false) {
+        var pdeps = new Set();
+        for (let m of this.alldeps(this.findModules(prefix, suffix, exact)))
+            pdeps.add(this.moduleIndex.get(m).desc);
+        return pdeps;
+    }
+
+    alldeps(mods) {
+        return closure(new Set(mods), mod => {
+            let pkg = this.moduleIndex.get(mod);
+            return (pkg && pkg.modDeps || {})[mod] || [];
+        });
+    }
+    
+}
+
+
+// function closure<T>(s: Set<T>, tr: (t: T) => T[]) {
+function closure(s, tr) {
+    var wl = [...s];
+    while (wl.length > 0) {
+        var u = wl.shift();
+        for (let v of tr(u))
+            if (!s.has(v)) { s.add(v); wl.push(v); }
+    }
+    return s;
 }
 
 

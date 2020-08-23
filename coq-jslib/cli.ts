@@ -102,12 +102,16 @@ class CLI {
         }
 
         if (bundle) {
+            // @ts-ignore  (some jsCoq/waCoq sillyness)
+            bundle.manifest.desc = bundle.manifest.name;  delete bundle.manifest.name;
             bundle.save();
             this.progress(`wrote ${bundle.filename}.`, true);
         }
     }
 
     bundle(opts = this.opts) {
+        if (this.workspace.bundleName)
+            return this.workspace.createBundle(path.join(this.workspace.outDir, this.workspace.bundleName));
         if (opts.package && Object.keys(this.workspace.projs).length > 1)
             return this.workspace.createBundle(opts.package);
     }

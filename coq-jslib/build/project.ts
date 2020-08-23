@@ -34,7 +34,7 @@ class CoqProject {
     fromJson(json: {[root: string]: {prefix?: string, dirpaths?: DirPathFlag[]}},
              baseDir: string = '', volume: FSInterface = this.volume) {
         for (let root in json) {
-            var prefix = this.toDirPath(json[root].prefix) || [];
+            var prefix = this.toDirPath(json[root].prefix || "");
 
             for (let sub of json[root].dirpaths || [""]) {
                 var dirpath = this.toDirPath(sub),
@@ -454,6 +454,17 @@ class InMemoryVolume extends StoreVolume {
         var file = this.fileMap.get(fp);
         if (file) return {isDirectory: () => false};
         else return super.statSync(fp);
+    }
+
+    renameSync(oldFilename: string, newFilename: string) {
+        if (oldFilename !== newFilename) {
+            this.fileMap.set(newFilename, this.readFileSync(oldFilename) as Uint8Array);
+            this.fileMap.delete(oldFilename);
+        }
+    }
+
+    unlinkSync(filename: string) {
+        this.fileMap.delete(filename);
     }
 
 }

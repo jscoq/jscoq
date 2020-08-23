@@ -370,6 +370,14 @@ class CmCoqProvider {
         }
     }
 
+    invalidateAll() {
+        var doc   = this.editor.getDoc();
+        var marks = doc.getAllMarks();
+        for (let mark of marks) {
+            if (mark.stm) this.onInvalidate(mark.stm);
+        }
+    }
+
     _markFromElement(dom) {
         var sid = dom.classList.contains('CodeMirror-line') ?
                     $(dom).find('[data-coq-sid]').last().attr('data-coq-sid')
@@ -479,6 +487,8 @@ class CmCoqProvider {
 
     load(text, filename, dirty=false) {
         if (this.autosave && this.dirty) this.saveLocal();
+
+        this.invalidateAll();
 
         this.editor.swapDoc(new CodeMirror.Doc(text, this.editor.getMode()));
         this.filename = filename;
@@ -652,7 +662,8 @@ class Deprettify {
     static cleanup(text) {
         return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>')
                    .replace(/×/g, '*').replace(/→/g, '->')
-                   .replace(/←/g, '<-').replace(/^\n/, '');
+                   .replace(/←/g, '<-').replace(/\n☐/g, '')
+                   .replace(/^\n/, '');
     }
 
 }

@@ -56,10 +56,26 @@ class ProviderContainer {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
 
+        class WhileScrolling {
+            constructor() {
+                this.handler = () => { 
+                    this.active = true;
+                    if (this.to) clearTimeout(this.to);
+                    this.to = setTimeout(() => this.active = false, 200);
+                };
+                window.addEventListener('scroll', this.handler, {capture: true});
+            }
+            destroy() {
+                window.removeEventListener('scroll', this.handler);
+            }
+        }
+
         // Create sub-providers.
         //   Do this asynchronously to avoid locking the page when there is
         //   a large number of snippets.
         (async () => {
+            var i = 0, scroll = new WhileScrolling();
+
             for (let [idx, element] of this.findElements(elementRefs).entries()) {
 
                 if (this.options.replace)
@@ -87,8 +103,10 @@ class ProviderContainer {
                     cm.onResize = () => { this.renumber(idx); }
                 }
 
-                await this.yield();
+                if (scroll.active || (++i) % 5 == 0) await this.yield();
             }
+
+            scroll.destroy();
         })();
     }
 
@@ -118,11 +136,11 @@ class ProviderContainer {
             let snippet = this.snippets[index];
             snippet.editor.setOption('firstLineNumber', line);
             line += snippet.lineCount;
-            await this.yield();
         }
     }
 
     yield() {
+        if (this.wait_for && !this.wait_for.isDone()) return this.wait_for.promise;
         return new Promise(resolve => setTimeout(resolve, 0));
     }
 
@@ -317,6 +335,7 @@ class CoqManager {
 
         this.error = [];
         this.navEnabled = false;
+        this.when_ready = new Future();
 
         // Launch time
         if (this.options.prelaunch)
@@ -407,6 +426,30 @@ class CoqManager {
         });
     }
 
+    async openProject(name) {
+        var pane = this.layout.createOutline();
+        await this._load('ui-js/ide-project.browser.js');
+                         //'ui-js/ide-project.browser.css');   // if using Parcel
+
+        this.project = ideProject.ProjectPanel.attach(this, pane, name);
+    }
+
+    async _load(...hrefs) {
+        for (let href of hrefs) {
+            var uri = this.options.base_path + href,
+                el = href.endsWith('.css') ? 
+                    $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
+                  : $('<script>').attr({type: 'text/javascript', src: uri});
+            document.head.appendChild(el[0]); // jQuery messes with load event
+            await new Promise(resolve => el.on('load', resolve));
+        }
+    }
+
+    getLoadPath() {
+        return [this.packages, this.project].map(p => 
+                    p ? p.getLoadPath() : []).flatten();
+    }
+
     /**
      * Starts a Worker and commences loading of packages and initialization
      * of STM.
@@ -421,6 +464,8 @@ class CoqManager {
             await this.coq.when_created;
             this.coq.interruptSetup();
 
+            this.provider.wait_for = this.when_ready;
+
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
@@ -431,6 +476,7 @@ class CoqManager {
                 this.options.all_pkgs, pkg_path_aliases, this.coq);
             
             this.packages.expand();
+            this.packages.populate();
 
             // Setup autocomplete
             this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
@@ -440,10 +486,8 @@ class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            // The fun starts: fetch package infos,
-            // and load init packages once they are available
-            this.packages.populate();
-
+            // The fun starts:
+            // load init packages and initialize the worker
             await this.packages.loadDeps(this.options.init_pkgs);
             this.coqInit();
         }
@@ -479,6 +523,7 @@ class CoqManager {
     coqReady(sid) {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
+        this.when_ready.resolve();
     }
 
     feedProcessed(nsid) {
@@ -567,9 +612,8 @@ class CoqManager {
 
         var pkg_deps = new Set();
         for (let module_name of module_names) {
-            let binfo = this.packages.searchModule(prefix, module_name);
-            if (binfo)
-                for (let d of binfo.deps) pkg_deps.add(d);
+            let deps = this.packages.index.findPackageDeps(prefix, module_name)
+            for (let dep of deps) pkg_deps.add(dep);
         }
 
         for (let d of this.packages.loaded_pkgs) pkg_deps.delete(d);
@@ -587,7 +631,7 @@ class CoqManager {
 
         this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
             .then(() => {
-                this.coq.reassureLoadPath(this.packages.getLoadPath());
+                this.coq.reassureLoadPath(this.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
                 cleanup();
             });
@@ -711,14 +755,13 @@ class CoqManager {
         // Set startup parameters
         let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
                          coq_options: this._parseOptions(this.options.coq || {})},
-            load_path = this.packages.getLoadPath(),
             load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 
         for (let pkg of this.options.init_import || []) {
             load_lib.push(PKG_ALIASES[pkg] || pkg.split('.'));
         }
 
-        this.coq.init(init_opts, load_lib, load_path);
+        this.coq.init(init_opts, load_lib, this.getLoadPath());
         // Almost done!
     }
 

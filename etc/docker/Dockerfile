@@ -60,7 +60,7 @@ RUN eval $(opam env) && make dist-tarball && make dist-npm \
 
 # - install to OPAM for use by package builds
 RUN eval $(opam env) && make install &&   \
-    ln -s /root/jscoq/_build/jscoq+64bit/coq-pkgs $OPAM_SWITCH_PREFIX/bin
+    cd _build/jscoq+* && npm link
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
 ARG ADDONS_BRANCH=v8.12

@@ -23,6 +23,15 @@ abstract class Batch {
         return replies;
     }
 
+    async loadPackages(pkgs: Set<string>): Promise<LoadPath> {
+        if (pkgs.size > 0)
+            await this.do(
+                ['LoadPkg', [...pkgs].map(pkg => `+${pkg}`)],
+                msg => msg[0] == 'LoadedPkg'
+            );
+        return undefined;
+    }
+
     isError(msg: any[]) {
         return ['JsonExn', 'CoqExn'].includes(msg[0]);
     }    
@@ -65,6 +74,7 @@ class CompileTask extends EventEmitter{
     outproj: CoqProject
     infiles: SearchPathElement[] = [];
     outfiles: SearchPathElement[] = [];
+    loadpath: LoadPath = [];
     volume: FSInterface
 
     opts: CompileTaskOptions
@@ -86,7 +96,7 @@ class CompileTask extends EventEmitter{
         var coqdep = this.inproj.computeDeps(),
             plan = coqdep.buildOrder();
 
-        await this.loadPackages(coqdep.extern);
+        this.loadpath = await this.batch.loadPackages(coqdep.extern);
 
         for (let mod of plan) {
             if (this._stop) break;
@@ -97,14 +107,6 @@ class CompileTask extends EventEmitter{
         return this.output(outname);
     }
 
-    async loadPackages(pkgs: Set<string>) {
-        if (pkgs.size > 0)
-            await this.batch.do(
-                ['LoadPkg', [...pkgs].map(pkg => `+${pkg}`)],
-                msg => msg[0] == 'LoadedPkg'
-            );
-    }
-
     async compile(mod: SearchPathElement, opts=this.opts) {
         var {volume, logical, physical} = mod,
             infn = `/lib/${logical.join('/')}.v`, outfn = `${infn}o`;
@@ -113,17 +115,22 @@ class CompileTask extends EventEmitter{
         this.emit('progress', [{filename: physical, status: 'compiling'}]);
 
         try {
-            await this.batch.do(
-                ['Init', {top_name: logical.join('.')}],
+            let [, [, outfn_, vo]] = await this.batch.do(
+                ['Init', {top_name: logical.join('.')}, PRELUDE, this.loadpath],
                 ['Put', infn, volume.fs.readFileSync(physical)],
                 ['Load', infn],            msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 
             if (!this.batch.volume) {
-                let [[, , vo]] = await this.batch.do(
-                    ['Get', outfn],        msg => msg[0] == 'Got');            
+                if (!vo) {  /* wacoq worker does not return file content */
+                    [[, , vo]] = await this.batch.do(
+                        ['Get', outfn_],   msg => msg[0] == 'Got');
+                }
                 this.volume.fs.writeFileSync(outfn, vo);
             }
+
+            if (this.loadpath)            /* for subsequent compilations */
+                this.loadpath.push([logical.slice(0, -1), ["/lib"]]);
 
             this.outfiles.push({volume: this.volume, 
                                 logical, physical: outfn});
@@ -164,6 +171,10 @@ type CompileTaskOptions = {
     continue?: boolean
     jscoq?: boolean
 };
+
+type LoadPath = [string[], string[]][];
+
+const PRELUDE = [["Coq", "Init", "Prelude"]];
 
 
 class BuildError { }
