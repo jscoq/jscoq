@@ -9,7 +9,7 @@ export NJOBS ?= 4
 ARGS = --build-arg REPO --build-arg BRANCH --build-arg NJOBS
 
 build:
-	docker build . --target opam         $(ARGS)  -t opam
+	docker build . --target opam         $(ARGS)  -t jscoq:opam
 	docker build . --target jscoq-prereq $(ARGS)  -t jscoq:prereq
 	docker build . --target jscoq        $(ARGS)  -t jscoq
 
