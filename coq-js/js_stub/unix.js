@@ -515,6 +515,15 @@ function unix_utimes()                { unix_ll("unix_utimes", arguments); }
 // Provides: unix_write
 // Requires: unix_ll
 function unix_write()                 { unix_ll("unix_write", arguments); }
+// Provides: unix_fsync
+// Requires: unix_ll
+function unix_fsync()                 { unix_ll("unix_fsync", arguments); }
+// Provides: unix_inchannel_of_filedescr
+// Requires: unix_ll
+function unix_inchannel_of_filedescr()  { unix_ll("unix_inchannel_of_filedescr", arguments); }
+// Provides: unix_outchannel_of_filedescr
+// Requires: unix_ll
+function unix_outchannel_of_filedescr() { unix_ll("unix_outchannel_of_filedescr", arguments); }
 // Provides: caml_channel_descriptor
 // Requires: unix_ll
 function caml_channel_descriptor()   { unix_ll("caml_channel_descriptor", arguments); }

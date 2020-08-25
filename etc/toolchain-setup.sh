@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OCAML_VER=4.07.1
+OCAML_VER=4.08.1
 NJOBS=4
 VERB= # -vv
 
