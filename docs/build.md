@@ -15,12 +15,14 @@ on a Unix-like system. The required packages can be obtained using
 ## Build steps
 
  1. Clone the jsCoq repo.
+```sh
+git clone --recursive git@github.com:ejgallego/jscoq.git  # (this repo)
+cd jscoq
 ```
-git clone --recursive git@github.com:ejgallego/jscoq.git (this repo)
-```
- 2. Install OCaml 4.07.1 (32-bit version) and required packages.
-```
-./etc/toolchain-setup.sh
+
+ 2. Install OCaml 4.08.1 (32-bit version) and required packages.
+```sh
+./etc/toolchain-setup.sh     # optionally --64, see below
 ```
  **Note 1**: This will create an OPAM switch called `jscoq+32bit` using the
  `4.07.1+32bit` compiler, which the build will then use. You can modify/tweak
@@ -35,22 +37,16 @@ git clone --recursive git@github.com:ejgallego/jscoq.git (this repo)
  use the workspace `dune-workspace-64` for the build.
 
 **Important Note:** if you plan to build any addons with ML code which
-is built using `coq_makefile` then you should perform an `opam switch
-jscoq+32bit` [or 64 bits] before starting the build process at
-all. Otherwise the wrong OCaml version will be fetched.
+is built using `coq_makefile`, then you should run `opam switch jscoq+32bit` [or `+64bits`] before any `make` command, in order to choose the right version
+of OCaml and Coq.
 
  3. Fetch Coq 8.10 sources from the repository and configure it for build.
-
-```
+```sh
 make coq
 ```
+
  4. Build `jscoq_worker.js` (the main jsCoq file) and additional package files.
-```
-make jscoq
-```
- 5. (Optional) Build math-comp and other accompanying libraries.
-```
-make addons
+```sh
 make jscoq
 ```
 
@@ -58,6 +54,34 @@ This will create a working distribution under `_build/jscoq+32bit/` (or `_build/
 
 Now serve the files from the distribution directory via HTTP, and
 navigate your browser to `http://localhost/index.html`, or run them locally:
-```
+```sh
  google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" _build/jscoq+32bit
 ```
+
+## Building accompanying libraries (optional)
+
+ 5. Install jsCoq binaries.
+```sh
+make install   # this installs jsCoq's version of Coq in the
+               # jscoq+32bit (or +64bit) OPAM switch
+```
+
+ 6. Clone https://github.com/jscoq/addons in a separate working directory.
+```sh
+git clone --recursive https://github.com/jscoq/addons jscoq-addons
+cd jscoq-addons
+```
+
+ 7. Build the libraries you are interested in.
+```sh
+cd mathcomp
+make
+```
+
+ 8. Create NPM packages for compiled libraries.
+```
+make pack   # in jscoq-addons working directory
+```
+
+This creates `.tgz` files for packages in `_build/jscoq+32bit` (or `+64bit`).
+You can then `npm install` them in your jsCoq distribution.

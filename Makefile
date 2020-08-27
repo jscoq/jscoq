@@ -73,7 +73,7 @@ jscoq_worker:
 	dune build @jscoq_worker $(DUNE_FLAGS)
 
 install:
-	dune build $(COQBUILDDIR_REL)/coq.install $(DUNE_FLAGS)
+	dune build -p coq $(DUNE_FLAGS)
 	dune install coq $(DUNE_FLAGS)
 
 links:
