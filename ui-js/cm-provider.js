@@ -656,13 +656,14 @@ class Deprettify {
     }
 
     /**
-     * Translate back unicode symbols to their original ASCII.
+     * Translate back some unicode symbols to their original ASCII.
      * @param {string} text 
      */
     static cleanup(text) {
         return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>')
                    .replace(/×/g, '*').replace(/→/g, '->')
-                   .replace(/←/g, '<-').replace(/\n☐/g, '')
+                   .replace(/←/g, '<-').replace(/¬/g, '~')
+                   .replace(/⊢/g, '|-').replace(/\n☐/g, '')
                    .replace(/^\n/, '');
     }
 
