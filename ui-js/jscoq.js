@@ -21,7 +21,8 @@ class CoqWorker {
                                   this.constructor.defaultScriptPath());
         }
 
-        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
+        this.worker.addEventListener('message', 
+            this._handler = evt => this.coq_handler(evt));
     }
 
     /**
@@ -222,11 +223,13 @@ class CoqWorker {
     }
 
     spawn() {
+        this.worker.removeEventListener('message', this._handler);
         return new CoqWorker(null, this.worker);
     }
 
     join(child) {
-        this.worker.onmessage = this._handler;
+        this.worker.removeEventListener('message', child._handler);
+        this.worker.addEventListener('message', this._handler);
     }
 
     // Internal event handling
@@ -370,11 +373,27 @@ class PromiseFeedbackRoute extends Future {
 }
 
 
+class CoqSubprocessAdapter extends CoqWorker {
+    constructor() {
+        const subproc = require('wacoq-bin/dist/subproc');
+        super(null, new subproc.IcoqSubprocess());
+    }
+    init(opts, lib_init, lib_path) {
+        if (!opts.coqlib)
+            opts.coqlib = this.worker.binDir + '/coqlib';
+        super.init(opts, lib_init, lib_path);
+    }
+    loadPkg(url) {
+        return this.coq_handler({data: ['LibProgress', {uri: url.href, done: true}]});
+    }
+}
+
+
 if (typeof document !== 'undefined' && document.currentScript)
     CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
 
 if (typeof module !== 'undefined')
-    module.exports = {CoqWorker, Future, PromiseFeedbackRoute}
+    module.exports = {CoqWorker, CoqSubprocessAdapter, Future, PromiseFeedbackRoute}
 
 // Local Variables:
 // js-indent-level: 4

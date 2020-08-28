@@ -472,8 +472,9 @@ class CoqManager {
     async launch() {
         try {
             // Setup the Coq worker.
-            this.coq           = new CoqWorker();
-            this.coq.options   = this.options;
+            this.coq = this.options.subproc ? new CoqSubprocessAdapter()
+                                            : new CoqWorker();
+            this.coq.options = this.options;
             this.coq.observers.push(this);
 
             //await this.coq.when_created;

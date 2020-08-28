@@ -283,7 +283,7 @@ class PackageManager {
     }
 
     coqLibProgress(evt) {
-        var url = new URL(evt.uri, new URL(this.coq._worker_script)),
+        var url = new URL(evt.uri, this.coq._worker_script),
             pkg_name = this._packageByURL(url);
 
         if (pkg_name) {

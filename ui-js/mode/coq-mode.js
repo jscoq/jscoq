@@ -214,7 +214,7 @@
       //   multi-character brackets.
 
       if (at_sentence_start) {
-        if (stream.match(/[-*+{}]/)) return 'coq-bullet';
+        if (stream.match(/[-*+]+|[{}]/)) return 'coq-bullet';
         if (stream.match(/\d+\s*:/)) return 'coq-focus';
       }
 

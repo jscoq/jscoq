@@ -95,10 +95,9 @@ clean:
 # Dists                                                                #
 ########################################################################
 
-BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	coq-js/jscoq_worker.bc.js coq-pkgs \
+BUILDOBJ =  \
 	ui-js ui-css ui-images examples \
-	node_modules ui-external/CodeMirror-TeX-input}
+	node_modules ui-external/CodeMirror-TeX-input
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -122,7 +121,7 @@ dist-tarball: dist
 	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
-NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
+NPMOBJ = ${filter-out node_modules index.html, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
 NPMEXCLUDE = --delete-excluded --exclude '*.cma' \
     ${foreach dir, Coq Ltac2 mathcomp, \

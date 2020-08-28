@@ -43,7 +43,7 @@ class FormatPrettyPrint {
      * @param {array} pp a serialized Pp element
      */
     pp2DOM(pp) {
-        if (pp.constructor !== Array) {
+        if (!Array.isArray(pp)) {
             throw new Error("malformed Pp element: " + pp);
         }
 
