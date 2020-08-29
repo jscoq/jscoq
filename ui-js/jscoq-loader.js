@@ -24,6 +24,8 @@ var loadJsCoq, JsCoq;
 
 (function(){
 
+    module = undefined;  /* for Electron */
+    
     var loadCss = function(css) {
 
         var link   = document.createElement("link");

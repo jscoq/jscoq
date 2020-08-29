@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>18E226</string>
+	<key>CFBundleDisplayName</key>
+	<string>Vin</string>
+	<key>CFBundleExecutable</key>
+	<string>Electron</string>
+	<key>CFBundleIconFile</key>
+	<string>vin.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>io.github.jscoq.Vin</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Vin</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>9.1.2</string>
+	<key>CFBundleVersion</key>
+	<string>9.1.2</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTSDKBuild</key>
+	<string>10.15</string>
+	<key>DTSDKName</key>
+	<string>macosx10.15</string>
+	<key>DTXcode</key>
+	<string>1110</string>
+	<key>DTXcodeBuild</key>
+	<string>11A1027</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.10.0</string>
+	<key>LSRequiresNativeExecution</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to the camera</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to the microphone</string>
+	<key>NSPrincipalClass</key>
+	<string>AtomApplication</string>
+	<key>NSQuitAlwaysKeepsWindows</key>
+	<false/>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+</dict>
+</plist>

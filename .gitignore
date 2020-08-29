@@ -25,3 +25,7 @@ coq-pkgs
 .DS_Store
 .AppleDouble
 
+/app
+/*.app
+*.icns
+*.dmg

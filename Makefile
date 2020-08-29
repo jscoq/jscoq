@@ -1,6 +1,6 @@
 .PHONY: all clean force
 .PHONY: jscoq jscoq_worker links links-clean
-.PHONY: dist dist-upload dist-release server
+.PHONY: dist dist-npm app
 
 -include ./config.inc
 
@@ -123,7 +123,7 @@ dist-tarball: dist
 
 NPMOBJ = ${filter-out node_modules index.html, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
-NPMEXCLUDE = --delete-excluded --exclude '*.cma' \
+NPMEXCLUDE = --delete-excluded --exclude '*.cma' --exclude app \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
@@ -134,6 +134,31 @@ dist-npm:
 	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(NPMSTAGEDIR)/ui-js/jscoq-loader.js
 	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
 	    -C ${dir $(NPMSTAGEDIR)} --exclude '*.bak' ${notdir $(NPMSTAGEDIR)}
+
+# Electron app bundle (macOS)
+
+APPOBJ = ${filter-out node_modules package%.json, $(DISTOBJ)}
+APPSTAGEDIR = _build/app
+APPDMGDIR = $(APPSTAGEDIR)/dmg/Vin.app
+
+app: ui-images/app/icon.icns
+	mkdir -p $(APPSTAGEDIR)/Contents/Resources/app
+	rsync -apRL --delete `cat ui-js/app/external.list` \
+	    --delete-excluded ${foreach m, assets '*.map', --exclude $m} \
+		$(APPOBJ) $(APPSTAGEDIR)/Contents/Resources/app/
+	cp ui-js/app/package.json $(APPSTAGEDIR)/Contents/Resources/app/
+
+app-dmg:
+	mkdir -p $(APPDMGDIR)
+	rsync -apR --delete /opt/local/lib/node_modules/electron/dist/Electron.app/./ \
+	   $(APPSTAGEDIR)/./Contents/Resources/app \
+	   $(APPDMGDIR)
+	cp ui-js/app/Info.plist $(APPDMGDIR)/Contents/
+	cp ui-images/app/icon.icns $(APPDMGDIR)/Contents/Resources/vin.icns
+	hdiutil create -volname Vin -srcfolder $(APPSTAGEDIR)/dmg -ov -format UDZO Vin.dmg
+
+%.icns: %.png
+	ui-images/app/png-to-icns $< $*
 
 ########################################################################
 # Local stuff and distributions
