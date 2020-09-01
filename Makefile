@@ -131,9 +131,7 @@ dist-npm:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(NPMSTAGEDIR)/ui-js/jscoq-loader.js
-	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
-	    -C ${dir $(NPMSTAGEDIR)} --exclude '*.bak' ${notdir $(NPMSTAGEDIR)}
+	npm pack ./$(NPMSTAGEDIR)
 
 # Electron app bundle (macOS)
 

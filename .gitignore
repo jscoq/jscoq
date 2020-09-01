@@ -16,10 +16,9 @@ _build
 # Node stuff
 node_modules
 
-# Links for in-place serving
-coq-pkgs
-/coq-js/jscoq_worker.js
+# Build artifacts
 *.browser.js
+*.tgz
 
 # Apple stuff
 .DS_Store

@@ -1,11 +1,13 @@
 {
-  "name": "jscoq",
-  "version": "0.12.0-rc1",
+  "name": "wacoq",
+  "version": "0.12.0-alpha1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
-  "bin": {
-      "jscoq" : "./cli.js"
-  },
+  "main": "examples/scratchpad.html?project",
   "dependencies": {
+    "@jscoq/hahn": "file:../jscoq-addons/_build/wacoq/jscoq-hahn-0.12.0-rc3.tgz",
+    "@jscoq/paco": "file:../jscoq-addons/_build/wacoq/jscoq-paco-0.12.0-rc4.tgz",
+    "@jscoq/promising-lib": "file:../jscoq-addons/_build/wacoq/jscoq-promising-lib-0.12.0-rc3.tgz",
+    "@jscoq/snu-sflib": "file:../jscoq-addons/_build/wacoq/jscoq-snu-sflib-0.12.0-rc3.tgz",
     "array-equal": "^1.0.0",
     "bootstrap": "^3.4.1",
     "codemirror": "^5.49.2",
@@ -19,7 +21,8 @@
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
     "vue": "^2.6.11",
-    "vue-context": "^5.1.0"
+    "vue-context": "^5.1.0",
+    "wacoq-bin": "file:../../workspace/Coq.WA/wacoq-bin-0.12.0-alpha1.tar.gz"
   },
   "devDependencies": {
     "@types/node": "^13.11.1",
@@ -34,6 +37,18 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
+  },
+  "files": [
+    "ui-js",
+    "ui-css",
+    "ui-images",
+    "ui-external/CodeMirror-TeX-input/addon",
+    "examples"
+  ],
+  "scripts": {
+    "build": "cd ui-js && webpack",
+    "watch": "cd ui-js && webpack -w",
+    "prepack": "sed -i.bak 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
   },
   "repository": {
     "type": "git",

@@ -24,7 +24,8 @@ var loadJsCoq, JsCoq;
 
 (function(){
 
-    module = undefined;  /* for Electron */
+    if (typeof module !== 'undefined')
+        module = undefined;  /* for Electron */
     
     var loadCss = function(css) {
 
