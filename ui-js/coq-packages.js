@@ -203,7 +203,7 @@ class PackageManager {
     /**
      * Updates the download progress bar on the UI.
      * @param {string} bname package bundle name
-     * @param {object} info {loaded: <number>, total: <number>}
+     * @param {object} info? {loaded: <number>, total: <number>}
      */
     showPackageProgress(bname, info) {
         var bundle = this.bundles[bname];
@@ -288,7 +288,7 @@ class PackageManager {
 
         if (pkg_name) {
             if (evt.done) {
-                this.onBundleLoad(pkg_name);
+                this.coqLibLoaded(pkg_name);
             }
             else {
                 this.showPackageProgress(pkg_name, evt.download);
@@ -296,18 +296,7 @@ class PackageManager {
         }
     }
 
-    onBundleStart(bname) {
-        this.showPackageProgress(bname);
-    }
-
-    onPkgProgress(evt) {
-        var info = this.getPackage(evt.bundle).info;
-        ++info.loaded; // this is not actually the number of files loaded :\
-
-        this.showPackageProgress(evt.bundle, info);
-    }
-
-    onBundleLoad(bname) {
+    coqLibLoaded(bname) {
         this.loaded_pkgs.push(bname);
 
         var pkg = this.getPackage(bname);

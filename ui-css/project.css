@@ -5,6 +5,7 @@
 
 #outline-pane {
     width: 15%;
+    min-width: 90px;
     height: 100%;
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
@@ -15,7 +16,9 @@
 }
 .project-panel > .file-list {
     border-right: 1px solid #ddd;
+    flex-basis: 1px;
     flex-grow: 1;
+    overflow: auto;
 }
 .vertical-pane {
     display: flex;
@@ -40,6 +43,13 @@
 
 .project-panel button:disabled {
     color: gray;
+}
+
+.project-panel .build-status {
+    font-size: 70%;
+    vertical-align: middle;
+    letter-spacing: 2px;
+    color: #666;
 }
 
 /* Context menu */

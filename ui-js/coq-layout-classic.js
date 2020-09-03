@@ -33,16 +33,10 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <img height="20" src="${base_path}/ui-images/wa-logo.svg" style="vertical-align: top; margin-top: 3px"><i>+</i><!--
-        --><a href="https://coq.inria.fr"><!--
-          --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle; margin-left: -1px">
+        <img class="wa-logo" src="${base_path}/ui-images/wa-logo.svg" alt="wa"><i>+</i><!--
+          --><a href="https://coq.inria.fr"><!--
+          --><img class="coq-logo" src="https://coq.inria.fr/files/barron_logo.png" alt="Coq">
         </a>
-        <!-- 
-        <a href="http://feever.fr/" target="_blank">
-          <img src="${base_path}/ui-images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
-               style="vertical-align: middle"/>
-        </a>
-        -->
       </div> <!-- /.exits -->
       <span id="buttons">
         <button name="up"          alt="Up (Meta-P)"             title="Up (Meta-P)"></button><!--
@@ -245,10 +239,13 @@ class CoqLayoutClassic {
         if (this.isLogVisible(level)) {
             if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
 
-            this.scrollTimeout = setTimeout( () => {
-                this.query.scrollTo({top: this.query.scrollHeight, 
-                                     behavior: 'smooth'});
-            }, 1 );
+            if (attrs.fast)
+                this.query.strollTo({top: this.query.scrollHeight});
+            else
+                this.scrollTimeout = setTimeout( () => {
+                    this.query.scrollTo({top: this.query.scrollHeight,
+                                         behavior: 'smooth'});
+                }, 1 );
         }
 
         return item;

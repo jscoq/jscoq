@@ -313,6 +313,20 @@ body.jscoq-main .CodeMirror-linenumber {
   padding-left: .5em;
 }
 
+#toolbar .wa-logo {
+  height: 20px;
+  margin-top: 3px;
+  vertical-align: top;
+}
+
+#toolbar .wa-logo ~ i { color: #56c; }
+
+#toolbar .coq-logo {
+  height: 35px;
+  vertical-align: middle;
+  margin-left: -1px;
+}
+
 #toolbar .exits.right {
   position: absolute;
   top: 4px;
