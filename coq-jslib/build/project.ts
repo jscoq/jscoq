@@ -217,7 +217,8 @@ class SearchPath {
     add({volume, physical, logical, pkg}: SearchPathAddParameters) {
         volume = volume || this.volume;
         logical = this.toDirPath(logical);
-        this.path.push({volume, logical, physical, pkg});
+        if (!this.has({volume, physical, logical, pkg}))
+            this.path.push({volume, logical, physical, pkg});
     }
 
     addRecursive({volume, physical, logical, pkg}: SearchPathAddParameters) {
@@ -237,6 +238,16 @@ class SearchPath {
     addFrom(other: SearchPath | CoqProject) {
         if (other instanceof CoqProject) other = other.searchPath;
         this.path.push(...other.path);
+    }
+
+    has({volume, physical, logical, pkg}: SearchPathAddParameters) {
+        if (logical !== undefined) logical = this.toDirPath(logical);
+        return this.path.find(pel => {
+            (volume   === undefined || pel.volume   ===   volume) &&
+            (physical === undefined || pel.physical ===   physical) &&
+            (logical  === undefined || arreq(pel.logical, logical)) &&
+            (pkg      === undefined || pel.pkg      ===   pkg)
+        })
     }
 
     toLogical(filename: string) {

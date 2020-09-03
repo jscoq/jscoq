@@ -1,6 +1,7 @@
 // Build with
 //  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
 
+import assert from 'assert';
 import Vue from 'vue/dist/vue';
 import { VueContext } from 'vue-context';
 import 'vue-context/src/sass/vue-context.scss';
@@ -20,8 +21,7 @@ class ProjectPanel {
         this.view = new (Vue.component('project-panel-default-layout'))();
         this.view.$mount();
         
-        this.view.$watch('files', v => this._update(v, this.view.status));
-        this.view.$watch('status', v => this._update(this.view.files, v), {deep: true});
+        this.view.$watch('status', v => this._update(v), {deep: true});
         this.view.$on('action', ev => this.onAction(ev));
         this.view.$on('new', () => this.clear());
         this.view.$on('build', () => this.buildAction());
@@ -44,10 +44,9 @@ class ProjectPanel {
 
     open(project) {
         this.project = project;
-        this.view.root = [];
-        this.view.files = [...project.modulesByExt('.v')]
-                          .map(mod => mod.physical);
         this.view.status = {};
+        this.view.$refs.file_list.populate(
+            [...project.modulesByExt('.v')].map(mod => mod.physical));
 
         this.report = new BuildReport(this.project);
         this.report.editor = this.editor_provider;
@@ -72,6 +71,15 @@ class ProjectPanel {
         this.open(new CoqProject(name, vol).fromDirectory('/'));
     }
 
+    /**
+     * Open a physical disk path (Node.js/Electron only).
+     * @param {string} path
+     */
+    openDirectoryPhys(path) {
+        var phys = new CoqProject('untitled', fsif_native).fromDirectory(path);
+        this.open(LogicalVolume.project(phys));
+    }
+
     async openDialog() {
         var input = $('<input>').attr('type', 'file');
         input.change(() => {
@@ -84,7 +92,8 @@ class ProjectPanel {
     async addFile(filename, content) {
         if (content instanceof Blob) content = await content.text();
         this.project.volume.writeFileSync(filename, content);
-        //this.view.files.push(filename);
+        this.project.searchPath.add(
+            {physical: "/", logical: [], pkg: this.project.name});
     }
 
     withEditor(editor_provider /* CmCoqProvider */) {
@@ -122,7 +131,7 @@ class ProjectPanel {
             this.buildTask = task;
             task.on('progress', files => this._progress(files));
             task.on('report', e => this.report.add(e));
-            await coq.when_created;
+            await coqw.when_created;
             return this.out = await task.run();
         }
         finally {
@@ -164,14 +173,7 @@ class ProjectPanel {
     }
 
     async _createBuildWorker() {
-        var coq = new CoqWorker();
-        if (this.coq) {
-            await coq.when_created;
-            for (let pkg of this.coq.packages.loaded_pkgs) {
-                await this.coq.packages.packages_by_name[pkg].archive.unpack(coq);
-            }
-        }
-        return coq;
+        return new CoqWorker();
     }
 
     async downloadCompiled() {
@@ -193,11 +195,12 @@ class ProjectPanel {
         a[0].click();
     }
 
-    _update(files, status) {
-        for (let filename of files) {
-            var e = this.view.$refs.file_list.create(filename),
+    _update(status) {
+        var flist = this.view.$refs.file_list;
+        for (let fe of flist.iter()) {
+            var filename = `/${fe.path.join('/')}`,
                 fstatus = status[filename];
-            e.tags = fstatus ? [ProjectPanel.BULLETS[fstatus]] : [];
+            fe.entry.tags = fstatus ? [ProjectPanel.BULLETS[fstatus]] : [];
         }
     }
 
@@ -211,7 +214,8 @@ class ProjectPanel {
         const volume = this.project.volume;
         CmCoqProvider.file_store = {
             async getItem(filename) { return volume.readFileSync(filename, 'utf-8'); },
-            async setItem(filename, content) { volume.writeFileSync(filename, content); }
+            async setItem(filename, content) { volume.writeFileSync(filename, content); },
+            async keys() { return []; /** @todo */ }
         };        
     }
 
@@ -241,6 +245,8 @@ class ProjectPanel {
 
         if (name == 'sample')
             panel.open(ProjectPanel.sample());
+        else
+            panel.clear();
         return panel;
     }
 
@@ -255,10 +261,12 @@ class ProjectPanel {
         vol.fs.writeFileSync('/simple/Two.v', 'From Coq Require Import List.\n\nDefinition two_of a := a + a.\n');
         vol.fs.writeFileSync('/simple/Three.v', 'From simple Require Import One Two.');
     
-        var proj = new CoqProject('sample', vol).fromDirectory('/');
-        return proj;
-    }    
+        return new CoqProject('sample', vol).fromDirectory('/');
+    }
 
+    static localDir(dir) {
+        return new CoqProject('untitled', fsif_native).fromDirectory(dir);
+    }
 }
 
 
@@ -271,7 +279,7 @@ ProjectPanel.BULLETS = {
 
 Vue.component('project-panel-default-layout', {
     data: () => ({
-        files: [], status: {}, root: [], building: false, compiled: false,
+        files: [], status: {}, building: false, compiled: false,
         stopping: false, animStatus: ''
     }),
     template: `
@@ -283,7 +291,7 @@ Vue.component('project-panel-default-layout', {
                 {{building ? 'stop' : 'build'}}</button>
             <span class="build-status">{{animStatus}}</span>
         </div>
-        <file-list ref="file_list" :files="root"
+        <file-list ref="file_list" :files="files"
                    @action="$emit('action', $event)"/>
     </div>
     `,
@@ -293,7 +301,7 @@ Vue.component('project-panel-default-layout', {
     },
     methods: {
         setStatusAnimation() {
-            const l = [0,0,1,2,3].map(i => '⋅'.repeat(i));
+            const l = [0,0,1,2,3].map(i => '∙'.repeat(i));
             var i = 2;
             this.animStatus = l[i];
             this._anim = setInterval(() => 
@@ -367,6 +375,9 @@ class LogicalVolume extends InMemoryVolume {
         return this;
     }
 
+    static project(proj) {
+        return proj.copyLogical(new LogicalVolume());
+    }
 }
 
 
@@ -393,6 +404,37 @@ class JsCoqBatchWorker extends BatchWorker {
 
     loadpathFor(pkg) {
         return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
+    }
+}
+
+
+import { fsif_native } from '../coq-jslib/build/fsif';
+
+
+class WacoqBatchWorker extends BatchWorker {
+    constructor(coqw, pkgr) {
+        super(coqw.worker);
+        this.coqw = coqw;     this.pkgr = pkgr;
+        if (this.coqw instanceof CoqSubprocessAdapter)
+            this.volume = fsif_native;
+    }
+
+    async loadPackages(pkgs) {
+        if (this.coqw instanceof CoqSubprocessAdapter) return [];
+
+        await this.coqw.when_created;
+        await this.do(
+            ['LoadPkg', this.getURIs([...pkgs])],
+            msg => msg[0] == 'LoadedPkg'
+        );
+        return [];
+    }
+
+    getURIs(pkgs) {
+        return pkgs.map(pkg => {
+            var p = this.pkgr.getPackage(pkg);  /**/ assert(p); /**/
+            return p.getDownloadURL().href;
+        });
     }
 }
 
@@ -428,7 +470,7 @@ class BuildReport {
         let [, loc, , msg] = coqexn, err = {};
         // Convert character positions to {line, ch}
         if (loc) {
-            err.loc = {filename: loc.fname[1].replace(/^\/lib/, '')};
+            err.loc = {filename: loc.fname[1].replace(/^(\/tmp)?\/lib\//, '/')};  // @@@ this is ugly
             try {
                 var fn = err.loc.filename,
                     source = this.inproj.volume.fs.readFileSync(fn, 'utf-8');
