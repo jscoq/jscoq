@@ -173,15 +173,15 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel {
   display: flex;
   flex-direction: column;
-  flex: 1000 1;
+  flex: 1000 0 20px;
+  justify-content: flex-end;
   overflow: hidden;
-  transition: flex 0.5s ease-in-out;
+  transition: flex-grow 0.5s ease-in-out;
 }
 
 .flex-panel > .caption {
-  flex-shrink: 0;
+  flex: 0 0 20px;
   font-size: 11px;
-  height: 20px;
   padding: 3px 10px 0 10px;
   position: relative;
   z-index: 3;
@@ -196,7 +196,7 @@ body.jscoq-main .CodeMirror-linenumber {
   border-top: 8px solid transparent;
   border-right: 8px solid #565656;
   border-bottom: 8px solid transparent;
-  top: 1px;
+  top: 2px;
   right: 7px;
   transform: rotate(-90deg);
   transition: transform 0.5s ease-in-out;
@@ -210,29 +210,31 @@ body.jscoq-main .CodeMirror-linenumber {
 }
 
 .flex-panel > .content {
-  flex: 1000 1;
-  padding: 2px 4px 4px 4px;
+  flex: 1 0 0;
+  padding: 0 4px;
   /*transition: opacity 0.5s ease-in-out;*/
   font-family: monospace;
   overflow: auto;
   overscroll-behavior: contain;
 }
 
+.flex-panel > .content::before,
+.flex-panel > .content::after {  /* work around vertical padding issue */
+  content: "";
+  display: block;
+  height: 2px;
+}
+
 .flex-panel.collapsed {
-  flex: 1 1000 20px;
+  flex-grow: 0;
 }
 
 .flex-panel.collapsed > .caption:after {
   transform: none;
 }
 
-#goal-panel {
-  flex: 2000 1;
-  position: relative;
-}
-
-#goal-panel.collapsed {
-  flex: 1 1000 20px;
+#goal-panel:not(.collapsed) {
+  flex-grow: 2000;
 }
 
 #goal-panel p {
