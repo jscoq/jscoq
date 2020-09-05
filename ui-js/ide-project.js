@@ -16,7 +16,6 @@ class ProjectPanel {
 
     constructor() {
         require('./components/file-list');
-        require('./components/problem-list');
 
         this.view = new (Vue.component('project-panel-default-layout'))();
         this.view.$mount();
@@ -32,10 +31,12 @@ class ProjectPanel {
         this.view.$on('menu:download-v', () => this.downloadSources());
         this.view.$on('menu:download-vo', () => this.downloadCompiled());
 
+        this.view.$on('file:create', ev => this.createFile(ev));
+
         this.editor_provider = undefined;
         this.package_index = undefined;
     }
-
+   
     get $el() { return this.view.$el; }
 
     clear() {
@@ -173,7 +174,9 @@ class ProjectPanel {
     }
 
     async _createBuildWorker() {
-        return new CoqWorker();
+        var coqw = new CoqWorker();
+        await coqw.when_created;
+        return coqw;
     }
 
     async downloadCompiled() {
@@ -233,8 +236,14 @@ class ProjectPanel {
             this.project.volume.renameSync(
                 `/${ev.from.join('/')}`, `/${target.join('/')}`);
             break;
+        case 'rename':
+            var src = [...ev.path, ev.from], target = [...ev.path, ev.to];
+            this.project.volume.renameSync(
+                `/${src.join('/')}`, `/${target.join('/')}`);
+            break;
         case 'create':
-            this.addFile(`/${ev.path.join('/')}`, ev.content);
+            if (ev.kind === 'file')
+                return this.addFile(`/${ev.path.join('/')}`, '')
             break;
         }
     }
@@ -280,21 +289,61 @@ ProjectPanel.BULLETS = {
 Vue.component('project-panel-default-layout', {
     data: () => ({
         files: [], status: {}, building: false, compiled: false,
-        stopping: false, animStatus: ''
+        stopping: false
     }),
     template: `
     <div class="project-panel vertical-pane">
         <div class="toolbar">
             <project-context-menu ref="menu"
-                @action="$emit('menu:'+$event.name, $event)"/>
+                @action="$emit('menu:'+$event.type, $event)"/>
             <button @click="$emit('build')" :disabled="stopping">
                 {{building ? 'stop' : 'build'}}</button>
-            <span class="build-status">{{animStatus}}</span>
+            <project-build-status :building="building"/>
         </div>
-        <file-list ref="file_list" :files="files"
-                   @action="$emit('action', $event)"/>
-    </div>
-    `,
+        <file-list ref="file_list" :files="files" @action="fileAction"/>
+        <project-file-context-menu ref="fileMenu"
+            @action="fileMenuAction"/>
+    </div>`,
+    methods: {
+        fileAction(action) {
+            switch (action.type) {
+            case 'menu':
+                action.$event.preventDefault();
+                this.$refs.fileMenu.open(action.$event, action);
+                break;
+            }
+            this.$emit('action', action);
+        },
+        fileMenuAction(action) {
+            const at = () => this._folderOf(action.for);
+            switch (action.type) {
+            case 'new-file':   this.create(at(), 'new-file#.v', 'file');    break;
+            case 'new-folder': this.create(at(), 'new-folder#', 'folder');  break;
+            case 'rename':     this.renameStart(action.for.path);           break;
+            }
+        },
+        create(at, name, kind) {
+            var newPath = this.$refs.file_list.freshName(at, name);
+            this.$refs.file_list.create(newPath, kind);
+            setTimeout(() => {
+                this.$refs.file_list.renameStart(newPath);
+            });
+            this.$emit('action', {type: 'create', path: newPath, kind});
+        },
+        renameStart(path) {
+            this.$refs.file_list.renameStart(path);
+        },
+        _folderOf(action) {
+            return action.kind === 'folder' ? 
+                       action.path : action.path.slice(0, -1);
+        }
+    }
+});
+
+Vue.component('project-build-status', {
+    props: ['building'],
+    data: () => ({anim: ''}),
+    template: `<span class="build-status">{{anim}}</span>`,
     mounted() {
         this.$watch('building', flag => 
             flag ? this.setStatusAnimation() : this.clearStatusAnimation());
@@ -303,14 +352,14 @@ Vue.component('project-panel-default-layout', {
         setStatusAnimation() {
             const l = [0,0,1,2,3].map(i => '∙'.repeat(i));
             var i = 2;
-            this.animStatus = l[i];
-            this._anim = setInterval(() => 
-                this.animStatus = l[++i % l.length], 250);
+            this.anim = l[i];
+            this._animInterval = setInterval(() => 
+                this.anim = l[++i % l.length], 250);
         },
         clearStatusAnimation() {
-            if (this._anim) clearInterval(this._anim);
-            delete this._anim;
-            this.animStatus = '';
+            if (this._animInterval) clearInterval(this._animInterval);
+            delete this._animInterval;
+            this.anim = '';
         }
     }
 });
@@ -326,18 +375,19 @@ Vue.component('project-context-menu', {
             <li><a name="download-v" @click="action">Download sources</a></li>
             <li><a name="download-vo" @click="action" :disabled="$root.building || !$root.compiled">Download compiled</a></li>
         </vue-context>
-    </span>
-    `,
+    </span>`,
     components: {VueContext},
     methods: {
         open() {
             if (this.$refs.m.show) this.$refs.m.close();
-            else
-            this.$refs.m.open({clientX: this.$parent.$el.clientWidth, clientY: 0}); 
+            else {
+                vueContextCleanup();
+                this.$refs.m.open({clientX: this.$parent.$el.clientWidth, clientY: 0}); 
+            }
         },
         action(ev) {
             if (!$(ev.currentTarget).is('[disabled]'))
-                this.$emit('action', {name: ev.currentTarget.name});
+                this.$emit('action', {type: ev.currentTarget.name});
         }
     }
 });
@@ -348,9 +398,33 @@ Vue.component('hamburger-svg', {
         <rect y="5" width="80" height="12"></rect>
         <rect y="34" width="80" height="12"></rect>
         <rect y="63" width="80" height="12"></rect>
-    </svg>
-    `
-})
+    </svg>`
+});
+
+Vue.component('project-file-context-menu', {
+    template: `
+    <vue-context ref="m">
+        <li><a name="new-file" @click="action">New file</a></li>
+        <li><a name="new-folder" @click="action">New foler</a></li>
+        <li><a name="rename" @click="action">Rename</a></li>
+    </vue-context>`,
+    components: {VueContext},
+    methods: {
+        open(ev, action) {
+            vueContextCleanup();
+            this._for = action;
+            this.$refs.m.open(ev); 
+        },
+        action(ev) {
+            if (!$(ev.currentTarget).is('[disabled]'))
+                this.$emit('action', {type: ev.currentTarget.name, for: this._for});
+        }
+    }
+});
+
+function vueContextCleanup() {
+    if ($('.v-context').is(':visible')) $(document.body).click();
+}
 
 
 class LogicalVolume extends InMemoryVolume {
