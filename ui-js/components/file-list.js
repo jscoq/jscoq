@@ -24,15 +24,17 @@ Vue.component('file-list', {
     }; },
     template: `
     <ul :class="['file-list', 'level-'+$data._level]" @drop="drop"
-            @dragover="dragover" @dragenter="dragover" @dragleave="dragout">
+            @dragover="dragover" @dragenter="dragover" @dragleave="dragout"
+            @contextmenu.stop="menu">
         <li v-for="f in files" :data-name="f.name" 
                 :class="{folder: f.files, file: !f.files, selected: isSelected([f.name])}"
-                @click="onclick" @mouseup="onrightclick"
+                @click.stop="onclick" @mouseup.stop="onrightclick"
                 draggable="true" @dragstart="drag" @dragend="undrag" @drop="drop" 
-                @dragover="dragover" @dragenter="dragover" @dragleave="dragout">
+                @dragover="dragover" @dragenter="dragover" @dragleave="dragout"
+                @contextmenu.stop="menu">
             <file-list.folder v-if="f.files" ref="entries" :entry="f" :path="_path" :level="$data._level + 1"
                     :selection="$data._selection" @action="action"/>
-            <file-list.file v-else ref="entries" :entry="f"/>
+            <file-list.file v-else ref="entries" :entry="f" @action="action"/>
         </li>
     </ul>
     `,
@@ -48,7 +50,8 @@ Vue.component('file-list', {
                 path = [...this._path, item_name],
                 kind = target.hasClass('folder') ? 'folder' : 'file';
             this.action({type: 'select', path, kind});
-            ev.stopPropagation();            
+            if ($('.v-context').is(':visible'))
+                $(document.body).click();
         },
         onrightclick(ev) {
             if (ev.which === 3 || ev.button === 2)   /* Right click... :\ */
@@ -109,13 +112,27 @@ Vue.component('file-list', {
             $(ev.currentTarget).removeClass('draghov');
         },
 
+        menu(ev) {
+            var target = $(ev.currentTarget),
+                item_name = target.attr('data-name'), path, kind;
+            if (item_name) {
+                path = [...this._path, item_name],
+                kind = target.hasClass('folder') ? 'folder' : 'file';
+            }
+            else {
+                path = this._path; kind = 'folder';
+            }
+            this.action({type: 'menu', path, kind, $event: ev});
+        },
+
         action(ev) {
+            if (!ev.path) ev.path = this._path;
             if (this.$data._level === 0) {
                 switch (ev.type) {
                     case 'select': 
                         if (ev.kind === 'file') this.select(ev.path); break;
                     case 'move': this.move(ev.from, ev.to, ev.after); break;
-                    case 'create': this.create(ev.path, ev.type); break;
+                    case 'rename': this.rename(ev.path, ev.from, ev.to); break;
                 }
             }
             this.$emit('action', ev);
@@ -145,7 +162,7 @@ Vue.component('file-list', {
         },
 
         lookup(rel_path) {
-            if (typeof rel_path === 'string') rel_path = rel_path.split('/');
+            if (typeof rel_path === 'string') rel_path = rel_path.split('/').filter(x => x);
 
             var cwd = {name: '/', files: this.files};
             for (let pel of rel_path) {
@@ -153,6 +170,17 @@ Vue.component('file-list', {
                 cwd = cwd.files.find(e => e.name === pel);
             }
             return cwd;
+        },
+        lookupComponent(rel_path) {
+            if (typeof rel_path === 'string') rel_path = rel_path.split('/').filter(x => x);
+
+            var cur = this;
+            for (let pel of rel_path) {
+                if (cur.$refs.l) cur = cur.$refs.l;
+                cur = (cur.$refs.entries || []).find(e => e.entry.name === pel);
+                if (!cur) return;
+            }
+            return cur;
         },
 
         create(rel_path, kind='file') {
@@ -174,10 +202,25 @@ Vue.component('file-list', {
             return cwd;
         },
 
+        freshName(rel_path, template='u#') { 
+            var e = this.lookup(rel_path), name = template.replace('#', '');
+            if (e) {
+                var i = 0;
+                for (;;) {
+                    if (!e.files.find(f => f.name === name)) break;
+                    name = template.replace('#', `-${++i}`);
+                }
+            }
+            return [...rel_path, name];
+        },
+
         renameStart(rel_path) {
-            var subentry = this.$refs.entries.find(e => e.entry.name === rel_path[0]);
-            if (subentry)
-                subentry.renameStart(rel_path);
+            var c = this.lookupComponent(rel_path);
+            if (c && c !== this) c.renameStart();
+        },
+        rename(rel_path, from, to) {
+            var e = this.lookup([...rel_path, from]);
+            e.name = to;
         },
 
         collapseAll() {
@@ -216,12 +259,16 @@ Vue.component('file-list.file', {
     props: ['entry'],
     template: `
     <div class="entry">
-        <span-editable ref="name" class="name">{{entry.name}}</span-editable>
+        <span-editable ref="name" class="name" @input="rename">{{entry.name}}</span-editable>
         <file-list.tags :tags="entry.tags"/>
     </div>
     `,
     methods: {
-        renameStart() { this.$refs.name.edit(); }
+        renameStart() { this.$refs.name.edit(); },
+        rename(v) {
+            if (v != this.entry.name)
+                this.$emit('action', {type: 'rename', from: this.entry.name, to: v});
+        }
     }
 });
 
@@ -239,9 +286,9 @@ Vue.component('file-list.folder', {
     <div :class="['level-'+level]">
         <div class="entry">
             <file-list.folder-knob v-model="$data._collapsed"/>
-            <span class="name">{{entry.name}}</span>
+            <span-editable ref="name" class="name">{{entry.name}}</span-editable>
         </div>
-        <file-list :files="entry.files" :path="_path" :level="level"
+        <file-list ref="l" :files="entry.files" :path="_path" :level="level"
                    :selection_="subselection(selection, entry.name)"
                    v-show="!$data._collapsed"
                    @action="$emit('action', $event)">
@@ -257,6 +304,11 @@ Vue.component('file-list.folder', {
                 return selection.filter(x => x[0] === folder_name)
                                 .map(x => x.slice(1));
             }
+        },
+        renameStart() { this.$refs.name.edit(); },
+        rename(v) {
+            if (v != this.entry.name)
+                this.$emit('action', {type: 'rename', from: this.entry.name, to: v});
         }
     }
 })
@@ -308,7 +360,7 @@ Vue.component('span-editable', {
             var text = $(this.$el).text();
             if (text == '') this.abort();
             else {
-                this.$emit('change', text);
+                this.$emit('input', text);
                 this.editing = false;
                 this._content = null;
             }
