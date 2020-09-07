@@ -12,9 +12,10 @@ build:
 	docker build . --target opam         $(ARGS)  -t jscoq:opam
 	docker build . --target jscoq-prereq $(ARGS)  -t jscoq:prereq
 	docker build . --target jscoq        $(ARGS)  -t jscoq
+	docker build . --target jscoq-addons $(ARGS)  -t jscoq:addons
 
 dist:
-	docker run --name jscoq-get-dist jscoq \
+	docker run --name jscoq-get-dist jscoq:addons \
 		sh -c 'mkdir -p dist && cp _build/jscoq+64bit/*.tgz dist'
 	docker cp jscoq-get-dist:/root/jscoq/dist .
 	docker cp jscoq-get-dist:/root/jscoq-addons/dist .

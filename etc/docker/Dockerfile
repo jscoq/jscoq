@@ -57,6 +57,7 @@ RUN eval $(opam env) && make dist-tarball && make dist-npm \
         && mkdir dist && mv _build/dist/*.tar.gz dist
 
 # Addon packages
+FROM jscoq as jscoq-addons
 
 # - install to OPAM for use by package builds
 RUN eval $(opam env) && make install &&   \
