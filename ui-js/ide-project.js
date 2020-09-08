@@ -124,15 +124,14 @@ class ProjectPanel {
             if (this.package_index || this.coq)
                 this.project.searchPath.packageIndex = this.package_index || this.coq.packages.index;
 
-            coqw = coqw || await this._createBuildWorker();
-            coqw.options.warn = false;
+            coqw = coqw || this._createBuildWorker();
+            await coqw.when_created;
 
             var task = new CompileTask(new JsCoqBatchWorker(coqw, pkgr),
                                        this.project);
             this.buildTask = task;
             task.on('progress', files => this._progress(files));
             task.on('report', e => this.report.add(e));
-            await coqw.when_created;
             return this.out = await task.run();
         }
         finally {
@@ -147,7 +146,7 @@ class ProjectPanel {
         if (this.out && this.coq) {
             for (let vo of this.out.modulesByExt('.vo')) {
                 console.log(`> ${vo.physical}`);
-                this.coq.coq.put(vo.physical, vo.volume.readFileSync(vo.physical));
+                this.coq.coq.put(vo.physical, vo.volume.fs.readFileSync(vo.physical));
             }
         }
     }
@@ -173,9 +172,9 @@ class ProjectPanel {
             this.out.searchPath.path.map(pel => [pel.logical, ['/lib']]) : [];
     }
 
-    async _createBuildWorker() {
+    _createBuildWorker() {
         var coqw = new CoqWorker();
-        await coqw.when_created;
+        coqw.options.warn = false;
         return coqw;
     }
 
@@ -267,7 +266,7 @@ class ProjectPanel {
         var vol = new LogicalVolume();
         vol.fs.writeFileSync('/simple/_CoqProject', '-R . simple\n\nOne.v Two.v Three.v\n');
         vol.fs.writeFileSync('/simple/One.v', 'Check 1.\nFrom simple Require Import Two.');
-        vol.fs.writeFileSync('/simple/Two.v', 'From Coq Require Import List.\n\nDefinition two_of a := a + a.\n');
+        vol.fs.writeFileSync('/simple/Two.v', 'From Coq Require Import List.\n\nDefinition two_of π := π + π.\n');
         vol.fs.writeFileSync('/simple/Three.v', 'From simple Require Import One Two.');
     
         return new CoqProject('sample', vol).fromDirectory('/');
@@ -494,7 +493,8 @@ class WacoqBatchWorker extends BatchWorker {
     }
 
     async loadPackages(pkgs) {
-        if (this.coqw instanceof CoqSubprocessAdapter) return [];
+        if (this.coqw instanceof CoqSubprocessAdapter)
+            return [this.coqw.worker.packages.dir];
 
         await this.coqw.when_created;
         await this.do(
@@ -547,7 +547,7 @@ class BuildReport {
             err.loc = {filename: loc.fname[1].replace(/^(\/tmp)?\/lib\//, '/')};  // @@@ this is ugly
             try {
                 var fn = err.loc.filename,
-                    source = this.inproj.volume.fs.readFileSync(fn, 'utf-8');
+                    source = this.inproj.volume.fs.readFileSync(fn);
                 err.loc.start = BuildReport.posToLineCh(source, loc.bp);
                 err.loc.end =   BuildReport.posToLineCh(source, loc.ep);
             }
@@ -562,21 +562,25 @@ class BuildReport {
 
     /**
      * Translates a character index to a {line, ch} location indicator.
-     * @param {string} source_text document being referenced
+     * @param {Uint8Array} source_bytes document being referenced
      * @param {integer} pos character offset from beginning of string 
      *   (zero-based)
      * @return {object} a {line, ch} object with (zero-based) line and 
      *   character location
      */
-    static posToLineCh(source_text, pos) {
-        var offset = 0, line = 0, ch = pos;
+    static posToLineCh(source_bytes, pos) {
+        var offset = 0, line = 0, ch = pos, EOL = "\n".charCodeAt(0);
         do {
-            var eol = source_text.indexOf('\n', offset);
+            var eol = source_bytes.indexOf(EOL, offset);
             if (eol === -1 || eol >= pos) break;
             line++; 
             ch -= (eol - offset + 1);
             offset = eol + 1;
         } while (true);
+
+        // Convert to character offset in UTF-8 string
+        ch = new TextDecoder().decode(source_bytes.slice(offset, offset + ch))
+             .length;
 
         return {line, ch};
     }
