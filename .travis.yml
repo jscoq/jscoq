@@ -58,7 +58,6 @@ install:
 - opam switch
 - opam list
 - opam config var root
-- git submodule update --remote
 
 script:
 - echo 'Using Node.js:' && node --version
