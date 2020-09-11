@@ -7,11 +7,14 @@ type FSInterface = {
 }
 
 
-const fsif_native = {
-    fs: (0||require)('fs'),
-    path: (0||require)('path')
+const fsif_native: FSInterface = {
+    fs: tryRequireFs(),
+    path: require('path')
 }
 
+function tryRequireFs() { 
+    try { return require('fs'); } catch (e) { return {}; } 
+}
 
 
 export { FSInterface, fsif_native }
