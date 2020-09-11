@@ -1,3 +1,4 @@
+import path from 'path';
 import { EventEmitter } from 'events';
 import { FSInterface } from './fsif';
 import { SearchPathElement, CoqProject, InMemoryVolume, JsCoqCompat } from './project';
@@ -67,7 +68,7 @@ class BatchWorker extends Batch {
 }
 
 
-class CompileTask extends EventEmitter{
+class CompileTask extends EventEmitter {
 
     batch: Batch
     inproj: CoqProject
@@ -109,28 +110,20 @@ class CompileTask extends EventEmitter{
 
     async compile(mod: SearchPathElement, opts=this.opts) {
         var {volume, logical, physical} = mod,
-            infn = `/lib/${logical.join('/')}.v`, outfn = `${infn}o`;
+            root = opts.buildDir || '/lib',
+            infn = `${path.join(root, ...logical)}.v`, outfn = `${infn}o`;
         this.infiles.push(mod);
 
         this.emit('progress', [{filename: physical, status: 'compiling'}]);
 
         try {
             let [, [, outfn_, vo]] = await this.batch.do(
-                ['Init', {top_name: logical.join('.')} /*, PRELUDE, this.loadpath*/],
-                ['Put', infn, volume.fs.readFileSync(physical)],
-                ['Load', infn],            msg => msg[0] == 'Loaded',
+                ['Init',    ...this._initArgs(mod)],
+                ['Put',     infn, volume.fs.readFileSync(physical)],
+                ['Load',    infn],         msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 
-            if (!this.batch.volume) {
-                if (!vo) {  /* wacoq worker does not return file content */
-                    [[, , vo]] = await this.batch.do(
-                        ['Get', outfn_],   msg => msg[0] == 'Got');
-                }
-                this.volume.fs.writeFileSync(outfn, vo);
-            }
-
-            if (this.loadpath)            /* for subsequent compilations */
-                this.loadpath.push([logical.slice(0, -1), ["/lib"]]);
+            await this._install(mod, root, outfn, outfn_, vo);
 
             this.outfiles.push({volume: this.volume, 
                                 logical, physical: outfn});
@@ -146,11 +139,35 @@ class CompileTask extends EventEmitter{
 
     stop() { this._stop = true; }
 
+    _initArgs(mod: SearchPathElement) {
+        return [{top_name: mod.logical.join('.'), load_path: this.loadpath}
+                /*, PRELUDE, this.loadpath*/];
+    }
+
+    async _install(mod: SearchPathElement, root: string, outfn: string, compiledfn: string, content?: Uint8Array) {
+        if (!this.batch.volume) {
+            if (!content) {  /* wacoq worker does not return file content */
+                [[, , content]] = await this.batch.do(
+                    ['Get', compiledfn],   msg => msg[0] == 'Got');
+            }
+            this.volume.fs.writeFileSync(outfn, content);
+        }
+
+        if (this.loadpath &&            /* for subsequent compilations */
+                Array.isArray(this.loadpath[0]))
+            this.loadpath.push([mod.logical.slice(0, -1), [root]]);
+    }
+
     output(name?: string) {
         this.outproj = new CoqProject(name || this.inproj.name || 'out',
                                       this.volume);
-        for (let mod of this.outfiles) mod.pkg = this.outproj.name;
-        this.outproj.searchPath.addRecursive({physical: '/lib', logical: []});
+        for (let mod of this.outfiles) {
+            mod.pkg = this.outproj.name;
+            this.outproj.searchPath.add({
+                physical: path.dirname(mod.physical), 
+                logical: mod.logical.slice(0, -1)
+            });
+        }
         this.outproj.setModules(this._files());
         return this.outproj;
     }
@@ -168,6 +185,7 @@ class CompileTask extends EventEmitter{
 }
 
 type CompileTaskOptions = {
+    buildDir?: string
     continue?: boolean
     jscoq?: boolean
 };
