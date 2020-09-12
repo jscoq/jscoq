@@ -9,7 +9,7 @@
       /* Allow some extra scroll space at the bottom & to the right */
       .CodeMirror-lines {
         padding-bottom: 75% !important;
-        padding-right: 40px;
+        padding-right: 40px !important;
       }
     </style>
   </head>
@@ -26,7 +26,8 @@
         prelude:   true,
         subproc:   location.search == '?app',
         all_pkgs:  ['coq', 'mathcomp', /*'extlib', 'simpleio', 'equations', 
-                    'elpi', 'quickchick',*/ 'software-foundations'],
+                    'elpi', 'quickchick',*/ 'software-foundations',
+                    'hahn', 'paco', 'snu-sflib', 'promising'],
         file_dialog: true,
         implicit_libs: true,
         editor: { mode: { 'company-coq': true }, keyMap: 'default' }
