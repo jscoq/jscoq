@@ -71,10 +71,7 @@ let core_inited = ref false
 (**************************************************************************)
 let coq_init opts =
 
-  if opts.debug then begin
-    Printexc.record_backtrace true;
-    Flags.debug := true;
-  end;
+  if opts.debug then Coqinit.set_debug ();
 
   coq_vm_trap ();
 
@@ -90,16 +87,15 @@ let coq_init opts =
   Mltop.set_top ser_mltop;
 
   (* Core Coq initialization *)
-  if (not !core_inited) then begin  (* this part must be done only once *)
-    Global.set_engagement Declarations.PredicativeSet;
-    Global.set_VM false;
-    Global.set_native_compiler false;
-    Flags.set_native_compiler false;
-    CWarnings.set_flags default_warning_flags;
+  Lib.init();
+  Global.set_engagement Declarations.PredicativeSet;
+  Global.set_VM false;
+  Global.set_native_compiler false;
+  if not !core_inited then begin
+    Flags.set_native_compiler false;  (* must be called only once *)
     core_inited := true
   end;
-
-  Lib.init();
+  CWarnings.set_flags default_warning_flags;
   set_options opts.opt_values;
 
   (**************************************************************************)
