@@ -515,7 +515,7 @@ class CoqManager {
 
     feedFileDependency(sid, file, mod) {
         let msg = `${mod} loading....`,
-            item = this.layout.log(msg, 'Info');
+            item = this.layout.log(msg, 'Info', {fast: true});
         item.addClass('loading').data('mod', mod);
     }
 

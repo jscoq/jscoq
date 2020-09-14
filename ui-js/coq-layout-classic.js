@@ -240,7 +240,7 @@ class CoqLayoutClassic {
             if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
 
             if (attrs.fast)
-                this.query.strollTo({top: this.query.scrollHeight});
+                this.query.scrollTo({top: this.query.scrollHeight});
             else
                 this.scrollTimeout = setTimeout( () => {
                     this.query.scrollTo({top: this.query.scrollHeight,
