@@ -238,10 +238,13 @@ class CoqLayoutClassic {
         if (this.isLogVisible(level)) {
             if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
 
-            this.scrollTimeout = setTimeout( () => {
-                this.query.scrollTo({top: this.query.scrollHeight, 
-                                     behavior: 'smooth'});
-            }, 1 );
+            if (attrs.fast)
+                this.query.scrollTo({top: this.query.scrollHeight});
+            else
+                this.scrollTimeout = setTimeout( () => {
+                    this.query.scrollTo({top: this.query.scrollHeight,
+                                         behavior: 'smooth'});
+                }, 1 );
         }
 
         return item;
