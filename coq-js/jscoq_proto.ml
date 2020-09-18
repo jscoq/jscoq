@@ -68,6 +68,8 @@ type jscoq_cmd =
 
   (*           opts            initial_imports      load paths                      *)
   | Init    of jscoq_options * string list list   * (string list * string list) list
+  (*           top_name *)
+  | Start   of string        * string list list   * (string list * string list) list
 
   (*           ontop       new         sentence                *)
   | Add     of Stateid.t * Stateid.t * string * bool

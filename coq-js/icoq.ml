@@ -20,6 +20,8 @@ type async_flags = {
   deep_edits   : bool;
 }
 
+type require_lib = (string * string option * bool option)
+
 type coq_opts = {
 
   (* callback to handle async feedback *)
@@ -30,7 +32,7 @@ type coq_opts = {
   vo_path   : Loadpath.vo_path list;
 
   (* Libs to require prior to STM init *)
-  require_libs : (string * string option * bool option) list;
+  require_libs : require_lib list;
 
   (* Async flags *)
   aopts        : async_flags;
@@ -48,6 +50,11 @@ type coq_opts = {
   debug    : bool;
 }
 
+type start_opts = {
+  require_libs : require_lib list;
+  vo_path      : Loadpath.vo_path list;
+  top_name     : string;
+}
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
@@ -64,12 +71,14 @@ let set_options opt_values =
 
 let default_warning_flags = "-notation-overridden"
 
-let core_inited = ref false
+let opts: coq_opts option ref = ref None
 
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
-let coq_init opts =
+let rec coq_init set_opts =
+
+  let opts = (opts := Some set_opts; set_opts) in
 
   if opts.debug then Coqinit.set_debug ();
 
@@ -91,10 +100,7 @@ let coq_init opts =
   Global.set_engagement Declarations.PredicativeSet;
   Global.set_VM false;
   Global.set_native_compiler false;
-  if not !core_inited then begin
-    Flags.set_native_compiler false;  (* must be called only once *)
-    core_inited := true
-  end;
+  Flags.set_native_compiler false;
   CWarnings.set_flags default_warning_flags;
   set_options opts.opt_values;
 
@@ -112,11 +118,16 @@ let coq_init opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  let sertop_dp = Stm.TopLogical (Libnames.dirpath_of_string opts.top_name) in
+  start { top_name = opts.top_name
+        ; require_libs = opts.require_libs; vo_path = opts.vo_path }
+
+and start sopts =
+  let opts = match !opts with Some o -> o | _ -> failwith "not initialized" in
+  let sertop_dp = Stm.TopLogical (Libnames.dirpath_of_string sopts.top_name) in
   let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp
-             ; injections = List.map (fun x -> Stm.RequireInjection x) opts.require_libs
+             ; injections = List.map (fun x -> Stm.RequireInjection x) sopts.require_libs
              ; ml_load_path = opts.ml_path
-             ; vo_load_path = opts.vo_path
+             ; vo_load_path = sopts.vo_path
              ; stm_options = Stm.AsyncOpts.default_opts
              } in
   let ndoc, nsid = Stm.new_doc ndoc in

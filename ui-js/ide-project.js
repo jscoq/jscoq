@@ -472,11 +472,19 @@ class JsCoqBatchWorker extends BatchWorker {
                 // Loading of non-archive pkgs currently not implemented
             }
         }
-        return loadpath;
+        this.loadpath = loadpath;
     }
 
     loadpathFor(pkg) {
         return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
+    }
+
+    async install(mod, volume, root, outfn, compiledfn, content) {
+        console.log('install', mod);
+        if (volume !== this.volume)
+            volume.fs.writeFileSync(outfn, content);
+
+        this.loadpath.push([mod.logical.slice(0, -1), [root]]);    
     }
 }
 
@@ -509,6 +517,15 @@ class WacoqBatchWorker extends BatchWorker {
             var p = this.pkgr.getPackage(pkg);  /**/ assert(p); /**/
             return p.getDownloadURL().href;
         });
+    }
+
+    async install(mod, volume, root, outfn, compiledfn, content) {
+        if (volume !== this.volume) {
+            /* wacoq worker does not return file content */
+            [[, , content]] = await this.do(
+                ['Get', compiledfn],   msg => msg[0] == 'Got');
+            volume.fs.writeFileSync(outfn, content);
+        }
     }
 }
 

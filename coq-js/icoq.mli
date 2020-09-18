@@ -19,6 +19,8 @@ type async_flags = {
   deep_edits   : bool;
 }
 
+type require_lib = (string * string option * bool option)
+
 type coq_opts = {
 
   (* callback to handle async feedback *)
@@ -29,7 +31,7 @@ type coq_opts = {
   vo_path   : Loadpath.vo_path list;
 
   (* Libs to require prior to STM init *)
-  require_libs : (string * string option * bool option) list;
+  require_libs : require_lib list;
 
   (* Async flags *)
   aopts        : async_flags;
@@ -47,10 +49,17 @@ type coq_opts = {
   debug    : bool;
 }
 
+type start_opts = {
+  require_libs : require_lib list;
+  vo_path      : Loadpath.vo_path list;
+  top_name     : string;
+}
+
 type 'a seq = 'a Seq.t
 
 (** [init opts] Initialize the Coq engine *)
 val coq_init : coq_opts -> Stm.doc * Stateid.t
+val start : start_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)
 val version : string * string * string * string * int32
