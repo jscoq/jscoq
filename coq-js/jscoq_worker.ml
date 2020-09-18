@@ -293,7 +293,7 @@ let jscoq_execute =
     out_fn @@ Ready iid
 
   | Start(top_name, lib_init, lib_path) ->
-    let ndoc, iid = Icoq.start ({top_name; 
+    let ndoc, iid = Icoq.start ({top_name; mode = Vo;
       require_libs = Jslibmng.require_libs lib_init; 
       vo_path = Jslibmng.paths_to_coqpath lib_path}) in
     doc := Jscoq_doc.create ndoc;

@@ -42,8 +42,8 @@ abstract class Batch {
         await this.do(['Init', {}, [], this.loadpath]);
     }
 
-    startArgs(mod: SearchPathElement) {
-        return [mod.logical.join('.'), PRELUDE, this.loadpath];
+    startArgs(mod: SearchPathElement, outfn: string) {
+        return [outfn, PRELUDE, this.loadpath];
     }
 
     async install(mod: SearchPathElement, volume: FSInterface, root: string, outfn: string, compiledfn: string, content?: Uint8Array) {
@@ -62,6 +62,7 @@ class BatchWorker extends Batch {
     }
 
     command(cmd: any[]) {
+        console.log('batch', cmd);
         this.worker.postMessage(cmd);
     }
 
@@ -131,8 +132,8 @@ class CompileTask extends EventEmitter {
 
         try {
             let [, [, outfn_, vo]] = await this.batch.do(
-                ['Start',   ...this.batch.startArgs(mod)],
                 ['Put',     infn, volume.fs.readFileSync(physical)],
+                ['Start',   ...this.batch.startArgs(mod, outfn)],
                 ['Load',    infn],         msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 

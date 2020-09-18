@@ -205,6 +205,10 @@ class CoqWorker {
         this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
     }
 
+    end() {
+        this.worker.terminate();
+    }
+
     // Promise-based APIs
 
     execPromise(sid) {

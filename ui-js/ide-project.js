@@ -139,6 +139,7 @@ class ProjectPanel {
             this.view.building = false;
             this.view.stopping = false;
             this.view.compiled = !!this.out;
+            coqw.terminate();
         }
     }
 
@@ -175,7 +176,13 @@ class ProjectPanel {
     _createBuildWorker() {
         var coqw = new CoqWorker();
         coqw.options.warn = false;
+        coqw.observers.push(this);
         return coqw;
+    }
+
+    feedMessage(sid, lvl, loc, msg) {
+        /** @todo */
+        console.log('feedback', sid, lvl, loc, msg);
     }
 
     async downloadCompiled() {
@@ -479,12 +486,14 @@ class JsCoqBatchWorker extends BatchWorker {
         return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
     }
 
+    startArgs(mod, outfn) {
+        this.loadpath.push([mod.logical.slice(0, -1), ['/lib']]);    
+        return super.startArgs(mod, outfn);
+    }
+
     async install(mod, volume, root, outfn, compiledfn, content) {
-        console.log('install', mod);
         if (volume !== this.volume)
             volume.fs.writeFileSync(outfn, content);
-
-        this.loadpath.push([mod.logical.slice(0, -1), [root]]);    
     }
 }
 

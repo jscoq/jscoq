@@ -20,6 +20,7 @@ type async_flags = {
 }
 
 type require_lib = (string * string option * bool option)
+type top_mode = Interactive | Vo
 
 type coq_opts = {
 
@@ -53,6 +54,7 @@ type start_opts = {
   require_libs : require_lib list;
   vo_path      : Loadpath.vo_path list;
   top_name     : string;
+  mode         : top_mode;
 }
 
 type 'a seq = 'a Seq.t

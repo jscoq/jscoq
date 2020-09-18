@@ -21,6 +21,7 @@ type async_flags = {
 }
 
 type require_lib = (string * string option * bool option)
+type top_mode = Interactive | Vo
 
 type coq_opts = {
 
@@ -54,6 +55,7 @@ type start_opts = {
   require_libs : require_lib list;
   vo_path      : Loadpath.vo_path list;
   top_name     : string;
+  mode         : top_mode;
 }
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
@@ -118,13 +120,17 @@ let rec coq_init set_opts =
   Stm.init_core ();
 
   (* Return the initial state of the STM *)
-  start { top_name = opts.top_name
+  start { top_name = opts.top_name; mode = Interactive
         ; require_libs = opts.require_libs; vo_path = opts.vo_path }
 
 and start sopts =
   let opts = match !opts with Some o -> o | _ -> failwith "not initialized" in
-  let sertop_dp = Stm.TopLogical (Libnames.dirpath_of_string sopts.top_name) in
-  let ndoc = { Stm.doc_type = Stm.Interactive sertop_dp
+  let doc_type = match sopts.mode with
+    | Interactive -> let dp = Libnames.dirpath_of_string sopts.top_name in 
+                     Stm.Interactive (Stm.TopLogical dp) 
+    | Vo ->          Stm.VoDoc sopts.top_name
+  in
+  let ndoc = { Stm.doc_type
              ; injections = List.map (fun x -> Stm.RequireInjection x) sopts.require_libs
              ; ml_load_path = opts.ml_path
              ; vo_load_path = sopts.vo_path
