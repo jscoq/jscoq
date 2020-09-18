@@ -27,40 +27,34 @@ type coq_opts = {
   (* callback to handle async feedback *)
   fb_handler : Feedback.feedback -> unit;
 
-  (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  ml_path   : string list;
-  vo_path   : Loadpath.vo_path list;
-
-  (* Libs to require prior to STM init *)
-  require_libs : require_lib list;
-
   (* Async flags *)
   aopts        : async_flags;
-
-  (* name of the top-level module *)
-  top_name     : string;
 
   (* Initial values for Coq options *)
   opt_values   : (string list * Goptions.option_value) list;
 
   (* callback to load cma/cmo files *)
-  ml_load    : string -> unit;
+  ml_load      : string -> unit;
 
   (* Enable debug mode *)
-  debug    : bool;
+  debug        : bool;
 }
 
 type start_opts = {
+  (* Libs to require on startup *)
   require_libs : require_lib list;
+  (* Initial LoadPath *)
   vo_path      : Loadpath.vo_path list;
+  (* name of the top-level module *)
   top_name     : string;
+  (* document mode: interactive or batch *)
   mode         : top_mode;
 }
 
 type 'a seq = 'a Seq.t
 
 (** [init opts] Initialize the Coq engine *)
-val coq_init : coq_opts -> Stm.doc * Stateid.t
+val coq_init : coq_opts -> unit
 val start : start_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)

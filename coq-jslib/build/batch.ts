@@ -39,11 +39,12 @@ abstract class Batch {
     }
 
     async init() {
-        await this.do(['Init', {}, [], this.loadpath]);
+        await this.do(['Init', {}]);
     }
 
-    startArgs(mod: SearchPathElement, outfn: string) {
-        return [outfn, PRELUDE, this.loadpath];
+    docOpts(mod: SearchPathElement, outfn: string) {
+        return { top_name: outfn, mode: ['Vo'], 
+                 lib_init: PRELUDE, lib_path: this.loadpath };
     }
 
     async install(mod: SearchPathElement, volume: FSInterface, root: string, outfn: string, compiledfn: string, content?: Uint8Array) {
@@ -133,7 +134,7 @@ class CompileTask extends EventEmitter {
         try {
             let [, [, outfn_, vo]] = await this.batch.do(
                 ['Put',     infn, volume.fs.readFileSync(physical)],
-                ['Start',   ...this.batch.startArgs(mod, outfn)],
+                ['NewDoc',  this.batch.docOpts(mod, outfn)],
                 ['Load',    infn],         msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 

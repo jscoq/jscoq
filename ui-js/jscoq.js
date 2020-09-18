@@ -79,8 +79,10 @@ class CoqWorker {
         this.worker.postMessage(msg);
     }
 
-    init(opts, lib_init, lib_path) {
-        this.sendCommand(["Init", opts, lib_init, lib_path]);
+    init(coq_opts, doc_opts) {
+        this.sendCommand(["Init", coq_opts]);
+        if (doc_opts)
+            this.sendCommand(["NewDoc", doc_opts]);
     }
 
     getInfo() {

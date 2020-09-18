@@ -13,7 +13,7 @@ open Js_of_ocaml
 open Jscoqlib
 open Jscoq_proto.Proto
 
-let opts = ref { top_name = "JsCoq"; implicit_libs = true; stm_debug = false; coq_options = [] }
+let opts = ref { implicit_libs = true; stm_debug = false; coq_options = [] }
 
 let jsCoq = Js.Unsafe.obj [||]
 
@@ -133,28 +133,31 @@ let update_loadpath (msg : lib_event) : unit =
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg ; post_lib_event msg
 
-(* set_opts  : general options *)
-(* lib_init  : list of modules to load *)
-(* lib_path  : list of load paths *)
-let exec_init (set_opts : jscoq_options) (lib_init : string list list) (lib_path : (string list * string list) list) =
+let mk_vo_path l = Jslibmng.paths_to_coqpath ~implicit:!opts.implicit_libs l
+
+(* set_opts  : general Coq initialization options *)
+let exec_init (set_opts : jscoq_options) =
 
   let opts = (opts := set_opts; set_opts) in
 
-  Icoq.(coq_init {
+  Icoq.coq_init ({
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = (fun fb -> post_answer (Feedback (Jscoq_util.fb_opt fb)));
-      require_libs = Jslibmng.require_libs lib_init;
-      ml_path      = [];
-      vo_path      = List.map (fun (path_el, phys) ->
-                         Jslibmng.path_to_coqpath ~implicit:opts.implicit_libs ~unix_prefix:phys path_el
-                     ) lib_path;
-      top_name     = opts.top_name;
       opt_values   = opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
                      };
       debug        = opts.stm_debug;
+    })
+
+(* opts  : document initialization options *)
+let create_doc (opts : doc_options) =
+  Icoq.start ({
+      top_name      = opts.top_name; 
+      mode          = opts.mode;
+      require_libs  = Jslibmng.require_libs opts.lib_init; 
+      vo_path       = mk_vo_path opts.lib_path
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -287,15 +290,10 @@ let jscoq_execute =
     let ast = Stm.get_ast ~doc:(fst !doc) sid in
     out_fn @@ Ast ast
 
-  | Init(set_opts, lib_init, lib_path) ->
-    let ndoc, iid = exec_init set_opts lib_init lib_path in
-    doc := Jscoq_doc.create ndoc;
-    out_fn @@ Ready iid
+  | Init opts -> exec_init opts
 
-  | Start(top_name, lib_init, lib_path) ->
-    let ndoc, iid = Icoq.start ({top_name; mode = Vo;
-      require_libs = Jslibmng.require_libs lib_init; 
-      vo_path = Jslibmng.paths_to_coqpath lib_path}) in
+  | NewDoc opts ->
+    let ndoc, iid = create_doc opts in
     doc := Jscoq_doc.create ndoc;
     out_fn @@ Ready iid
 
@@ -319,7 +317,7 @@ let jscoq_execute =
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
-    List.iter Loadpath.add_vo_path (Jslibmng.paths_to_coqpath load_path)
+    List.iter Loadpath.add_vo_path (mk_vo_path load_path)
   | Load filename ->
     doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
     out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)

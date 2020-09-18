@@ -28,33 +28,27 @@ type coq_opts = {
   (* callback to handle async feedback *)
   fb_handler : Feedback.feedback -> unit;
 
-  (* Initial LoadPath XXX: Use the coq_pkg record? *)
-  ml_path   : string list;
-  vo_path   : Loadpath.vo_path list;
-
-  (* Libs to require prior to STM init *)
-  require_libs : require_lib list;
-
   (* Async flags *)
   aopts        : async_flags;
-
-  (* name of the top-level module *)
-  top_name     : string;
 
   (* Initial values for Coq options *)
   opt_values   : (string list * Goptions.option_value) list;
 
   (* callback to load cma/cmo files *)
-  ml_load    : string -> unit;
+  ml_load      : string -> unit;
 
   (* Enable debug mode *)
-  debug    : bool;
+  debug        : bool;
 }
 
 type start_opts = {
+  (* Libs to require on startup *)
   require_libs : require_lib list;
+  (* Initial LoadPath *)
   vo_path      : Loadpath.vo_path list;
+  (* name of the top-level module *)
   top_name     : string;
+  (* document mode: interactive or batch *)
   mode         : top_mode;
 }
 
@@ -73,14 +67,10 @@ let set_options opt_values =
 
 let default_warning_flags = "-notation-overridden"
 
-let opts: coq_opts option ref = ref None
-
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
-let rec coq_init set_opts =
-
-  let opts = (opts := Some set_opts; set_opts) in
+let coq_init opts =
 
   if opts.debug then Coqinit.set_debug ();
 
@@ -117,23 +107,18 @@ let rec coq_init set_opts =
   (**************************************************************************)
   (* Start the STM!!                                                        *)
   (**************************************************************************)
-  Stm.init_core ();
+  Stm.init_core ()
 
-  (* Return the initial state of the STM *)
-  start { top_name = opts.top_name; mode = Interactive
-        ; require_libs = opts.require_libs; vo_path = opts.vo_path }
-
-and start sopts =
-  let opts = match !opts with Some o -> o | _ -> failwith "not initialized" in
-  let doc_type = match sopts.mode with
-    | Interactive -> let dp = Libnames.dirpath_of_string sopts.top_name in 
+let start opts =
+  let doc_type = match opts.mode with
+    | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in 
                      Stm.Interactive (Stm.TopLogical dp) 
-    | Vo ->          Stm.VoDoc sopts.top_name
+    | Vo ->          Stm.VoDoc opts.top_name
   in
   let ndoc = { Stm.doc_type
-             ; injections = List.map (fun x -> Stm.RequireInjection x) sopts.require_libs
-             ; ml_load_path = opts.ml_path
-             ; vo_load_path = sopts.vo_path
+             ; injections = List.map (fun x -> Stm.RequireInjection x) opts.require_libs
+             ; ml_load_path = []
+             ; vo_load_path = opts.vo_path
              ; stm_options = Stm.AsyncOpts.default_opts
              } in
   let ndoc, nsid = Stm.new_doc ndoc in

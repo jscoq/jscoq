@@ -139,7 +139,7 @@ class ProjectPanel {
             this.view.building = false;
             this.view.stopping = false;
             this.view.compiled = !!this.out;
-            coqw.terminate();
+            coqw.end();
         }
     }
 
@@ -486,9 +486,9 @@ class JsCoqBatchWorker extends BatchWorker {
         return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
     }
 
-    startArgs(mod, outfn) {
+    docOpts(mod, outfn) {
         this.loadpath.push([mod.logical.slice(0, -1), ['/lib']]);    
-        return super.startArgs(mod, outfn);
+        return super.docOpts(mod, outfn);
     }
 
     async install(mod, volume, root, outfn, compiledfn, content) {
