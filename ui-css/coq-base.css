@@ -44,7 +44,7 @@ a, a:link, a:visited, a:active {
   padding-right: 0px;
 }
 
-#ide-wrapper.layout-flex > * {
+#ide-wrapper.layout-flex > *:not(.CodeMirror-hints) {
   overflow-x: hidden;
   max-height: 100%;
   box-sizing: border-box;
@@ -56,7 +56,7 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane) {
   flex-grow: 1; /* take all remaining space */
-  width: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
+  flex-basis: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
 }
 
 #ide-wrapper #document {
@@ -231,6 +231,10 @@ body.jscoq-main .CodeMirror-linenumber {
 
 .flex-panel.collapsed > .caption:after {
   transform: none;
+}
+
+#goal-panel {
+  position: relative;  /* for positioning div.contextual-info */
 }
 
 #goal-panel:not(.collapsed) {
