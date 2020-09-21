@@ -94,14 +94,16 @@ var loadJsCoq, JsCoq;
     JsCoq = {
         base_path: scriptDir ? `${scriptDir}../` : "./",
         node_modules_path: '',
+        loaded: undefined,
 
         is_npm: false,  /* indicates that jsCoq was installed via `npm install` */
 
         load(base_path, node_modules_path) {
-            return loadJsCoq(base_path, node_modules_path);
+            return this.loaded ||
+                (this.loaded = loadJsCoq(base_path, node_modules_path));
         },
 
-        start(...args) {
+        async start(...args) {
             var base_path = undefined, node_modules_path = undefined,
                 jscoq_ids = ['ide-wrapper'], jscoq_opts = {};
             
@@ -116,9 +118,8 @@ var loadJsCoq, JsCoq;
             base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
             jscoq_opts.base_path = jscoq_opts.base_path || base_path;
 
-            return this.load(base_path, node_modules_path).then(() =>
-                new CoqManager(jscoq_ids, jscoq_opts)
-            );
+            await this.load(base_path, node_modules_path);
+            return new CoqManager(jscoq_ids, jscoq_opts)
         }
     };
 
