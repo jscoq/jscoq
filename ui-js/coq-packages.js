@@ -19,6 +19,8 @@ class PackageManager {
         this.loaded_pkgs   = [];
         this.coq           = coq;
 
+        this.coq.observers.push(this);
+
         this.initializePackageList(packages, pkg_path_aliases);
     }
 
@@ -203,7 +205,7 @@ class PackageManager {
             promise = 
                 Promise.all([this.loadDeps(pkg.info.deps),
                              pkg.archive.unpack(this.coq)])
-                .then(() => this.onBundleLoad(pkg_name));
+                .then(() => this.coqLibLoaded(pkg_name));
         }
         else {
             promise = 
@@ -212,6 +214,7 @@ class PackageManager {
         }
 
         this.showPackage(pkg_name);
+        this.showPackageProgress(pkg_name);
 
         pkg.promise = promise;
         return promise;
@@ -233,7 +236,7 @@ class PackageManager {
     /**
      * Updates the download progress bar on the UI.
      * @param {string} bname package bundle name
-     * @param {object} info {loaded: <number>, total: <number>}
+     * @param {object} info? {loaded: <number>, total: <number>}
      */
     showPackageProgress(bname, info) {
         var bundle = this.bundles[bname];
@@ -305,18 +308,18 @@ class PackageManager {
         .catch(err => { alert(`${file.name}: ${err}`); });
     }
 
-    onBundleStart(bname) {
-        this.showPackageProgress(bname);
+    coqLibInfo(bname, bi) {
+        this.addBundleInfo(bname, bi);
     }
 
-    onPkgProgress(evt) {
+    coqLibProgress(evt) {
         var info = this.getPackage(evt.bundle).info;
         ++info.loaded; // this is not actually the number of files loaded :\
 
         this.showPackageProgress(evt.bundle, info);
     }
 
-    onBundleLoad(bname) {
+    coqLibLoaded(bname) {
         this.loaded_pkgs.push(bname);
 
         var pkg = this.getPackage(bname);

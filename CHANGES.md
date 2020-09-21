@@ -8,8 +8,11 @@
  - Streamlined packaging of `.coq-pkg` archives using a new `jscoq` CLI.
    (@corwin-of-amber)
  - Addons have been factored out of the main jsCoq build process. They
-   are now maintained in a seperate repository,
+   are now maintained in a separate repository,
    https://github.com/jscoq/addons. (@corwin-of-amber)
+ - Project name officially stylized "jsCoq" (lowercase j).
+ - [experimental] Edit and compile multiple-file developments. 
+   (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------

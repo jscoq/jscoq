@@ -1,3 +1,4 @@
+import path from 'path';
 import { EventEmitter } from 'events';
 import { FSInterface } from './fsif';
 import { SearchPathElement, CoqProject, InMemoryVolume, JsCoqCompat } from './project';
@@ -6,7 +7,8 @@ import { SearchPathElement, CoqProject, InMemoryVolume, JsCoqCompat } from './pr
 
 abstract class Batch {
 
-    volume: FSInterface = null;
+    volume: FSInterface = null
+    loadpath: LoadPath = []
 
     abstract command(cmd: any[]): void;
     abstract expect(yes: (msg: any[]) => boolean,
@@ -23,6 +25,10 @@ abstract class Batch {
         return replies;
     }
 
+    isError(msg: any[]) {
+        return ['JsonExn', 'CoqExn'].includes(msg[0]);
+    }    
+
     async loadPackages(pkgs: Set<string>): Promise<LoadPath> {
         if (pkgs.size > 0)
             await this.do(
@@ -32,9 +38,18 @@ abstract class Batch {
         return undefined;
     }
 
-    isError(msg: any[]) {
-        return ['JsonExn', 'CoqExn'].includes(msg[0]);
-    }    
+    async init() {
+        await this.do(['Init', {}]);
+    }
+
+    docOpts(mod: SearchPathElement, outfn: string) {
+        return { top_name: outfn, mode: ['Vo'], 
+                 lib_init: PRELUDE, lib_path: this.loadpath };
+    }
+
+    async install(mod: SearchPathElement, volume: FSInterface, root: string, outfn: string, compiledfn: string, content?: Uint8Array) {
+        console.warn('Batch.install not implemented; mod =', mod);
+    }
 }
 
 
@@ -48,6 +63,7 @@ class BatchWorker extends Batch {
     }
 
     command(cmd: any[]) {
+        console.log('batch', cmd);
         this.worker.postMessage(cmd);
     }
 
@@ -67,14 +83,13 @@ class BatchWorker extends Batch {
 }
 
 
-class CompileTask extends EventEmitter{
+class CompileTask extends EventEmitter {
 
     batch: Batch
     inproj: CoqProject
     outproj: CoqProject
     infiles: SearchPathElement[] = [];
     outfiles: SearchPathElement[] = [];
-    loadpath: LoadPath = [];
     volume: FSInterface
 
     opts: CompileTaskOptions
@@ -96,7 +111,8 @@ class CompileTask extends EventEmitter{
         var coqdep = this.inproj.computeDeps(),
             plan = coqdep.buildOrder();
 
-        this.loadpath = await this.batch.loadPackages(coqdep.extern);
+        await this.batch.loadPackages(coqdep.extern);
+        await this.batch.init();
 
         for (let mod of plan) {
             if (this._stop) break;
@@ -109,28 +125,20 @@ class CompileTask extends EventEmitter{
 
     async compile(mod: SearchPathElement, opts=this.opts) {
         var {volume, logical, physical} = mod,
-            infn = `/lib/${logical.join('/')}.v`, outfn = `${infn}o`;
+            root = opts.buildDir || '/lib',
+            infn = `${path.join(root, ...logical)}.v`, outfn = `${infn}o`;
         this.infiles.push(mod);
 
         this.emit('progress', [{filename: physical, status: 'compiling'}]);
 
         try {
             let [, [, outfn_, vo]] = await this.batch.do(
-                ['Init', {top_name: logical.join('.')}, PRELUDE, this.loadpath],
-                ['Put', infn, volume.fs.readFileSync(physical)],
-                ['Load', infn],            msg => msg[0] == 'Loaded',
+                ['Put',     infn, volume.fs.readFileSync(physical)],
+                ['NewDoc',  this.batch.docOpts(mod, outfn)],
+                ['Load',    infn],         msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 
-            if (!this.batch.volume) {
-                if (!vo) {  /* wacoq worker does not return file content */
-                    [[, , vo]] = await this.batch.do(
-                        ['Get', outfn_],   msg => msg[0] == 'Got');
-                }
-                this.volume.fs.writeFileSync(outfn, vo);
-            }
-
-            if (this.loadpath)            /* for subsequent compilations */
-                this.loadpath.push([logical.slice(0, -1), ["/lib"]]);
+            await this.batch.install(mod, this.volume, root, outfn, outfn_, vo);
 
             this.outfiles.push({volume: this.volume, 
                                 logical, physical: outfn});
@@ -149,8 +157,13 @@ class CompileTask extends EventEmitter{
     output(name?: string) {
         this.outproj = new CoqProject(name || this.inproj.name || 'out',
                                       this.volume);
-        for (let mod of this.outfiles) mod.pkg = this.outproj.name;
-        this.outproj.searchPath.addRecursive({physical: '/lib', logical: []});
+        for (let mod of this.outfiles) {
+            mod.pkg = this.outproj.name;
+            this.outproj.searchPath.add({
+                physical: path.dirname(mod.physical), 
+                logical: mod.logical.slice(0, -1)
+            });
+        }
         this.outproj.setModules(this._files());
         return this.outproj;
     }
@@ -168,6 +181,7 @@ class CompileTask extends EventEmitter{
 }
 
 type CompileTaskOptions = {
+    buildDir?: string
     continue?: boolean
     jscoq?: boolean
 };

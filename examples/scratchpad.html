@@ -9,7 +9,7 @@
       /* Allow some extra scroll space at the bottom & to the right */
       .CodeMirror-lines {
         padding-bottom: 75% !important;
-        padding-right: 40px;
+        padding-right: 40px !important;
       }
     </style>
   </head>
@@ -23,10 +23,9 @@
   <script type="text/javascript">
 
     var jscoq_opts = {
-        prelude:   true,
-        init_pkgs: ['init'],
         all_pkgs:  ['coq', 'mathcomp', 'extlib', 'simpleio', 'equations', 
-                    'elpi', 'quickchick'],
+                    'elpi', 'quickchick', 'software-foundations',
+                    'hahn', 'paco', 'snu-sflib', 'promising'],
         file_dialog: true,
         implicit_libs: true,
         editor: { mode: { 'company-coq': true }, keyMap: 'default' }

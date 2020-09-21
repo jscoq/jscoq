@@ -33,17 +33,10 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <img height="18px" src="${base_path}/ui-images/js-logo.svg" 
-             style="vertical-align: top; margin-top: 5px"><!--
-        --><i style="color: #c96">+</i><a href="https://coq.inria.fr"><!--
-          --><img src="https://coq.inria.fr/files/barron_logo.png" alt="Coq" height="35" style="vertical-align: middle; margin-left: -1px">
+        <img class="js-logo" src="${base_path}/ui-images/js-logo.svg" alt="js"><i>+</i><!--
+          --><a href="https://coq.inria.fr"><!--
+          --><img class="coq-logo" src="https://coq.inria.fr/files/barron_logo.png" alt="Coq">
         </a>
-        <!-- 
-        <a href="http://feever.fr/" target="_blank">
-          <img src="${base_path}/ui-images/feever-logo.png" alt="FEEVER Logo" height="34" width="67"
-               style="vertical-align: middle"/>
-        </a>
-        -->
       </div> <!-- /.exits -->
       <span id="buttons">
         <button name="up"          alt="Up (Meta-P)"             title="Up (Meta-P)"></button><!--
@@ -188,6 +181,13 @@ class CoqLayoutClassic {
         return this.outline = outline_pane[0];
     }
 
+    createOutline() {
+        var outline_pane = $('<div>').attr('id', 'outline-pane');
+        $(this.ide).prepend(outline_pane);
+        requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
+        return this.outline = outline_pane[0];
+    }
+
     /**
      * Shows a notice in the main goal pane (reserved for important messages,
      * such as during startup).
@@ -224,6 +224,7 @@ class CoqLayoutClassic {
 
     // Add a log event received from Coq.
     log(text, level, attrs={}) {
+        attrs = attrs || {};  // attrs can be `null` as well
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error

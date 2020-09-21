@@ -40,12 +40,24 @@ type 'a ser_goals =
 module Proto = struct
 
 type coq_options = (string list * Goptions.option_value) list [@@deriving yojson]
+type lib_path = (string list * string list) list [@@deriving yojson]
 
 type jscoq_options =
-  { top_name: string      [@default "JsCoq"]
-  ; implicit_libs: bool   [@default true]
-  ; stm_debug: bool       [@default false]
-  ; coq_options: coq_options [@default []]
+  { implicit_libs: bool        [@default true]
+  ; stm_debug: bool            [@default false]
+  ; coq_options: coq_options   [@default []]
+  }
+  [@@deriving yojson]
+
+type top_mode =
+  [%import: Icoq.top_mode]
+  [@@deriving yojson]
+
+type doc_options =
+  { lib_init: string list list   [@default []]
+  ; lib_path: lib_path           [@default []]
+  ; top_name: string             [@default "JsCoq"]
+  ; mode: top_mode               [@default Interactive]
   }
   [@@deriving yojson]
 
@@ -66,8 +78,8 @@ type jscoq_cmd =
   | InfoPkg of string * string list
   | LoadPkg of string * string
 
-  (*           opts            initial_imports      load paths                      *)
-  | Init    of jscoq_options * string list list   * (string list * string list) list
+  | Init    of jscoq_options
+  | NewDoc  of doc_options
 
   (*           ontop       new         sentence                *)
   | Add     of Stateid.t * Stateid.t * string * bool

@@ -79,8 +79,10 @@ class CoqWorker {
         this.worker.postMessage(msg);
     }
 
-    init(opts, lib_init, lib_path) {
-        this.sendCommand(["Init", opts, lib_init, lib_path]);
+    init(coq_opts, doc_opts) {
+        this.sendCommand(["Init", coq_opts]);
+        if (doc_opts)
+            this.sendCommand(["NewDoc", doc_opts]);
     }
 
     getInfo() {
@@ -203,6 +205,10 @@ class CoqWorker {
         // Recreate worker
         this.worker = new Worker(this._worker_script);
         this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
+    }
+
+    end() {
+        this.worker.terminate();
     }
 
     // Promise-based APIs

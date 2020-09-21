@@ -238,6 +238,18 @@ let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
   ; recursive = false
   }
 
+let paths_to_coqpath ?(implicit=false) lib_path =
+  List.map (fun (path_el, phys) ->
+    path_to_coqpath ~implicit ~unix_prefix:phys path_el
+  ) lib_path
+
+let require_libs libs =
+  List.map (fun lp -> String.concat "." lp, None, Some true) libs
+  (* Last coordinate: *)
+  (*   None       : just require            *)
+  (*   Some false : import but don't export *)
+  (*   Some true  : import and export       *)
+
 let coqpath_of_bundle ?(implicit=false) bundle =
   List.map (fun pkg ->
     path_to_coqpath ~implicit pkg.pkg_id
