@@ -463,8 +463,9 @@ class CoqManager {
     }
 
     getLoadPath() {
-        return [this.packages, this.project].map(p => 
-                    p ? p.getLoadPath() : []).flatten();
+        if (this.options.subproc) return [this.coq.worker.packages.dir];
+        else return [this.packages, this.project].map(p => 
+                        p ? p.getLoadPath() : []).flatten();
     }
 
     /**

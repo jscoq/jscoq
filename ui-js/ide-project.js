@@ -172,15 +172,12 @@ class ProjectPanel {
             this.out.searchPath.path.map(pel => [pel.logical, ['/lib']]) : [];
     }
 
-    async _createBuildWorker() {
-        if (this.coq && this.coq.options.subproc) {
-            return new CoqSubprocessAdapter();
-        }
-        else {
-            var coqw = new CoqWorker();
-            await coqw.when_created;
-            return coqw;
-        }
+    _createBuildWorker() {
+        var coqw =  (this.coq && this.coq.options.subproc)
+              ? new CoqSubprocessAdapter()
+              : new CoqWorker();
+        coqw.options.warn = false;
+        return coqw;
     }
 
     async downloadCompiled() {

@@ -4,10 +4,6 @@
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "main": "examples/scratchpad.html?project",
   "dependencies": {
-    "@jscoq/hahn": "file:../jscoq-addons/_build/wacoq/jscoq-hahn-0.12.0-rc3.tgz",
-    "@jscoq/paco": "file:../jscoq-addons/_build/wacoq/jscoq-paco-0.12.0-rc4.tgz",
-    "@jscoq/promising-lib": "file:../jscoq-addons/_build/wacoq/jscoq-promising-lib-0.12.0-rc3.tgz",
-    "@jscoq/snu-sflib": "file:../jscoq-addons/_build/wacoq/jscoq-snu-sflib-0.12.0-rc3.tgz",
     "array-equal": "^1.0.0",
     "bootstrap": "^3.4.1",
     "codemirror": "^5.49.2",

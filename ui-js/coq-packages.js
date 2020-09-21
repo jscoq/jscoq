@@ -184,7 +184,7 @@ class PackageManager {
     }
 
     getLoadPath() {
-        return [];  /* currently hard-coded in waCoq */
+        return ['/lib'];
     }
 
     showPackage(bname) {

@@ -22,14 +22,14 @@
   <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
+    var sp = new URLSearchParams(location.search);
+
     var jscoq_opts = {
-        prelude:   true,
-        subproc:   location.search == '?app',
+        subproc:   sp.has('app'),
         all_pkgs:  ['coq', 'mathcomp', /*'extlib', 'simpleio', 'equations', 
                     'elpi', 'quickchick',*/ 'software-foundations',
                     'hahn', 'paco', 'snu-sflib', 'promising'],
         file_dialog: true,
-        implicit_libs: true,
         editor: { mode: { 'company-coq': true }, keyMap: 'default' }
     };
 
@@ -42,8 +42,7 @@
 
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
-      if (location.search == '?project') coq.openProject();
-      else if (location.search == '?project=sample') coq.openProject('sample');
+      if (sp.has('project')) coq.openProject(sp.get('project'));
     });
 
     window.addEventListener('beforeunload', () => {

@@ -67,6 +67,7 @@ class CoqWorker {
     }
 
     init(opts, lib_init, lib_path) {
+        if (!opts.load_path) opts.load_path = lib_path;
         this.sendCommand(["Init", opts]); //, opts, lib_init, lib_path]);
     }
 
@@ -134,15 +135,17 @@ class CoqWorker {
 
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
+        var abuf = content;
         if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-            content = this.arrayBufferOfBuffer(content);
+            abuf = this.arrayBufferOfBuffer(content);
+            content = new Buffer(abuf);
         }
 
         var msg = ["Put", filename, content];
         if(this.options.debug) {
             console.debug("Posting file: ", msg);
         }
-        this.worker.postMessage(msg, transferOwnership ? [content] : []);
+        this.worker.postMessage(msg, transferOwnership ? [abuf] : []);
         /* Notice: when transferOwnership is true, the 'content' buffer is
          * transferred to the worker (for efficiency);
          * it becomes unusable in the original context.
@@ -377,14 +380,10 @@ class CoqSubprocessAdapter extends CoqWorker {
     constructor() {
         const subproc = require('wacoq-bin/dist/subproc');
         super(null, new subproc.IcoqSubprocess());
+        window.addEventListener('beforeunload', () => this.worker.end());
     }
-    init(opts, lib_init, lib_path) {
-        if (!opts.coqlib)
-            opts.coqlib = this.worker.binDir + '/coqlib';
-        super.init(opts, lib_init, lib_path);
-    }
-    loadPkg(url) {
-        return this.coq_handler({data: ['LibProgress', {uri: url.href, done: true}]});
+    coq_handler(...a) {
+        setTimeout(() => super.coq_handler(...a), 0); // force window context
     }
 }
 

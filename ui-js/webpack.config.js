@@ -14,8 +14,9 @@ module.exports = {
     libraryTarget: 'umd',
     publicPath: '/ui-js/'
   },
-  node: {
-    fs: 'empty', child_process: 'empty'
+  externals: {
+    fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
+    'wacoq-bin/dist/subproc': 'commonjs2'
   },
   module: {
     rules: [
