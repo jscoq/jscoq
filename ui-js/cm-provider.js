@@ -33,12 +33,7 @@ class CmCoqProvider {
               matchBrackets     : true,
               styleSelectedText : true,
               dragDrop          : false, /* handled by CoqManager */
-              keyMap            : "emacs",
-              extraKeys: {
-                  'Tab': 'indentMore',
-                  'Shift-Tab': 'indentLess',
-                  'Ctrl-Space': 'autocomplete'
-              },
+              keyMap            : "jscoq",
               className         : "jscoq"
             };
 
@@ -47,9 +42,12 @@ class CmCoqProvider {
 
         if (element.tagName === 'TEXTAREA') {
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
+            replace = true;
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
+
+        if (replace) this.editor.addKeyMap('jscoq-snippet');
 
         this.filename = element.getAttribute('data-filename');
         this.autosave_interval = 20000 /*ms*/;
@@ -136,7 +134,7 @@ class CmCoqProvider {
         }
 
         var token = this.getNextToken(start, /statementend|bullet|brace/);
-        if (!token) return null;
+        if (!token) return null; // todo: set to doc end
 
         var end = {line : token.line, ch : token.end};
 
@@ -623,6 +621,19 @@ class CmCoqProvider {
     }
 }
 
+CodeMirror.keyMap['jscoq'] = {
+    'Tab': 'indentMore',
+    'Shift-Tab': 'indentLess',
+    'Ctrl-Space': 'autocomplete',
+    fallthrough: ["default"]
+};
+
+CodeMirror.keyMap['jscoq-snippet'] = {
+    PageUp: false,
+    PageDown: false,
+    //'Cmd-Up': false,   /** @todo this does not work? */
+    //'Cmd-Down': false
+};
 
 /**
  * For HTML-formatted Coq snippets created by coqdoc.
@@ -660,13 +671,16 @@ class Deprettify {
      * @param {string} text 
      */
     static cleanup(text) {
-        return text.replace(/\xa0/g, ' ').replace(/⇒/g, '=>')
-                   .replace(/×/g, '*').replace(/→/g, '->')
-                   .replace(/←/g, '<-').replace(/¬/g, '~')
-                   .replace(/⊢/g, '|-').replace(/\n☐/g, '')
-                   .replace(/^\n/, '');
+        for (let [re, s] of this.REPLACES) text = text.replace(re, s);
+        return text.replace(/^\n/, '');
     }
 
+    static REPLACES = [
+        [/\xa0/g, ' '], [/⇒/g, '=>'],   [/×/g, '*'],
+        [/→/g, '->'],   [/←/g, '<-'],   [/¬/g, '~'],
+        [/⊢/g, '|-'],   [/\n☐/g, ''],
+        [/∃/g, 'exists']  /* because it is also a tactic... */
+    ];
 }
 
 // Local Variables:
