@@ -57,7 +57,7 @@ class PackageManager {
 
         return Promise.all(this.packages.map(async pkg => {
             var manifest = await pkg.fetchInfo();
-            this.addBundleInfo(pkg.name, manifest);
+            manifest && this.addBundleInfo(pkg.name, manifest);
         }));
     }
 
@@ -483,7 +483,8 @@ class CoqPkgInfo {
 
     async fetchInfo(resource = `${this.name}.json`) {
         var req = await fetch(this.getUrl(resource));
-        return this.info = await req.json();
+        if (req.status == 200)
+            return this.info = await req.json();
     }
 
     setArchive(resource = `${this.name}.coq-pkg`) {

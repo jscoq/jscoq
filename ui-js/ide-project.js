@@ -139,6 +139,7 @@ class ProjectPanel {
             this.view.building = false;
             this.view.stopping = false;
             this.view.compiled = !!this.out;
+            coqw.end();
         }
     }
 
@@ -177,7 +178,13 @@ class ProjectPanel {
               ? new CoqSubprocessAdapter()
               : new CoqWorker();
         coqw.options.warn = false;
+        coqw.observers.push(this);
         return coqw;
+    }
+
+    feedMessage(sid, lvl, loc, msg) {
+        /** @todo */
+        console.log('feedback', sid, lvl, loc, msg);
     }
 
     async downloadCompiled() {
@@ -474,11 +481,21 @@ class JsCoqBatchWorker extends BatchWorker {
                 // Loading of non-archive pkgs currently not implemented
             }
         }
-        return loadpath;
+        this.loadpath = loadpath;
     }
 
     loadpathFor(pkg) {
         return pkg.info.pkgs.map(pkg => [pkg.pkg_id, ['/lib']]);
+    }
+
+    docOpts(mod, outfn) {
+        this.loadpath.push([mod.logical.slice(0, -1), ['/lib']]);    
+        return super.docOpts(mod, outfn);
+    }
+
+    async install(mod, volume, root, outfn, compiledfn, content) {
+        if (volume !== this.volume)
+            volume.fs.writeFileSync(outfn, content);
     }
 }
 
@@ -503,7 +520,7 @@ class WacoqBatchWorker extends BatchWorker {
             ['LoadPkg', this.getURIs([...pkgs])],
             msg => msg[0] == 'LoadedPkg'
         );
-        return [];
+        this.loadpath = ['/lib'];
     }
 
     getURIs(pkgs) {
@@ -511,6 +528,20 @@ class WacoqBatchWorker extends BatchWorker {
             var p = this.pkgr.getPackage(pkg);  /**/ assert(p); /**/
             return p.getDownloadURL().href;
         });
+    }
+
+    docOpts(mod, outfn) {
+        return { top_name: outfn, mode: ['Vo'], 
+                 lib_init: ["Coq.Init.Prelude"], lib_path: this.loadpath };
+    }
+
+    async install(mod, volume, root, outfn, compiledfn, content) {
+        if (volume !== this.volume) {
+            /* wacoq worker does not return file content */
+            [[, , content]] = await this.do(
+                ['Get', compiledfn],   msg => msg[0] == 'Got');
+            volume.fs.writeFileSync(outfn, content);
+        }
     }
 }
 
@@ -609,7 +640,4 @@ class BuildReport {
 
 
 
-if (typeof window !== 'undefined')
-    Object.assign(window, {ideProject: { ProjectPanel, CoqProject, fsif_native }});
-
-export { ProjectPanel, CoqProject, fsif_native }
+export { ProjectPanel, CoqProject }

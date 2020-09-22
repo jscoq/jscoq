@@ -66,9 +66,10 @@ class CoqWorker {
         this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
-    init(opts, lib_init, lib_path) {
-        if (!opts.load_path) opts.load_path = lib_path;
-        this.sendCommand(["Init", opts]); //, opts, lib_init, lib_path]);
+    init(coq_opts, doc_opts) {
+        this.sendCommand(["Init", coq_opts]);
+        if (doc_opts)
+            this.sendCommand(["NewDoc", doc_opts]);
     }
 
     getInfo() {
@@ -194,6 +195,10 @@ class CoqWorker {
 
         // Recreate worker
         this.createWorker(this._worker_script);
+    }
+
+    end() {
+        this.worker.terminate();
     }
 
     // Promise-based APIs

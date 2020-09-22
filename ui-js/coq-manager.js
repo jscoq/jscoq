@@ -772,13 +772,13 @@ class CoqManager {
         // Set startup parameters
         let init_opts = {implicit_libs: this.options.implicit_libs},
                         // @todo coq_options: this._parseOptions(this.options.coq || {})},
-            load_lib = this.options.prelude ? [PKG_ALIASES.prelude] : [];
+            lib_init = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 
         for (let pkg of this.options.init_import || []) {
-            load_lib.push(PKG_ALIASES[pkg] || pkg.split('.'));
+            lib_init.push(PKG_ALIASES[pkg] || pkg.split('.'));
         }
 
-        this.coq.init(init_opts, load_lib, this.getLoadPath());
+        this.coq.init(init_opts, {lib_init, lib_path: this.getLoadPath()});
         // Almost done!
     }
 
@@ -1250,8 +1250,8 @@ const Phases = {
 };
 
 const PKG_ALIASES = {
-    prelude: ["Coq", "Init", "Prelude"],
-    utf8: ["Coq", "Unicode", "Utf8"]
+    prelude: "Coq.Init.Prelude",
+    utf8: "Coq.Unicode.Utf8"
 };
 
 const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
