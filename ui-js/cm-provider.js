@@ -117,37 +117,29 @@ class CmCoqProvider {
     // If prev == null then get the first.
     getNext(prev, until) {
 
-        var start = {line : 0, ch : 0};
-        var doc = this.editor.getDoc();
-
-        if (prev) {
-            start = prev.end;
-        }
+        var doc = this.editor.getDoc(),
+            start = prev ? prev.end : {line : 0, ch : 0};
 
         if (until && this.onlySpacesBetween(start, until))
             return null;
 
-        // EOF
-        if (start.line === doc.lastLine() &&
-            start.ch === doc.getLine(doc.lastLine()).length) {
-            return null;
+        // small DFA that scans either a comment block or a statement
+        const delim = ['statementend', 'coq-bullet', 'brace'];
+        var state = 0, upto;
+        dfa: for (let cur of this.iterTokens(start)) {
+            switch (state) {
+            case 0: state = cur.type === 'comment' ? 2 : 1; /* fallthrough */
+            case 1: upto = cur; if (delim.includes(cur.type)) break dfa; break;
+            case 2: if (cur.type !== 'comment') break dfa; upto = cur; break;
+            }
         }
 
-        var token = this.getNextToken(start, /statementend|bullet|brace/);
-        if (!token) return null; // todo: set to doc end
+        if (!upto) return null; // EOF
 
-        var end = {line : token.line, ch : token.end};
+        var end = {line: upto.line, ch: upto.end};
 
-        for (var mark of doc.findMarks(end,end)) {
-            mark.clear();
-        }
-
-        var stm = new CmSentence(start, end,
-                                 doc.getRange({line : start.line, ch : start.ch},
-                                              {line : token.line, ch : token.end}),
-                                 token.type === 'comment'  // XXX This is never true
-                                );
-        return stm;
+        return new CmSentence(start, end, doc.getRange(start, end),
+                              state == 2);
     }
 
     // Gets sentence at point;
@@ -453,30 +445,20 @@ class CmCoqProvider {
         this._config = () => {};
     }
 
-    // CM specific functions.
-
-    // Returns the next token after the one seen at position: {line:…, ch:…}
-    // type_re: regexp to match token type.
-    // The returned object is a CodeMirror token with an additional attribute 'line'.
-    getNextToken(position, type_re) {
-        var cm = this.editor;
-        var linecount = cm.getDoc().lineCount();
-        var token, next, ch, line;
-        do {
-            token = cm.getTokenAt(position);
-            ch = token.end + 1;
-            line = position.line;
-            if (token.end === cm.getLine(line).length) {
-                line++;
-                ch = 0;
-                if (line >= linecount)
-                    return null;
+    /**
+     * Iterates (non-whitespace) tokens beginning at `from`.
+     * @param {*} from {line, ch} location (zero-based, CM-style)
+     */
+    *iterTokens(from) {
+        var cm = this.editor,
+            {line, ch} = from,
+            linecount = cm.getDoc().lineCount();
+        while (line < linecount) {
+            for (let token of cm.getLineTokens(line)) {
+                if (token.type && token.start >= ch) yield {line, ...token};
             }
-            next = cm.getTokenAt({line:line, ch:ch});
-            next.line = line;
-            position = {line:next.line, ch:next.end};
-        } while(type_re && !(type_re.test(next.type)));
-        return next;
+            line++; ch = 0;
+        }
     }
 
     // ================
