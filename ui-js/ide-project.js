@@ -2,8 +2,7 @@
 //  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
 
 import assert from 'assert';
-import Vue from 'vue/dist/vue';
-import { VueContext } from 'vue-context';
+import Vue from 'vue';
 import 'vue-context/src/sass/vue-context.scss';
 
 import { BatchWorker, CompileTask } from '../coq-jslib/build/batch';
@@ -15,8 +14,6 @@ import '../ui-css/project.css';
 class ProjectPanel {
 
     constructor() {
-        require('./components/file-list');
-
         this.view = new (Vue.component('project-panel-default-layout'))();
         this.view.$mount();
         
@@ -63,7 +60,9 @@ class ProjectPanel {
                   .fromDirectory('').copyLogical(new LogicalVolume()));
     }
 
-    async openDirectory(entries /* (File | FileEntry | DirectoryEntry)[] */) {
+    async openDirectory(entries /* string | (File | FileEntry | DirectoryEntry)[] */) {
+        if (typeof entries === string) return this.openDirectoryPhys(entries);
+
         let vol = new LogicalVolume();
         for (let entry of entries) {
             await vol.fromWebKitEntry(entry);
@@ -83,7 +82,7 @@ class ProjectPanel {
 
     async openDialog() {
         var input = $('<input>').attr('type', 'file');
-        input.change(() => {
+        input.on('change', () => {
             var fl = input[0].files[0];
             if (fl) this.openZip(fl, fl.name);
         });
@@ -292,145 +291,10 @@ ProjectPanel.BULLETS = {
 };
 
 
-Vue.component('project-panel-default-layout', {
-    data: () => ({
-        files: [], status: {}, building: false, compiled: false,
-        stopping: false
-    }),
-    template: `
-    <div class="project-panel vertical-pane">
-        <div class="toolbar">
-            <project-context-menu ref="menu"
-                @action="$emit('menu:'+$event.type, $event)"/>
-            <button @click="$emit('build')" :disabled="stopping">
-                {{building ? 'stop' : 'build'}}</button>
-            <project-build-status :building="building"/>
-        </div>
-        <file-list ref="file_list" :files="files" @action="fileAction"/>
-        <project-file-context-menu ref="fileMenu"
-            @action="fileMenuAction"/>
-    </div>`,
-    methods: {
-        fileAction(action) {
-            switch (action.type) {
-            case 'menu':
-                action.$event.preventDefault();
-                this.$refs.fileMenu.open(action.$event, action);
-                break;
-            }
-            this.$emit('action', action);
-        },
-        fileMenuAction(action) {
-            const at = () => this._folderOf(action.for);
-            switch (action.type) {
-            case 'new-file':   this.create(at(), 'new-file#.v', 'file');    break;
-            case 'new-folder': this.create(at(), 'new-folder#', 'folder');  break;
-            case 'rename':     this.renameStart(action.for.path);           break;
-            }
-        },
-        create(at, name, kind) {
-            var newPath = this.$refs.file_list.freshName(at, name);
-            this.$refs.file_list.create(newPath, kind);
-            setTimeout(() => {
-                this.$refs.file_list.renameStart(newPath);
-            });
-            this.$emit('action', {type: 'create', path: newPath, kind});
-        },
-        renameStart(path) {
-            this.$refs.file_list.renameStart(path);
-        },
-        _folderOf(action) {
-            return action.kind === 'folder' ? 
-                       action.path : action.path.slice(0, -1);
-        }
-    }
-});
-
-Vue.component('project-build-status', {
-    props: ['building'],
-    data: () => ({anim: ''}),
-    template: `<span class="build-status">{{anim}}</span>`,
-    mounted() {
-        this.$watch('building', flag => 
-            flag ? this.setStatusAnimation() : this.clearStatusAnimation());
-    },
-    methods: {
-        setStatusAnimation() {
-            const l = [0,0,1,2,3].map(i => '∙'.repeat(i));
-            var i = 2;
-            this.anim = l[i];
-            this._animInterval = setInterval(() => 
-                this.anim = l[++i % l.length], 250);
-        },
-        clearStatusAnimation() {
-            if (this._animInterval) clearInterval(this._animInterval);
-            delete this._animInterval;
-            this.anim = '';
-        }
-    }
-});
-
-Vue.component('project-context-menu', {
-    data: () => ({isOpen: false}),
-    template: `
-    <span class="project-context-menu" :class="{open: isOpen}">
-        <button @click.stop.prevent="open"><hamburger-svg/></button>
-        <vue-context ref="m" @open="isOpen = true" @close="isOpen = false">
-            <li><a name="new" @click="action" :disabled="$root.building">New Project</a></li>
-            <li><a name="open" @click="action" :disabled="$root.building">Open Project...</a></li>
-            <li><a name="download-v" @click="action">Download sources</a></li>
-            <li><a name="download-vo" @click="action" :disabled="$root.building || !$root.compiled">Download compiled</a></li>
-        </vue-context>
-    </span>`,
-    components: {VueContext},
-    methods: {
-        open() {
-            if (this.$refs.m.show) this.$refs.m.close();
-            else {
-                vueContextCleanup();
-                this.$refs.m.open({clientX: this.$parent.$el.clientWidth, clientY: 0}); 
-            }
-        },
-        action(ev) {
-            if (!$(ev.currentTarget).is('[disabled]'))
-                this.$emit('action', {type: ev.currentTarget.name});
-        }
-    }
-});
-
-Vue.component('hamburger-svg', {
-    template: `
-    <svg viewBox="0 0 80 80">
-        <rect y="5" width="80" height="12"></rect>
-        <rect y="34" width="80" height="12"></rect>
-        <rect y="63" width="80" height="12"></rect>
-    </svg>`
-});
-
-Vue.component('project-file-context-menu', {
-    template: `
-    <vue-context ref="m">
-        <li><a name="new-file" @click="action">New file</a></li>
-        <li><a name="new-folder" @click="action">New foler</a></li>
-        <li><a name="rename" @click="action">Rename</a></li>
-    </vue-context>`,
-    components: {VueContext},
-    methods: {
-        open(ev, action) {
-            vueContextCleanup();
-            this._for = action;
-            this.$refs.m.open(ev); 
-        },
-        action(ev) {
-            if (!$(ev.currentTarget).is('[disabled]'))
-                this.$emit('action', {type: ev.currentTarget.name, for: this._for});
-        }
-    }
-});
-
-function vueContextCleanup() {
-    if ($('.v-context').is(':visible')) $(document.body).click();
-}
+Vue.component('project-panel-default-layout', require('./components/project-panel-default-layout.vue').default);
+Vue.component('project-build-status', require('./components/project-build-status.vue').default);
+Vue.component('project-context-menu', require('./components/project-context-menu.vue').default);
+Vue.component('project-file-context-menu', require('./components/project-file-context-menu.vue').default);
 
 
 class LogicalVolume extends InMemoryVolume {
