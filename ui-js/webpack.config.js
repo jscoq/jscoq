@@ -1,3 +1,4 @@
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = (env, argv) => ({
   name: 'ide-project',
@@ -36,10 +37,15 @@ module.exports = (env, argv) => ({
       {
         test: /\.(png|jpe?g|gif)$/i,
         use: ['file-loader']
+      },
+      {
+        test: /\.vue$/,
+        use: 'vue-loader'
       }
     ],
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
-  }
+  },
+  plugins: [new VueLoaderPlugin()]
 });
