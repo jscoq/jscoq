@@ -1,7 +1,7 @@
 {
   "name": "wacoq",
   "version": "0.12.0-alpha1",
-  "description": "A port of Coq to JavaScript -- run Coq in your browser",
+  "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "main": "examples/scratchpad.html?project",
   "dependencies": {
     "array-equal": "^1.0.0",
@@ -18,7 +18,7 @@
     "path": "^0.12.7",
     "vue": "^2.6.11",
     "vue-context": "^5.1.0",
-    "wacoq-bin": "file:../../workspace/Coq.WA/wacoq-bin-0.12.0-alpha1.tar.gz"
+    "wacoq-bin": "^0.12.0-alpha1"
   },
   "devDependencies": {
     "@types/node": "^13.11.1",
@@ -42,7 +42,8 @@
     "examples"
   ],
   "scripts": {
-    "build": "cd ui-js && webpack",
+    "build": "cd ui-js && rm -f *.map && webpack --mode production",
+    "build:dev": "cd ui-js && webpack",
     "watch": "cd ui-js && webpack -w",
     "prepack": "sed -i.bak 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
   },

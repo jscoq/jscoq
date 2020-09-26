@@ -1,9 +1,9 @@
 
-module.exports = {
+module.exports = (env, argv) => ({
   name: 'ide-project',
-  mode: 'development',
+  mode: argv.mode || 'development',
   entry: './ide-project.js',
-  devtool: "source-map",
+  devtool: argv.mode !== 'production' ? "source-map" : undefined,
   stats: {
     hash: false, version: false, modules: false  // reduce verbosity
   },
@@ -42,4 +42,4 @@ module.exports = {
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
   }
-};
+});
