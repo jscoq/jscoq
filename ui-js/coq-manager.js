@@ -816,17 +816,23 @@ class CoqManager {
         this.clearErrors();
 
         let last_stm = this.doc.sentences.last(),
-            next_stm = this.provider.getNext(last_stm, until);
+            next_stm = this.provider.getNext(last_stm, until),
+            queue = [next_stm];
 
-        // We have reached the end
-        if(!next_stm) { return false; }
+        // Skip comment block
+        if (next_stm && next_stm.is_comment &&
+            (next_stm = this.provider.getNext(next_stm, until)))
+            queue.push(next_stm);
+        if (!next_stm) { return false; } // We have reached the end
 
-        next_stm.phase = Phases.PENDING;
-        this.doc.sentences.push(next_stm);
+        for (next_stm of queue) {
+            next_stm.phase = Phases.PENDING;
+            this.doc.sentences.push(next_stm);
 
-        this.provider.mark(next_stm, 'processing');
+            this.provider.mark(next_stm, 'processing');
+        }
 
-        if(update_focus) this.focus(next_stm);
+        if (update_focus) this.focus(next_stm);
 
         this.work();
 
@@ -876,15 +882,21 @@ class CoqManager {
      * That means, PENDING sentences are added and ADDED sentences are executed.
      */
     work() {
-        var tip = null, latest_ready_stm = null;
+        var tip = null, latest_ready_stm = null,
+            skip = stm => this.provider.mark(stm, 'ok');
 
         for (let stm of this.doc.sentences) {
             switch (stm.phase) {
             case Phases.PROCESSED:
                 tip = stm.coq_sid; break;
             case Phases.ADDED:
-                latest_ready_stm = stm;
-                tip = stm.coq_sid;
+                if (stm.is_comment) {
+                    if (!latest_ready_stm) skip(stm);  // all previous stms have been processed
+                }
+                else {
+                    latest_ready_stm = stm;
+                    tip = stm.coq_sid;
+                }
                 break; // only actually execute if nothing else remains to add
             case Phases.ADDING:
             case Phases.PROCESSING:
@@ -892,7 +904,7 @@ class CoqManager {
             case Phases.PENDING:
                 if (!tip) throw new Error('internal error'); // inconsistent
                 this.add(stm, tip);
-                return;
+                if (stm.phase != Phases.ADDED) return;
             }
         }
 
@@ -905,6 +917,11 @@ class CoqManager {
     }
 
     async add(stm, tip) {
+        if (stm.is_comment) {
+            stm.phase = Phases.ADDED;
+            return;
+        }
+
         stm.phase = Phases.ADDING;
 
         await this.process_special(stm.text);
