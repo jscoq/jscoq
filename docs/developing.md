@@ -24,7 +24,7 @@ We will provide instructions about Docker here soon.
 
 ## How to Install/Build
 
-See [docs/build.md](./docs/build.md).
+See [docs/build.md](./build.md).
 
 ## Addons
 
