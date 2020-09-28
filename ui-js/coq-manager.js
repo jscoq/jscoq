@@ -370,12 +370,12 @@ class CoqManager {
                     this.coq.goals(stm.coq_sid);  // XXX: async
             }
             else {
-                this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+                this.updateGoals(this.doc.goals[this.lastAdded().coq_sid]);
             }
         };
 
         provider.onMouseLeave = (stm, ev) => {
-            this.updateGoals(this.doc.goals[this.doc.sentences.last().coq_sid]);
+            this.updateGoals(this.doc.goals[this.lastAdded().coq_sid]);
         };
 
         provider.onTipHover = (entry, zoom) => {
@@ -574,7 +574,7 @@ class CoqManager {
             this.provider.mark(stm, 'ok');
 
             // Get goals and active definitions
-            if (nsid == this.doc.sentences.last().coq_sid) {
+            if (nsid == this.lastAdded().coq_sid) {
                 this.coq.goals(nsid);
                 this.updateLocalSymbols();
             }
@@ -626,7 +626,7 @@ class CoqManager {
     // Gets a request to load packages
     coqPending(nsid, prefix, module_names) {
         let stm = this.doc.stm_id[nsid];
-        let ontop = this.doc.sentences[this.doc.sentences.indexOf(stm) - 1];
+        let ontop = this.lastAdded(nsid);
 
         let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
             this.coq.execPromise(ontop.coq_sid);
@@ -961,6 +961,10 @@ class CoqManager {
         delete stm.coq_sid;
 
         this.provider.mark(stm, 'clear');
+    }
+
+    lastAdded(before=Infinity) {
+        return this.doc.sentences.findLast(stm => stm.coq_sid < before);
     }
     
     /**
