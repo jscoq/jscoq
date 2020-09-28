@@ -1,7 +1,7 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/jscoq/jscoq.svg?branch=v8.12)](https://travis-ci.org/ejgallego/jscoq) [![Gitter](https://badges.gitter.im/jscoq/Lobby.svg)](https://gitter.im/jscoq/Lobby)
+[![Build Status](https://travis-ci.org/jscoq/jscoq.svg?branch=v8.12)](https://travis-ci.org/ejgallego/jscoq)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
@@ -199,17 +199,10 @@ browser/OS/user-agent and command line options.
 
 ### Contact and on-line help ###
 
-- [jsCoq's gitter](https://gitter.im/jscoq/Lobby): main developer chat
-
-- The jsCoq mailing list:
-  https://x80.org/cgi-bin/mailman/listinfo/jscoq
-
-  The list archives should be also available through Gmane at group:
-  `gmane.science.mathematics.logic.coq.jscoq`
-  you can post to the list using nntp.
-
-- Coq's discourse [use the jscoq tag] https://coq.discourse.group/
-- StackOverflow [use the jscoq tag] https://stackoverflow.com/
+- [jsCoq's Zulip Room](https://coq.zulipchat.com/#narrow/stream/256336-jsCoq), main developer chat
+- [jsCoq's gitter](https://gitter.im/jscoq/Lobby), legacy developer chat
+- [Coq's discourse](https://coq.discourse.group/) [use the jscoq tag], for general announcements and questions
+- [StackOverflow](https://stackoverflow.com/) [use the jscoq tag]
 
 ### What is broken ###
 
