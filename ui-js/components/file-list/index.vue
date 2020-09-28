@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import _ from 'lodash';
+
 export default {
     name: 'file-list',
     props: ['files', 'level', 'path', 'selection_'],
