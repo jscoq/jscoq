@@ -146,7 +146,7 @@ class CompileTask extends EventEmitter {
             this.emit('progress', [{filename: physical, status: 'compiled'}]);
         }
         catch (e) {
-            this.emit('report', e);
+            this.emit('report', e, mod);
             this.emit('progress', [{filename: physical, status: 'error'}]);
             throw e;
         }

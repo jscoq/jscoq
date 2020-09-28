@@ -1,6 +1,6 @@
 <template>
-    <span class="folder-knob" :class="{checked: checked}"
-        @click="$emit('input', (checked = !checked))"></span>
+    <span class="folder-knob" :class="{checked}"
+        @click="$emit('input', !checked)"></span>
 </template>
 
 <script>
@@ -10,6 +10,6 @@
  */
 export default {
     props: ['value'],
-    data: function() { return {checked: !!this.value}; }
+    computed: { checked() { return !!this.value} }
 }
 </script>
