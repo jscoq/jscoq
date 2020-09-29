@@ -109,6 +109,8 @@ class ProjectPanel {
 
     openFile(filename) {
         this.config.setLastFile(this.project, filename);
+        requestAnimationFrame(() =>
+            this.view.$refs.file_list.select(filename));
         if (this.editor_provider)
             this.editor_provider.openLocal(filename);
         if (this.report)
@@ -137,8 +139,6 @@ class ProjectPanel {
         this.report.editor = this.editor_provider;
         this.report.pprint = this.coq && this.coq.pprint;
 
-        var pkgr = this.coq && this.coq.packages;
-
         try {
             if (this.editor_provider && this.editor_provider.dirty)
                 this.editor_provider.saveLocal();
@@ -149,9 +149,8 @@ class ProjectPanel {
             coqw = coqw || this._createBuildWorker();
             await coqw.when_created;
 
-            var task = new CompileTask(new JsCoqBatchWorker(coqw, pkgr),
-                                       this.project);
-            this.buildTask = task;
+            var task = this.buildTask = this._createBuildTask(coqw);
+
             task.on('progress', files => this._progress(files));
             task.on('report', (e, mod) => this.report.add(e, mod));
             return this.out = await task.run();
@@ -200,6 +199,13 @@ class ProjectPanel {
         coqw.options.warn = false;
         coqw.observers.push(this);
         return coqw;
+    }
+
+    _createBuildTask(coqw) {
+        var pkgr = this.coq && this.coq.packages;
+
+        return new CompileTask(new JsCoqBatchWorker(coqw, pkgr),
+                               this.project);
     }
 
     feedMessage(sid, lvl, loc, msg) {

@@ -125,7 +125,9 @@ export default {
             this.$emit('action', ev);
         },
 
-        select(path) {
+        select(path, expose = true) {
+            path = promotePath(path);
+            if (expose) this.expose(path);
             this.$data._selection = [path];
         },
         isSelected(path) {
@@ -149,20 +151,20 @@ export default {
         },
 
         lookup(rel_path) {
-            if (typeof rel_path === 'string') rel_path = rel_path.split('/').filter(x => x);
+            path = promotePath(path);
 
             var cwd = {name: '/', files: this.files};
-            for (let pel of rel_path) {
+            for (let pel of path) {
                 if (!cwd || !cwd.files) return;
                 cwd = cwd.files.find(e => e.name === pel);
             }
             return cwd;
         },
-        lookupComponent(rel_path) {
-            if (typeof rel_path === 'string') rel_path = rel_path.split('/').filter(x => x);
+        lookupComponent(path) {
+            path = promotePath(path);
 
             var cur = this;
-            for (let pel of rel_path) {
+            for (let pel of path) {
                 if (cur.$refs.l) cur = cur.$refs.l;
                 cur = (cur.$refs.entries || []).find(e => e.entry.name === pel);
                 if (!cur) return;
@@ -170,12 +172,11 @@ export default {
             return cur;
         },
 
-        create(rel_path, kind='file') {
-            if (typeof rel_path === 'string')
-                rel_path = rel_path.split('/').filter(x => x);
+        create(path, kind='file') {
+            path = promotePath(path);
 
             var cwd = {name: '/', files: this.files};
-            for (let pel of rel_path) {
+            for (let pel of path) {
                 if (!cwd.files) cwd.files = [];
                 let e = cwd.files.find(e => e.name === pel);
                 if (!e) {
@@ -189,8 +190,9 @@ export default {
             return cwd;
         },
 
-        freshName(rel_path, template='u#') { 
-            var e = this.lookup(rel_path), name = template.replace('#', '');
+        freshName(path, template='u#') { 
+            path = promotePath(path);
+            var e = this.lookup(path), name = template.replace('#', '');
             if (e) {
                 var i = 0;
                 for (;;) {
@@ -198,7 +200,7 @@ export default {
                     name = template.replace('#', `-${++i}`);
                 }
             }
-            return [...rel_path, name];
+            return [...path, name];
         },
 
         renameStart(rel_path) {
@@ -214,6 +216,23 @@ export default {
             for (let e of this.$refs.entries || []) {
                 if (e.$data.hasOwnProperty('_collapsed'))
                     e.$data._collapsed = true;
+            }
+        },
+        expandAll(max_depth = 10) {
+            if (max_depth <= 0) return;
+            for (let e of this.$refs.entries || []) {
+                if (e.$data.hasOwnProperty('_collapsed'))
+                    e.$data._collapsed = false;
+            }
+        },
+
+        expose(path) {
+            path = promotePath(path);
+
+            for (let idx = 1; idx < path.length; idx++) {
+                var e = this.lookupComponent(path.slice(0, idx));
+                if (e && e.$data.hasOwnProperty('_collapsed'))
+                    e.$data._collapsed = false;
             }
         },
 
@@ -240,5 +259,9 @@ export default {
         'file-list.file': require('./file.vue').default,
         'file-list.folder': require('./folder.vue').default
     }
+}
+
+function promotePath(path) {
+    return typeof path === 'string' ? path.split('/').filter(x => x) : path;
 }
 </script>
