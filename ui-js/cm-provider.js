@@ -248,12 +248,18 @@ class CmCoqProvider {
     }
 
     _subregion(stm, loc) {
+        // Offsets are in bytes :/
+        var stmBytes = new TextEncoder().encode(stm.text),
+            td = new TextDecoder(),
+            bytesToChars = (i) => td.decode(stmBytes.slice(0, i)).length,
+            bp = bytesToChars(loc.bp), ep = bytesToChars(loc.ep);
+
         var doc = this.editor.getDoc(),
             idx = doc.indexFromPos(stm.start), end = doc.indexFromPos(stm.end);
 
-        if (loc.bp <= loc.ep && idx + loc.ep <= end)
-            return {start: doc.posFromIndex(idx + loc.bp),
-                    end:   doc.posFromIndex(idx + loc.ep)}
+        if (bp <= loc.ep && idx + ep <= end)
+            return {start: doc.posFromIndex(idx + bp),
+                    end:   doc.posFromIndex(idx + ep)}
     }
 
     /**
