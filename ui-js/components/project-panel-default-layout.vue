@@ -1,7 +1,7 @@
 <template>
     <div class="project-panel vertical-pane">
         <div class="toolbar">
-            <project-context-menu ref="menu"
+            <project-context-menu ref="menu" :recent="recent"
                 @action="$emit('menu:'+$event.type, $event)"/>
             <button @click="$emit('build')" :disabled="stopping">
                 {{building ? 'stop' : 'build'}}</button>
@@ -17,6 +17,7 @@
 import FileList from './file-list/index.vue';
 
 export default {
+    props: ['recent'],
     data: () => ({
         files: [], status: {}, building: false, compiled: false,
         stopping: false

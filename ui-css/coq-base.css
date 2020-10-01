@@ -233,6 +233,10 @@ body.jscoq-main .CodeMirror-linenumber {
   transform: none;
 }
 
+#goal-panel {
+  position: relative;  /* for positioning div.contextual-info */
+}
+
 #goal-panel:not(.collapsed) {
   flex-grow: 2000;
 }
