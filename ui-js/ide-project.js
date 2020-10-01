@@ -24,7 +24,7 @@ class ProjectPanel {
         this.view.$on('download', () => this.download());
 
         this.view.$on('menu:new', () => this.clear());
-        this.view.$on('menu:open', () => this.openDialog());
+        this.view.$on('menu:open', (entry) => this.openRecent(entry));
         this.view.$on('menu:download-v', () => this.downloadSources());
         this.view.$on('menu:download-vo', () => this.downloadCompiled());
 
@@ -83,6 +83,10 @@ class ProjectPanel {
         this.project.uri = path;
     }
 
+    openURI(uri) {
+        this.openDirectoryPhys(uri); /** @todo */
+    }
+
     async openDialog() {
         var input = $('<input>').attr('type', 'file');
         input.on('change', () => {
@@ -92,11 +96,30 @@ class ProjectPanel {
         input[0].click();
     }
 
+    async openUI(uri) {
+        try {
+            if (uri) this.openURI(uri);
+            else await this.openDialog();  /** @todo this returns immediately right now */
+            return true;
+        }
+        catch (e) {
+            alert(`Cannot open '${uri || '<project>'}': ${e}`);
+            return false;
+        }
+    }
+
+    async openRecent(entry) {
+        console.log(entry.uri, entry.lastFile);
+        if (this.openUI(entry.uri)) {
+            if (entry.lastFile) this.openFileUI(entry.lastFile)
+        }
+    }
+
     async restore(reopenLast = true) {
         var recent = (await this.config.restore()).recent;
+        this.view.recent = recent;
         if (reopenLast && recent && recent[0]) {
-            this.openDirectoryPhys(recent[0].uri);
-            if (recent[0].lastFile) this.openFile(recent[0].lastFile)
+            this.openRecent(recent[0]);
         }
     }
 
@@ -115,6 +138,15 @@ class ProjectPanel {
             this.editor_provider.openLocal(filename);
         if (this.report)
             requestAnimationFrame(() => this.report._updateMarks());
+    }
+
+    openFileUI(filename) {
+        try {
+            if (filename) this.openFile(filename)
+        }
+        catch (e) {
+            alert(`Cannot open '${filename}': ${e}`);
+        }
     }
 
     withEditor(editor_provider /* CmCoqProvider */) {
