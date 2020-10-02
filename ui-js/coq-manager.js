@@ -379,9 +379,10 @@ class CoqManager {
         };
 
         provider.onTipHover = (entry, zoom) => {
-            var fullname = [...entry.prefix, entry.label].join('.');
-            if (entry.kind == 'lemma')
+            if (entry.kind == 'lemma') {
+                var fullname = [...entry.prefix, entry.label].join('.');
                 this.contextual_info.showCheck(fullname, /*opaque=*/true);
+            }
         };
         provider.onTipOut = () => { if (this.contextual_info) this.contextual_info.hide(); };
 
@@ -545,10 +546,10 @@ class CoqManager {
         this.when_ready.resolve();
     }
 
-    feedProcessed(nsid) {
+    feedProcessed(nsid, in_mode) {
 
         if(this.options.debug)
-            console.log('State processed', nsid);
+            console.log('State processed', nsid, in_mode);
 
         // The semantics of the stm here were a bit inconvenient: it
         // would send `ProcessedReady` feedback message before the
@@ -569,6 +570,7 @@ class CoqManager {
 
         if (stm.phase !== Phases.PROCESSED && stm.phase !== Phases.ERROR) {
             stm.phase = Phases.PROCESSED;
+            stm.action = in_mode == 'Proof' ? 'goals' : undefined;
             this.provider.mark(stm, 'ok');
 
             // Get goals and active definitions

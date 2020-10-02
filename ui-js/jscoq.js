@@ -278,11 +278,11 @@ class CoqWorker {
         }
     }
 
-    coqFeedback(fb_msg) {
+    coqFeedback(fb_msg, in_mode) {
 
         var feed_tag = fb_msg.contents[0];
         var feed_route = fb_msg.route || 0;
-        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1)];
+        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1), in_mode];
         var handled = false;
 
         if(this.options.debug)
