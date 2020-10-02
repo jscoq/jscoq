@@ -40,7 +40,7 @@ type coq_opts = {
   debug        : bool;
 }
 
-type start_opts = {
+type doc_opts = {
   (* Libs to require on startup *)
   require_libs : require_lib list;
   (* Initial LoadPath *)
@@ -51,15 +51,18 @@ type start_opts = {
   mode         : top_mode;
 }
 
+type in_mode = Proof | General (* pun intended *)
+
 type 'a seq = 'a Seq.t
 
 (** [init opts] Initialize the Coq engine *)
 val coq_init : coq_opts -> unit
-val start : start_opts -> Stm.doc * Stateid.t
+val new_doc : doc_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)
 val version : string * string * string * string * int32
 
+val mode_of_stm : doc:Stm.doc -> Stateid.t -> in_mode
 val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
 
 val inspect_globals : env:Environ.env -> unit -> Libnames.full_path seq

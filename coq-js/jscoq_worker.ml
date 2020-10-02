@@ -135,6 +135,14 @@ let process_lib_event (msg : lib_event) : unit =
 
 let mk_vo_path l = Jslibmng.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
+let mk_feedback ~span_id ?(route=0) ?(in_mode=Icoq.General) contents =
+  Feedback ({doc_id = 0; span_id; route; contents}, in_mode)
+
+let post_feedback fb =
+  let doc = Obj.magic 5 (* merde *) in 
+  let in_mode = Icoq.mode_of_stm ~doc fb.Feedback.span_id in
+  post_answer (Feedback (Jscoq_util.fb_opt fb, in_mode))
+
 (* set_opts  : general Coq initialization options *)
 let exec_init (set_opts : jscoq_options) =
 
@@ -142,7 +150,7 @@ let exec_init (set_opts : jscoq_options) =
 
   Icoq.coq_init ({
       ml_load      = Jslibmng.coq_cma_link;
-      fb_handler   = (fun fb -> post_answer (Feedback (Jscoq_util.fb_opt fb)));
+      fb_handler   = post_feedback;
       opt_values   = opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -153,7 +161,7 @@ let exec_init (set_opts : jscoq_options) =
 
 (* opts  : document initialization options *)
 let create_doc (opts : doc_options) =
-  Icoq.start ({
+  Icoq.new_doc ({
       top_name      = opts.top_name; 
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init; 
@@ -237,7 +245,7 @@ let jscoq_execute =
             doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
           let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
-          out_fn @@ Feedback { doc_id = 0; span_id = newid; route = 0; contents = Message(Error, loc, msg ) };
+          out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, msg));
           out_fn @@ Cancelled [newid];
           out_fn @@ exn_info
       end
@@ -257,18 +265,18 @@ let jscoq_execute =
     out_fn @@ GoalInfo (sid, goal_pp)
 
   | Query (sid, rid, query) ->
-    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
+    let sid = if sid = Stateid.dummy then Jscoq_doc.tip !doc else sid in
     begin try
       Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query;
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Complete }
+      out_fn @@ mk_feedback ~span_id:sid ~route:rid Complete
     with exn ->
       let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
+      out_fn @@ mk_feedback ~span_id:sid ~route:rid (Message(Error, loc, msg ));
+      out_fn @@ mk_feedback ~span_id:sid ~route:rid Incomplete
     end
 
   | Inspect (sid, rid, q) ->
-    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
+    let sid = if sid = Stateid.dummy then Jscoq_doc.tip !doc else sid in
     let _, env = Icoq.context_of_stm ~doc:(fst !doc) sid in
     let symbols = symbols_for q env in
     let results = Seq.filter (filter_by q) symbols in

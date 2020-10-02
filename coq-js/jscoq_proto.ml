@@ -61,6 +61,9 @@ type doc_options =
   }
   [@@deriving yojson]
 
+type in_mode = Icoq.in_mode
+let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
+
 type search_query =
   | All
   | CurrentFile
@@ -125,7 +128,7 @@ type jscoq_answer =
   | Ast       of Vernacexpr.vernac_control option
   | CoqOpt    of string list * Goptions.option_value
   | Log       of Feedback.level * Pp.t
-  | Feedback  of Feedback.feedback
+  | Feedback  of Feedback.feedback * in_mode
 
   | SearchResults of Feedback.route_id * Libnames.full_path Seq.t
 
