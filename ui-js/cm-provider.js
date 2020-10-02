@@ -10,6 +10,7 @@ class CmSentence {
         this.mark  = undefined;
         this.is_comment = is_comment;
         this.feedback = [];
+        this.action = undefined;
     }
 
 }
@@ -404,7 +405,7 @@ class CmCoqProvider {
         for (let m of this.hover)
             this.highlight(m.stm, false);
 
-        if (mark) {
+        if (mark && mark.stm.action) {
             this.hover = [mark];
             this.highlight(mark.stm, true);
             this.onMouseEnter(mark.stm, evt);
