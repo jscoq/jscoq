@@ -57,7 +57,7 @@ class CoqProject {
     fromDirectory(dir: string = '', volume = this.volume) {
         try {
             var coqmf = volume.fs.readFileSync(volume.path.join(dir, '_CoqProject'), 'utf-8');
-        } catch { }
+        } catch (e) { }
 
         if (coqmf) return this.fromCoqMF(coqmf, dir, volume)
         else {
