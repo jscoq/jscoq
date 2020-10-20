@@ -36,7 +36,7 @@ Inductive and_they_run := too(*!*).
         base_path: './',
         editor:    { mode: { 'company-coq': true }, keyMap: 'default' },
         init_pkgs: ['init'],
-        all_pkgs:  ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'mathcomp']
+        all_pkgs:  ['coq']
     };
 
     JsCoq.start(jscoq_opts.base_path, '..', jscoq_ids, jscoq_opts);
