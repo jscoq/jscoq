@@ -72,6 +72,13 @@ type search_query =
   | Locals
   [@@deriving yojson]
 
+type query =
+  | Mode
+  | Goals
+  | Vernac of string
+  | Inspect of search_query
+  [@@deriving yojson]
+
 type opaque = Js_of_ocaml.Js.Unsafe.any
 let opaque_to_yojson _x = `Null
 let opaque_of_yojson _x = Result.Error "opaque value"
@@ -89,9 +96,7 @@ type jscoq_cmd =
   | Cancel  of Stateid.t
   | Exec    of Stateid.t
 
-  | Goals   of Stateid.t
-  | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of Stateid.t * Feedback.route_id * search_query
+  | Query   of Stateid.t * Feedback.route_id * query
   | Ast     of Stateid.t
 
   (*            filename content *)
@@ -122,13 +127,14 @@ type jscoq_answer =
   (* Main feedback *)
   | Cancelled of Stateid.t list
 
-  (* Goals must be printed better *)
+  (* Query responses *)
+  | ModeInfo  of Stateid.t * in_mode
   | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
 
   | Ast       of Vernacexpr.vernac_control option
   | CoqOpt    of string list * Goptions.option_value
   | Log       of Feedback.level * Pp.t
-  | Feedback  of Feedback.feedback * in_mode
+  | Feedback  of Feedback.feedback
 
   | SearchResults of Feedback.route_id * Libnames.full_path Seq.t
 
