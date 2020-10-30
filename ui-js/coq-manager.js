@@ -548,10 +548,10 @@ class CoqManager {
         this.when_ready.resolve();
     }
 
-    feedProcessed(nsid, in_mode) {
+    feedProcessed(nsid) {
 
         if(this.options.debug)
-            console.log('State processed', nsid, in_mode);
+            console.log('State processed', nsid);
 
         // The semantics of the stm here were a bit inconvenient: it
         // would send `ProcessedReady` feedback message before the
@@ -572,7 +572,6 @@ class CoqManager {
 
         if (stm.phase !== Phases.PROCESSED && stm.phase !== Phases.ERROR) {
             stm.phase = Phases.PROCESSED;
-            stm.action = in_mode == 'Proof' ? 'goals' : undefined;
             this.provider.mark(stm, 'ok');
 
             // Get goals and active definitions
@@ -580,6 +579,7 @@ class CoqManager {
                 this.coq.goals(nsid);
                 this.updateLocalSymbols();
             }
+            else this.coq.query(nsid, 0, ['Mode']);
         }
 
         this.work();
@@ -674,6 +674,11 @@ class CoqManager {
             }
         }
 
+        // Clear dangling marks on comments (in case it was not handled by truncate())
+        while (!this.doc.sentences.slice(-1)[0].coq_sid) {
+            this.cancelled(this.doc.sentences.pop());
+        }
+
         this.refreshGoals();
     }
 
@@ -685,9 +690,17 @@ class CoqManager {
         }
     }
 
+    coqModeInfo(sid, in_mode) {
+        let stm = this.doc.stm_id[sid];
+        if (stm) {
+            stm.action = in_mode == 'Proof' ? 'goals' : undefined;
+        }
+    }
+
     coqGoalInfo(sid, goals) {
 
         if (goals) {
+            this.coqModeInfo(sid, 'Proof');
 
             var hgoals = this.pprint.goals2DOM(goals);
 
@@ -858,7 +871,11 @@ class CoqManager {
         var cur = this.provider.getAtPoint();
 
         if (cur) {
-            if (cur.coq_sid) {
+            if (!cur.coq_sid) {
+                var idx = this.doc.sentences.indexOf(cur);
+                cur = this.doc.sentences.slice(idx).find(stm => stm.coq_sid);
+            }
+            if (cur) {
                 this.coq.cancel(cur.coq_sid);
             }
             else {
@@ -946,21 +963,25 @@ class CoqManager {
     }
 
     cancel(stm) {
-        switch (stm.phase) {
-        case Phases.ADDING:
-        case Phases.ADDED:
-        case Phases.PROCESSING:
-        case Phases.PROCESSED:
-            this.coq.cancel(stm.coq_sid);
-            break;
+        if (stm.coq_sid) {
+            switch (stm.phase) {
+            case Phases.ADDING:
+            case Phases.ADDED:
+            case Phases.PROCESSING:
+            case Phases.PROCESSED:
+                this.coq.cancel(stm.coq_sid);
+                break;
+            }
         }
 
         this.cancelled(stm);
     }
 
     cancelled(stm) {
-        delete this.doc.stm_id[stm.coq_sid];
-        delete stm.coq_sid;
+        if (stm.coq_sid) {
+            delete this.doc.stm_id[stm.coq_sid];
+            delete stm.coq_sid;
+        }
 
         this.provider.mark(stm, 'clear');
     }
@@ -994,6 +1015,11 @@ class CoqManager {
         
         for (let follow of this.doc.sentences.slice(stm_index)) {
             this.cancelled(follow);
+        }
+
+        // Clear dangling marks on comments
+        while (stm_index > 1 && !this.doc.sentences[stm_index - 1].coq_sid) {
+            this.cancelled(this.doc.sentences[--stm_index]);
         }
 
         this.doc.sentences.splice(stm_index);
@@ -1363,9 +1389,9 @@ class CoqContextualInfo {
         this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
     }
 
-    showQuery(query, title) {
+    showQuery(command, title) {
         this.is_visible = true;
-        this.coq.queryPromise(0, query).then(result => {
+        this.coq.queryPromise(0, ['Vernac', command]).then(result => {
             if (this.is_visible)
                 this.show(this.formatMessages(result));
         })
