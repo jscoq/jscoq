@@ -1,3 +1,12 @@
+# JsCoq 0.12.1 "Emilio should write this :P"
+-----------------------------------------
+
+ - Bugfix preventing use of `lia` and other tactics that might invoke
+   bytecode functionality. (#201, @corwin-of-amber)
+ - UI tidbits: only highlight-on-hover sentences that were executed in
+   proof mode, and do not highlight preceding comments of them; try not
+   to interfere with keyboard scrolling in the page. (@corwin-of-amber)
+
 # JsCoq 0.12 "<-as usual->"
 -----------------------------------------
 
