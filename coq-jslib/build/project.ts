@@ -55,8 +55,42 @@ class CoqProject {
     }
 
     fromDirectory(dir: string = '', volume = this.volume) {
-        this.searchPath.addRecursive({volume,
-                    physical: dir, logical: '', pkg: this.name});
+        try {
+            var coqmf = volume.fs.readFileSync(volume.path.join(dir, '_CoqProject'), 'utf-8');
+        } catch (e) { }
+
+        if (coqmf) return this.fromCoqMF(coqmf, dir, volume)
+        else {
+            this.searchPath.addRecursive({volume,
+                        physical: dir, logical: '', pkg: this.name});
+            return this;
+        }
+    }
+
+    /**
+     * Configures a project from flags in _CoqProject format, i.e. -R ..., -Q ...,
+     * and list of .v files.
+     * @param {string} coqProjectText content of _CoqProject definition file
+     * @param {string} baseDir project root directory (usually the one containing _CoqProject)
+     * @param {FSInterface} volume containing volume
+     */
+    fromCoqMF(coqProjectText: string, baseDir: string = '', volume: FSInterface = this.volume) {
+        var pkg = this.name, modules = [];
+        for (let line of coqProjectText.split(/\n+/)) {
+            var mo = /^\s*(-[RQ])\s+(\S+)\s+(\S+)/.exec(line);
+            if (mo) {
+                var [flag, physical, logical] = [mo[1], mo[2], mo[3]];
+                physical = volume.path.join(baseDir, physical);
+                if (flag === '-R')
+                    this.searchPath.addRecursive({volume, physical, logical, pkg});
+                else
+                    this.searchPath.add({volume, physical, logical, pkg});
+            }
+            else {
+                for (let mo of line.matchAll(/\S+[.]v/g)) modules.push(mo[0]);
+            }
+        }
+        if (modules.length > 0) this.setModules(modules);
         return this;
     }
 

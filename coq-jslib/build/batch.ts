@@ -1,4 +1,5 @@
 import path from 'path';
+import arreq from 'array-equal';
 import { EventEmitter } from 'events';
 import { FSInterface } from './fsif';
 import { SearchPathElement, CoqProject, InMemoryVolume, JsCoqCompat } from './project';
@@ -100,7 +101,7 @@ class CompileTask extends EventEmitter {
         super();
         this.batch = batch;
         this.inproj = inproj;
-        this.opts = opts;
+        this.opts = {...CompileTask.DEFAULT_OPTIONS, ...opts};
 
         this.volume = batch.volume || new InMemoryVolume();
     }
@@ -116,11 +117,16 @@ class CompileTask extends EventEmitter {
 
         for (let mod of plan) {
             if (this._stop) break;
-            if (mod.physical.endsWith('.v'))
+            if (mod.physical.endsWith('.v') && this.alreadyDone(coqdep.depsOf(mod)))
                 await this.compile(mod);
         }
     
         return this.output(outname);
+    }
+
+    alreadyDone(modules: SearchPathElement[]) {
+        return modules.every(mod => !mod.volume ||
+            this.outfiles.some(cmod => arreq(cmod.logical, mod.logical)));
     }
 
     async compile(mod: SearchPathElement, opts=this.opts) {
@@ -146,9 +152,9 @@ class CompileTask extends EventEmitter {
             this.emit('progress', [{filename: physical, status: 'compiled'}]);
         }
         catch (e) {
-            this.emit('report', e);
+            this.emit('report', e, mod);
             this.emit('progress', [{filename: physical, status: 'error'}]);
-            throw e;
+            if (!opts.keepGoing) throw e;
         }
     }
 
@@ -178,12 +184,16 @@ class CompileTask extends EventEmitter {
         return [].concat(this.infiles, this.outfiles);
     }
 
+    static DEFAULT_OPTIONS : CompileTaskOptions = {
+        buildDir: "/lib", resume: false, keepGoing: true, jscoq: false
+    }
 }
 
 type CompileTaskOptions = {
     buildDir?: string
-    continue?: boolean
-    jscoq?: boolean
+    resume?: boolean     // pick up from previous build
+    keepGoing?: boolean  // carry on in face of compile errors
+    jscoq?: boolean      // jsCoq package format (compatibility mode)
 };
 
 type LoadPath = [string[], string[]][];

@@ -109,7 +109,7 @@ class CoqWorker {
     }
 
     goals(sid) {
-        this.sendCommand(["Goals", sid]);
+        this.sendCommand(["Query", sid, 0, ["Goals"]]);
     }
 
     query(sid, rid, query) {
@@ -122,10 +122,7 @@ class CoqWorker {
 
     inspect(sid, rid, search_query) {
         if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
-        if (typeof rid == 'undefined')
-            rid = this._gen_rid = (this._gen_rid || 0) + 1;
-        this.sendCommand(["Inspect", sid, rid, search_query]);
-        return rid;
+        return this.query(sid, rid, ['Inspect', search_query])
     }
 
     getOpt(option_name) {
@@ -278,11 +275,11 @@ class CoqWorker {
         }
     }
 
-    coqFeedback(fb_msg) {
+    coqFeedback(fb_msg, in_mode) {
 
         var feed_tag = fb_msg.contents[0];
         var feed_route = fb_msg.route || 0;
-        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1)];
+        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1), in_mode];
         var handled = false;
 
         if(this.options.debug)

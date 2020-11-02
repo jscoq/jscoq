@@ -41,7 +41,7 @@ type coq_opts = {
   debug        : bool;
 }
 
-type start_opts = {
+type doc_opts = {
   (* Libs to require on startup *)
   require_libs : require_lib list;
   (* Initial LoadPath *)
@@ -51,6 +51,8 @@ type start_opts = {
   (* document mode: interactive or batch *)
   mode         : top_mode;
 }
+
+type in_mode = Proof | General (* pun intended *)
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
@@ -109,7 +111,7 @@ let coq_init opts =
   (**************************************************************************)
   Stm.init_core ()
 
-let start opts =
+let new_doc opts =
   let doc_type = match opts.mode with
     | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in 
                      Stm.Interactive (Stm.TopLogical dp) 
@@ -123,6 +125,11 @@ let start opts =
              } in
   let ndoc, nsid = Stm.new_doc ndoc in
   ndoc, nsid
+
+let mode_of_stm ~doc sid =
+  match Stm.state_of_id ~doc sid with
+  | `Valid (Some { lemmas = Some _; _ }) -> Proof 
+  | _ -> General
 
 let context_of_st m = match m with
   | `Valid (Some { Vernacstate.lemmas = Some lemma ; _ } ) ->

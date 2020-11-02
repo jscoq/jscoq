@@ -61,12 +61,22 @@ type doc_options =
   }
   [@@deriving yojson]
 
+type in_mode = Icoq.in_mode
+let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
+
 type search_query =
   | All
   | CurrentFile
   | ModulePrefix of Serlib.Ser_names.DirPath.t
   | Keyword of string
   | Locals
+  [@@deriving yojson]
+
+type query =
+  | Mode
+  | Goals
+  | Vernac of string
+  | Inspect of search_query
   [@@deriving yojson]
 
 type opaque = Js_of_ocaml.Js.Unsafe.any
@@ -86,9 +96,7 @@ type jscoq_cmd =
   | Cancel  of Stateid.t
   | Exec    of Stateid.t
 
-  | Goals   of Stateid.t
-  | Query   of Stateid.t * Feedback.route_id * string
-  | Inspect of Stateid.t * Feedback.route_id * search_query
+  | Query   of Stateid.t * Feedback.route_id * query
   | Ast     of Stateid.t
 
   (*            filename content *)
@@ -119,7 +127,8 @@ type jscoq_answer =
   (* Main feedback *)
   | Cancelled of Stateid.t list
 
-  (* Goals must be printed better *)
+  (* Query responses *)
+  | ModeInfo  of Stateid.t * in_mode
   | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
 
   | Ast       of Vernacexpr.vernac_control option

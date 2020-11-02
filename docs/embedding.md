@@ -160,15 +160,19 @@ the `CoqManager` constructor:
 The list of available packages defaults to all Coq libraries and addons
 available with the current version of jsCoq. At the moment, it is:
 ```js
-['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals',
- 'math-comp', 'elpi', 'lf', 'plf']
+['coq', 'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
+ 'software-foundations', 'hahn', 'paco', 'snu-sflib', 'promising']
 ```
 
 By default, packages are loaded from jsCoq's `coq-pkgs` directory.
-This can be controlled by passing an object instead of an array; the keys of
-the object correspond to base directories where package files are located.
+Affiliated addon packages (those in the list above) are sought in the `@jscoq`
+[scope](https://docs.npmjs.com/about-scopes), *i.e.* `node_modules/@jscoq/<addon name>`.
+You can normally install these addons with `npm i @jscoq/<addon name>`.
+
+Package download URLs can be controlled by passing an object instead of an array; the keys of
+the object correspond to base directories where package files (`.coq-pkg`) are located.
 ```js
-{'../coq-pkgs': ['init', 'coq-base'], '/my-pkgs': ['cool-stuff']}
+{'../coq-pkgs': ['coq'], '/my-pkgs': ['cool-stuff']}
 ```
 
 The `editor` property may contain any option supported by CodeMirror

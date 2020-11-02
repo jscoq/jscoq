@@ -135,6 +135,12 @@ let process_lib_event (msg : lib_event) : unit =
 
 let mk_vo_path l = Jslibmng.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
+let mk_feedback ~span_id ?(route=0) contents =
+  Feedback {doc_id = 0; span_id; route; contents}
+
+let post_feedback fb =
+  post_answer @@ Feedback (Jscoq_util.fb_opt fb)
+
 (* set_opts  : general Coq initialization options *)
 let exec_init (set_opts : jscoq_options) =
 
@@ -142,7 +148,7 @@ let exec_init (set_opts : jscoq_options) =
 
   Icoq.coq_init ({
       ml_load      = Jslibmng.coq_cma_link;
-      fb_handler   = (fun fb -> post_answer (Feedback (Jscoq_util.fb_opt fb)));
+      fb_handler   = post_feedback;
       opt_values   = opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -153,7 +159,7 @@ let exec_init (set_opts : jscoq_options) =
 
 (* opts  : document initialization options *)
 let create_doc (opts : doc_options) =
-  Icoq.start ({
+  Icoq.new_doc ({
       top_name      = opts.top_name; 
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init; 
@@ -184,7 +190,15 @@ let requires ast =
   | _ -> None
   [@@warning "-4"]
 
-(* -- Used by Inspect command --*)
+(* -- Used by Query command --*)
+
+(* (Goals) *)
+
+let pp_of_goals =
+  let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
+  Serapi.Serapi_goals.get_goals_gen ppx
+
+(* (Inspect) *)
 
 let string_contains s1 s2 =  (* from Rosetta Code *)
   let len1 = String.length s1
@@ -212,15 +226,41 @@ let symbols_for (q : search_query) env =
     | _            -> Icoq.inspect_globals ~env ()
     [@@warning "-4"]
 
-let pp_of_goals =
-  let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
-  Serapi.Serapi_goals.get_goals_gen ppx
-
 let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
   | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
   | Keyword s -> (fun nm -> string_contains (Libnames.string_of_path nm) s)
+
+(* - main Query handler *)
+
+let exec_query doc ~span_id ~route query =
+  let span_id = if span_id = Stateid.dummy then Jscoq_doc.tip !doc else span_id in
+  match query with
+  | Goals -> 
+    let doc = fst !doc in
+    let goal_pp = pp_of_goals ~doc span_id in
+    [GoalInfo (span_id, goal_pp)]
+  | Mode ->
+    let doc = fst !doc in
+    let in_mode = Icoq.mode_of_stm ~doc span_id in
+    [ModeInfo (span_id, in_mode)]
+  | Vernac command ->
+    begin try
+      Jscoq_doc.query ~doc:!doc ~at:span_id ~route command;
+      [mk_feedback ~span_id ~route Complete]
+    with exn ->
+      let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
+      [mk_feedback ~span_id ~route (Message(Error, loc, msg ));
+       mk_feedback ~span_id ~route Incomplete]
+    end
+  | Inspect q ->
+    let _, env = Icoq.context_of_stm ~doc:(fst !doc) span_id in
+    let symbols = symbols_for q env in
+    let results = Seq.filter (filter_by q) symbols in
+    [SearchResults (route, results)]
+
+(* -- Main message handler -- *)
 
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
@@ -237,7 +277,7 @@ let jscoq_execute =
             doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
           let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
-          out_fn @@ Feedback { doc_id = 0; span_id = newid; route = 0; contents = Message(Error, loc, msg ) };
+          out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, msg));
           out_fn @@ Cancelled [newid];
           out_fn @@ exn_info
       end
@@ -251,28 +291,8 @@ let jscoq_execute =
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
     doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string sid))
 
-  | Goals sid        ->
-    let doc = fst !doc in
-    let goal_pp = pp_of_goals ~doc sid in
-    out_fn @@ GoalInfo (sid, goal_pp)
-
-  | Query (sid, rid, query) ->
-    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
-    begin try
-      Jscoq_doc.query ~doc:!doc ~at:sid ~route:rid query;
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Complete }
-    with exn ->
-      let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Message(Error, loc, msg ) };
-      out_fn @@ Feedback { doc_id = 0; span_id = sid; route = rid; contents = Incomplete }
-    end
-
-  | Inspect (sid, rid, q) ->
-    let sid = if Int.equal (Stateid.to_int sid) 0 then Jscoq_doc.tip !doc else sid in
-    let _, env = Icoq.context_of_stm ~doc:(fst !doc) sid in
-    let symbols = symbols_for q env in
-    let results = Seq.filter (filter_by q) symbols in
-    out_fn @@ SearchResults (rid, results)
+  | Query (sid, rid, query) -> 
+    exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
 
   | Register file_path  ->
     Jslibmng.register_cma ~file_path

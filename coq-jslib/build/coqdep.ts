@@ -48,6 +48,15 @@ class CoqDep {
             this.extern.add(pkg);
     }
 
+    /**
+     * Gets the list of modules that `mod` depends on.
+     * @note looks for the module by physical filename.
+     */
+    depsOf(mod: SearchPathElement) {
+        var d = this.deps.find(d => d.from.physical === mod.physical);
+        return d ? d.to : [];
+    }
+
     depsToJson() {
         var d = {},
             key = (mod: SearchPathElement) => mod.logical.join('.');
@@ -60,7 +69,7 @@ class CoqDep {
 
     /**
      * Basically, topological sort.
-     * (TODO: allow parallel builds?)
+     * @todo allow parallel builds?
      */
     buildOrder(modules?: SearchPathElement[] | Generator<SearchPathElement>) {
         if (!modules) modules = this.searchPath.modules();
