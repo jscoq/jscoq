@@ -1286,7 +1286,8 @@ const PKG_ALIASES = {
 const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
     'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
     'software-foundations',
-    'hahn', 'paco', 'snu-sflib', 'promising'
+    'hahn', 'paco', 'snu-sflib', 'promising',
+    'fcsl-pcm', 'htt', 'pnp'
 ];
 
 
