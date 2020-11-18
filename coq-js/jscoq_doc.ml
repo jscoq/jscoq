@@ -78,16 +78,16 @@ let parse ~doc ~ontop stm =
  * if I think we agree this shouldn't be possible. Then, we add and
  * update our document.
  *)
-let add ~doc ~ontop ~newid stm =
+let add ~doc ~ontop stm =
   let doc, sdoc = doc in
   let verb = false                                       in
   if not (List.mem ontop sdoc) then raise (NoSuchState ontop);
   let pa = Pcoq.Parsable.make (Stream.of_string stm)     in
   let entry = Pvernac.main_entry in
   let east = Option.get Stm.(parse_sentence ~doc ~entry ontop pa) in
-  let ndoc, new_st, foc = Stm.add ~doc ~ontop ~newtip:newid verb east in
+  let ndoc, new_st, foc = Stm.add ~doc ~ontop verb east in
   let new_sdoc = new_st :: sdoc in
-  east.CAst.loc, foc, (ndoc,new_sdoc)
+  east.CAst.loc, new_st, foc, (ndoc,new_sdoc)
 
 let query ~doc ~at ~route query =
   let doc, sdoc = doc in

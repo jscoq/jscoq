@@ -103,9 +103,47 @@ let post_message : < .. > Js.t -> unit =
   else
     fun msg -> Js.Unsafe.fun_call (jsCoq##.onmessage) [|Js.Unsafe.inject msg|]
 
+module StateMap = Map.Make(Stateid)
+let to_theirs_trans = ref StateMap.empty
+let to_ours_trans = ref StateMap.empty
+
+let add_map ~ours ~theirs =
+  to_ours_trans := StateMap.add theirs ours !to_ours_trans;
+  to_theirs_trans := StateMap.add ours theirs !to_theirs_trans
+
+let to_ours s =
+  match StateMap.find_opt s !to_ours_trans with
+  | Some s -> s
+  | None -> s
+
+let to_theirs s =
+  match StateMap.find_opt s !to_theirs_trans with
+    | Some s -> s
+    | None -> s
+
+let mangle_jscoq_cmd (cmd : jscoq_cmd) = match cmd with
+  | Add (id1, id2, s, b) -> Add (to_ours id1, to_ours id2, s, b)
+  | Cancel id -> Cancel (to_ours id)
+  | Exec id -> Exec (to_ours id)
+  | Query (id, r, q) -> Query (to_ours id, r, q)
+  | Ast id -> Ast (to_ours id)
+  | _ -> cmd
+
+let mangle_jscoq_answer (ans : jscoq_answer) = match ans with
+  | Ready id -> Ready (to_theirs id)
+  | Added (id, l) -> Added (to_theirs id, l)
+  | Pending (id, ss, sss) -> Pending (to_theirs id, ss, sss)
+  | Cancelled ids -> Cancelled (List.map to_theirs ids)
+  | ModeInfo (id, m) -> ModeInfo (to_theirs id, m)
+  | GoalInfo (id, i) -> GoalInfo(to_theirs id, i)
+  | Loaded (s, id) -> Loaded (s, to_theirs id)
+  | CoqExn (l, ids, m) -> CoqExn (l, Option.map (fun (id1, id2) -> (to_theirs id1, to_theirs id2)) ids, m)
+  | Feedback (Feedback.{ span_id; _} as f) -> Feedback Feedback.{ f with span_id = to_theirs span_id}
+  | _ -> ans
+
 (* Send messages to the main thread *)
 let post_answer (msg : jscoq_answer) : unit =
-  post_message (answer_to_jsobj msg)
+  post_message (answer_to_jsobj (mangle_jscoq_answer msg))
 
 let post_lib_event (msg : lib_event) : unit =
   Worker.post_message (lib_event_to_jsobj msg)
@@ -263,8 +301,9 @@ let exec_query doc ~span_id ~route query =
 (* -- Main message handler -- *)
 
 let jscoq_execute =
-  let out_fn = post_answer in fun doc -> function
-  | Add(ontop,newid,stm,resolved) ->
+  let out_fn = post_answer in
+  fun doc -> fun cmd -> match mangle_jscoq_cmd cmd with
+    | Add(ontop,newid,stm,resolved) ->
       if ontop = Jscoq_doc.tip !doc then begin
         try
           let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
@@ -273,8 +312,9 @@ let jscoq_execute =
           | Some ((prefix, module_names)) ->
             out_fn @@ Pending (newid, prefix, module_names)
           | _ ->
-            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
-            doc := ndoc; out_fn @@ Added (newid,loc)
+            let loc, new_st, _tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop stm in
+            add_map ~ours:new_st ~theirs:newid;
+            (doc := ndoc; out_fn @@ Added (new_st,loc))
         with exn ->
           let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
           out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, msg));
@@ -290,8 +330,9 @@ let jscoq_execute =
   | Exec sid          ->
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
     doc := ndoc
+    (* doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string (to_theirs sid))) *)
 
-  | Query (sid, rid, query) -> 
+  | Query (sid, rid, query) ->
     exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
 
   | Register file_path  ->

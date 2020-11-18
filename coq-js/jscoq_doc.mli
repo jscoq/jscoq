@@ -22,9 +22,8 @@ val parse :
 val add :
   doc:ser_doc        ->
   ontop:Stateid.t    ->
-  newid:Stateid.t    ->
   string             ->
-  Loc.t option * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
+  Loc.t option * Stateid.t * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
 
 val query :
   doc:ser_doc              ->
