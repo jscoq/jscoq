@@ -18,7 +18,7 @@ const opts = require('commander')
     .parse();
 
 const pkgDir = './node_modules',
-      pkgPrefix = '@jscoq/',
+      pkgPrefix = '@wacoq/',
       buildRel = `_build/${opts.buildContext}`;
 
 function consumeFromDirectory(dir) {

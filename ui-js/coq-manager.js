@@ -489,7 +489,7 @@ class CoqManager {
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${JsCoq.node_modules_path}@jscoq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${JsCoq.node_modules_path}@wacoq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(this.layout.packages,
@@ -1303,7 +1303,7 @@ const PKG_ALIASES = {
     utf8: "Coq.Unicode.Utf8"
 };
 
-const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
+const PKG_AFFILIATES = [  // Affiliated packages in @wacoq scope
     'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
     'software-foundations',
     'hahn', 'paco', 'snu-sflib', 'promising',
