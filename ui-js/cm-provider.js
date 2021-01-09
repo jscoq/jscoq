@@ -656,21 +656,21 @@ class Deprettify {
     }
 
     /**
-     * Translate back unicode symbols to their original ASCII.
+     * Translate back some unicode symbols to their original ASCII.
      * @param {string} text 
      */
     static cleanup(text) {
         for (let [re, s] of this.REPLACES) text = text.replace(re, s);
         return text.replace(/^\n/, '');
     }
-
-    static REPLACES = [
-        [/\xa0/g, ' '], [/⇒/g, '=>'],   [/×/g, '*'],
-        [/→/g, '->'],   [/←/g, '<-'],   [/¬/g, '~'],
-        [/⊢/g, '|-'],   [/\n☐/g, ''],
-        [/∃/g, 'exists']  /* because it is also a tactic... */
-    ];
 }
+
+Deprettify.REPLACES = [  /* Safari does not support static members? */
+    [/\xa0/g, ' '], [/⇒/g, '=>'],   [/×/g, '*'],
+    [/→/g, '->'],   [/←/g, '<-'],   [/¬/g, '~'],
+    [/⊢/g, '|-'],   [/\n☐/g, ''],
+    [/∃/g, 'exists']  /* because it is also a tactic... */
+];
 
 // Local Variables:
 // js-indent-level: 4
