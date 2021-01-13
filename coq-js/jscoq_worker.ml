@@ -325,7 +325,7 @@ let jscoq_execute =
         let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
         let jsoov = Sys_js.js_of_ocaml_version                      in
         let header1 = Printf.sprintf
-            "JsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
+            "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
             Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
         let header2 = Printf.sprintf
             "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in

@@ -1,4 +1,11 @@
-# JsCoq 0.12.1 "Emilio should write this :P"
+# jsCoq 0.12.2 "Square Peg, Round Hole"
+---------------------------------------
+ - Basically just upgrade to Coq 8.12.1, as it contains some important
+   bug fixes of the v8.12 branch. (@corwin-of-amber)
+ - Allow building with OCaml 4.10.2, since it is the earliest version
+   of OCaml that supports arm64 (Apple M1). (@corwin-of-amber)
+
+# jsCoq 0.12.1 "Emilio should write this :P"
 -----------------------------------------
 
  - Bugfix preventing use of `lia` and other tactics that might invoke
@@ -7,7 +14,7 @@
    proof mode, and do not highlight preceding comments of them; try not
    to interfere with keyboard scrolling in the page. (@corwin-of-amber)
 
-# JsCoq 0.12 "<-as usual->"
+# jsCoq 0.12 "<-as usual->"
 -----------------------------------------
 
  - Port to Coq 8.12 (@ejgallego)

@@ -524,18 +524,12 @@ function unix_inchannel_of_filedescr()  { unix_ll("unix_inchannel_of_filedescr",
 // Provides: unix_outchannel_of_filedescr
 // Requires: unix_ll
 function unix_outchannel_of_filedescr() { unix_ll("unix_outchannel_of_filedescr", arguments); }
-// Provides: caml_channel_descriptor
-// Requires: unix_ll
-function caml_channel_descriptor()   { unix_ll("caml_channel_descriptor", arguments); }
 // Provides: caml_mutex_try_lock
 // Requires: unix_ll
 function caml_mutex_try_lock()       { unix_ll("caml_mutex_try_lock", arguments); }
 // Provides: caml_obj_add_offset
 // Requires: unix_ll
 function caml_obj_add_offset()       { unix_ll("caml_obj_add_offset", arguments); }
-// Provides: caml_sys_unsafe_getenv
-// Requires: unix_ll
-function caml_sys_unsafe_getenv()    { unix_ll("caml_sys_unsafe_getenv", arguments); }
 // Provides: caml_thread_join
 // Requires: unix_ll
 function caml_thread_join()          { unix_ll("caml_thread_join", arguments); }

@@ -1,10 +1,19 @@
 #!/bin/bash
 
-OCAML_VER=4.08.1
 NJOBS=4
 VERB= # -vv
 
-WORD_SIZE=32
+# Default OCaml version
+case `uname`-`uname -m` in
+  Darwin-arm64) OCAML_VER=4.10.2 ;;  # older versions don't work on arm64
+  *)            OCAML_VER=4.08.1 ;;
+esac
+
+# Default word size
+case `uname` in
+  Darwin) WORD_SIZE=64 ;; # macOS can no longer produce 32-bit objects
+  *)      WORD_SIZE=32 ;;
+esac
 
 WRITE_CONFIG=no
 
