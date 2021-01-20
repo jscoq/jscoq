@@ -912,7 +912,7 @@ class CoqManager {
      */
     work() {
         var tip = null, latest_ready_stm = null,
-            skip = stm => this.provider.mark(stm, 'ok');
+            skip = stm => { stm.phase = Phases.PROCESSED; this.provider.mark(stm, 'ok'); }
 
         for (let stm of this.doc.sentences) {
             switch (stm.phase) {
