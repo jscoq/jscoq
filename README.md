@@ -7,13 +7,13 @@ jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq v8.12+0.12.0 supporting Coq 8.12.0, try it:
+jsCoq 0.12.2 supporting Coq 8.12.1, try it:
 
 <https://jscoq.github.io>
 
-jsCoq is written to conform to ES2017, any recent standard-compliant
-browser. No servers or external programs are needed. See the
-[Troubleshooting](#Troubleshooting) section if you have problems.
+jsCoq is written to conform to ES2017; any recent standard-compliant
+browser should be able to run it. No servers or external programs are needed.
+See the [Troubleshooting](#Troubleshooting) section if you have problems.
 
 jsCoq is community-developed by a [team of contributors](#Credits).
 
@@ -99,9 +99,12 @@ See the [dedicated file](docs/papers.md)
 The main page includes a proof of the infinitude of primes by
 G. Gonthier. We provide some more examples as a showcase of the tool:
 
-- The Logical Foundations suite:
-  + https://x80.org/rhino-coq/v8.11/examples/lf/
-  + https://x80.org/rhino-coq/v8.11/examples/plf/
+- The Software Foundations suite (so far, LF and PLF volumes):
+  + https://jscoq.github.io/ext/sf
+
+ - Mike Nahas's Coq Tutorial: https://corwin-of-amber.github.io/jscoq/tut/nahas/nahas_tutorial.html
+
+### Outdated examples [but still working]
 
 - dft.v: https://x80.org/rhino-coq/v8.11/examples/dft.html
 
@@ -113,15 +116,6 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
   Introduction to the [Coq Equations](https://github.com/mattam82/Coq-Equations) package from
   the official documentation.
-
-- Stlc: The "Simply Typed Lambda Calculus" chapter from Software
-  Foundations by Benjamin Pierce et al:
-
-  https://x80.org/rhino-coq/v8.11/examples/Stlc.html
-
-- Mike's Nahas Tutorial: https://corwin-of-amber.github.io/jscoq/tut/nahas/nahas_tutorial.html
-
-### Outdated examples [but still working]
 
 - The IRIS program logic, by Robbert Krebbers et al.
 
@@ -173,16 +167,15 @@ Incomplete list of places where jsCoq has been used:
 - http://www.mines-paristech.fr/Actualites/jsCoq-ou-Coq-dans-un-navigateur/2118
 - https://news.ycombinator.com/item?id=9836900
 
-### Addon Packages:
+### Addon Packages
 
 One of jsCoq's strengths is its support for bundling addon
-packages. In order to add your Coq package to jsCoq, you need to add a
-definition file in the `coq-addons` repository. We recommend you use
-one of the existing files as a model.
-
-Also, you need to define a jsCoq package by editing the
-`coq-jslib/dftlibs.ml` file. Once that is done, call `make jscoq`
-again.
+packages. In order to add your Coq package to jsCoq, you need to compile
+it with jsCoq's version of Coq.
+Head over to [jscoq/addons](https://github.com/jscoq/addons) for pointers to
+some well-known packages that have been compiled for jsCoq and are bundled
+with every version of jsCoq.
+You can use these as examples for bundling your own libraries.
 
 ## Troubleshooting
 
@@ -195,7 +188,7 @@ are hard to fix; you may be stuck with them for a while.
 ### Reporting Bugs ###
 
 Feel free to use the issue tracker. Please include your
-browser/OS/user-agent and command line options.
+browser/OS/user-agent and any command-line options.
 
 ### Contact and on-line help ###
 
