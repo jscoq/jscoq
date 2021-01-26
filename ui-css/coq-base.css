@@ -54,7 +54,7 @@ a, a:link, a:visited, a:active {
   overflow-x: visible;  /* needed for power button to be visible */
 }
 
-#ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane) {
+#ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane):not(.CodeMirror-hints) {
   flex-grow: 1; /* take all remaining space */
   flex-basis: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
 }
