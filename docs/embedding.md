@@ -121,7 +121,7 @@ add jsCoq to webpage with Coq code is:
 ```javascript
   <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
-    loadJsCoq($path).then( () => new CoqManager ($list_of_ids, {$options}) );
+    JsCoq.start($path, $list_of_ids, {$options});
   </script>
 ```
 
@@ -129,7 +129,10 @@ where `$path` is the path the jsCoq distribution, and `$list_of_ids` is
 a list of `<textarea>`s or `<div>`s that will form the Coq document.
 CSS selectors are also allowed as part of `$list_of_ids`: all matching elements
 will be added to the document.
-See below for available `$options`.
+All parameters are optional.
+If `$path` is omitted, `jscoq-loader.js` will infer the path from the `<script>` tag whence it was referenced.
+If `$list_of_ids` is omitted, `'ide-wrapper'` is used. If the correponding element is empty, `CoqManager` will create a single empty editor in it.
+See below for available `$options` and their defaults.
 
 The jsCoq [landing webpage](index.html) is a good running example.
 
@@ -140,7 +143,7 @@ the `CoqManager` constructor:
 
 | Key             | Type            | Default         | Description                                                                                                   |
 |-----------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------------------|
-| `base_path`     | string          | `'./'`          | Path where jsCoq is installed.                                                                                |
+| `base_path`     | string          | auto            | Path where jsCoq is installed.                                                                                |
 | `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
 | `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
 | `all_pkgs`      | array of string / object        | (see below)     | List of available packages that will be listed in the packages panel.                                         |
