@@ -81,9 +81,10 @@ class PackageManager {
     addRow(bname, desc = bname, parent) {
         var row = $('<div>').addClass('package-row').attr('data-name', bname)
             .append($('<button>').addClass('download-icon')
-                    .click(() => { this.startPackageDownload(bname); }))
+                    .attr('title', "Download package")
+                    .on('click', () => { this.startPackageDownload(bname); }))
             .append($('<span>').addClass('desc').text(desc)
-                    .click(() => { this._expandCollapseRow(row); }));
+                    .on('click', () => { this._expandCollapseRow(row); }));
 
         if (parent) {
             parent.row.append(row);
@@ -266,7 +267,8 @@ class PackageManager {
         var bundle = this.bundles[bname];
 
         bundle.row.children('.rel-pos').remove();
-        bundle.row.children('button.download-icon').addClass('checked');
+        bundle.row.children('button.download-icon').addClass('checked')
+                  .attr('title', "Downloaded");
 
         var pkg = this.getPackage(bname);
         pkg.status = 'loaded';
