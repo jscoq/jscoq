@@ -156,8 +156,7 @@ class CoqProject {
   
     async toZip(withManifest?: string, extensions = ['.vo', '.cma'],
                 prep: PackagePreprocess = (x=>[x])) {
-        const _JSZip = await import('jszip'),
-              JSZip = (_JSZip.default || _JSZip) as JSZip,  // allow both Webpack and Parcel
+        const JSZip = (await import('jszip')).default,
               z = new JSZip();
 
         if (withManifest) z.file('coq-pkg.json', withManifest, this.opts.zip);
@@ -540,13 +539,13 @@ class ZipVolume extends StoreVolume {
     }
 
     static async fromFile(zipFilename: string) {
-        const JSZip = await import('jszip');
+        const JSZip = (await import('jszip')).default;
         return new ZipVolume(
             await JSZip.loadAsync((0 || fs.readFileSync)(zipFilename)));
     }
 
     static async fromBlob(blob: Blob | Promise<Blob>) {
-        const JSZip = await import('jszip');
+        const JSZip = (await import('jszip')).default;
         return new ZipVolume(await JSZip.loadAsync(<any>blob));
     }
 
