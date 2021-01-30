@@ -1,7 +1,8 @@
 const assert = require('assert'),
       fs = require('fs'),
       glob = require('glob'),
-      child_process = require('child_process');
+      child_process = require('child_process'),
+      util = require('util');
 
 const cliJsPath = locateCliJs();
 
@@ -12,8 +13,8 @@ function locateCliJs() {
     return alts[0];
 }
 
-function cliSubprocessSync(flags) {
-    return child_process.spawnSync('node', [cliJsPath, ...flags],
+function cliSubprocess(flags) {
+    return util.promisify(child_process.execFile)('node', [cliJsPath, ...flags],
         {encoding: 'utf-8'});
 }
 
@@ -21,9 +22,9 @@ describe('qa0 - sanity test', function() {
     this.timeout(10000); 
 
     describe('nonzeros', function() {
-        var rc = cliSubprocessSync(['run', '-l', 'tests/qa0/nonzeros.v']);
-        it('should run without error', function() {
-            assert.strictEqual(rc.status, 0);
+        var rc;
+        it('should run without error', async function() {
+            rc = await cliSubprocess(['run', '-l', 'tests/qa0/nonzeros.v']);
             assert.strictEqual(rc.stderr, "");
         });
         it('should produce correct output', function() {
@@ -33,10 +34,16 @@ describe('qa0 - sanity test', function() {
     });
 
     describe('timeout', function() {
-        var rc = cliSubprocessSync(['run', '-l', 'tests/qa0/timeout.v']);
-        it('should report a timeout', function() {
-            var expected = fs.readFileSync('tests/qa0/timeout.out', 'utf-8');
-            assert.strictEqual(rc.stdout, expected);
+        it('should report a timeout', async function() {
+            try {
+                await cliSubprocess(['run', '-l', 'tests/qa0/timeout.v']);
+            }
+            catch (rc) {
+                var expected = fs.readFileSync('tests/qa0/timeout.out', 'utf-8');
+                assert.strictEqual(rc.stdout, expected);
+                return;
+            }
+            throw new Error('terminated without error');
         });
     });
 });
