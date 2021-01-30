@@ -248,7 +248,6 @@ class CoqWorker {
     // Internal event handling
 
     coq_handler(evt) {
-
         var msg     = evt.data;
         var msg_tag = msg[0];
         var msg_args = msg.slice(1);

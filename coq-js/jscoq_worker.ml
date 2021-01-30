@@ -289,7 +289,7 @@ let jscoq_execute =
 
   | Exec sid          ->
     let ndoc = Jscoq_doc.observe ~doc:!doc sid in
-    doc := ndoc; out_fn @@ Log (Debug, Pp.str @@ "observe " ^ (Stateid.to_string sid))
+    doc := ndoc
 
   | Query (sid, rid, query) -> 
     exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn

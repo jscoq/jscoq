@@ -1,6 +1,8 @@
 # General ignores
 *~
 .*.swp
+.cache
+/dist
 
 # Local build configuration file
 /config.inc

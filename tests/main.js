@@ -6,7 +6,7 @@ const assert = require('assert'),
 const cliJsPath = locateCliJs();
 
 function locateCliJs() {
-    var alts = glob.sync('_build/jscoq+*/ui-js/coq-cli.js');
+    var alts = glob.sync('_build/jscoq+*/cli.js');
     if (alts.length == 0) throw new Error('coq-cli.js not found');
     else if (alts.length > 1) throw new Error('multiple builds found: ' + alts);
     return alts[0];
@@ -21,22 +21,22 @@ describe('qa0 - sanity test', function() {
     this.timeout(10000); 
 
     describe('nonzeros', function() {
-        var rc = cliSubprocessSync(['-l', 'tests/qa0/nonzeros.v']);
+        var rc = cliSubprocessSync(['run', '-l', 'tests/qa0/nonzeros.v']);
         it('should run without error', function() {
-            assert.equal(rc.status, 0);
-            assert.equal(rc.stderr, "");
+            assert.strictEqual(rc.status, 0);
+            assert.strictEqual(rc.stderr, "");
         });
         it('should produce correct output', function() {
             var expected = fs.readFileSync('tests/qa0/nonzeros.out', 'utf-8');
-            assert.equal(rc.stdout, expected);
+            assert.strictEqual(rc.stdout, expected);
         });
     });
 
     describe('timeout', function() {
-        var rc = cliSubprocessSync(['-l', 'tests/qa0/timeout.v']);
+        var rc = cliSubprocessSync(['run', '-l', 'tests/qa0/timeout.v']);
         it('should report a timeout', function() {
             var expected = fs.readFileSync('tests/qa0/timeout.out', 'utf-8');
-            assert.equal(rc.stdout, expected);
+            assert.strictEqual(rc.stdout, expected);
         });
     });
 });
