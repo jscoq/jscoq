@@ -8,10 +8,10 @@
 )
 
 (rule
- (targets ide-project.browser.js ide-project.browser.js.map)
+ (targets ide-project.browser.js)
  (deps
   (source_tree .)
   (source_tree ../coq-jslib/build)
   ../node_modules)
  (action
-  (bash "npx webpack --config-name ide-project")))
+  (bash "npx webpack --mode production --config-name ide-project")))

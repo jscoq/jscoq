@@ -113,7 +113,7 @@ dist: jscoq
 	mkdir -p $(DISTDIR)
 	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
-TAREXCLUDE = --exclude node_modules --exclude '*.cma' \
+TAREXCLUDE = --exclude assets --exclude node_modules --exclude '*.cma' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
@@ -129,7 +129,7 @@ dist-tarball: dist
 
 NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
-NPMEXCLUDE = --delete-excluded --exclude '*.cma' \
+NPMEXCLUDE = --delete-excluded --exclude assets --exclude '*.cma' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
@@ -164,7 +164,7 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.12.1
+COQ_BRANCH = V8.12.2
 COQ_BRANCH_LATEST = v8.12
 COQ_REPOS = https://github.com/coq/coq.git
 

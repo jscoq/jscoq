@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "0.12.2",
+  "version": "0.12.2-rc1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
     "jscoq": "./cli.js"
@@ -17,6 +17,7 @@
     "jquery": "^3.5.1",
     "jszip": "^3.5.0",
     "localforage": "^1.7.3",
+    "lodash": "^4.17.20",
     "minimatch": "^3.0.4",
     "mkdirp": "^1.0.4",
     "neatjson": "^0.8.3",
@@ -31,6 +32,7 @@
     "css-loader": "^3.4.2",
     "file-loader": "^6.0.0",
     "mocha": "^8.2.1",
+    "process": "^0.11.10",
     "sass": "^1.26.3",
     "sass-loader": "^8.0.2",
     "style-loader": "^1.1.3",
