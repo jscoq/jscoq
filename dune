@@ -52,4 +52,4 @@
   (deps
     coq-js/jscoq_worker.js))
 
-(dirs (:standard _vendor+*))
+(dirs (:standard _vendor+* \ node_modules))

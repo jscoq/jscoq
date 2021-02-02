@@ -19,12 +19,15 @@ module.exports = [
       },
     ],
   },
+  externals: {  /* do not bundle the worker */
+    './coq-js/jscoq_worker.bc.js': 'commonjs2 ./coq-js/jscoq_worker.bc.js'
+  },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
   },
   output: {
     filename: 'cli.js',
-    path: __dirname   // should be run by Dune in _build/*
+    path: __dirname  // should be run by Dune in _build/*
   },
   plugins: [
     new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),

@@ -208,7 +208,7 @@ let coq_cma_link cmo_file =
     Feedback.feedback (Feedback.FileLoaded(cmo_file, cmo_file));
   with
   | Sys_error _ ->
-    eprintf "!! bytecode file %s not found in path. DYNLINK FAILED\n%!" cmo_file;
+    eprintf "!! bytecode file %s{,.js} not found in path. DYNLINK FAILED\n%!" cmo_file;
     raise @@ DynLinkFailed cmo_file
 
 let register_cma ~file_path =

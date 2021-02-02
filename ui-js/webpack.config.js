@@ -15,7 +15,7 @@ module.exports = (env, argv) => ({
     libraryTarget: 'umd',
     publicPath: '/ui-js/'
   },
-  node: {
+  externals: {
     fs: 'empty', child_process: 'empty'
   },
   module: {

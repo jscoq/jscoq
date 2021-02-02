@@ -3,11 +3,13 @@
 
 import path from 'path';
 import commander from 'commander';
-import { version } from '../package.json';
+import manifest from '../package.json';
 //import { FormatPrettyPrint } from '../ui-js/format-pprint';
 import { JsCoqCompat } from './build/project';
 import { Workspace } from './build/workspace';
 import { Batch, CompileTask, BuildError } from './build/batch';
+
+import { HeadlessCLI } from '../ui-js/coq-cli';  // oops
 
 
 
@@ -135,11 +137,13 @@ class CLI {
 
 async function main() {
 
-    var loads: string[] = [];
+    var loads: string[] = [],
+        rc = 0;
 
-    var opts = commander
+    var prog = commander
         .name('wacoq')
-        .version(version, '-v, --version')
+        .version(manifest.version);
+    prog.command('build', {isDefault: true})
         .option('--workspace <w.json>',       'build projects from specified workspace')
         .option('--rootdir <dir>',            'toplevel directory for finding `.v` and `.vo` files')
         .option('--top <name>',               'logical name of toplevel directory')
@@ -151,10 +155,20 @@ async function main() {
         .option('--continue',                 'pick up from previous build')
         .option('--nostdlib',                 'skip loading the standard Coq packages')
         .on('option:load', pkg => loads.push(...pkg.split(',')))
-        .parse(process.argv);
+        .action(async opts => { rc = await build(opts, loads); });
 
-    if (opts.args[0] === 'build') opts.args.shift();
+    var headless = new HeadlessCLI();
+    headless.installCommand(prog);
 
+    var argv = process.argv.slice();  // default command hack
+    if (argv[2] != 'build' && argv[2] != 'run') argv.splice(2, 0, 'build');
+
+    await prog.parseAsync(argv);
+    return rc || headless.rc;
+}
+
+
+async function build(opts: any, loads: string[]) {
     if (opts.args.length > 0) {
         if (!opts.workspace && opts.args[0].endsWith('.json'))
             opts.workspace = opts.args.shift();
