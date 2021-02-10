@@ -814,13 +814,14 @@ class CoqManager {
             return true;
         }
 
-        // Prevent canceling the init state
-        if (this.doc.sentences.length <= 1) { return false; }
+        var back_to_stm = this.doc.sentences.slice(0, -1)
+            .findLast(stm => !(stm.flags.is_comment || stm.flags.is_hidden));
+        if (!back_to_stm) return false;
 
-        var last_stm = this.doc.sentences.pop();
-        this.cancel(last_stm);
-
-        if(update_focus) this.focus(this.doc.sentences.last());
+        var cancel_stm = this.nextAdded(back_to_stm.coq_sid);
+        this.cancel(cancel_stm);
+        
+        if(update_focus) this.focus(back_to_stm);
 
         return true;
     }
@@ -834,11 +835,13 @@ class CoqManager {
             next_stm = this.provider.getNext(last_stm, until),
             queue = [next_stm];
 
-        // Skip comment block
-        if (next_stm && next_stm.is_comment &&
+        // Step over comment block and hidden sections
+        while (next_stm && (next_stm.flags.is_comment || next_stm.flags.is_hidden) &&
             (next_stm = this.provider.getNext(next_stm, until)))
             queue.push(next_stm);
-        if (!next_stm) { return false; } // We have reached the end
+
+        if (!next_stm && queue.every(stm => !stm || stm.flags.is_comment))
+            return false;    // We have reached the end
 
         for (next_stm of queue) {
             next_stm.phase = Phases.PENDING;
@@ -909,7 +912,7 @@ class CoqManager {
             case Phases.PROCESSED:
                 tip = stm.coq_sid; break;
             case Phases.ADDED:
-                if (stm.is_comment) {
+                if (stm.flags.is_comment) {
                     if (!latest_ready_stm) skip(stm);  // all previous stms have been processed
                 }
                 else {
@@ -936,7 +939,7 @@ class CoqManager {
     }
 
     async add(stm, tip) {
-        if (stm.is_comment) {
+        if (stm.flags.is_comment) {
             stm.phase = Phases.ADDED;
             return;
         }
@@ -978,6 +981,10 @@ class CoqManager {
 
     lastAdded(before=Infinity) {
         return this.doc.sentences.findLast(stm => stm.coq_sid < before);
+    }
+
+    nextAdded(after=0) {
+        return this.doc.sentences.find(stm => stm.coq_sid > after);
     }
     
     /**

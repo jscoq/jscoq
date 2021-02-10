@@ -2,13 +2,14 @@
 
 class CmSentence {
 
-    constructor(start, end, text, is_comment) {
-        // start, end: {line: l, ch: c}
+    constructor(start, end, text, flags) {
+        // start, end: {line: number, ch: number}
+        // flags: {is_comment: bool, is_hidden: bool}
         this.start = start;
         this.end   = end;
         this.text  = text;
         this.mark  = undefined;
-        this.is_comment = is_comment;
+        this.flags = flags || {};
         this.feedback = [];
         this.action = undefined;
     }
@@ -40,6 +41,10 @@ class CmCoqProvider {
 
         if (options)
             copyOptions(options, cmOpts);
+        
+        var makeHidden = $(element).is(':hidden') ||
+            /* corner case: a div with a single hidden child is considered hidden */
+            element.children.length == 1 && $(element.children[0]).is(':hidden');
 
         if (element.tagName === 'TEXTAREA') {
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
@@ -74,6 +79,8 @@ class CmCoqProvider {
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
         editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
+        if (makeHidden && !editor_element.is(':hidden'))
+            editor_element.css({display: "none"});
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
@@ -115,6 +122,10 @@ class CmCoqProvider {
         if (!dialog_input) this.editor.focus();
     }
 
+    isHidden() {
+        return $(this.editor.getWrapperElement()).is(':hidden');
+    }
+
     // If prev == null then get the first.
     getNext(prev, until) {
 
@@ -140,7 +151,7 @@ class CmCoqProvider {
         var end = {line: upto.line, ch: upto.end};
 
         return new CmSentence(start, end, doc.getRange(start, end),
-                              state == 2);
+            {is_comment: state == 2, is_hidden: this.isHidden()});
     }
 
     // Gets sentence at point;
