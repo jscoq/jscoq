@@ -1,5 +1,5 @@
 diff --git a/clib/hashset.ml b/clib/hashset.ml
-index 89136e7..4d89155 100644
+index 89136e787..4d89155a0 100644
 --- a/clib/hashset.ml
 +++ b/clib/hashset.ml
 @@ -225,9 +225,9 @@ module Combine = struct
@@ -15,10 +15,10 @@ index 89136e7..4d89155 100644
 +    let combinesmall x y = (beta * x + y) land 0x3fffffff
  end
 diff --git a/kernel/dune b/kernel/dune
-index 5f7502e..b22c763 100644
+index bd663974d..2c98ca103 100644
 --- a/kernel/dune
 +++ b/kernel/dune
-@@ -16,7 +16,7 @@
+@@ -16,12 +16,12 @@
  
  (rule
   (targets uint63.ml)
@@ -26,9 +26,15 @@ index 5f7502e..b22c763 100644
 + (deps (:gen-file uint63_31.ml))
   (action (copy# %{gen-file} %{targets})))
  
+ (rule
+  (targets float64.ml)
+- (deps (:gen-file float64_%{ocaml-config:int_size}.ml))
++ (deps (:gen-file float64_31.ml))
+  (action (copy# %{gen-file} %{targets})))
+ 
  (documentation
 diff --git a/kernel/uint63_31.ml b/kernel/uint63_31.ml
-index 5b2d934..ce7edb6 100644
+index 988611df3..0a25a43b2 100644
 --- a/kernel/uint63_31.ml
 +++ b/kernel/uint63_31.ml
 @@ -11,7 +11,7 @@
@@ -41,7 +47,7 @@ index 5b2d934..ce7edb6 100644
  let uint_size = 63
  
 diff --git a/lib/system.ml b/lib/system.ml
-index e25f758..a59c972 100644
+index 1aadaf6d3..fd53a4319 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
 @@ -184,7 +184,7 @@ let input_binary_int f ch =
@@ -54,10 +60,10 @@ index e25f758..a59c972 100644
    try Marshal.from_channel ch
    with
 diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
-index 2c112c3..99459bb 100644
+index dbca2f094..177fb1fac 100644
 --- a/theories/Numbers/Cyclic/Int63/Int63.v
 +++ b/theories/Numbers/Cyclic/Int63/Int63.v
-@@ -1162,8 +1162,8 @@ Proof.
+@@ -1172,8 +1172,8 @@ Proof.
   apply to_Z_inj.
   rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
   pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
@@ -69,7 +75,7 @@ index 2c112c3..99459bb 100644
  Lemma addmuldiv_spec x y p :
    φ p <= φ digits  ->
 diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index 1d93267..0d7fa12 100644
+index 1d93267fe..0d7fa12aa 100644
 --- a/theories/Numbers/Cyclic/Int63/Ring63.v
 +++ b/theories/Numbers/Cyclic/Int63/Ring63.v
 @@ -60,8 +60,10 @@ Add Ring Int63Ring : Int63Ring

@@ -4,7 +4,7 @@
  (modules :standard \ jscoq_worker jslog)
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
- (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm coq.toplevel jslib coq-serapi.serlib coq-serapi.serapi_v8_11))
+ (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq.stm coq.toplevel jslib coq-serapi.serlib coq-serapi.serapi_v8_13))
 
 (executable
  (name jscoq_worker)
@@ -21,7 +21,7 @@
   (flags :standard (:include .extraflags) --dynlink +dynlink.js +toplevel.js --setenv PATH=/bin))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
- (libraries num jscoqlib))
+ (libraries num zarith_stubs_js jscoqlib))
 
 (rule
  (targets marshal-arch.js)

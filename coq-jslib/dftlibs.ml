@@ -15,7 +15,7 @@ let plugin_list =
   ; ["syntax"]
   ; ["cc"]
   ; ["firstorder"]
-  ; ["setoid_ring"]
+  ; ["ring"]
   ; ["extraction"]
   ; ["funind"]
   ; ["btauto"]

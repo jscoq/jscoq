@@ -113,8 +113,8 @@ let coq_init opts =
 
 let new_doc opts =
   let doc_type = match opts.mode with
-    | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in 
-                     Stm.Interactive (Stm.TopLogical dp) 
+    | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in
+                     Stm.Interactive (Stm.TopLogical dp)
     | Vo ->          Stm.VoDoc opts.top_name
   in
   let ndoc = { Stm.doc_type
@@ -128,20 +128,19 @@ let new_doc opts =
 
 let mode_of_stm ~doc sid =
   match Stm.state_of_id ~doc sid with
-  | `Valid (Some { lemmas = Some _; _ }) -> Proof 
+  | `Valid (Some { lemmas = Some _; _ }) -> Proof
   | _ -> General
 
 let context_of_st m = match m with
   | `Valid (Some { Vernacstate.lemmas = Some lemma ; _ } ) ->
-    Vernacstate.LemmaStack.with_top_pstate lemma
-      ~f:(fun pstate -> Pfedit.get_current_context pstate)
+    Vernacstate.LemmaStack.with_top lemma
+      ~f:(fun pstate -> Declare.Proof.get_current_context pstate)
   | _ ->
     let env = Global.env () in Evd.from_env env, env
 
 let context_of_stm ~doc sid =
   let st = Stm.state_of_id ~doc sid in
   context_of_st st
-
 
 (* Inspection subroutines *)
 
@@ -162,7 +161,7 @@ let libobj_is_leaf obj =
   | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
 
 let full_path_sibling path id =
-  Libnames.make_path (Libnames.dirpath path) id  
+  Libnames.make_path (Libnames.dirpath path) id
 
 let lookup_inductive env path mi =
   let open Declarations in

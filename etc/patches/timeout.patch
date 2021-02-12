@@ -1,8 +1,8 @@
 diff --git a/kernel/byterun/coq_interp.c b/kernel/byterun/coq_interp.c
-index 7588c1c..77d03dd 100644
+index 625525021..4df03f574 100644
 --- a/kernel/byterun/coq_interp.c
 +++ b/kernel/byterun/coq_interp.c
-@@ -1844,3 +1844,6 @@ value coq_interprete_byte(value* argv, int argn){
+@@ -1945,3 +1945,6 @@ value coq_interprete_byte(value* argv, int argn){
  value coq_eval_tcode (value tcode, value t, value g, value e) {
    return coq_interprete_ml(tcode, Val_unit, t, g, e, 0);
  }
@@ -10,7 +10,7 @@ index 7588c1c..77d03dd 100644
 +// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
 +value interrupt_pending() { return Val_false; }
 diff --git a/lib/control.ml b/lib/control.ml
-index bb42b57..51f87d4 100644
+index 95ea3935a..8e700098a 100644
 --- a/lib/control.ml
 +++ b/lib/control.ml
 @@ -16,7 +16,19 @@ let steps = ref 0
@@ -31,9 +31,9 @@ index bb42b57..51f87d4 100644
  let check_for_interrupt () =
 +  jscoq_event_yield ();
    if !interrupt then begin interrupt := false; raise Sys.Break end;
-   incr steps;
-   if !enable_thread_delay && !steps = 1000 then begin
-@@ -79,11 +91,30 @@ let windows_timeout n f x e =
+   if !enable_thread_delay then begin
+     incr steps;
+@@ -81,11 +93,30 @@ let windows_timeout n f x e =
      let () = killed := true in
      Exninfo.iraise e
  

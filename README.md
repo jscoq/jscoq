@@ -1,13 +1,13 @@
 Run the Coq Proof Assistant in your browser!
 ------------------------
 
-[![Build Status](https://travis-ci.org/jscoq/jscoq.svg?branch=v8.12)](https://travis-ci.org/ejgallego/jscoq)
+[![Build Status](https://travis-ci.org/jscoq/jscoq.svg?branch=v8.13)](https://travis-ci.org/ejgallego/jscoq)
 
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq 0.12.2 supporting Coq 8.12.1, try it:
+jsCoq 0.13.0 supporting Coq 8.13.0, try it:
 
 <https://jscoq.github.io>
 
@@ -67,7 +67,7 @@ options and jsCoq HTML embedding API. A quick setup can be done with:
 $ npm install jscoq
 ```
 
-then copy and adapt the [template page](https://github.com/ejgallego/jscoq/blob/v8.12/examples/npm-template.html)
+then copy and adapt the [template page](https://github.com/ejgallego/jscoq/blob/v8.13/examples/npm-template.html)
 page to your needs.
 
 *For a more detailed tutorial and information, refer to* [docs/embedding.md](docs/embedding.md).

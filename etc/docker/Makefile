@@ -3,10 +3,11 @@
 WHO = jscoq
 
 export REPO = https://github.com/$(WHO)/jscoq
-export BRANCH = v8.12
+export BRANCH = v8.13
 export NJOBS ?= 4
 
 ARGS = --build-arg REPO --build-arg BRANCH --build-arg NJOBS
+# --progress plain --no-cache=true
 
 build:
 	docker build . --target opam         $(ARGS)  -t jscoq:opam

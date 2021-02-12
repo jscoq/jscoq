@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.12
+COQ_VERSION := v8.13
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -164,8 +164,8 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.12.2
-COQ_BRANCH_LATEST = v8.12
+COQ_BRANCH = V8.13.0
+COQ_BRANCH_LATEST = v8.13
 COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))

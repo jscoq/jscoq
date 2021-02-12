@@ -250,3 +250,24 @@ function coq_fsqrt_byte() {
     vm_ll('coq_next_up_byte', arguments);
   return;
 }
+
+// Provides: coq_current_fix
+// Requires: vm_ll
+function coq_current_fix() {
+  vm_ll('coq_current_fix', arguments);
+  return [];
+}
+
+// Provides: coq_last_fix
+// Requires: vm_ll
+function coq_last_fix() {
+  vm_ll('coq_last_fix', arguments);
+  return [];
+}
+
+// Provides: coq_shift_fix
+// Requires: vm_ll
+function coq_shift_fix() {
+  vm_ll('coq_shift_fix', arguments);
+  return [];
+}

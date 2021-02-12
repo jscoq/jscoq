@@ -1,5 +1,13 @@
+# jsCoq 0.13.0 "Better late than never"
+---------------------------------------
+
+ - Update to Coq 8.13.0 , mostly straightforward but build
+   requirements have changed, in particular we now require
+   `js_of_ocaml >= 3.8.0` (@ejgallego)
+
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------
+
  - Basically just upgrade to Coq 8.12.1, as it contains some important
    bug fixes of the v8.12 branch. (@corwin-of-amber)
  - Allow building with OCaml 4.10.2, since it is the earliest version

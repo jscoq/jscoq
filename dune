@@ -9,7 +9,7 @@
   (package coq))
  (action
   (progn
-   (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json}
+   (run node --experimental-worker %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json}
              --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib))))
 
 (rule

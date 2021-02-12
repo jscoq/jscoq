@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     m4 bubblewrap gcc libc6-dev binutils make patch unzip
 
 # We need to install OPAM 2.0 manually for now.
-RUN wget https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
+RUN wget https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
 
 # Basic OPAM setup
 ARG NJOBS=2
@@ -23,7 +23,8 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 RUN opam switch create jscoq+64bit ocaml-base-compiler.4.08.1
 
-RUN apt install --no-install-recommends -y git rsync bzip2 nodejs curl
+ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
+RUN apt install --no-install-recommends -y $APT_PACKAGES
 RUN curl https://www.npmjs.com/install.sh | sh
 # ^ https://github.com/nodejs/help/issues/1877
 
@@ -33,7 +34,7 @@ RUN curl https://www.npmjs.com/install.sh | sh
 FROM opam as jscoq-prereq
 
 ARG REPO=https://github.com/jscoq/jscoq
-ARG BRANCH=v8.12
+ARG BRANCH=v8.13
 
 WORKDIR /root
 RUN git clone --recursive -b ${BRANCH} ${REPO}
@@ -41,6 +42,7 @@ RUN git clone --recursive -b ${BRANCH} ${REPO}
 WORKDIR jscoq
 RUN ./etc/toolchain-setup.sh --64
 RUN opam clean -a -c
+RUN opam list
 
 # -----------
 # jsCoq build
@@ -64,7 +66,7 @@ RUN eval $(opam env) && make install &&   \
     cd _build/jscoq+* && npm link
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=v8.12
+ARG ADDONS_BRANCH=v8.13
 
 # - allow submodules with ssh urls
 RUN git config --global url."https://github.com/".insteadOf git@github.com:
@@ -87,4 +89,3 @@ RUN make pack
 #FROM debian:10-slim
 
 #COPY --from=0 /root/jscoq/dist /opt/jscoq
-

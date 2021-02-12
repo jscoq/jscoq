@@ -42,7 +42,7 @@
             },
             "plugins": {
                 "prefix": "Coq",
-                "dirpaths": ["setoid_ring", "omega"]
+                "dirpaths": ["ring", "omega"]
             }
         },
         "coq-reals": {

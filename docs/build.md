@@ -36,14 +36,14 @@ cd jscoq
  The switch will be called `jscoq+64bit` in this case, and the `Makefile` will
  use the workspace `dune-workspace-64` for the build.
 
- _Word of caution about the 64-bit build:_ Using `--64` means that `.vo` files will be compiled on your native 64-bit architecture, using [a patch](https://github.com/jscoq/jscoq/blob/v8.12/etc/patches/coerce-32bit.patch) that attempts to make them compatible with the 32-bit runtime in the browser.
+ _Word of caution about the 64-bit build:_ Using `--64` means that `.vo` files will be compiled on your native 64-bit architecture, using [a patch](https://github.com/jscoq/jscoq/blob/v8.13/etc/patches/coerce-32bit.patch) that attempts to make them compatible with the 32-bit runtime in the browser.
  While this has worked so far, it is brittle and may cause some unexpected behavior in certain corner cases.
 
 **Important Note:** If you plan to build any addons which are built using `coq_makefile`, then you should run `opam switch jscoq+32bit` [or `+64bits`] before any `make` command, in order to choose the right version
 of OCaml and Coq.
 For Dune builds, configure the switch in your `dune-workspace`.
 
- 3. Fetch Coq 8.10 sources from the repository and configure it for build.
+ 3. Fetch Coq 8.13 sources from the repository and configure it for build.
 ```sh
 make coq
 ```
@@ -55,7 +55,7 @@ make jscoq
 
 This will create a working distribution under `_build/jscoq+32bit/` (or `_build/jscoq+64bit`).
 
-Now serve the files from the distribution directory via HTTP, and
+Now serve the files from the distribution directory via HTTP (`make server`), and
 navigate your browser to `http://localhost/index.html`, or run them locally:
 ```sh
  google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" _build/jscoq+32bit
