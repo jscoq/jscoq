@@ -4,6 +4,7 @@
  - jsCoq's CI has been moved from Travis CI to Github actions, thanks
    to both providers for the generous support (#242, closes #224,
    @ejgallego)
+ - Bump required compiler version to 4.12.0 (#223, @ejgallego)
 
 # jsCoq 0.13.0 "Better late than never"
 ---------------------------------------
@@ -25,6 +26,7 @@
    they are reached, and are "stepped over". (@corwin-of-amber)
  - Integrating Collacoq functionality into the IDE proper, now available
    in the scratchpad page. (@ejgallego, @corwin-of-amber)
+   `js_of_ocaml >= 3.8.0` (@ejgallego)
 
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------

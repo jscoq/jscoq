@@ -22,7 +22,7 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 # jsCoq pre-install
 # -----------------
-RUN opam switch create jscoq+32bit ocaml-variants.4.10.2+32bit
+RUN opam switch create jscoq+32bit --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit"
 
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
 RUN apt install --no-install-recommends -y $APT_PACKAGES
