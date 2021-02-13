@@ -9,4 +9,4 @@
  * Coq.
  *)
 
-let jscoq_version = "0.12.3"
+let jscoq_version = "0.13.0"
