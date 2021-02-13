@@ -1,3 +1,12 @@
+# jsCoq 0.13.0 "Better late than never"
+---------------------------------------
+
+ - Update to Coq 8.13.0 , mostly straightforward but build
+   requirements have changed, in particular we now require
+   `js_of_ocaml >= 3.8.0` (@ejgallego)
+ - Bump required compiler version to 4.10.2 (@ejgallego)
+
+
 # jsCoq 0.12.3 "at midday"
 ---------------------------------------
 
@@ -10,7 +19,7 @@
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------
 
- - Basically just upgrade to Coq 8.12.2, as it contains some important
+ - Basically just upgrade to Coq 8.12.1, as it contains some important
    bug fixes of the v8.12 branch. (@corwin-of-amber)
  - Allow building with OCaml 4.10.2, since it is the earliest version
    of OCaml that supports arm64 (Apple M1). (@corwin-of-amber)
@@ -31,12 +40,14 @@
  - [addons] Update mathcomp to 1.11 (@ejgallego)
  - Chunked packages: split large library addons into multiple chunks,
    which are loaded on demand. (@corwin-of-amber)
-
-## JsCoq 0.11.1
------------------------------------------
-
- - Bump js_of_ocaml to 3.6.0 (@ejgallego)
- - More accurate error location marker (@corwin-of-amber)
+ - Streamlined packaging of `.coq-pkg` archives using a new `jscoq` CLI.
+   (@corwin-of-amber)
+ - Addons have been factored out of the main jsCoq build process. They
+   are now maintained in a separate repository,
+   https://github.com/jscoq/addons. (@corwin-of-amber)
+ - Project name officially stylized "jsCoq" (lowercase j).
+ - [experimental] Edit and compile multiple-file developments. 
+   (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
@@ -61,6 +72,11 @@
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
  - Allow multiple directories for package files (@corwin-of-amber)
+
+## JsCoq 0.11.1
+
+ - Bump js_of_ocaml to 3.6.0 (@ejgallego)
+ - More accurate error location marker (@corwin-of-amber)
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------

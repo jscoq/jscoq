@@ -1,36 +1,34 @@
-synopsis:     "The JsCoq Interactive Proof System"
-description:  ""
+synopsis:     "The jsCoq Interactive Proof System"
+description:  "A port of Coq to JavaScript -- run Coq in your browser"
 name:         "jscoq"
 opam-version: "2.0"
 maintainer:   "e@x80.org"
 authors:      "Emilio Jesús Gallego Arias, Shachar Itzhaky, Benoît Pin"
-homepage:     "https://github.com/ejgallego/jscoq"
-bug-reports:  "https://github.com/ejgallego/jscoq/issues"
-dev-repo:     "git+https://github.com/ejgallego/jscoq.git"
-license:      "AGPL 3"
-doc:          "https://ejgallego.github.io/jscoq/doc"
+homepage:     "https://github.com/jscoq/jscoq"
+bug-reports:  "https://github.com/jscoq/jscoq/issues"
+dev-repo:     "git+https://github.com/jscoq/jscoq.git"
+license:      "AGPL-3.0-or-later"
+doc:          "https://github.com/jscoq/jscoq#readme"
 
 depends: [
-  "ocaml"               { >= "4.07.1"           }
-  "dune"                { >= "2.4.0"            }
-  "js_of_ocaml"         { >= "3.6.0"            }
-  "js_of_ocaml-ppx"     { >= "3.6.0"            }
-  "js_of_ocaml-lwt"     { >= "3.6.0"            }
+  "ocaml"               { >= "4.10.2"           }
+  "dune"                { >= "2.8.0"            }
+  "js_of_ocaml"         { >= "3.8.0"            }
+  "js_of_ocaml-ppx"     { >= "3.8.0"            }
+  "js_of_ocaml-lwt"     { >= "3.8.0"            }
   "yojson"              { >= "1.7.0"            }
-  "ppx_deriving_yojson" { >= "3.5.1"            }
-  "ppx_import"          { build & >= "1.6.2"    }
-  "lwt_ppx"             { >= "1.2.4"            }
+  "ppx_deriving_yojson" { >= "3.6.1"            }
+  "ppx_import"          { >= "1.8.0"            }
+  "lwt_ppx"             { >= "2.0.1"            }
   # We should just rely on OPAM's serlib but this is still early
-  "sexplib"             { >= "v0.12.0"           }
-  "ppx_sexp_conv"       { build   & >= "v0.12.0" }
-  # We build a local, patched Coq, but however it is still a dep
-  # "coq"                 { >= "8.12.0" & < "8.13" }
-  "num"
-]
-
-# Optional dependency
-depopts: [
-  "elpi"                { = "1.8.0" }
+  "sexplib"             { >= "v0.14.0"          }
+  "ppx_sexp_conv"       { >= "v0.14.1"          }
+  # We build a local, patched Coq, but however it is still a dependency and
+  # we could build from the opam-installed setup.
+  # "coq"                 { >= "8.13.0" & < "8.14" }
+  # This are dependencies of Coq itself.
+  "zarith"              { >= "1.11"    }
+  "zarith_stubs_js"     { >= "v0.14.0" }
 ]
 
 build: [ "dune" "build" "-p" name "-j" jobs ]

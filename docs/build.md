@@ -16,14 +16,13 @@ on a Unix-like system. The required packages can be obtained using
 
  1. Clone the jsCoq repo.
 ```
-git clone --recursive git@github.com:ejgallego/jscoq.git (this repo)
-```
- 2. Install OCaml 4.07.1 (32-bit version) and required packages.
-```
-./etc/toolchain-setup.sh
+
+ 2. Install OCaml 4.10.2 (32-bit version) and required packages.
+```sh
+./etc/toolchain-setup.sh     # optionally --64, see below
 ```
  **Note 1**: This will create an OPAM switch called `jscoq+32bit` using the
- `4.07.1+32bit` compiler, which the build will then use. You can modify/tweak
+ `4.10.2+32bit` compiler, which the build will then use. You can modify/tweak
  this switch without affecting your main OCaml installation.
 
  **Note 2:** On macOS 10.14 and above and on WSL you will have trouble building
