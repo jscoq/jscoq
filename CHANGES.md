@@ -4,6 +4,7 @@
  - Update to Coq 8.13.0 , mostly straightforward but build
    requirements have changed, in particular we now require
    `js_of_ocaml >= 3.8.0` (@ejgallego)
+ - Bump required compiler version to 4.10.2 (@ejgallego)
 
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------

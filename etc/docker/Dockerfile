@@ -21,7 +21,7 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 # jsCoq pre-install
 # -----------------
-RUN opam switch create jscoq+64bit ocaml-base-compiler.4.08.1
+RUN opam switch create jscoq+64bit ocaml-base-compiler.4.10.2
 
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
 RUN apt install --no-install-recommends -y $APT_PACKAGES
