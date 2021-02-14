@@ -25,6 +25,10 @@ ui-js/addon/*.png
 *.browser.js
 *.tgz
 
+# Links for in-place serving
+coq-pkgs
+/coq-js/jscoq_worker.js
+
 # Apple stuff
 .DS_Store
 .AppleDouble
