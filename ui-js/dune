@@ -4,8 +4,8 @@
   (source_tree .)
   (source_tree ../coq-jslib)
   ../node_modules)
- (action (bash "npx browserify coq-build.js -d -s coqBuild -o %{targets}"))
-)
+ (action
+  (run npx browserify coq-build.js -d -s coqBuild -o %{targets})))
 
 (rule
  (targets ide-project.browser.js)
@@ -14,4 +14,4 @@
   (source_tree ../coq-jslib/build)
   ../node_modules)
  (action
-  (bash "npx webpack --mode production --config-name ide-project")))
+  (run npx webpack --mode production --config-name ide-project)))
