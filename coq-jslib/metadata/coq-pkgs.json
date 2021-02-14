@@ -19,8 +19,7 @@
             "theories": {
                 "prefix": "Coq",
                 "dirpaths": ["Logic", "Program", "Classes", "Structures",
-                             "Relations", "Setoids", "Wellfounded", "Strings",
-                             "Numbers", "extraction", "funind"]
+                             "Relations", "Setoids", "extraction", "funind"]
             },
             "plugins": {
                 "prefix": "Coq",
@@ -38,6 +37,7 @@
             "theories": {
                 "prefix": "Coq",
                 "dirpaths": ["Arith", "NArith", "PArith", "ZArith", "QArith",
+                             "Numbers", "Array", "Strings", "Wellfounded",
                              "setoid_ring", "omega"]
             },
             "plugins": {
