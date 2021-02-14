@@ -15,6 +15,11 @@ _build
 
 # Node stuff
 node_modules
+# (webpack, if building in source dir)
+ui-js/addon/*.png
+*.browser.js
+*.js.map
+*.js.LICENSE.txt
 
 # Build artifacts
 *.browser.js

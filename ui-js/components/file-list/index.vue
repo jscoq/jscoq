@@ -53,7 +53,7 @@ export default {
             ev.stopPropagation();
         },
         undrag(ev) {
-            $(event.currentTarget).removeClass('dragged');
+            $(ev.currentTarget).removeClass('dragged');
         },
         drop(ev) {
             $(ev.currentTarget).removeClass('draghov');
