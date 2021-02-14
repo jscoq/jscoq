@@ -6,6 +6,7 @@
     "jscoq": "./cli.js"
   },
   "dependencies": {
+    "@corwin.amber/hastebin": "^0.1.0",
     "array-equal": "^1.0.0",
     "assert": "^2.0.0",
     "bootstrap": "^3.4.1",
