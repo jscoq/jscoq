@@ -6,7 +6,7 @@ VERB= # -vv
 # Default OCaml version
 case `uname`-`uname -m` in
   Darwin-arm64) OCAML_VER=4.10.2 ;;  # older versions don't work on arm64
-  *)            OCAML_VER=4.08.1 ;;
+  *)            OCAML_VER=4.10.2 ;;
 esac
 
 # Default word size
