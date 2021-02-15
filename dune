@@ -44,7 +44,7 @@
   tsconfig.json
   node_modules)
  (action
-  (bash "npx --experimental-worker webpack --config-name cli && chmod +x cli.js")))
+  (bash "npx webpack --config-name cli && chmod +x cli.js")))
 
 ; Just the worker
 (alias
