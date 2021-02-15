@@ -1,10 +1,40 @@
-# JsCoq 0.12 "<-as usual->"
+# jsCoq 0.12.3 "at midday"
+---------------------------------------
+
+ - Hidden snippets: allow some of the snippets in a literate jsCoq
+   development to be hidden from view. They are still executed when
+   they are reached, and are "stepped over". (@corwin-of-amber)
+
+# jsCoq 0.12.2 "Square Peg, Round Hole"
+---------------------------------------
+
+ - Basically just upgrade to Coq 8.12.2, as it contains some important
+   bug fixes of the v8.12 branch. (@corwin-of-amber)
+ - Allow building with OCaml 4.10.2, since it is the earliest version
+   of OCaml that supports arm64 (Apple M1). (@corwin-of-amber)
+
+# jsCoq 0.12.1 "Emilio should write this :P"
+-----------------------------------------
+
+ - Bugfix preventing use of `lia` and other tactics that might invoke
+   bytecode functionality. (#201, @corwin-of-amber)
+ - UI tidbits: only highlight-on-hover sentences that were executed in
+   proof mode, and do not highlight preceding comments of them; try not
+   to interfere with keyboard scrolling in the page. (@corwin-of-amber)
+
+# jsCoq 0.12 "<-as usual->"
 -----------------------------------------
 
  - Port to Coq 8.12 (@ejgallego)
  - [addons] Update mathcomp to 1.11 (@ejgallego)
  - Chunked packages: split large library addons into multiple chunks,
    which are loaded on demand. (@corwin-of-amber)
+
+## JsCoq 0.11.1
+-----------------------------------------
+
+ - Bump js_of_ocaml to 3.6.0 (@ejgallego)
+ - More accurate error location marker (@corwin-of-amber)
 
 # JsCoq 0.11 "<-lib->"
 -----------------------------------------
@@ -29,11 +59,6 @@
  - Accept dropped `.coq-pkg` files as packages to add to the current
    session (@corwin-of-amber)
  - Allow multiple directories for package files (@corwin-of-amber)
-
-## JsCoq 0.11.1
-
- - Bump js_of_ocaml to 3.6.0 (@ejgallego)
- - More accurate error location marker (@corwin-of-amber)
 
 # JsCoq 0.10 "((())((()()(()))((()()))))"
 -----------------------------------------
