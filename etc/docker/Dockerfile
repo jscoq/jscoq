@@ -78,13 +78,15 @@ RUN eval $(opam env) && make install &&   \
 ARG ADDONS_REPO=https://github.com/jscoq/addons
 ARG ADDONS_BRANCH=v8.12
 
-# - allow submodules with ssh urls
+# - fetch submodules with ssh urls using https instead
+#   (to avoid the need for an ssh key)
 RUN git config --global url."https://github.com/".insteadOf git@github.com:
 
 WORKDIR /root
 RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
 
 WORKDIR jscoq-addons
+RUN make set-ver VER=`jscoq --version`
 RUN eval $(opam env) && make
 
 RUN make pack
