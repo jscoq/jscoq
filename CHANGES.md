@@ -4,6 +4,8 @@
  - Hidden snippets: allow some of the snippets in a literate jsCoq
    development to be hidden from view. They are still executed when
    they are reached, and are "stepped over". (@corwin-of-amber)
+ - Integrating Collacoq functionality into the IDE proper, now available
+   in the scratchpad page. (@ejgallego, @corwin-of-amber)
 
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------
