@@ -25,7 +25,6 @@ cache:
   apt: true
   directories:
   - $HOME/.opam
-  - $HOME/Library/Caches/Homebrew
 
 env:
   global:
