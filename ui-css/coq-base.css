@@ -81,7 +81,8 @@ a, a:link, a:visited, a:active {
 }
 
 .coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
-  cursor: crosshair;
+  cursor: url(../ui-images/eye.png) 2 2, cell;
+  cursor: -webkit-image-set(url(../ui-images/eye@2x.png) 2x, url(../ui-images/eye.png) 1x) 2 2, cell;
 }
 
 .jscoq.CodeMirror .CodeMirror-crosshair {
@@ -611,6 +612,11 @@ div.Pp_box[data-mode="horizontal"] {
   content: ":=";
   margin: 0 .5em;
   color: #777;
+}
+
+.coq-hypothesis > label ~ div.Pp_box {
+  display: inline-table;  /* this is used to indent hypothesis at their labels */
+  table-layout: fixed;
 }
 
 .coq-env hr {
