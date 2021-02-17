@@ -51,12 +51,22 @@ You can, in fact, store more than one document using the local open/save file di
 | Shortcut           | Action                                                                       |
 |--------------------|------------------------------------------------------------------------------|
 | Ctrl-S             | Save file (with the last name provided, or `untitled.v`)                     |
-| Ctrl-Shift-S       | Save file as (prompts for file name)                                         |
+| Ctrl-Shift-S       | Save file as (prompts for file name; also has options to download or share the content)  |
 | Ctrl-Alt-S         | Save file to disk (using the browser's Save dialog, or preset destination)   |
 | Ctrl-O             | Open file (prompts for file name, supports tab completion)                   |
 | Ctrl-Alt-O         | Open file from disk (using the browser's Open dialog)                        |
 
 On Mac, replace Ctrl with ⌘ (command) and Alt with ⌥ (option), as is traditional.
+
+Drag `.v` files from your local drive onto the scratchpad to open them.
+You can also drag multiple files, which will open up a project pane to the left of the editor, allowing you to switch between them; this functionality is still experimental.
+
+### Sharing your development
+
+A small pastebin-like server based on [Hastebin](https://hastebin.com) is available for sharing `.v` files between users.
+Open the save dialog (Ctrl-Shift-S) and click "Share"; then share the URL from your browser's location bar with anyone you like.
+The URL represents the state of the document at the moment it was shared, and this state is read-only. Every time you click "Share", a fresh URL is generated.
+Shared content is not saved forever, though; documents are typically available for a period of ~30 days.
 
 ## How to build your own jsCoq documents
 
@@ -71,15 +81,6 @@ then copy and adapt the [template page](https://github.com/ejgallego/jscoq/blob/
 page to your needs.
 
 *For a more detailed tutorial and information, refer to* [docs/embedding.md](docs/embedding.md).
-
-## Collacoq
-
-A small pastebin-like server based on haste is available at
-https://x80.org/collacoq.
-Note that this service is experimental, data loss is guaranteed as we don't backup the server.
-
-The `haste` branch we use is available at https://github.com/ejgallego/haste-server/tree/collacoq
-Help with Collacoq is very welcome!
 
 ##  Contributing and Developer Information
 
