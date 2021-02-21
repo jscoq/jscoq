@@ -32,6 +32,7 @@
    node_modules
    coq-js/jscoq_worker.js
    ui-js/ide-project.browser.js
+   ui-js/addon/collab.browser.js
    cli.js
    jscoq.install))
 
