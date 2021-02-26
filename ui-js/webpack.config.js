@@ -46,6 +46,7 @@ module.exports = (env, argv) => ({
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
+    fallback: { "stream": require.resolve("stream-browserify") }
   },
   plugins: [new VueLoaderPlugin()]
 });
