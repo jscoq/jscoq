@@ -21,7 +21,7 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 # jsCoq pre-install
 # -----------------
-RUN opam switch create jscoq+64bit ocaml-base-compiler.4.10.2
+RUN opam switch create jscoq+32bit ocaml-variants.4.10.2+32bit
 
 RUN apt install --no-install-recommends -y git rsync bzip2 nodejs curl
 RUN curl https://www.npmjs.com/install.sh | sh
