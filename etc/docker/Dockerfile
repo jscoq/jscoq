@@ -5,7 +5,7 @@ FROM debian:10-slim as opam
 # ------------
 RUN apt-get update && apt-get install --no-install-recommends -y \
     wget ca-certificates \
-    m4 bubblewrap gcc libc6-dev binutils make patch unzip
+    m4 bubblewrap gcc gcc-multilib libc6-dev binutils make patch unzip
 
 # We need to install OPAM 2.0 manually for now.
 RUN wget https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
@@ -21,7 +21,7 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 # jsCoq pre-install
 # -----------------
-RUN opam switch create jscoq+64bit ocaml-base-compiler.4.07.1
+RUN opam switch create jscoq+32bit ocaml-variants.4.08.1+32bit
 
 RUN apt install --no-install-recommends -y git rsync bzip2 nodejs curl
 RUN curl https://www.npmjs.com/install.sh | sh
@@ -38,7 +38,7 @@ WORKDIR /root
 RUN git clone --recursive ${REPO}
 
 WORKDIR jscoq
-RUN ./etc/toolchain-setup.sh --64
+RUN ./etc/toolchain-setup.sh --32
 RUN opam clean -a -c
 
 # -----------
@@ -88,6 +88,13 @@ RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
 WORKDIR jscoq-addons
 RUN make set-ver VER=`jscoq --version`
 RUN eval $(opam env) && make
+
+# Private repos: re-enable SSH
+COPY /_ssh /_ssh 
+RUN [ -e /_ssh/id_rsa ] && rm ~/.gitconfig && apt-get install -y openssh-client
+ENV GIT_SSH_COMMAND 'ssh -i /_ssh/id_rsa -o StrictHostKeyChecking=no'
+
+RUN [ -e /_ssh/id_rsa ] && eval $(opam env) && make privates WITH_PRIVATE=software-foundations
 
 RUN make pack
 

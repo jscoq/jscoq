@@ -13,7 +13,9 @@ build:
 	docker build . --target jscoq        $(ARGS)  -t jscoq
 
 dist:
-	docker run --name jscoq-get-dist jscoq
+	rm -rf ./dist
+	docker run --name jscoq-get-dist jscoq:addons \
+		sh -c 'mkdir -p dist && cp _build/jscoq+*/*.tgz dist'
 	docker cp jscoq-get-dist:/root/jscoq/dist .
 	docker rm jscoq-get-dist
 
