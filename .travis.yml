@@ -12,12 +12,8 @@ matrix:
 
 branches:
   only:
-  - v8.8
-  - v8.9
-  - v8.9+worker
-  - v8.10
-  - v8.11
   - v8.12
+  - v8.13
 
 addons:
   apt:
