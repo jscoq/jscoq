@@ -333,7 +333,7 @@ class FormatPrettyPrint {
             $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
                 .append(h_names.map(mklabel))
                 .append(h_def && mkdef(h_def))
-                .append(this.pp2DOM(h_type)));
+                .append($('<div>').append(this.pp2DOM(h_type))));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
     }

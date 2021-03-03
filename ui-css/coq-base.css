@@ -614,7 +614,7 @@ div.Pp_box[data-mode="horizontal"] {
   color: #777;
 }
 
-.coq-hypothesis > label ~ div.Pp_box {
+.coq-hypothesis > label ~ div {
   display: inline-table;  /* this is used to indent hypothesis at their labels */
   table-layout: fixed;
 }
