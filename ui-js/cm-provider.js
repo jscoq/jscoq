@@ -67,6 +67,7 @@ class CmCoqProvider {
         this.onTipHover = (completion, zoom) => {};
         this.onTipOut = () => {};
         this.onResize = (lineCount) => {};
+        this.onAction = (action) => {};
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
 
@@ -549,9 +550,8 @@ class CmCoqProvider {
 
     openLocalDialog() {
         var span = this._makeFileDialog("Open file: "),
-            a = $('<a>').addClass('dialog-link').text('From disk...')
-                        .mousedown(ev => ev.preventDefault())
-                        .click(() => this.openFileDialog());
+            a = this._makeDialogLink('From disk...', 
+                () => this.openFileDialog());
 
         span.append(a);
 
@@ -560,19 +560,18 @@ class CmCoqProvider {
 
     openFileDialog() {
         var input = $('<input>').attr('type', 'file');
-        input.change(() => {
+        input.on('change', () => {
             if (input[0].files[0]) this.openFile(input[0].files[0]);
         });
-        input.click();
+        input.trigger('click');
     }
 
     saveLocalDialog() {
         var span = this._makeFileDialog("Save file: "),
-            a = $('<a>').addClass('dialog-link').text('To disk...')
-                        .mousedown(ev => ev.preventDefault())
-                        .click(() => this.saveToFile());
+            a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
+            a2 = this._makeDialogLink('Share', () => this.saveShare());
 
-        span.append(a);
+        span.append(a1, a2);
 
         this.editor.openDialog(span[0], sel => this.saveLocal(sel), 
                                {value: this.filename});
@@ -583,6 +582,10 @@ class CmCoqProvider {
             a = $('<a>').attr({href: URL.createObjectURL(blob),
                                download: this.filename || 'untitled.v'});
         a[0].click();
+    }
+
+    saveShare() {
+        this.onAction({type: 'share'});
     }
 
     _makeFileDialog(text) {
@@ -598,7 +601,14 @@ class CmCoqProvider {
 
         this._setupTabCompletion(input, list);
 
-        return $('<span>').text(text).append(input, list);
+        return $('<span>').text(text).append(input, list)
+            .on('done', () => this.editor.focus());
+    }
+
+    _makeDialogLink(text, handler, className="dialog-link") {
+        return $('<a>').addClass(className).text(text)
+            .on('mousedown', ev => ev.preventDefault())
+            .on('click', ev => { handler(); $(ev.target).trigger('done'); });
     }
 
     _setupTabCompletion(input, list) {

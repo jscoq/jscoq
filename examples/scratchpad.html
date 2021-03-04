@@ -41,8 +41,9 @@
 
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
-      if (location.search == '?project') coq.openProject();
-      else if (location.search == '?project=sample') coq.openProject('sample');
+      var q = new URLSearchParams(location.search);
+      if (q.has('project')) coq.openProject(q.get('project'));
+      if (q.has('share')) coq.openCollab(q.get('share'));
     });
 
     window.addEventListener('beforeunload', () => {

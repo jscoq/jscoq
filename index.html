@@ -37,6 +37,18 @@
         border: 1px solid #eee;
         padding: 5px;
       }
+      a#scratchpad {
+        height: 30px;
+        width: 30px;
+        background: url(ui-images/scratchpad.png);
+        background-repeat: no-repeat;
+        background-size: contain;
+        border: none;
+        outline: none;
+        position: absolute;
+        top: 5px;
+        right: 40px;
+      }
     </style>
     <title>jsCoq – Use Coq in Your Browser</title>
   </head>
@@ -45,6 +57,7 @@
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
   <div id="document">
+  <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad"></a>
   <div>
     <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
     <p>
@@ -92,19 +105,18 @@
         <td>Toggles the goal panel.</td>
       </tr>
     </table>
-    <h5>Saving your own proof scripts:</h5>
+    <h5>Creating your own proof scripts:</h5>
     <p>
       The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
-      storage functionality.
-      Please go to <a href="https://x80.org/collacoq/">CollaCoq</a> if
-      you want to share your developments with other users.
+      storage functionality. It also allows you to share your development with
+      other users in a manner that is similar to Pastebin.
     </p>
 
     <h4>A First Example: The Infinitude of Primes</h4>
     <p>
       We don't provide a Coq tutorial (yet), but as a showcase, we
       display a proof of the infinitude of primes in Coq.  The proof relies
-      in the Mathematical Components library by the
+      on the Mathematical Components library by the
       <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
       by Georges Gonthier, so our first step will be to load it and
       set a few Coq options:

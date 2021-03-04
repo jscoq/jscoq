@@ -6,6 +6,16 @@
    `js_of_ocaml >= 3.8.0` (@ejgallego)
  - Bump required compiler version to 4.10.2 (@ejgallego)
 
+
+# jsCoq 0.12.3 "at midday"
+---------------------------------------
+
+ - Hidden snippets: allow some of the snippets in a literate jsCoq
+   development to be hidden from view. They are still executed when
+   they are reached, and are "stepped over". (@corwin-of-amber)
+ - Integrating Collacoq functionality into the IDE proper, now available
+   in the scratchpad page. (@ejgallego, @corwin-of-amber)
+
 # jsCoq 0.12.2 "Square Peg, Round Hole"
 ---------------------------------------
 

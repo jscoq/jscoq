@@ -92,12 +92,14 @@ class ProviderContainer {
                 cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
                 // Track invalidate
-                cm.onInvalidate = stm       => { this.onInvalidate(stm); };
+                cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };
                 cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
                 cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
                 cm.onTipOut   = ()             => { this.onTipOut(); }
+
+                cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
 
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
@@ -386,6 +388,8 @@ class CoqManager {
         };
         provider.onTipOut = () => { if (this.contextual_info) this.contextual_info.hide(); };
 
+        provider.onAction = (action) => this.editorActionHandler(action);
+
         return provider;
     }
 
@@ -450,6 +454,11 @@ class CoqManager {
                          //'ui-js/ide-project.browser.css');   // if using Parcel
 
         this.project = ideProject.ProjectPanel.attach(this, pane, name);
+    }
+
+    async openCollab(documentKey) {
+        await this._load('ui-js/addon/collab.browser.js');
+        this.collab = addonCollab.Hastebin.attach(this, documentKey);
     }
 
     async _load(...hrefs) {
@@ -1232,6 +1241,17 @@ class CoqManager {
         var s = this.doc.sentences.findLast(stm => stm.phase !== Phases.ERROR);
         if (s)
             this.updateGoalsFor(s);
+    }
+
+    editorActionHandler(action) {
+        switch (action.type) {
+        case 'share':   this.actionShare(); break;
+        }
+    }
+
+    async actionShare() {
+        if (!this.collab) await this.openCollab();
+        this.collab.save();
     }
 
     /**

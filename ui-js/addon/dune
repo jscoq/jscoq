@@ -1,0 +1,8 @@
+
+(rule
+ (targets collab.browser.js)
+ (deps
+  (source_tree .)
+  ../../node_modules)
+ (action
+  (bash "cd .. && npx webpack --mode production --config-name collab")))
