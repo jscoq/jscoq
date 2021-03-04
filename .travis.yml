@@ -19,6 +19,7 @@ addons:
   apt:
     packages:
     - gcc-multilib
+    - libgmp-dev:i386
 
 cache:
   apt: true
