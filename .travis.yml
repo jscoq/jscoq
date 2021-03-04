@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-- "8"
+- "12"
 
 matrix:
   include:
@@ -19,10 +19,7 @@ addons:
   apt:
     packages:
     - gcc-multilib
-  homebrew:
-    update: true
-    packages:
-    - opam
+    - libgmp-dev:i386
 
 cache:
   apt: true
@@ -37,14 +34,16 @@ env:
   - OPAMYES="true"
   - OPAMJOBS="2"
   - OPAM_LINUX_URL=https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux
+  - OPAM_MACOS_URL=https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-darwin
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
     sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
     sudo chmod 755 /usr/bin/opam; fi
-
-before_cache:
-- if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew cleanup; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    sudo mkdir -p /usr/local/bin &&
+    sudo curl -sL $OPAM_MACOS_URL -o /usr/local/bin/opam &&
+    sudo chmod 755 /usr/local/bin/opam; fi
 
 install:
 - opam init -y --bare --disable-sandboxing || true
