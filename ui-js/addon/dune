@@ -1,6 +1,6 @@
 
 (rule
- (targets collab.browser.js)
+ (targets collab.browser.js collab-images)
  (deps
   (source_tree .)
   ../../node_modules)

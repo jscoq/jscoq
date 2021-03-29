@@ -17,8 +17,7 @@ module.exports = (env, argv) => [{
     filename: 'ide-project.browser.js',
     path: __dirname,
     library: 'ideProject',
-    libraryTarget: 'umd',
-    publicPath: '/ui-js/'
+    libraryTarget: 'umd'
   },
   externals: {
     fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
@@ -41,7 +40,10 @@ module.exports = (env, argv) => [{
       },
       {
         test: /\.(png|jpe?g|gif)$/i,
-        use: ['file-loader']
+        loader: 'file-loader',
+        options: {
+          outputPath: 'ide-project-images',
+        }
       },
       {
         test: /\.vue$/,
@@ -71,8 +73,7 @@ module.exports = (env, argv) => [{
     filename: 'collab.browser.js',
     path: path.join(__dirname, 'addon'),
     library: 'addonCollab',
-    libraryTarget: 'umd',
-    publicPath: '/ui-js/addon/'
+    libraryTarget: 'umd'
   },
   module: {
     rules: [
@@ -82,7 +83,10 @@ module.exports = (env, argv) => [{
       },
       {
         test: /\.(png|jpe?g|gif)$/i,
-        use: ['file-loader']
+        loader: 'file-loader',
+        options: {
+          outputPath: 'collab-images',
+        }
       }
     ]
   }

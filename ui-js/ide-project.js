@@ -1,5 +1,4 @@
-// Build with
-//  parcel watch ui-js/ide-project.js -d _build/jscoq+64bit/ui-js -o ide-project.browser.js --global ideProject
+import './public-path';
 
 import assert from 'assert';
 import Vue from 'vue';
