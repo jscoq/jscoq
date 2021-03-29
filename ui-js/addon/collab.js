@@ -1,3 +1,4 @@
+import './public-path';
 import { haste, HasteUI } from '@corwin.amber/hastebin/client';
 import '@corwin.amber/hastebin/client/application.css';
 
