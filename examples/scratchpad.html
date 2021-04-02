@@ -23,16 +23,21 @@
   <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
-    var sp = new URLSearchParams(location.search);
+    var sp = new URLSearchParams(location.search),
+        panel_theme = sp.has('dark') ? 'dark' : sp.get('theme') || 'light',
+        editor_theme = sp.get('editor_theme') || (panel_theme == 'dark' ? 'blackboard' : 'default');
+
 
     var jscoq_opts = {
         subproc:   sp.has('app'),
         all_pkgs:  ['coq', 'mathcomp', 'extlib', 'simpleio', 'equations',
                     'elpi', 'quickchick', 'software-foundations',
-                    'hahn', 'paco', 'snu-sflib', 'promising'],
+                    'hahn', 'paco', 'snu-sflib', 'promising',
+                    'fcsl-pcm', 'htt', 'pnp'],
         file_dialog: true,
         implicit_libs: true,
-        editor: { mode: { 'company-coq': true } }
+        editor: { mode: { 'company-coq': true }, theme: editor_theme },
+        theme: panel_theme
     };
 
     /* Global reference */

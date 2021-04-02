@@ -130,6 +130,7 @@
       'easy',
       'exact',
       'now',
+      'lia',
       'omega',
       'reflexivity',
       'tauto'
