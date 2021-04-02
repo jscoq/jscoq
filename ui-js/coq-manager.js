@@ -334,7 +334,8 @@ class CoqManager {
                                focus: function() { return null; },
                                cursorToEnd: function() { return null; }
                              };
-        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, sp: dummyProvider, phase: Phases.PROCESSED };
+        this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, flags: {},
+                               sp: dummyProvider, phase: Phases.PROCESSED };
         this.doc.sentences = [this.doc.stm_id[1]];
 
         this.error = [];
