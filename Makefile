@@ -42,7 +42,7 @@ COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 
 COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
 
-DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
+override DUNE_FLAGS += ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
 NJOBS ?= 4
 
@@ -88,6 +88,26 @@ coq-pkgs/%.symb: coq-pkgs/%.json
 	node --max-old-space-size=2048 ui-js/coq-cli.js --require-pkg $< --inspect $@
 
 libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
+
+########################################################################
+# Developer Zone                                                       #
+########################################################################
+
+.PHONY: test watch serve dev
+
+test:
+	@cp -r tests $(BUILDDIR)
+	cd $(BUILDDIR) && npx mocha tests/main.js
+
+watch: DUNE_FLAGS+=--watch
+watch: jscoq
+
+serve:
+	npx http-server $(BUILDDIR) -p 8013 -c 0
+
+dev:
+	$(MAKE) serve &
+	$(MAKE) watch
 
 ########################################################################
 # Clean                                                                #
@@ -185,14 +205,6 @@ coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get
 
 coq: coq-get
-
-test:
-	@cp -r tests $(BUILDDIR)
-	cd $(BUILDDIR) && npx mocha tests/main.js
-
-server:
-	npx http-server $(BUILDDIR) -p 8012
-
 
 # - These are deprecated (use jscoq/addons repo instead)
 
