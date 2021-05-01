@@ -3,9 +3,10 @@ FROM debian:10-slim as opam
 # ------------
 #   Get OPAM
 # ------------
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install --no-install-recommends -y \
     wget ca-certificates \
-    m4 bubblewrap gcc gcc-multilib libc6-dev binutils make patch unzip
+    m4 bubblewrap gcc gcc-multilib libc6-dev libgmp-dev:i386 binutils make patch unzip
 
 # We need to install OPAM 2.0 manually for now.
 RUN wget https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam

@@ -34,3 +34,6 @@ clean-slate:
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \
 		npx static-server -p 8080 _build/dist
+
+dist-serve:
+	npx http-server -p 8080 dist
