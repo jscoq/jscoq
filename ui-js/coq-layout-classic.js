@@ -35,7 +35,7 @@ class CoqLayoutClassic {
       <div class="exits">
         <img class="wa-logo" src="${base_path}/ui-images/wa-logo.svg" alt="wa"><i>+</i><!--
           --><a href="https://coq.inria.fr"><!--
-          --><img class="coq-logo" src="https://coq.inria.fr/files/barron_logo.png" alt="Coq">
+          --><img class="coq-logo" src="${base_path}/ui-images/coq-logo.png" alt="Coq">
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
