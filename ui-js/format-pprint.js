@@ -379,8 +379,12 @@ class FormatPrettyPrint {
                 prev.html("<br/>");
         }
 
-        if (jdom.children().length == 0)
+        if (this._isFlat(jdom))
             jdom.addClass("text-only");
+    }
+
+    _isFlat(jdom) {
+        return jdom.find('.Pp_break').length == 0;
     }
 
     /**
