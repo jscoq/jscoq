@@ -297,7 +297,7 @@ class CoqManager {
         this.provider = this.setupProvider(elems);
 
         // Setup the Panel UI.
-        this.layout = new CoqLayoutClassic(this.options);
+        this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
         this.layout.splash(undefined, undefined, 'wait');
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
@@ -1118,6 +1118,11 @@ class CoqManager {
         var pkgs = this.packages.loaded_pkgs.slice();
         this.packages.reset();
         return this.packages.loadDeps(pkgs).then(() => this.coqInit());
+    }
+
+    keyTooltips() {
+        return navigator.isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
+            {up: 'Alt-P', down: 'Alt-N', cursor: 'Alt-Enter'}
     }
 
     /**
