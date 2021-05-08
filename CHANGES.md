@@ -3,9 +3,10 @@
 
  - Update to Coq 8.13.0 , mostly straightforward but build
    requirements have changed, in particular we now require
-   `js_of_ocaml >= 3.8.0` (@ejgallego)
- - Bump required compiler version to 4.10.2 (@ejgallego)
-
+   `js_of_ocaml >= 3.8.0`. (@ejgallego)
+ - Bump required compiler version to 4.10.2. (@ejgallego)
+ - Fixed missing indentation in pretty-printing of goals. (#126,
+   @corwin-of-amber)
 
 # jsCoq 0.12.3 "at midday"
 ---------------------------------------
