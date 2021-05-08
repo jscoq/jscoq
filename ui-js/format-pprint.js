@@ -354,29 +354,49 @@ class FormatPrettyPrint {
 
         if (mode == 'vertical') {
             for (let el of jdom.children('.Pp_break')) {
-                $(el).replaceWith($('<br/>'));
+                $(el).html('<br/>');
             }
         }
 
         return jdom;
     }
 
+    /**
+     * This attempts to mimic the behavior of `Format.print_break` in relation
+     * to line breaks.
+     * @param {jQuery} jdom a DOM subtree produced by `pp2DOM` or `goals2DOM`.
+     */
     adjustBreaks(jdom) {
         var width = jdom.width(),
-            hboxes = jdom.add(jdom.find('.Pp_box[data-mode="horizontal"]'));
+            boxes = jdom.add(jdom.find('.Pp_box'));
 
-        for (let el of hboxes) {
-            let hbox = $(el),
-                brks = hbox.children('.Pp_break');
-            var prev = null;
-            for (let brk of brks) {
-                if (prev && $(brk).position().left >= width) {
-                  prev.html("<br/>");
+        var indent = 0;
+        function breakAt(brk) {
+            var [width, offset] = brk.attr('data-break').split(',');
+            indent += +offset;
+            brk.html("<br/>" + " ".repeat(indent));
+        }
+
+        for (let el of boxes) {
+            let box = $(el),
+                mode = box.attr('data-mode'),
+                brks = box.children('.Pp_break');
+            if (mode == 'horizontal') {
+                var prev = null;
+                for (let brk of brks) {
+                    if (prev && $(brk).position().left >= width)
+                        breakAt(prev);
+                    prev = $(brk);
                 }
-                prev = $(brk);
+                if (prev && box.position().left + box.width() > width)
+                    breakAt(prev);
             }
-            if (prev && hbox.position().left + hbox.width() > width)
-                prev.html("<br/>");
+            else /* vertical */ {
+                // re-apply nearest indent
+                var pindent = box.prev('.Pp_break').html() || '<br/>';
+                for (let brk of brks) 
+                    $(brk).html(pindent);
+            }
         }
 
         if (this._isFlat(jdom))
