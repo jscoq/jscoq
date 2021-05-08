@@ -55,6 +55,11 @@ export COQBUILDDIR_REL
 export ADDONS_PATH
 export COQPKGS_ROOT
 
+ifdef DEBUG
+JSCOQ_DEBUG = 1
+export JSCOQ_DEBUG
+endif
+
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
@@ -188,7 +193,7 @@ COQ_BRANCH = V8.13.0
 COQ_BRANCH_LATEST = v8.13
 COQ_REPOS = https://github.com/coq/coq.git
 
-COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
 COQ_PATCHES|Darwin/32 = byte-only
