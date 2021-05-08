@@ -17,8 +17,9 @@
  */
 class CoqLayoutClassic {
 
-    html(base_path) {
-        var html = `
+    html(params) {
+        var {base_path, kb} = params;
+        return `
     <svg id="hide-panel" viewBox="0 0 32 32" title="Toggle panel (F8)">
       <path d="M16.001,0C7.165,0,0,7.164,0,16.001S7.162,32,16.001,32C24.838,32,32,24.835,32,15.999S24.838,0,16.001,0L16.001,0z"/>
       <g>
@@ -39,14 +40,14 @@ class CoqLayoutClassic {
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
-        <button name="up"          alt="Up (Meta-P)"             title="Up (Meta-P)"></button><!--
-     --><button name="down"        alt="Down (Meta-N)"           title="Down (Meta-N)"></button>
-        <button name="to-cursor"   alt="To cursor (Meta-Enter)"  title="To cursor (Meta-Enter)"></button>
-        <button name="interrupt"   alt="Interrupt Worker (Esc)"  title="Interrupt Worker (Esc)"></button>
-        <button name="reset"       alt="Reset worker"            title="Reset worker"></button>
+        <button name="up"          alt="Up (${kb.up})"              title="Up (${kb.up})"></button><!--
+     --><button name="down"        alt="Down (${kb.down})"          title="Down (${kb.down})"></button>
+        <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
+        <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
+        <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
       </span>
       <div class="exits right">
-        <a href="https://github.com/ejgallego/jscoq" class="link-to-github"></a>
+        <a href="https://github.com/jscoq/jscoq" class="link-to-github"></a>
       </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
@@ -73,8 +74,6 @@ class CoqLayoutClassic {
         <div id="packages-panel" class="content"></div>
       </div>
     </div>`;
-
-        return html;
     }
 
     /**
@@ -83,8 +82,10 @@ class CoqLayoutClassic {
      *   - wrapper_id: element id of the IDE container
      *   - base_path: URL for the root directory of jsCoq
      *   - theme: jsCoq theme to use for the panel ('light' or 'dark')
+     * @param {object} params HTML template parameters; used keys are:
+     *   - kb: key-binding tooltips for actions {up, down, cursor}
      */
-    constructor(options) {
+    constructor(options, params) {
 
         this.options = options;
 
@@ -94,7 +95,7 @@ class CoqLayoutClassic {
 
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
-        this.panel.innerHTML = this.html(options.base_path);
+        this.panel.innerHTML = this.html({base_path: options.base_path, ...params});
 
         if (options.theme)
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
