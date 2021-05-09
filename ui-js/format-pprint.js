@@ -41,10 +41,17 @@ class FormatPrettyPrint {
     /**
      * Formats a pretty-printed element to be displayed in an HTML document.
      * @param {array} pp a serialized Pp element
+     * @param {topBox} string wrap with a box ('vertical' / 'horizontal')
      */
-    pp2DOM(pp) {
-        if (pp.constructor !== Array) {
+    pp2DOM(pp, topBox) {
+        if (!Array.isArray(pp)) {
             throw new Error("malformed Pp element: " + pp);
+        }
+
+        if (topBox) {
+            var dom = this.pp2DOM(pp);
+            return (dom.length == 1 && dom.is('.Pp_box')) ? dom :
+                this.makeBox(dom, topBox);
         }
 
         var [tag, ct] = pp;
@@ -62,9 +69,7 @@ class FormatPrettyPrint {
         // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
         case "Pp_box":
             let mode = ct[0] == 'Pp_vbox' ? 'vertical' : 'horizontal';
-            return this.adjustBox(
-                $('<div>').addClass('Pp_box').attr('data-mode', mode)
-                    .append(this.pp2DOM(pp[2])));
+            return this.makeBox(this.pp2DOM(pp[2]), mode);
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
@@ -267,6 +272,10 @@ class FormatPrettyPrint {
         return ret;
     }
 
+    msg2DOM(msg) {
+        return this.pp2DOM(msg, 'horizontal');
+    }
+
     /**
      * Formats the current proof state.
      * @param {object} goals a record of proof goals 
@@ -333,7 +342,7 @@ class FormatPrettyPrint {
             $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
                 .append(h_names.map(mklabel))
                 .append(h_def && mkdef(h_def))
-                .append(this.pp2DOM(h_type)));
+                .append($('<div>').append(this.pp2DOM(h_type))));
         let ty = this.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
     }
@@ -347,6 +356,12 @@ class FormatPrettyPrint {
         return Array.isArray(l) 
             ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
             : 1;
+    }
+
+    makeBox(jdom, mode) {
+        return this.adjustBox(
+            $('<div>').addClass('Pp_box').attr('data-mode', mode)
+                .append(jdom));
     }
 
     adjustBox(jdom) {
@@ -368,7 +383,7 @@ class FormatPrettyPrint {
      */
     adjustBreaks(jdom) {
         var width = jdom.width(),
-            boxes = jdom.add(jdom.find('.Pp_box'));
+            boxes = jdom.find('.Pp_box');
 
         var indent = 0;
         function breakAt(brk) {
@@ -379,7 +394,7 @@ class FormatPrettyPrint {
 
         for (let el of boxes) {
             let box = $(el),
-                mode = box.attr('data-mode'),
+                mode = box.attr('data-mode') || 'horizontal',
                 brks = box.children('.Pp_break');
             if (mode == 'horizontal') {
                 var prev = null;
@@ -399,8 +414,12 @@ class FormatPrettyPrint {
             }
         }
 
-        if (jdom.children().length == 0)
+        if (this._isFlat(jdom))
             jdom.addClass("text-only");
+    }
+
+    _isFlat(jdom) {
+        return jdom.find('.Pp_break').length == 0;
     }
 
     /**

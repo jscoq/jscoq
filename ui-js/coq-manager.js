@@ -595,7 +595,7 @@ class CoqManager {
 
     feedMessage(sid, lvl, loc, msg) {
 
-        var fmsg = this.pprint.pp2DOM(msg);
+        var fmsg = this.pprint.msg2DOM(msg);
 
         lvl = lvl[0];  // JSON encoding
 
@@ -717,7 +717,7 @@ class CoqManager {
 
     coqLog(level, msg) {
 
-        let fmsg = this.pprint.pp2DOM(msg);
+        let fmsg = this.pprint.msg2DOM(msg);
 
         level = level[0];
 
@@ -743,7 +743,7 @@ class CoqManager {
         if (this.error.some(stm => stm.feedback.some(x => arreq_deep(x.msg, msg))))
             return;
 
-        var fmsg = this.pprint.pp2DOM(msg);
+        var fmsg = this.pprint.msg2DOM(msg);
 
         var item = this.layout.log(fmsg, 'Error', sids && {'data-coq-sid': sids[0]});
         this.pprint.adjustBreaks(item);
@@ -1473,7 +1473,7 @@ class CoqContextualInfo {
     }
 
     formatMessages(msgs) {
-        var ppmsgs = msgs.map(feedback => this.pprint.pp2DOM(feedback.msg)),
+        var ppmsgs = msgs.map(feedback => this.pprint.msg2DOM(feedback.msg)),
             frag = $(document.createDocumentFragment());
 
         for (let e of ppmsgs) {
