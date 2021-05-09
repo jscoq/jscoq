@@ -41,10 +41,17 @@ class FormatPrettyPrint {
     /**
      * Formats a pretty-printed element to be displayed in an HTML document.
      * @param {array} pp a serialized Pp element
+     * @param {topBox} string wrap with a box ('vertical' / 'horizontal')
      */
-    pp2DOM(pp) {
+    pp2DOM(pp, topBox) {
         if (!Array.isArray(pp)) {
             throw new Error("malformed Pp element: " + pp);
+        }
+
+        if (topBox) {
+            var dom = this.pp2DOM(pp);
+            return (dom.length == 1 && dom.is('.Pp_box')) ? dom :
+                this.makeBox(dom, topBox);
         }
 
         var [tag, ct] = pp;
@@ -62,9 +69,7 @@ class FormatPrettyPrint {
         // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
         case "Pp_box":
             let mode = ct[0] == 'Pp_vbox' ? 'vertical' : 'horizontal';
-            return this.adjustBox(
-                $('<div>').addClass('Pp_box').attr('data-mode', mode)
-                    .append(this.pp2DOM(pp[2])));
+            return this.makeBox(this.pp2DOM(pp[2]), mode);
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
@@ -267,6 +272,10 @@ class FormatPrettyPrint {
         return ret;
     }
 
+    msg2DOM(msg) {
+        return this.pp2DOM(msg, 'horizontal');
+    }
+
     /**
      * Formats the current proof state.
      * @param {object} goals a record of proof goals 
@@ -349,6 +358,12 @@ class FormatPrettyPrint {
             : 1;
     }
 
+    makeBox(jdom, mode) {
+        return this.adjustBox(
+            $('<div>').addClass('Pp_box').attr('data-mode', mode)
+                .append(jdom));
+    }
+
     adjustBox(jdom) {
         let mode = jdom.attr('data-mode');
 
@@ -368,7 +383,7 @@ class FormatPrettyPrint {
      */
     adjustBreaks(jdom) {
         var width = jdom.width(),
-            boxes = jdom.add(jdom.find('.Pp_box'));
+            boxes = jdom.find('.Pp_box');
 
         var indent = 0;
         function breakAt(brk) {
@@ -379,7 +394,7 @@ class FormatPrettyPrint {
 
         for (let el of boxes) {
             let box = $(el),
-                mode = box.attr('data-mode'),
+                mode = box.attr('data-mode') || 'horizontal',
                 brks = box.children('.Pp_break');
             if (mode == 'horizontal') {
                 var prev = null;
