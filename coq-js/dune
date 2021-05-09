@@ -25,6 +25,13 @@
  (libraries num zarith_stubs_js jscoqlib))
 
 (rule
+ (target jscoq_version.ml)
+ (deps ../package.json)
+ (action (with-stdout-to %{target}
+  (run node -p 
+      "`let jscoq_version = \"${require(\"../package.json\").version}\"`"))))
+
+(rule
  (targets marshal-arch.js)
  (action
   (copy js_stub/marshal%{ocaml-config:word_size}.js %{targets})))
