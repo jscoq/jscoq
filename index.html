@@ -116,16 +116,14 @@
     <p>
       We don't provide a Coq tutorial (yet), but as a showcase, we
       display a proof of the infinitude of primes in Coq.  The proof relies
-      on the Mathematical Components library by the
+      on the <a href="https://math-comp.github.io">Mathematical Components</a> library by the
       <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
-      by Georges Gonthier, so our first step will be to load it and
-      set a few Coq options:
+      by Georges Gonthier, so our first step will be to load it:
     </p>
   </div>
   <div>
     <textarea id="addnC" >
-From Coq Require Import ssreflect.
-From Coq Require Import ssrfun ssrbool.
+From Coq Require Import ssreflect ssrfun ssrbool.
 From mathcomp Require Import eqtype ssrnat div prime. </textarea>
   </div>
   <div>
