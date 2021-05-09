@@ -189,7 +189,7 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.13.0
+COQ_BRANCH = V8.13.2
 COQ_BRANCH_LATEST = v8.13
 COQ_REPOS = https://github.com/coq/coq.git
 
@@ -199,7 +199,7 @@ COQ_PATCHES|64 = coerce-32bit
 COQ_PATCHES|Darwin/32 = byte-only
 
 $(COQSRC):
-	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
+	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq-get: $(COQSRC)
