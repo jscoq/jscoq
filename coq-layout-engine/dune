@@ -1,0 +1,8 @@
+(env
+ (dev     (flags :standard -rectypes))
+ (release (flags :standard -rectypes -w +27+32)))
+
+(library
+ (name tprinter)
+ ; (public_name coq-layout-engine)
+ (libraries coq-core.interp coq-core.parsing coq-core.printing tyxml))

@@ -705,6 +705,47 @@ div.Pp_box .Pp_break > span.indent { color: red; }
   margin-bottom: 1em;
 }
 
+/* Debug for coq-layout-printer */
+#goal-text {
+ padding: 0;
+ margin: 0;
+ /* display: flex; */
+ /* flex-wrap: wrap; */
+ /* flew-grow: 0; */
+}
+
+#goal-text span {
+  padding: 1px 1px 1px 1px;
+  border: 1px solid #f40;
+  /* width: 100px; */
+  /* height: 100px; */
+  display: flex;
+  /* flex: auto; */
+  flex-wrap: wrap;
+  flew-grow: 0;
+}
+
+/* ids */
+#goal-text span.absolute {
+  display: none;
+}
+
+#goal-text span.raw {
+  display: none;
+}
+
+#goal-text span.type {
+  display: none;
+}
+
+#goal-text span.key {
+  display: none;
+}
+
+#goal-text span.arguments {
+  display: none;
+}
+
 .coq-hypothesis {
   margin-bottom: 2px;
 }

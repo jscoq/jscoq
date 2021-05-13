@@ -5,6 +5,7 @@
  (flags :standard -w -39)
  (libraries
    yojson ppx_deriving_yojson.runtime
+   tprinter
    coq-core.stm coq-core.toplevel
    coq-serapi.serlib
    coq-lsp.fleche

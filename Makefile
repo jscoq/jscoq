@@ -1,5 +1,5 @@
 .PHONY: all clean force
-.PHONY: jscoq jscoq-static jscoq_worker links links-clean
+.PHONY: jscoq wacoq check jscoq-static jscoq_worker links links-clean
 .PHONY: dist serve
 
 -include ./config.inc
@@ -77,9 +77,10 @@ all:
 	@echo ""
 	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
 	@echo "     wacoq: build waCoq [JavaScript and libraries]"
+	@echo "     check: type-check OCaml code"
 	@echo ""
 	@echo "    bundle: create the core JS bundles using esbuild in dist"
-	@echo " typecheck: typecheck using tsc"
+	@echo " typecheck: typecheck JS code using tsc"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo "            [note: jscoq build system auto-promotoes targets so this is obsolete]"
@@ -100,6 +101,9 @@ wacoq: force
 
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
+
+check: force
+	$(DUNE) build --only-packages=coq-core,jscoq @check $(DUNE_FLAGS)
 
 jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)

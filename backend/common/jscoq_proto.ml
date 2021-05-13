@@ -132,11 +132,19 @@ type search_query =
   [%import: Code_info.Query.t]
   [@@deriving yojson]
 
+module Print_style = struct
+  type t = Pp | BoxLayout [@@deriving yojson]
+end
+
+module Pp_type = struct
+  type t = Pp of Pp.t | BoxLayout of string (* html but encoded as string for now *)
+end
+
 module Method = struct
 
   type t =
     | Mode
-    | Goals
+    | Goals of Print_style.t
     | Search of string
     | TypeAtPoint
     | TypeOfId of string

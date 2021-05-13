@@ -28,6 +28,10 @@ depends: [
   "uri"                 { >= "4.2.0" }
   "dune-build-info"     { >= "3.2.0" }
 
+  # coq-layout-engine:
+  "tyxml"               { >= "4.5.0"            }
+  "js_of_ocaml-tyxml"   { >= "3.8.0"            }
+
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
   # "coq"                 { >= "8.13.0" & < "8.14" }
