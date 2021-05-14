@@ -148,6 +148,11 @@ class ProviderContainer {
         return new Promise(resolve => setTimeout(resolve, 0));
     }
 
+    configure(options) {
+        for (let snippet of this.snippets)
+            snippet.configure(options);
+    }
+
     // Get the next candidate and mark it.
     getNext(prev, until) {
 
@@ -294,7 +299,7 @@ class CoqManager {
         }
 
         // Setup the Coq statement provider.
-        this.provider = this.setupProvider(elems);
+        this.provider = this._setupProvider(elems);
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
@@ -306,7 +311,8 @@ class CoqManager {
             if (this.coq) this.layout.onToggle = () => {};
         };
 
-        this.setupDragDrop();
+        this._setupSettings();
+        this._setupDragDrop();
 
         // Setup pretty printer for feedback and goals
         this.pprint = new FormatPrettyPrint();
@@ -351,7 +357,7 @@ class CoqManager {
     }
 
     // Provider setup
-    setupProvider(elems) {
+    _setupProvider(elems) {
 
         var provider = new ProviderContainer(elems, this.options);
 
@@ -394,7 +400,17 @@ class CoqManager {
         return provider;
     }
 
-    setupDragDrop() {
+    /**
+     * Set up hooks for when user changes settings.
+     */
+     _setupSettings() {
+        const editorThemes = {'light': 'default', 'dark': 'blackboard'};
+        this.layout.settings.model.theme.observe(theme => {
+            this.provider.configure({theme: editorThemes[theme]});
+        });
+    }
+
+    _setupDragDrop() {
         $(this.layout.ide).on('dragover', (evt) => {
             evt.preventDefault();
             evt.originalEvent.dataTransfer.dropEffect = 'link';

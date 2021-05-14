@@ -106,6 +106,12 @@ class CmCoqProvider {
         return editor;
     }
 
+    configure(options) {
+        if (options.theme) {
+            this.editor.setOption('theme', options.theme);
+        }
+    }
+
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
         this.editor.on('change', ev => {
