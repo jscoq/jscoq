@@ -47,7 +47,11 @@ class CoqLayoutClassic {
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
       </span>
       <div class="exits right">
-        <a href="https://github.com/jscoq/jscoq" class="link-to-github"></a>
+        <svg class="app-menu-button" viewBox="0 0 80 80">
+            <circle cx="40" cy="24" r="5"></circle>
+            <circle cx="40" cy="40" r="5"></circle>
+            <circle cx="40" cy="56" r="5"></circle>
+        </svg>    
       </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
@@ -107,6 +111,8 @@ class CoqLayoutClassic {
         this.query    = this.panel.querySelector('#query-panel');
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
+        this.menubtn  = this.panel.querySelector('.app-menu-button');
+        this.settings = new SettingsPanel();
 
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
@@ -120,10 +126,13 @@ class CoqLayoutClassic {
         this.onAction = evt => {};
         this.buttons.addEventListener('click', evt => this.onAction(evt));
 
+        this.menubtn.addEventListener('click', () =>
+            this.menubtn.classList.toggle('active', this.settings.toggle()));
+
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
         $(this.panel).find('select[name=msg_filter]')
-            .change(ev => this.filterLog(parseInt(ev.target.value)));
+            .on('change', ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
 
         this._preloadImages();
