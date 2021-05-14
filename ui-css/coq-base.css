@@ -335,8 +335,8 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #toolbar .exits.right {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 0px;
+  right: 0px;
   transition: opacity 620ms ease-in;
 }
 
@@ -345,22 +345,76 @@ body.jscoq-main .CodeMirror-linenumber {
   transition: opacity 120ms linear;
 }
 
+#toolbar svg.app-menu-button {
+  height: 36px;
+  fill: #ccc;
+}
+#toolbar svg.app-menu-button:hover {
+  fill: #777;
+  background-color: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active {
+  background-color: #676b67;
+  fill: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active:hover {
+  background-color: #757a75;
+  fill: #f2f6f2;
+}
+
+div.settings-panel {
+  position: absolute;
+  right: 0;
+  top: 35px;
+  z-index: 99;
+  background: white;
+  border: 1px solid black;
+  min-width: 200px;
+  padding: .75em .75em .2em .75em;
+}
+
+div.settings-panel div.setting {
+  line-height: 1.75em;
+}
+
+div.settings-panel input.switch {
+  float: right;
+  height: 1.75em;
+  margin: 0;
+}
+
+div.settings-panel div.links {
+  margin-top: .2em;
+  text-align: right;
+}
+
 .link-to-github {
   word-spacing: -2px; /* aren't we picky */
 }
 
-.link-to-github::after {
+.link-to-github::after,
+.link-to-zulip::after {
   content: "";
   display: inline-block;
   height: 25px;
   width: 25px;
-  background: url(../ui-images/github.png);
   background-size: 25px 25px;
   background-repeat: no-repeat;
   vertical-align: middle;
   margin-left: .3em;
   padding-bottom: 5px;
   box-sizing: content-box;
+}
+
+.link-to-github::after {
+  background-image: url(../ui-images/github.png);
+}
+
+.link-to-zulip::after {
+  background-image: url(../ui-images/zulip-logo.png);
+  background-size: 20px 22px;
+  background-position: 3px 2px;
+  width: 23px;
 }
 
 #buttons {
