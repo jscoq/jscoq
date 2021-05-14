@@ -101,8 +101,7 @@ class CoqLayoutClassic {
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path, ...params});
 
-        if (options.theme)
-            this.panel.classList.add(`jscoq-theme-${options.theme}`);
+        this.configure(options);
 
         this.ide.appendChild(this.panel);
 
@@ -135,7 +134,19 @@ class CoqLayoutClassic {
             .on('change', ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
 
+        this._setupSettings();
         this._preloadImages();
+    }
+
+    /**
+     * Configure or re-configure UI based on CoqManager options.
+     * @param {object} options 
+     */
+    configure(options) {
+        if (options.theme) {
+            this.panel.classList.remove(...this.panel.classList);
+            this.panel.classList.add(`jscoq-theme-${options.theme}`);
+        }
     }
 
     show() {
@@ -182,13 +193,6 @@ class CoqLayoutClassic {
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
-    }
-
-    createOutline() {
-        var outline_pane = $('<div>').attr('id', 'outline-pane');
-        $(this.ide).prepend(outline_pane);
-        requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
-        return this.outline = outline_pane[0];
     }
 
     createOutline() {
@@ -338,6 +342,15 @@ class CoqLayoutClassic {
                 panel.classList.add('collapsed');
             }
         }
+    }
+
+    /**
+     * Set up hooks for when user changes settings.
+     */
+    _setupSettings() {
+        this.settings.model.theme.observe(theme => {
+            this.configure({theme});
+        });
     }
 
     /**
