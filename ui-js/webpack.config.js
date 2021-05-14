@@ -1,6 +1,6 @@
 const webpack = require('webpack'),
       path = require('path'),
-      VueLoaderPlugin = require('vue-loader/lib/plugin');
+      { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = (env, argv) => [{
   name: 'ide-project',
