@@ -337,6 +337,7 @@ class CmCoqProvider {
     }
 
     cursorToEnd(stm) {
+        this.editor.scrollTo(0);  // try to get back to the leftmost part
         this.editor.setCursor(stm.end);
     }
 
