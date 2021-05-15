@@ -408,6 +408,9 @@ class CoqManager {
         this.layout.settings.model.theme.observe(theme => {
             this.provider.configure({theme: editorThemes[theme]});
         });
+        this.layout.settings.model.company.observe(enable => {
+            this.provider.configure({mode: {'company-coq': enable}});
+        });
     }
 
     _setupDragDrop() {

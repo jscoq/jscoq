@@ -49,13 +49,20 @@
   opacity: 0.6;
 }
 
-.jscoq-theme-dark .link-to-github::after {
-  background-image: url(../ui-images/themes/dark/github.png);
-}
-
 .jscoq-theme-dark .flex-panel > .caption {
   background: #666;
   color: #ccc;
+}
+
+.settings-panel[data-theme=dark] {
+  background: #555;
+  border-color: #888;
+  box-shadow: -3px 3px 6px 0px #fff2;
+  color: #ddd;
+}
+
+.settings-panel[data-theme=dark] .link-to-github::after {
+  background-image: url(../ui-images/themes/dark/github.png);
 }
 
 /* Code settings */
