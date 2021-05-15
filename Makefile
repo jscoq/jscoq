@@ -1,95 +1,12 @@
 .PHONY: all clean force
-.PHONY: jscoq jscoq_worker links links-clean
 .PHONY: dist dist-npm app
 
--include ./config.inc
-
-# Coq Version
-COQ_VERSION := v8.12
-JSCOQ_BRANCH :=
-
-JSCOQ_VERSION := $(COQ_VERSION)
-
-ifdef JSCOQ_BRANCH
-JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
-endif
-
-WORD_SIZE ?= 32
-OS := ${shell uname}
-ARCH := $(OS)/$(WORD_SIZE)
-
-ifeq ($(WORD_SIZE),64)
-DUNE_WORKSPACE = $(current_dir)/dune-workspace-64
-VARIANT = +64bit
-else
-VARIANT = +32bit
-endif
-
-BUILD_CONTEXT = jscoq$(VARIANT)
-BUILDDIR = _build/$(BUILD_CONTEXT)
-
-# ugly but I couldn't find a better way
-current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-
-# Directory where the Coq sources and developments are.
-ADDONS_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
-COQSRC := $(ADDONS_PATH)/coq/
-
-# Directories where Dune builds and installs Coq
-COQBUILDDIR_REL := _vendor+$(COQ_VERSION)$(VARIANT)/coq
-COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/$(COQBUILDDIR_REL)
-COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
-
-COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
-
-DUNE_FLAGS := ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
-
-NJOBS ?= 4
-
-export NJOBS
-export BUILD_CONTEXT
-
-export COQDIR
-export COQBUILDDIR
-export COQBUILDDIR_REL
-export ADDONS_PATH
-export COQPKGS_ROOT
-
 all:
-	@echo "Welcome to jsCoq makefile. Targets are:"
-	@echo ""
-	@echo "     jscoq: build jscoq [javascript and libraries]"
-	@echo ""
-	@echo "     links: create links that allow to serve pages from the source tree"
-	@echo ""
-	@echo "      dist: create a distribution suitable for a web server"
-	@echo "       coq: download and build Coq and addon libraries"
-
-jscoq: force
-	dune build @jscoq $(DUNE_FLAGS)
-
-jscoq_worker:
-	dune build @jscoq_worker $(DUNE_FLAGS)
-
-links:
-	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.js
-
-links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.js
-
-# Build symbol database files for autocomplete
-coq-pkgs/%.symb: coq-pkgs/%.json
-	node --max-old-space-size=2048 ui-js/coq-cli.js --require-pkg $< --inspect $@
-
-libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
-
-########################################################################
-# Clean                                                                #
-########################################################################
+	npm run build
 
 clean:
-	dune clean
+	rm -f wacoq-*.tar.gz ui-js/*.browser.js* ui-js/addon/*.browser.js* 
+	rm -rf ui-js/*-images ui-js/addon/*-images
 
 ########################################################################
 # Dists                                                                #
@@ -103,7 +20,7 @@ DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
 
-dist: jscoq
+dist:
 	mkdir -p $(DISTDIR)
 	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
@@ -112,14 +29,14 @@ TAREXCLUDE = --exclude node_modules --exclude '*.cma' \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
 dist-tarball: dist
-	# Hack to make the tar contain a jscoq-x.x directory
-	@rm -f _build/jscoq-$(PACKAGE_VERSION)
-	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz   \
+	# Hack to make the tar contain a wacoq-x.x directory
+	@rm -f _build/wacoq-$(PACKAGE_VERSION)
+	ln -fs dist _build/wacoq-$(PACKAGE_VERSION)
+	tar zcf /tmp/wacoq-$(PACKAGE_VERSION).tar.gz   \
 	    -C _build $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' \
-	    --dereference jscoq-$(PACKAGE_VERSION)
-	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
-	@rm -f _build/jscoq-$(PACKAGE_VERSION)
+	    --dereference wacoq-$(PACKAGE_VERSION)
+	mv /tmp/wacoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
+	@rm -f _build/wacoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out node_modules index.html, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
@@ -158,68 +75,5 @@ app-dmg:
 %.icns: %.png
 	ui-images/app/png-to-icns $< $*
 
-########################################################################
-# Local stuff and distributions
-########################################################################
-
-# Private paths, for releases and local builds.
-WEB_DIR=~/x80/jscoq-builds/$(JSCOQ_VERSION)/
-RELEASE_DIR=~/research/jscoq-builds/
-
-dist-upload: dist
-	rsync -avzp --delete $(DISTDIR)/ $(WEB_DIR)
-
-dist-release: dist
-	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git $(DISTDIR)/ $(RELEASE_DIR)
-
-# all-dist: dist dist-release dist-upload
-all-dist: dist dist-release dist-upload
-
-########################################################################
-# Externals
-########################################################################
-
-.PHONY: coq coq-get coq-get-latest coq-build
-
-COQ_BRANCH = V8.12.0
-COQ_BRANCH_LATEST = v8.12
-COQ_REPOS = https://github.com/coq/coq.git
-
-COQ_PATCHES = trampoline cps timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
-
-COQ_PATCHES|64 = coerce-32bit
-COQ_PATCHES|Darwin/32 = byte-only
-
-$(COQSRC):
-	git clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
-
-coq-get: $(COQSRC)
-	eval `opam env --switch=$(BUILD_CONTEXT)` && \
-	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
-
-coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
-coq-get-latest: coq-get
-
-coq: coq-get
-
-test:
-	@cp -r tests $(BUILDDIR)
-	cd $(BUILDDIR) && npx mocha tests/main.js
-
 server:
-	npx http-server $(BUILDDIR) -p 8012
-
-
-# - These are deprecated (use jscoq/addons repo instead)
-
-addon-%-get:
-	make -f coq-addons/$*.addon get
-
-addon-%-build:
-	make -f coq-addons/$*.addon build
-
-addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
-addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
-
-addons: addons-get addons-build
+	npx http-server . -p 8013
