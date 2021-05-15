@@ -120,6 +120,10 @@ dev:
 
 clean:
 	dune clean
+	rm -f jscoq-*.tar.gz
+
+distclean: clean
+	rm -rf $(COQSRC)
 
 ########################################################################
 # Dists                                                                #
