@@ -410,6 +410,8 @@ class CoqManager {
         });
         this.layout.settings.model.company.observe(enable => {
             this.provider.configure({mode: {'company-coq': enable}});
+            this.company_coq = this.contextual_info.company_coq =
+                enable ? new CodeMirror.CompanyCoq() : undefined;
         });
     }
 

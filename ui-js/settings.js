@@ -2,7 +2,7 @@
 class SettingsPanel {
     html() {
         return `
-        <div class="settings-panel">
+        <div class="settings-panel" tabindex="0">
             <div>
                 <label for="settings--theme">
                     <div class="setting">
@@ -28,12 +28,20 @@ class SettingsPanel {
     constructor(model) {
         this.el = $(this.html());
         this.model = model || new CoqSettings();
+        this.active = new ReactiveVar(false);
 
         this.el.find('#settings--theme').on('change', ev => {
             this.model.theme.value = ev.target.checked ? 'light' : 'dark';
         });
         this.el.find('#settings--company').on('change', ev => {
             this.model.company.value = ev.target.checked;
+        });
+        // clickaway trick
+        this.el.on('blur', ev => {
+            if (this.el.has(ev.originalEvent.relatedTarget).length)
+                setTimeout(() => this.el[0].focus(), 1);
+            else
+                this.hide();
         });
     }
 
@@ -54,9 +62,12 @@ class SettingsPanel {
         if (this.el.parent().length == 0)
             $(document.body).append(this.el);
         this.el.show();
+        this.active.value = true;
+        setTimeout(() => this.el[0].focus(), 10); // avoid race between panel and button
     }
 
     hide() {
+        this.active.value = false;
         this.el.hide();
     }
 

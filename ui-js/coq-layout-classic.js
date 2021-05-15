@@ -123,8 +123,10 @@ class CoqLayoutClassic {
         this.onAction = evt => {};
         this.buttons.addEventListener('click', evt => this.onAction(evt));
 
-        this.menubtn.addEventListener('click', () =>
-            this.menubtn.classList.toggle('active', this.settings.toggle()));
+        this.menubtn.addEventListener('mousedown', () =>
+            this.settings.toggle());
+        this.settings.active.observe(active =>
+            this.menubtn.classList.toggle('active', active));
 
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
