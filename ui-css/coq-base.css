@@ -27,6 +27,7 @@ a, a:link, a:visited, a:active {
   margin-right: auto;
   margin-left: auto;
   overscroll-behavior: none;
+  --base-font-size: 11pt;
 }
 
 #ide-wrapper.layout-fixed {
@@ -70,7 +71,7 @@ a, a:link, a:visited, a:active {
 /* CodeMirror */
 
 .jscoq.CodeMirror {
-  font-size: 11pt;
+  font-size: var(--base-font-size);
   height: 100%;  /* auto-size to fit content */
   line-height: initial;
 }
@@ -138,7 +139,7 @@ body.jscoq-main .CodeMirror-linenumber {
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
 
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
-  font-size: 11pt;
+  font-size: var(--base-font-size);
 }
 
 #panel-wrapper * {
@@ -212,8 +213,8 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .content {
   flex: 1 0 0;
   padding: 0 4px;
-  /*transition: opacity 0.5s ease-in-out;*/
-  font-family: monospace;
+  font-family: monospace, "Arial Unicode MS";
+  line-height: 1.2;  /* because some characters are too tall (due to alternative font glyph rendering) */
   overflow: auto;
   overscroll-behavior: contain;
 }
@@ -371,6 +372,8 @@ div.settings-panel {
   border: 1px solid black;
   min-width: 200px;
   padding: .75em .75em .2em .75em;
+  box-shadow: -2px 3px 6px 0px #3332;
+  outline: none !important;
 }
 
 div.settings-panel div.setting {
