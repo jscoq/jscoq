@@ -7,7 +7,7 @@ class SettingsPanel {
                 <label for="settings--theme">
                     <div class="setting">
                         Light switch</label>
-                        <input id="settings--theme" type="checkbox" checked class="switch">
+                        <input id="settings--theme" type="checkbox" class="switch">
                     </div>
                 </label>
                 <label for="settings--company">
@@ -37,12 +37,27 @@ class SettingsPanel {
         });
     }
 
+    configure(options) {
+        var v;
+        if (v = options.theme) {
+            this.el.attr('data-theme', v);
+            this.model.theme.value = v;
+            this.el.find('#settings--theme').attr('checked', v == 'light');
+        }
+        if ((v = options.company) !== undefined) {
+            this.model.theme.company = v;
+            this.el.find('#settings--company').attr('checked', v);
+        }
+    }
+
     show() {
-        $(document.body).append(this.el);
+        if (this.el.parent().length == 0)
+            $(document.body).append(this.el);
+        this.el.show();
     }
 
     hide() {
-        this.el.remove();
+        this.el.hide();
     }
 
     toggle() {
@@ -52,7 +67,7 @@ class SettingsPanel {
     }
 
     isVisible() {
-        return this.el.parent().length > 0;
+        return this.el.is(':visible');
     }
 }
 
@@ -72,9 +87,11 @@ class ReactiveVar {
 
     get value() { return this._value; }
     set value(val) {
-        this._value = val;
-        for (let o of this.observers) {
-            o(val);
+        if (val !== this._value) {  // do not trigger for nothing
+            this._value = val;
+            for (let o of this.observers) {
+                o(val);
+            }
         }
     }
 

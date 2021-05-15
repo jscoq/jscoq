@@ -101,8 +101,6 @@ class CoqLayoutClassic {
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path, ...params});
 
-        this.configure(options);
-
         this.ide.appendChild(this.panel);
 
         // UI setup.
@@ -134,6 +132,8 @@ class CoqLayoutClassic {
             .on('change', ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
 
+        this.configure(options);
+
         this._setupSettings();
         this._preloadImages();
     }
@@ -147,6 +147,11 @@ class CoqLayoutClassic {
             this.panel.classList.remove(...this.panel.classList);
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
         }
+        this.settings.configure({
+            theme: options.theme,
+            company: options.editor && options.editor.mode &&
+                     options.editor.mode['company-coq']
+        });
     }
 
     show() {
