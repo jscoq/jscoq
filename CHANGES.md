@@ -7,6 +7,7 @@
  - Bump required compiler version to 4.10.2. (@ejgallego)
  - Fixed missing indentation in pretty-printing of goals. (#126,
    @corwin-of-amber)
+ - The long-awaited settings panel. (#12, @corwin-of-amber)
 
 # jsCoq 0.12.3 "at midday"
 ---------------------------------------

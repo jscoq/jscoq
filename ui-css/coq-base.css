@@ -371,6 +371,8 @@ div.settings-panel {
   background: white;
   border: 1px solid black;
   min-width: 200px;
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+  font-size: 11pt;
   padding: .75em .75em .2em .75em;
   box-shadow: -2px 3px 6px 0px #3332;
   outline: none !important;
