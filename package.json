@@ -3,6 +3,9 @@
   "version": "0.13.0-rc2",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "main": "examples/scratchpad.html?project",
+  "bin": {
+    "wacoqdoc": "ui-js/jscoqdoc.js"
+  },
   "dependencies": {
     "@corwin.amber/hastebin": "^0.1.1",
     "array-equal": "^1.0.0",
