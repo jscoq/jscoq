@@ -47,7 +47,11 @@ class CoqLayoutClassic {
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
       </span>
       <div class="exits right">
-        <a href="https://github.com/jscoq/jscoq" class="link-to-github"></a>
+        <svg class="app-menu-button" viewBox="0 0 80 80">
+            <circle cx="40" cy="24" r="5"></circle>
+            <circle cx="40" cy="40" r="5"></circle>
+            <circle cx="40" cy="56" r="5"></circle>
+        </svg>    
       </div> <!-- /.exits -->
     </div> <!-- /#toolbar -->
     <div class="flex-container">
@@ -97,9 +101,6 @@ class CoqLayoutClassic {
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path, ...params});
 
-        if (options.theme)
-            this.panel.classList.add(`jscoq-theme-${options.theme}`);
-
         this.ide.appendChild(this.panel);
 
         // UI setup.
@@ -107,6 +108,8 @@ class CoqLayoutClassic {
         this.query    = this.panel.querySelector('#query-panel');
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
+        this.menubtn  = this.panel.querySelector('.app-menu-button');
+        this.settings = new SettingsPanel();
 
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
@@ -120,13 +123,37 @@ class CoqLayoutClassic {
         this.onAction = evt => {};
         this.buttons.addEventListener('click', evt => this.onAction(evt));
 
+        this.menubtn.addEventListener('mousedown', () =>
+            this.settings.toggle());
+        this.settings.active.observe(active =>
+            this.menubtn.classList.toggle('active', active));
+
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
         $(this.panel).find('select[name=msg_filter]')
-            .change(ev => this.filterLog(parseInt(ev.target.value)));
+            .on('change', ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
 
+        this.configure(options);
+
+        this._setupSettings();
         this._preloadImages();
+    }
+
+    /**
+     * Configure or re-configure UI based on CoqManager options.
+     * @param {object} options 
+     */
+    configure(options) {
+        if (options.theme) {
+            this.panel.classList.remove(...this.panel.classList);
+            this.panel.classList.add(`jscoq-theme-${options.theme}`);
+        }
+        this.settings.configure({
+            theme: options.theme,
+            company: options.editor && options.editor.mode &&
+                     options.editor.mode['company-coq']
+        });
     }
 
     show() {
@@ -173,13 +200,6 @@ class CoqLayoutClassic {
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
-    }
-
-    createOutline() {
-        var outline_pane = $('<div>').attr('id', 'outline-pane');
-        $(this.ide).prepend(outline_pane);
-        requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
-        return this.outline = outline_pane[0];
     }
 
     createOutline() {
@@ -329,6 +349,15 @@ class CoqLayoutClassic {
                 panel.classList.add('collapsed');
             }
         }
+    }
+
+    /**
+     * Set up hooks for when user changes settings.
+     */
+    _setupSettings() {
+        this.settings.model.theme.observe(theme => {
+            this.configure({theme});
+        });
     }
 
     /**

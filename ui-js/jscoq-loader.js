@@ -65,6 +65,7 @@ var loadJsCoq, JsCoq;
         loadCss(base_path + 'ui-css/coq-base');
         loadCss(base_path + 'ui-css/coq-light');
         loadCss(base_path + 'ui-css/coq-dark');
+        loadCss(base_path + 'ui-css/settings');
 
         var files = [node_modules_path + 'codemirror/lib/codemirror',
                      node_modules_path + 'codemirror/keymap/emacs',
@@ -81,6 +82,7 @@ var loadJsCoq, JsCoq;
                      base_path + 'ui-js/addon/company-coq',
                      base_path + 'ui-js/cm-provider',
                      base_path + 'ui-js/format-pprint',
+                     base_path + 'ui-js/settings',
                      base_path + 'ui-js/coq-packages',
                      base_path + 'ui-js/coq-layout-classic',
                      base_path + 'ui-js/coq-manager'];

@@ -41,8 +41,19 @@ class Markup {
     attach(cm) {
         this.cm = cm;
         this.work = new WorkQueue(cm);
-        cm.on('change', (cm, change_obj) => this._flush(change_obj));
-        cm.on('renderLine', (cm, ln, el) => this._rescan(ln));
+        this._on = {
+            change: (cm, change_obj) => this._flush(change_obj),
+            renderLine: (cm, ln, el) => this._rescan(ln)
+        };
+        cm.on('change', this._on.change);
+        cm.on('renderLine', this._on.renderLine);
+        this.applyToDocument();
+    }
+
+    detach() {
+        this.clearAll();
+        this.cm.off('change', this._on.change);
+        this.cm.off('renderLine', this._on.renderLine);
     }
 
     applyToDocument() {
@@ -85,6 +96,11 @@ class Markup {
 
         if (this.cm.display.maxLine && 
             this.cm.display.maxLine.lineNo() === line) this._maxLineHack();
+    }
+
+    clearAll() {
+        for (let mark of this.cm.getAllMarks().filter(m => m.owner == this))
+            mark.clear();
     }
 
     clearFromLine(line) {
@@ -226,6 +242,9 @@ class WorkQueue {
         this.tasks.push(task); 
         if (!this.primed) this._engage();
     }
+    clear() {
+        this.tasks.splice();
+    }
     _engage() {
         this.primed = true;
         requestAnimationFrame(() => this.cm.operation(() => {
@@ -254,7 +273,13 @@ class AutoComplete {
     }
 
     attach(cm) {
-        cm.on('change', (cm, evt) => this.senseContext(cm, evt));
+        this.cm = cm;
+        this._on = {change: (cm, evt) => this.senseContext(cm, evt)};
+        cm.on('change', this._on.change);
+    }
+
+    detach() {
+        this.cm.off('change', this._on.change);
     }
 
     lemmaHint(cm, options) { return this.hint(cm, options, ['keywords', 'lemmas']); }
@@ -414,7 +439,13 @@ class ObserveIdentifier {
     }
 
     attach(cm) {
-        cm.on('cursorActivity', (cm, evt) => this.underCursor(cm));
+        this.cm = cm;
+        this._on = {cursorActivity: (cm, evt) => this.underCursor(cm)};
+        cm.on('cursorActivity', this._on.cursorActivity);
+    }
+
+    detach() {
+        this.cm.off('cursorActivity', this._on.cursorActivity);
     }
 
     underCursor(cm) {
@@ -547,6 +578,14 @@ class CompanyCoq {
         return this;
     }
 
+    detach() {
+        this.markup.detach();
+        this.completion.detach();
+        this.observe.detach();
+
+        return this;
+    }
+
     static hint(cm, options) {
         if (cm.company_coq)
             return cm.company_coq.completion.getCompletions(cm, options);
@@ -578,14 +617,27 @@ class CompanyCoq {
         ObserveIdentifier.instance.vocab = vocab;
         CodeMirror.CompanyCoq = CompanyCoq;
 
-        CodeMirror.defineInitHook(cm => {
-            if (cm.options.mode['company-coq'])
-                cm.company_coq = new CompanyCoq().attach(cm);
-        });
+        CodeMirror.defineInitHook(cm =>
+            CompanyCoq.configure(cm, cm.options));
 
         CodeMirror.registerGlobalHelper("hint", "company-coq",
             (mode, cm) => mode.name === 'coq' && !!cm.company_coq, 
             CompanyCoq.hint);
+    }
+
+    static configure(cm, options) {
+        switch (options.mode && options.mode['company-coq']) {
+        case true:
+            if (!cm.company_coq)
+                cm.company_coq = new CompanyCoq().attach(cm);
+            break;
+        case false:
+            if (cm.company_coq) {
+                cm.company_coq.detach();
+                cm.company_coq = undefined;
+            }
+            break;
+        }
     }
 }
 

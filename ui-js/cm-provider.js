@@ -106,6 +106,13 @@ class CmCoqProvider {
         return editor;
     }
 
+    configure(options) {
+        if (options.theme) {
+            this.editor.setOption('theme', options.theme);
+        }
+        CodeMirror.CompanyCoq.configure(this.editor, options);
+    }
+
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
         this.editor.on('change', ev => {

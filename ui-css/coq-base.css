@@ -27,6 +27,7 @@ a, a:link, a:visited, a:active {
   margin-right: auto;
   margin-left: auto;
   overscroll-behavior: none;
+  --base-font-size: 11pt;
 }
 
 #ide-wrapper.layout-fixed {
@@ -70,7 +71,7 @@ a, a:link, a:visited, a:active {
 /* CodeMirror */
 
 .jscoq.CodeMirror {
-  font-size: 11pt;
+  font-size: var(--base-font-size);
   height: 100%;  /* auto-size to fit content */
   line-height: initial;
 }
@@ -138,7 +139,7 @@ body.jscoq-main .CodeMirror-linenumber {
   z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
 
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
-  font-size: 11pt;
+  font-size: var(--base-font-size);
 }
 
 #panel-wrapper * {
@@ -212,8 +213,8 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .content {
   flex: 1 0 0;
   padding: 0 4px;
-  /*transition: opacity 0.5s ease-in-out;*/
-  font-family: monospace;
+  font-family: monospace, "Arial Unicode MS";
+  line-height: 1.2;  /* because some characters are too tall (due to alternative font glyph rendering) */
   overflow: auto;
   overscroll-behavior: contain;
 }
@@ -335,8 +336,8 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #toolbar .exits.right {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 0px;
+  right: 0px;
   transition: opacity 620ms ease-in;
 }
 
@@ -345,22 +346,21 @@ body.jscoq-main .CodeMirror-linenumber {
   transition: opacity 120ms linear;
 }
 
-.link-to-github {
-  word-spacing: -2px; /* aren't we picky */
+#toolbar svg.app-menu-button {
+  height: 36px;
+  fill: #ccc;
 }
-
-.link-to-github::after {
-  content: "";
-  display: inline-block;
-  height: 25px;
-  width: 25px;
-  background: url(../ui-images/github.png);
-  background-size: 25px 25px;
-  background-repeat: no-repeat;
-  vertical-align: middle;
-  margin-left: .3em;
-  padding-bottom: 5px;
-  box-sizing: content-box;
+#toolbar svg.app-menu-button:hover {
+  fill: #777;
+  background-color: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active {
+  background-color: #676b67;
+  fill: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active:hover {
+  background-color: #757a75;
+  fill: #f2f6f2;
 }
 
 #buttons {
