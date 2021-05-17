@@ -6,8 +6,12 @@ class SettingsPanel {
             <div>
                 <label for="settings--theme">
                     <div class="setting">
-                        Light switch</label>
-                        <input id="settings--theme" type="checkbox" class="switch">
+                        Light switch
+                        <div class="switch rocker rocker-small">
+                            <input id="settings--theme" type="checkbox" checked>
+                            <span class="switch-left">ON</span>
+                            <span class="switch-right">OFF</span>
+                        </div>
                     </div>
                 </label>
                 <label for="settings--company">

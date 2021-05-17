@@ -406,6 +406,7 @@ class CoqManager {
      _setupSettings() {
         const editorThemes = {'light': 'default', 'dark': 'blackboard'};
         this.layout.settings.model.theme.observe(theme => {
+            /* this might take some time (do async like renumber?) */
             this.provider.configure({theme: editorThemes[theme]});
         });
         this.layout.settings.model.company.observe(enable => {
