@@ -8,6 +8,7 @@
  - Fixed missing indentation in pretty-printing of goals. (#126,
    @corwin-of-amber)
  - The long-awaited settings panel. (#12, @corwin-of-amber)
+ - Added a Coq tutorial example (@corwin-of-amber, @mdnahas)
 
 # jsCoq 0.12.3 "at midday"
 ---------------------------------------
