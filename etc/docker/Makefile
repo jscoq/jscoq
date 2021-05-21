@@ -9,6 +9,8 @@ export NJOBS ?= 4
 ARGS = --build-arg REPO --build-arg BRANCH --build-arg NJOBS
 # --progress plain --no-cache=true
 
+-include _config.mk
+
 EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'}
 
 build:
@@ -37,3 +39,6 @@ serve:
 
 dist-serve:
 	npx http-server -p 8080 dist
+
+ci:
+	make clean && make && make dist

@@ -28,6 +28,9 @@ endif
 BUILD_CONTEXT = jscoq$(VARIANT)
 BUILDDIR = _build/$(BUILD_CONTEXT)
 
+OPAMENV = eval `opam env --set-switch --switch $(BUILD_CONTEXT)`
+DUNE = $(OPAMENV) && dune
+
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -72,14 +75,14 @@ all:
 	@echo "   install: install Coq and jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
 jscoq: force
-	dune build @jscoq $(DUNE_FLAGS)
+	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
 jscoq_worker:
-	dune build @jscoq_worker $(DUNE_FLAGS)
+	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)
 
 install:
-	dune build -p coq $(DUNE_FLAGS)
-	dune install coq $(DUNE_FLAGS)
+	$(DUNE) build -p coq $(DUNE_FLAGS)
+	$(DUNE) install coq $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
@@ -119,7 +122,7 @@ dev:
 ########################################################################
 
 clean:
-	dune clean
+	$(DUNE) clean
 	rm -f jscoq-*.tar.gz
 
 distclean: clean
@@ -207,7 +210,7 @@ $(COQSRC):
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq-get: $(COQSRC)
-	eval `opam env --switch=$(BUILD_CONTEXT)` && \
+	$(OPAMENV) && \
 	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
