@@ -71,23 +71,6 @@ body.goals-active #jscoq-plug {
   width: 0 !important;
 }
 
-#panel-wrapper button.close {
-  position: absolute;
-  padding: 0;
-  border: none;
-  top:       0;     left:        0;
-  width:     15px;  height:      15px;
-  font-size: 16px;  line-height: 10px;
-}
-
-#panel-wrapper button.close:hover {
-  background: #ccc;
-}
-
-#panel-wrapper #toolbar {
-  padding-left: 15px;
-}
-
 /*
  * Larger fonts in presentation mode (SF's `terse`)
  */
