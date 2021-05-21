@@ -1,6 +1,6 @@
 {
   "name": "wacoq",
-  "version": "0.13.0-rc2",
+  "version": "0.13.0",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "main": "examples/scratchpad.html?project",
   "bin": {
@@ -24,7 +24,7 @@
     "path": "^0.12.7",
     "vue": "^2.6.12",
     "vue-context": "^5.1.0",
-    "wacoq-bin": "file:../wacoq-bin/wacoq-bin-0.13.0-rc2.tar.gz"
+    "wacoq-bin": "file:../wacoq-bin/wacoq-bin-0.13.0.tar.gz"
   },
   "devDependencies": {
     "@types/find": "^0.2.1",
