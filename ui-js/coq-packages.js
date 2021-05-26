@@ -276,34 +276,36 @@ class PackageManager {
     }
 
     _packageByURL(url) {
-        var s = url.toString();
+        var s = this._absoluteURL(url);
         for (let pkg of this.packages) {
             if (pkg.archive && s == pkg.archive.url) return pkg.name;
         }
     }
 
+    _absoluteURL(url) {
+        return new URL(url, this.coq._worker_script).toString();
+    }
+
     coqLibProgress(evt) {
-        var url = new URL(evt.uri, this.coq._worker_script),
-            pkg_name = this._packageByURL(url);
+        var pkg_name = this._packageByURL(evt.uri);
 
         if (pkg_name) {
-            if (evt.done) {
-                this.coqLibLoaded(pkg_name);
-            }
-            else {
-                this.showPackageProgress(pkg_name, evt.download);
-            }
+            this.showPackageProgress(pkg_name, evt.download);
         }
     }
 
-    coqLibLoaded(bname) {
-        this.loaded_pkgs.push(bname);
+    coqLibLoaded(pkg) {
+        var pkg_name = this._packageByURL(pkg) || pkg;
+        this.loaded_pkgs.push(pkg_name);
 
-        var pkg = this.getPackage(bname);
-        if (pkg._resolve) pkg._resolve();
-        else pkg.promise = Promise.resolve();
+        try {
+            var pkg = this.getPackage(pkg_name);
+            if (pkg._resolve) pkg._resolve();
+            else pkg.promise = Promise.resolve();
 
-        this.showPackageCompleted(bname);
+            this.showPackageCompleted(pkg_name);
+        }
+        catch(e) { console.warn(e); }
     }
 
     /**
