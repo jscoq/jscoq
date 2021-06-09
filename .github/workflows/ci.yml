@@ -1,0 +1,77 @@
+name: JsCoq's CI Action
+
+on:
+  push:
+    branches:
+    - v8.8
+    - v8.9
+    - v8.10
+    - v8.11
+    - v8.12
+    - v8.13
+  pull_request:
+    branches:
+    - v8.8
+    - v8.9
+    - v8.10
+    - v8.11
+    - v8.12
+    - v8.13
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        jscoq_arch: [32, 64]
+    env:
+      OPAMJOBS: "2"
+      OPAMROOTISOK: "true"
+      OPAMYES: "true"
+      NJOBS: "2"
+      JSCOQ_ARCH: ${{ matrix.jscoq_arch }}
+      OPAM_LINUX_URL: https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-linux
+      OPAM_MACOS_URL: https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-darwin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - name: Install apt dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get -o Acquire::Retries=30 update -q
+          sudo apt-get -o Acquire::Retries=30 install gcc-multilib libgmp-dev:i386 -y --allow-unauthenticated
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: OPAM Set up
+        run: |
+          sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
+          sudo chmod 755 /usr/bin/opam
+      - name: OCaml Set up
+        run: |
+          opam init -y --bare --disable-sandboxing || true
+          eval $(opam env)
+          ./etc/toolchain-setup.sh --"$JSCOQ_ARCH"
+          opam switch
+          opam list
+          opam config var root
+      - name: Coq build
+        run: |
+          echo 'Using Node.js:' && node --version
+          set -e
+          echo 'Building Coq...' # && echo -en 'travis_fold:start:coq.build\\r'
+          make coq-get
+          # echo -en 'travis_fold:end:coq.build\\r'
+      - name: jsCoq build
+        run: |
+          set -e
+          echo 'Building JsCoq...' # && echo -en 'travis_fold:start:jscoq.build\\r'
+          make jscoq
+          # echo -en 'travis_fold:end:jscoq.build\\r'
+          echo 'Building Addons...' && echo -en 'travis_fold:start:addons.build\\r'
+          make addons
+          # echo -en 'travis_fold:end:addons.build\\r'

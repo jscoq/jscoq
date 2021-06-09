@@ -1,3 +1,10 @@
+# jsCoq 0.13.1 "Action Display"
+---------------------------------------
+
+ - jsCoq's CI has been moved from Travis CI to Github actions, thanks
+   to both providers for the generous support (#242, closes #224,
+   @ejgallego)
+
 # jsCoq 0.13.0 "Better late than never"
 ---------------------------------------
 
