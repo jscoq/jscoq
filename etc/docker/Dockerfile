@@ -80,12 +80,13 @@ WORKDIR jscoq-addons
 RUN make set-ver VER=`jscoq --version`
 RUN eval $(opam env) && make
 
+# EJGA we need to figure this out.
 # Private repos: re-enable SSH
-COPY /_ssh /_ssh 
-RUN [ -e /_ssh/id_rsa ] && rm ~/.gitconfig && apt-get install -y openssh-client
-ENV GIT_SSH_COMMAND 'ssh -i /_ssh/id_rsa -o StrictHostKeyChecking=no'
+# COPY /_ssh /_ssh 
+# RUN [ -e /_ssh/id_rsa ] && rm ~/.gitconfig && apt-get install -y openssh-client
+# ENV GIT_SSH_COMMAND 'ssh -i /_ssh/id_rsa -o StrictHostKeyChecking=no'
 
-RUN [ -e /_ssh/id_rsa ] && eval $(opam env) && make privates WITH_PRIVATE=software-foundations
+# RUN [ -e /_ssh/id_rsa ] && eval $(opam env) && make privates WITH_PRIVATE=software-foundations
 
 RUN make pack
 
