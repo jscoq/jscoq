@@ -80,23 +80,27 @@ WORKDIR jscoq-addons
 RUN make set-ver VER=`jscoq --version`
 RUN eval $(opam env) && make
 
-# EJGA we need to figure this out.
 # Private repos: re-enable SSH
-# COPY /_ssh /_ssh 
-# RUN [ -e /_ssh/id_rsa ] && rm ~/.gitconfig && apt-get install -y openssh-client
-# ENV GIT_SSH_COMMAND 'ssh -i /_ssh/id_rsa -o StrictHostKeyChecking=no'
+COPY Dockerfile _ssh* /root/_ssh/
+#    ^ this is a hack in case `_ssh` does not exist (https://stackoverflow.com/a/46801962/37639)
+ENV GIT_SSH_COMMAND 'ssh -i /root/_ssh/id_rsa -o StrictHostKeyChecking=no'
 
-# RUN [ -e /_ssh/id_rsa ] && eval $(opam env) && make privates WITH_PRIVATE=software-foundations
+RUN if [ -e /root/_ssh/id_rsa ] ; then rm ~/.gitconfig && apt-get install -y openssh-client ; fi
+RUN if [ -e /root/_ssh/id_rsa ] ; then eval $(opam env) && make privates WITH_PRIVATE=software-foundations ; fi
 
 RUN make pack
 
+# ---------
 # jsCoq SDK
+# ---------
 
-#RUN cp -rL _build/install/jscoq+64bit/ ./dist && \
-#    rm dist/bin/*.byte dist/bin/*.opt \
-#       dist/lib/coq/*/*.cmxs \
-#       `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
+FROM jscoq as jscoq-sdk-prepare
 
-#FROM debian:10-slim
+RUN cp -rL _build/install/jscoq+*bit/ ./dist && \
+    rm dist/bin/*.byte dist/bin/*.opt \
+       dist/lib/coq/*/*.cmxs \
+       `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
-#COPY --from=0 /root/jscoq/dist /opt/jscoq
+FROM debian:10-slim as jscoq-sdk
+
+COPY --from=jscoq-sdk-prepare /root/jscoq/dist /opt/jscoq
