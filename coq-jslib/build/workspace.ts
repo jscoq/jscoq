@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { neatJSON } from 'neatjson';
 import { CoqProject, SearchPath, ZipVolume } from './project';
+import { BuildError } from './batch';
 
 
 
@@ -13,15 +14,16 @@ class Workspace {
     pkgDir = "bin/coq"
     outDir = ""
 
-    open(jsonFilename: string, rootdir?: string) {
+    open(jsonFilename: string, rootdir?: string, opts: Workspace.Options = {}) {
         try {
             var json = JSON.parse(<any>fs.readFileSync(jsonFilename));
             if (json.builddir) this.outDir = json.builddir;
             if (json.bundle) this.bundleName = json.bundle
-            this.openProjects(json.projects, rootdir || json.rootdir);
+            this.openProjects(json.projects, rootdir || json.rootdir, opts);
         }
         catch (e) {
             console.warn(`cannot open workspace '${jsonFilename}': ${e}`);
+            throw new BuildError();
         }
     }
 
@@ -42,10 +44,25 @@ class Workspace {
         proj.searchPath = this.searchPath;
     }
 
-    openProjects(pkgs: any, baseDir: string) {
+    openProjects(pkgs: any, baseDir: string, opts: Workspace.Options = {}) {
+        var errs = [], ok = false;;
         for (let pkg in pkgs) {
-            var proj = new CoqProject(pkg).fromJson(pkgs[pkg], baseDir);
-            this.addProject(proj);
+            try {
+                var proj = new CoqProject(pkg).fromJson(pkgs[pkg], baseDir);
+                this.addProject(proj);
+                ok = true;
+            }
+            catch (e) {
+                if (opts.ignoreMissing) errs.push([pkg, e]);
+                else throw e;
+            }
+        }
+
+        if (!ok) {
+            for (let [pkg, e] of errs) {
+                console.warn(`in project '${pkg}': ${e}`);
+            }
+            throw new Error('no valid projects found');
         }
     }
 
@@ -71,6 +88,12 @@ class Workspace {
         };
     }
 
+}
+
+namespace Workspace {
+    export type Options = {
+        ignoreMissing?: boolean
+    }
 }
 
 

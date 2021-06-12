@@ -44,13 +44,13 @@ class CLI {
         if (!opts.compile)
             await workspace.loadDeps(opts.loads);
         if (opts.workspace)
-            workspace.open(opts.workspace, opts.rootdir);
+            workspace.open(opts.workspace, opts.rootdir, opts);
         else if (opts.rootdir)
             workspace.openProjectDirect(opts.package || path.basename(opts.rootdir),
                                         opts.rootdir, opts.top,
                                         opts.dirpaths.split(/[, ]/));
         else {
-            console.error('what to build? specify either project or workspace.');
+            console.error('what to build? specify either rootdir or workspace.');
             throw new BuildError();
         }
         this.workspace = workspace;
@@ -150,6 +150,7 @@ async function main() {
         .option('--dirpaths <a.b.c>',         'logical paths containing modules (comma separated)', '')
         .option('--package <f.coq-pkg>',      'create a package (default extension is `.coq-pkg`)')
         .option('-d,--outdir <dir>',          'set default output directory')
+        .option('--ignore-missing',           'skip missing projects in workspace, unless they are all missing')
         .option('--load <f.coq-pkg>',         'load package(s) for compilation and for module dependencies (comma separated, may repeat)')
         .option('--compile',                  'compile `.v` files to `.vo`')
         .option('--continue',                 'pick up from previous build')
