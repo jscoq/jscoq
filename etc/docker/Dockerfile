@@ -96,11 +96,11 @@ RUN make pack
 
 FROM jscoq as jscoq-sdk-prepare
 
-RUN cp -rL _build/install/jscoq+*bit/ ./dist && \
-    rm dist/bin/*.byte dist/bin/*.opt \
-       dist/lib/coq/*/*.cmxs \
+RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
+    rm dist-sdk/bin/*.byte dist-sdk/bin/*.opt \
+       dist-sdk/lib/coq/*/*.cmxs \
        `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
 FROM debian:10-slim as jscoq-sdk
 
-COPY --from=jscoq-sdk-prepare /root/jscoq/dist /opt/jscoq
+COPY --from=jscoq-sdk-prepare /root/jscoq/dist-sdk /opt/jscoq
