@@ -5,8 +5,8 @@ VERB= # -vv
 
 # Default OCaml version
 case `uname`-`uname -m` in
-  Darwin-arm64) OCAML_VER=4.10.2 ;;  # older versions don't work on arm64
-  *)            OCAML_VER=4.10.2 ;;
+  Darwin-arm64) OCAML_VER=4.12.0 ;;  # older versions don't work on arm64
+  *)            OCAML_VER=4.12.0 ;;
 esac
 
 # Default word size
@@ -31,11 +31,11 @@ done
 create_switch() {
 
   case $WORD_SIZE in
-    32) switch_name=jscoq+32bit; compiler=ocaml-variants.$OCAML_VER+32bit ;;
-    64) switch_name=jscoq+64bit; compiler=ocaml-base-compiler.$OCAML_VER ;;
+    32) switch_name=jscoq+32bit; packages="ocaml-variants.$OCAML_VER+options ocaml-option-32bit";;
+    64) switch_name=jscoq+64bit; packages=ocaml-base-compiler.$OCAML_VER ;;
   esac
 
-  opam switch -j $NJOBS create $switch_name $compiler
+  opam switch -j $NJOBS create $switch_name --packages=$packages
   opam switch $switch_name || exit
   eval `opam env`
 

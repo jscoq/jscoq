@@ -33,7 +33,7 @@ function consumeFromDirectory(dir) {
         }
 
         if (manifest.name.startsWith(pkgPrefix)) {
-            var source = path.join(pkgDir, manifest.name),
+            var source = path.join(buildRel, pkgDir, manifest.name),
                 target = path.join(dir, path.dirname(fn));
             console.log(`${manifest.name}  -->  ${target}`);
             mkdirp.sync(path.dirname(source));

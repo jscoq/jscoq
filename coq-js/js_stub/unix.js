@@ -515,6 +515,12 @@ function unix_utimes()                { unix_ll("unix_utimes", arguments); }
 // Provides: unix_write
 // Requires: unix_ll
 function unix_write()                 { unix_ll("unix_write", arguments); }
+// Provides: unix_exit
+// Requires: unix_ll
+function unix_exit()                  { unix_ll("unix_exit", arguments); }
+// Provides: unix_spawn
+// Requires: unix_ll
+function unix_spawn()                 { unix_ll("unix_spawn", arguments); }
 // Provides: unix_fsync
 // Requires: unix_ll
 function unix_fsync()                 { unix_ll("unix_fsync", arguments); }
