@@ -1,5 +1,5 @@
 diff --git a/vernac/declaremods.ml b/vernac/declaremods.ml
-index d2eeebc..e6757ae 100644
+index 95e0555..25bde86 100644
 --- a/vernac/declaremods.ml
 +++ b/vernac/declaremods.ml
 @@ -18,6 +18,9 @@ open Libnames
@@ -12,25 +12,7 @@ index d2eeebc..e6757ae 100644
  (** {6 Inlining levels} *)
  
  (** Rigid / flexible module signature *)
-@@ -315,7 +318,7 @@ and collect_object f i (name, obj as o) acc =
-   | ModuleObject _ | ModuleTypeObject _ -> mark_object f o acc
- 
- and collect_objects f i prefix objs acc =
--  List.fold_right (fun (id, obj) acc -> collect_object f i (Lib.make_oname prefix id, obj) acc) objs acc
-+  list_fold_right_stackless (fun (id, obj) acc -> collect_object f i (Lib.make_oname prefix id, obj) acc) objs acc
- 
- and collect_one_export f (f',mp) (exports,objs as acc) =
-   match filter_and f f' with
-@@ -339,7 +342,7 @@ and collect_one_export f (f',mp) (exports,objs as acc) =
- 
- and collect_export f i mpl acc =
-   if Int.equal i 1 then
--    List.fold_right (collect_one_export f) mpl acc
-+    list_fold_right_stackless (collect_one_export f) mpl acc
-   else acc
- 
- let open_modtype i ((sp,kn),_) =
-@@ -615,7 +618,7 @@ let intern_args params =
+@@ -620,7 +623,7 @@ let intern_args params =
  
  let check_sub mtb sub_mtb_l =
    (* The constraints are checked and forgot immediately : *)
@@ -39,12 +21,3 @@ index d2eeebc..e6757ae 100644
              (fun sub_mtb env ->
                 Environ.add_constraints
                   (Subtyping.check_subtypes env mtb sub_mtb) env)
-@@ -1056,7 +1059,7 @@ let end_library ?except ~output_native_objects dir =
-   cenv,(substitute,keep),ast
- 
- let import_modules ~export mpl =
--  let _,objs = List.fold_right collect_module_objects mpl (MPmap.empty, []) in
-+  let _,objs = list_fold_right_stackless collect_module_objects mpl (MPmap.empty, []) in
-   List.iter (fun (f,o) -> open_object f 1 o) objs;
-   if export then Lib.add_anonymous_entry (Lib.Leaf (ExportObject { mpl }))
- 

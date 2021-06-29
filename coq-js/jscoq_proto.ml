@@ -51,6 +51,7 @@ type jscoq_options =
   { implicit_libs: bool          [@default true]
   ; coq_options: coq_options     [@default []]  (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_options *)
   ; debug: debug_config          [@default {coq=false; stm=false}]
+  ; lib_path: lib_path           [@default []]
   }
   [@@deriving yojson]
 
@@ -61,7 +62,6 @@ type top_mode =
 type doc_options =
   { top_name: string             [@default "JsCoq"]
   ; lib_init: string list        [@default ["Coq.Init.Prelude"]]
-  ; lib_path: lib_path           [@default []]
   ; mode: top_mode               [@default Interactive]
   }
   [@@deriving yojson]

@@ -12,7 +12,12 @@ open Js_of_ocaml
 open Jscoq_proto.Proto
 open Jslibmng
 
-let opts = ref { implicit_libs = true; coq_options = []; debug = {coq = false; stm = false} }
+let opts = ref
+    { implicit_libs = true
+    ; coq_options = []
+    ; debug = {coq = false; stm = false}
+    ; lib_path = []
+    }
 
 (* XXX *)
 let post_message = ref (fun _ -> ())
@@ -41,11 +46,11 @@ let post_feedback fb =
 (** Coq stuff **)
 
 let coq_info_string () =
-  let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
+  let coqv, ccv, cmag = Icoq.version                          in
   let jsoov = Sys_js.js_of_ocaml_version                      in
   let header1 = Printf.sprintf
-      "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
-      Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
+      "jsCoq (%s), Coq %s/%4d\n"
+      Jscoq_version.jscoq_version coqv (Int32.to_int cmag)    in
   let header2 = Printf.sprintf
       "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
   header1 ^ header2
@@ -81,6 +86,7 @@ let exec_init (set_opts : jscoq_options) =
                      };
       opt_values   = opts.coq_options;
       debug        = opts.debug.stm;
+      vo_path      = mk_vo_path opts.lib_path;
     })
 
 (* opts  : document initialization options *)
@@ -89,7 +95,6 @@ let create_doc (opts : doc_options) =
       top_name      = opts.top_name;
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init;
-      vo_path       = mk_vo_path opts.lib_path;
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -99,10 +104,10 @@ let exec_getopt opt =
   (OptionMap.find opt tbl).opt_value
 
 let coq_exn_info exn =
-    let (e, info) = Exninfo.capture exn in
-    let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
-    let msg = Format.asprintf "@[%a@]" Pp.pp_with pp_exn in
-    CoqExn { loc = Loc.get_loc info; sid = Stateid.get info; msg; pp = pp_exn }
+  let (e, info) = Exninfo.capture exn in
+  let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
+  let msg = Format.asprintf "@[%a@]" Pp.pp_with pp_exn in
+  CoqExn { loc = Loc.get_loc info; sid = Stateid.get info; msg; pp = pp_exn }
 
 (** Used by the Add command *)
 let requires ast =
@@ -176,8 +181,9 @@ let exec_query doc ~span_id ~route query =
       [mk_feedback ~span_id ~route Complete]
     with exn ->
       let CoqExn { loc; pp; _ } = coq_exn_info exn [@@warning "-8"] in
-      [mk_feedback ~span_id ~route (Message(Error, loc, pp ));
-       mk_feedback ~span_id ~route Incomplete]
+      [ mk_feedback ~span_id ~route (Message(Error, loc, pp ))
+      ; mk_feedback ~span_id ~route Incomplete
+      ]
     end
   | Inspect q ->
     let _, env = Icoq.context_of_stm ~doc:(fst !doc) span_id in

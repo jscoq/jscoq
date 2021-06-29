@@ -249,11 +249,7 @@ class HeadlessCoqManager {
             console.log('Canceled', sid);
     }
 
-    coqCoqExn(exn) {
-
-        let msg = exn.pp;
-        let loc = exn.loc;
-
+    coqCoqExn({loc, pp: msg}) {
         var loc_repr = this._format_loc(loc);
         console.error(`[Exception] ${this.pprint.pp2Text(msg)}${loc_repr}`);
         this.when_done.reject({loc, error: msg});

@@ -33,13 +33,13 @@ type coq_opts = {
   opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
   debug        : bool;
+  (* Initial LoadPath *)
+  vo_path      : Loadpath.vo_path list;
 }
 
 type doc_opts = {
   (* Libs to require on startup *)
   require_libs : require_lib list;
-  (* Initial LoadPath *)
-  vo_path      : Loadpath.vo_path list;
   (* name of the top-level module *)
   top_name     : string;
   (* document mode: interactive or batch *)
@@ -65,7 +65,7 @@ val coq_init : coq_opts -> unit
 val new_doc : doc_opts -> Stm.doc * Stateid.t
 
 (** [version] returns miscellaneous version information *)
-val version : string * string * string * string * int32
+val version : string * string * int32
 
 val mode_of_stm : doc:Stm.doc -> Stateid.t -> in_mode
 val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)

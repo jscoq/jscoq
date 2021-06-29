@@ -1,11 +1,11 @@
 .PHONY: all clean force
 .PHONY: jscoq jscoq_worker links links-clean
-.PHONY: dist dist-upload dist-release server
+.PHONY: dist dist-upload dist-release serve
 
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.13
+COQ_VERSION := v8.14
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -42,6 +42,9 @@ COQSRC := $(ADDONS_PATH)/coq/
 COQBUILDDIR_REL := _vendor+$(COQ_VERSION)$(VARIANT)/coq
 COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/$(COQBUILDDIR_REL)
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
+# Dune packages to install for Coq
+COQINST := coq coq-core coq-stdlib
+COQINST_COMMAS = $(subst $(space),$(comma),$(COQINST))
 
 COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
 
@@ -63,6 +66,10 @@ JSCOQ_DEBUG = 1
 export JSCOQ_DEBUG
 endif
 
+null  :=
+space := $(null) #
+comma := ,
+
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
@@ -83,8 +90,8 @@ jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)
 
 install:
-	$(DUNE) build -p coq $(DUNE_FLAGS)
-	$(DUNE) install coq $(DUNE_FLAGS)
+	$(DUNE) build -p $(COQINST_COMMAS) $(DUNE_FLAGS)
+	$(DUNE) install $(COQINST) $(DUNE_FLAGS)
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
@@ -176,11 +183,10 @@ dist-npm:
 	mv /tmp/$$( cd /tmp && npm pack $(PWD)/$(NPMSTAGEDIR) | tail -1 ) \
 		$(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
 	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
-	
 
 WACOQ_NPMOBJ = README.md \
 	ui-js ui-css ui-images ui-external examples dist
-# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment	
+# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
 
 dist-npm-wacoq:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
@@ -217,22 +223,23 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.13.2
-COQ_BRANCH_LATEST = v8.13
+COQ_BRANCH = V8.14+rc1
+COQ_BRANCH_LATEST = v8.14
 COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
-COQ_PATCHES|Darwin/32 = byte-only
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
+coq_configure=./tools/configure/configure.exe
+
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
-	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

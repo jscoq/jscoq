@@ -21,9 +21,6 @@ let plugin_list =
   ; ["btauto"]
   ; ["rtauto"]  (* TODO add this to one of the bundles *)
 
-  (* Removed in 8.12 *)
-  (* ; ["fourier"] *)
-  ; ["omega"]
   ; ["micromega"]
   ; ["nsatz"]
   ; ["ssrmatching"]

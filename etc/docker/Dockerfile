@@ -44,7 +44,7 @@ RUN apt install --no-install-recommends -y $APT_PACKAGES
 FROM jscoq-preinstall as jscoq-prereq
 
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
-ARG JSCOQ_BRANCH=v8.13
+ARG JSCOQ_BRANCH=v8.14
 
 WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
@@ -78,7 +78,7 @@ RUN eval $(opam env) && make install &&   \
     cd _build/jscoq+* && npm link
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=v8.13
+ARG ADDONS_BRANCH=v8.14
 
 # - fetch submodules with ssh urls using https instead
 #   (to avoid the need for an ssh key)
@@ -146,7 +146,7 @@ RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
 FROM wacoq-preinstall as wacoq-prereq
 
 ARG WACOQ_BIN_REPO=https://github.com/corwin-of-amber/wacoq-bin.git
-ARG WACOQ_BIN_BRANCH=v8.13
+ARG WACOQ_BIN_BRANCH=v8.14
 
 WORKDIR /root
 RUN git clone --recursive -b ${WACOQ_BIN_BRANCH} ${WACOQ_BIN_REPO} wacoq-bin
@@ -163,7 +163,7 @@ RUN opam list
 FROM wacoq-prereq as wacoq
 
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq.git
-ARG JSCOQ_BRANCH=v8.13
+ARG JSCOQ_BRANCH=v8.14
 
 ARG NJOBS=4
 
@@ -191,7 +191,7 @@ RUN rm -rf dist && mkdir dist && mv *.tgz ../wacoq-bin/*.tar.gz dist
 FROM wacoq as wacoq-addons
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=v8.13
+ARG ADDONS_BRANCH=v8.14
 
 ARG CONTEXT=wacoq
 

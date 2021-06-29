@@ -773,10 +773,7 @@ class CoqManager {
         this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
     }
 
-    coqCoqExn(exn) {
-
-        let msg = exn.pp;
-        let sids = exn.sid;
+    coqCoqExn({pp: msg, sids}) {
 
         console.error('Coq Exception', msg);
 
@@ -791,8 +788,8 @@ class CoqManager {
     }
 
     coqJsonExn(msg) {
-        // this.layout.log(msg, "Error");
-        console.error('jsonExn', msg);
+        console.error('JsonExn', msg);
+        this.layout.log(msg, "Error");
     }
 
     // This is received only after all the info for the packages has
@@ -828,10 +825,10 @@ class CoqManager {
         let init_opts = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: {coq: false, stm: false}
+                debug: {coq: true, stm: true},
+                lib_path: this.getLoadPath()
             },
             doc_opts = {
-                lib_path: this.getLoadPath(),                        
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
 

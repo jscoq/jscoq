@@ -34,13 +34,13 @@ type coq_opts = {
   opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
   debug        : bool;
+  (* Initial LoadPath *)
+  vo_path      : Loadpath.vo_path list;
 }
 
 type doc_opts = {
   (* Libs to require on startup *)
   require_libs : require_lib list;
-  (* Initial LoadPath *)
-  vo_path      : Loadpath.vo_path list;
   (* name of the top-level module *)
   top_name     : string;
   (* document mode: interactive or batch *)
@@ -59,7 +59,7 @@ type qualified_name = {
   basename: Names.Id.t
 }
 
-external coq_vm_trap : unit -> unit = "coq_vm_trap"
+external _coq_vm_trap : unit -> unit = "coq_vm_trap"
 
 type 'a seq = 'a Seq.t
 
@@ -79,9 +79,9 @@ let default_warning_flags = "-notation-overridden"
 (**************************************************************************)
 let coq_init opts =
 
-  if opts.debug then Coqinit.set_debug ();
+  if opts.debug then CDebug.set_debug_all true;
 
-  coq_vm_trap ();
+  (* coq_vm_trap (); *)
 
   (* Custom toplevel is used for bytecode-to-js dynlink  *)
   let ser_mltop : Mltop.toplevel = let open Mltop in
@@ -94,15 +94,6 @@ let coq_init opts =
 
   Mltop.set_top ser_mltop;
 
-  (* Core Coq initialization *)
-  Lib.init();
-  Global.set_engagement Declarations.PredicativeSet;
-  Global.set_VM false;
-  Global.set_native_compiler false;
-  Flags.set_native_compiler false;
-  CWarnings.set_flags default_warning_flags;
-  set_options opts.opt_values;
-
   (**************************************************************************)
   (* Feedback setup                                                         *)
   (**************************************************************************)
@@ -110,6 +101,20 @@ let coq_init opts =
   (* Initialize logging. *)
   Option.iter Feedback.del_feeder !feedback_id;
   feedback_id := Some (Feedback.add_feeder opts.fb_handler);
+
+  (* Core Coq initialization *)
+  Lib.init();
+
+  Global.set_engagement Declarations.PredicativeSet;
+  Global.set_VM false;
+  Global.set_native_compiler false;
+  Flags.set_native_compiler false;
+  CWarnings.set_flags default_warning_flags;
+  set_options opts.opt_values;
+
+  (* Initialize paths *)
+  (* List.iter Mltop.add_ml_dir opts.ml_path; *)
+  List.iter Loadpath.add_vo_path opts.vo_path;
 
   (**************************************************************************)
   (* Start the STM!!                                                        *)
@@ -119,13 +124,13 @@ let coq_init opts =
 let new_doc opts =
   let doc_type = match opts.mode with
     | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in
-                     Stm.Interactive (Stm.TopLogical dp)
+                     Stm.Interactive (Coqargs.TopLogical dp)
     | Vo ->          Stm.VoDoc opts.top_name
   in
   let ndoc = { Stm.doc_type
-             ; injections = List.map (fun x -> Stm.RequireInjection x) opts.require_libs
-             ; ml_load_path = []
-             ; vo_load_path = opts.vo_path
+             ; injections = List.map (fun x -> Coqargs.RequireInjection x) opts.require_libs
+             (* ; ml_load_path = []
+              * ; vo_load_path = opts.vo_path *)
              ; stm_options = Stm.AsyncOpts.default_opts
              } in
   let ndoc, nsid = Stm.new_doc ndoc in
@@ -233,7 +238,9 @@ let compile_vo ~doc vo_out_fn =
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =
   Printexc.record_backtrace debug;
-  Flags.debug := debug
+  ()
+  (* XXX fixme 8.14 *)
+  (* Flags.debug := debug *)
 
 let version =
-  Coq_config.version, Coq_config.date, Coq_config.compile_date, Coq_config.caml_version, Coq_config.vo_version
+  Coq_config.version, Coq_config.caml_version, Coq_config.vo_version
