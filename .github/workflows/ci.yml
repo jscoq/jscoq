@@ -9,6 +9,7 @@ on:
     - v8.11
     - v8.12
     - v8.13
+    - v8.14
   pull_request:
     branches:
     - v8.8
@@ -17,6 +18,7 @@ on:
     - v8.11
     - v8.12
     - v8.13
+    - v8.14
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

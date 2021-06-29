@@ -44,7 +44,7 @@ RUN apt install --no-install-recommends -y $APT_PACKAGES
 FROM jscoq-preinstall as jscoq-prereq
 
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
-ARG JSCOQ_BRANCH=v8.13
+ARG JSCOQ_BRANCH=v8.14
 
 WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
@@ -78,7 +78,7 @@ RUN eval $(opam env) && make install &&   \
     cd _build/jscoq+* && npm link
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=v8.13
+ARG ADDONS_BRANCH=v8.14
 
 # - fetch submodules with ssh urls using https instead
 #   (to avoid the need for an ssh key)

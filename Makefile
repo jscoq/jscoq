@@ -1,11 +1,11 @@
 .PHONY: all clean force
 .PHONY: jscoq jscoq_worker links links-clean
-.PHONY: dist dist-upload dist-release server
+.PHONY: dist dist-upload dist-release serve
 
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.13
+COQ_VERSION := v8.14
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -176,11 +176,10 @@ dist-npm:
 	mv /tmp/$$( cd /tmp && npm pack $(PWD)/$(NPMSTAGEDIR) | tail -1 ) \
 		$(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
 	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
-	
 
 WACOQ_NPMOBJ = README.md \
 	ui-js ui-css ui-images ui-external examples dist
-# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment	
+# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
 
 dist-npm-wacoq:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
@@ -217,8 +216,8 @@ all-dist: dist dist-release dist-upload
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.13.2
-COQ_BRANCH_LATEST = v8.13
+COQ_BRANCH = V8.14.0
+COQ_BRANCH_LATEST = v8.14
 COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
@@ -228,11 +227,13 @@ COQ_PATCHES|Darwin/32 = byte-only
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+	# cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+
+coq_configure=./tools/configure/configure.exe
 
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
-	cd $(COQSRC) && ./configure -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQSRC) && dune exec $(coq_configure) --context=jscoq+32bit -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

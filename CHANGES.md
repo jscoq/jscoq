@@ -1,3 +1,8 @@
+# jsCoq 0.14.0 "Ahead of time"
+------------------------------
+
+ - Update to Coq 8.14.0 (@ejgallego @corwin-of-amber)
+
 # jsCoq 0.13.2 "That Sounds Like an Excellent Idea"
 ---------------------------------------
 

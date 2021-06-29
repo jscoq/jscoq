@@ -41,7 +41,7 @@
             },
             "plugins": {
                 "prefix": "Coq",
-                "dirpaths": ["ring", "omega"]
+                "dirpaths": ["ring", "micromega"]
             }
         },
         "coq-reals": {

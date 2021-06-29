@@ -1,9 +1,12 @@
 ## Development versions
 
-Development for jsCoq 0.13 takes place in the `v8.13` branch. A
-preview build of jsCoq 0.13 is usually available at:
+Development for jsCoq 0.14 takes place in the `v8.14` branch. A
+preview build of jsCoq 0.14 is usually available at:
 
-<https://x80.org/rhino-coq/v8.13/>
+<https://x80.org/rhino-coq/v8.14/>
+
+but not updated these days. We are working on having an auto-deployed
+build for each commit, help is much welcome!
 
 jsCoq is easy to develop using the Chrome developer tools; the jsCoq
 object has a `debug` flag, and it is possible to compile Coq with

@@ -773,8 +773,9 @@ class CoqManager {
         this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
     }
 
-    coqCoqExn(loc, sids, msg) {
-        console.error('Coq Exception', msg);
+    coqCoqExn(exn) {
+
+        console.error('Coq Exception', exn.pp);
 
         // If error has already been reported by Feedback, bail
         if (this.error.some(stm => stm.feedback.some(x => arreq_deep(x.msg, msg))))
@@ -782,7 +783,7 @@ class CoqManager {
 
         var fmsg = this.pprint.msg2DOM(msg);
 
-        var item = this.layout.log(fmsg, 'Error', sids && {'data-coq-sid': sids[0]});
+        var item = this.layout.log(fmsg, 'Error', exn.sids && {'data-coq-sid': sids[0]});
         this.pprint.adjustBreaks(item);
     }
 
@@ -824,10 +825,10 @@ class CoqManager {
         let init_opts = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: {coq: false, stm: false}
+                debug: {coq: true, stm: true},
+                lib_path: this.getLoadPath()
             },
             doc_opts = {
-                lib_path: this.getLoadPath(),                        
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
 
