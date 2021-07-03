@@ -64,7 +64,7 @@ class CmCoqProvider {
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
-        this.onTipHover = (completion, zoom) => {};
+        this.onTipHover = (entries, zoom) => {};
         this.onTipOut = () => {};
         this.onResize = (lineCount) => {};
         this.onAction = (action) => {};
@@ -89,9 +89,9 @@ class CmCoqProvider {
         this.hover = [];
 
         // Handle hint events
-        this.editor.on('hintHover',     completion     => this.onTipHover(completion, false));
-        this.editor.on('hintZoom',      completion     => this.onTipHover(completion, true));
-        this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries[0], false));
+        this.editor.on('hintHover',     completion     => this.onTipHover([completion], false));
+        this.editor.on('hintZoom',      completion     => this.onTipHover([completion], true));
+        this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries, false));
         this.editor.on('hintOut',       ()             => this.onTipOut());
         this.editor.on('endCompletion', cm             => this.onTipOut());
     }
