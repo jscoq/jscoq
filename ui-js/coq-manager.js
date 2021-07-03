@@ -55,7 +55,7 @@ class ProviderContainer {
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
-        this.onTipHover = (completion, zoom) => {};
+        this.onTipHover = (entries, zoom) => {};
         this.onTipOut = () => {};
 
         class WhileScrolling {
@@ -96,8 +96,8 @@ class ProviderContainer {
                 cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
-                cm.onTipHover = (entity, zoom) => { this.onTipHover(entity, zoom); };
-                cm.onTipOut   = ()             => { this.onTipOut(); }
+                cm.onTipHover = (entries, zoom) => { this.onTipHover(entries, zoom); };
+                cm.onTipOut   = ()              => { this.onTipOut(); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
 
@@ -387,10 +387,11 @@ class CoqManager {
             this.updateGoals(this.doc.goals[this.lastAdded().coq_sid]);
         };
 
-        provider.onTipHover = (entry, zoom) => {
-            if (entry.kind == 'lemma') {
-                var fullname = [...entry.prefix, entry.label].join('.');
-                this.contextual_info.showCheck(fullname, /*opaque=*/true);
+        provider.onTipHover = (entries, zoom) => {
+            var fullnames = new Set(entries.filter(e => e.kind === 'lemma')
+                .map(entry => [...entry.prefix, entry.label].join('.')));
+            if (fullnames.size > 0) {
+                this.contextual_info.showChecks([...fullnames], /*opaque=*/true);
             }
         };
         provider.onTipOut = () => { if (this.contextual_info) this.contextual_info.hide(); };
@@ -531,8 +532,8 @@ class CoqManager {
             this.packages.populate();
 
             // Setup autocomplete
-            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/init.symb.json');
-            this.loadSymbolsFrom(this.options.base_path + 'ui-js/symbols/coq-arith.symb.json');
+            for (let pkg of ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'])
+                this.loadSymbolsFrom(this.options.base_path + `ui-js/symbols/${pkg}.symb.json`);
 
             // Setup contextual info bar
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
@@ -1435,6 +1436,18 @@ class CoqContextualInfo {
         this.showQuery(`Check ${name}.`, silent_fail ? null : this.formatName(name));
     }
 
+    showChecks(names, opaque=false, silent_fail=false) {
+        this.focus = {identifier: names[0], info: 'Check', opaque};  /** @todo */
+        this.showQueries(names.map(name => 
+            [`Check ${name}.`, silent_fail ? null : this.formatName(name)]));
+    }
+
+    showAbouts(names, opaque=false, silent_fail=false) {
+        this.focus = {identifier: names[0], info: 'About', opaque};  /** @todo */
+        this.showQueries(names.map(name => 
+            [`About ${name}.`, silent_fail ? null : this.formatName(name)]));
+    }
+
     showPrint(name) {
         this.focus = {identifier: name, info: 'Print'};
         this.showQuery(`Print ${name}.`, this.formatName(name));
@@ -1445,16 +1458,31 @@ class CoqContextualInfo {
         this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
     }
 
-    showQuery(command, title) {
+    async showQuery(command, title) {
         this.is_visible = true;
-        this.coq.queryPromise(0, ['Vernac', command]).then(result => {
-            if (this.is_visible)
-                this.show(this.formatMessages(result));
-        })
-        .catch(err => {
+        var msg = await this._query(command, title);
+        if (msg && this.is_visible)
+            this.show(msg);
+    }
+
+    async showQueries(queryArgs /* [command, title][] */) {
+        this.is_visible = true;
+        var msgs = await Promise.all(queryArgs.map(
+            ([command, title]) => this._query(command, title)));
+        msgs = msgs.filter(x => x);
+        if (msgs.length > 0 && this.is_visible)
+            this.show(msgs);
+    }
+
+    async _query(command, title) {
+        try {
+            var result = await this.coq.queryPromise(0, ['Vernac', command]);
+            return this.formatMessages(result);
+        }
+        catch (err) {
             if (title)
-                this.show(this.formatText(title, "(not available)"));
-        });
+                return this.formatText(title, "(not available)");
+        }
     }
 
     show(html) {
@@ -1507,7 +1535,7 @@ class CoqContextualInfo {
     }
 
     keyHandler(evt) {
-        var name = this.focus.identifier;
+        var name = this.focus && this.focus.identifier;
         if (name && !this.focus.opaque) {
             if (evt.altKey) this.showPrint(name);
             else            this.showCheck(name);
