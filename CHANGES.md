@@ -1,3 +1,14 @@
+# jsCoq 0.13.1 "Action Display"
+---------------------------------------
+
+ - jsCoq's CI has been moved from Travis CI to Github actions, thanks
+   to both providers for the generous support (#242, closes #224,
+   @ejgallego)
+ - Bump required compiler version to 4.12.0 (#223, @ejgallego)
+ - Added some missing symbols for code completion. (@corwin-of-amber)
+ - A utility script `jscoqdoc` to quickly generate HTML pages with
+   jsCoq embedded. (@corwin-of-amber)
+
 # jsCoq 0.13.0 "Better late than never"
 ---------------------------------------
 
