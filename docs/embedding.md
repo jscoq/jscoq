@@ -56,8 +56,7 @@ var jscoq_opts = {
     replace:   true,
     base_path: './node_modules/jscoq/',
     editor:    { mode: { 'company-coq': true }, keyMap: 'default' },
-    all_pkgs:  ['init',
-                'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'],
+    all_pkgs:  ['coq'],
     init_pkgs: ['init'],
     init_import: ['utf8'],
     implicit_libs: true
@@ -85,20 +84,23 @@ function jsCoqLoad() {
         document.body.classList.add('jscoq-launched');
 }
 
-if (location.search === '') {
+window.addEventListener('DOMContentLoaded', () => {
     jsCoqInject();
     jsCoqLoad();
-}
+});
 ```
 
-Copy it to <i>e.g.</i> `jscoq-embed.js` in your project, and then add the following two `<script>` tags at the end of your `<body>`:
+Copy it to <i>e.g.</i> `jscoq-embed.js` in your project, and then add the following two `<script>` tags at the end of your `<head>`:
 
 ```html
 <script src="node_modules/jscoq/jscoq-loader.js"></script>
 <script src="jscoq-embed.js"></script>
 ```
 
-If you want to add those lines automatically as part as your build process, you can use [this nifty `gawk` script](./inject-jscoq.gawk).
+If you want to add those lines automatically as part as your build process, you can use the bundled utility script `jscoqdoc`:
+```
+npx jscoqdoc my_cool_proofs.v
+```
 
 ## Instrumenting CoqDoc to generate HTML
 

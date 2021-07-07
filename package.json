@@ -3,13 +3,15 @@
   "version": "0.13.1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
-    "jscoq": "./cli.js"
+    "jscoq": "./cli.js",
+    "jscoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
     "@corwin.amber/hastebin": "^0.1.1",
     "array-equal": "^1.0.0",
     "assert": "^2.0.0",
     "bootstrap": "^3.4.1",
+    "child-process-promise": "^2.2.1",
     "codemirror": "^5.61.0",
     "commander": "^5.0.0",
     "fflate-unzip": "^0.6.0",
