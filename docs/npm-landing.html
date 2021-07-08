@@ -32,11 +32,12 @@ Inductive and_they_run := too(*!*).
 
     var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {
-        prelude:   true,
-        base_path: './',
-        editor:    { mode: { 'company-coq': true }, keyMap: 'default' },
-        init_pkgs: ['init'],
-        all_pkgs:  ['coq']
+        prelude:       true,
+        implicit_libs: true,
+        base_path:     './node_modules/jscoq/',
+        editor:        { mode: { 'company-coq': true }, keyMap: 'default' },
+        init_pkgs:     ['init'],
+        all_pkgs:      ['coq']
     };
 
     JsCoq.start(jscoq_opts.base_path, '..', jscoq_ids, jscoq_opts);
