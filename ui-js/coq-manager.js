@@ -1469,7 +1469,9 @@ class CoqContextualInfo {
         this.is_visible = true;
         var msgs = await Promise.all(queryArgs.map(
             ([command, title]) => this._query(command, title)));
-        msgs = msgs.filter(x => x);
+        // sort messages by tag length (shortest match first)
+        msgs = this._sortBy(msgs.filter(x => x), 
+                            x => (x.attr('tag') || '').length);
         if (msgs.length > 0 && this.is_visible)
             this.show(msgs);
     }
@@ -1547,13 +1549,15 @@ class CoqContextualInfo {
             frag = $(document.createDocumentFragment());
 
         for (let e of ppmsgs) {
-            if (frag.children().length > 0) frag.append($('<hr/>'));
-            frag.append(e);
+            frag.append($('<div>').append(e));
         }
 
         if (this.company_coq) {
             this.company_coq.markup.applyToDOM(frag[0]);
         }
+
+        if (msgs[0] && msgs[0].msg)
+            frag.attr('tag', this.getFirstLine(msgs[0].msg));
 
         return frag;
     }
@@ -1576,9 +1580,23 @@ class CoqContextualInfo {
             .append($('<span>').addClass('message').text("  " + msg));
     }
 
+    getFirstLine(msg) {
+        var txt = this.pprint.pp2Text(msg);
+        return txt.match(/^[^\n]*/)[0];
+    }
+
     elapse(duration) {
         return new Promise((resolve, reject) =>
             setTimeout(resolve, duration));
+    }
+
+    _sortBy(arr, f) {
+        let cmp = (x, y) => { /* note: this routine puts falsey values at the end */
+            let fx = f(x), fy = f(y);
+            return (fx && (!fy || fx < fy)) ? -1
+                 : (fy && (!fx || fy < fx)) ? 1 : 0;
+        };
+        return arr.sort(cmp);
     }
 }
 
