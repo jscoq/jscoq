@@ -362,11 +362,8 @@ class CoqManager {
         var provider = new ProviderContainer(elems, this.options);
 
         provider.onInvalidate = stm => {
-
-            if (stm.phase === Phases.ERROR) {
-                this.clearErrors();
-            }
-            else if (stm.coq_sid) {
+            this.clearErrors();
+            if (stm.coq_sid) {
                 this.coq.cancel(stm.coq_sid);
             }
         };
@@ -707,17 +704,13 @@ class CoqManager {
             }
         }
 
-        // Clear dangling marks on comments (in case it was not handled by truncate())
-        while (!this.doc.sentences.slice(-1)[0].coq_sid) {
-            this.cancelled(this.doc.sentences.pop());
-        }
-
+        this.tidy();
         this.refreshGoals();
     }
 
     coqBackTo(sid) {
         let new_tip = this.doc.stm_id[sid];
-        if (new_tip) {
+        if (new_tip && this.error.length == 0) {
             this.truncate(new_tip, true);
             this.refreshGoals();
         }
@@ -981,6 +974,18 @@ class CoqManager {
         }
     }
 
+    /**
+     * Clear dangling marks on comments (in case it was not handled by
+     * previous calls to `work()` and `truncate()`).
+     */
+    tidy() {
+        if (this.error.length == 0) {
+            while (this.doc.sentences.slice(-1)[0].flags.is_comment) {
+                this.cancelled(this.doc.sentences.pop());
+            }
+        }
+    }
+
     async add(stm, tip) {
         if (stm.flags.is_comment) {
             stm.phase = Phases.ADDED;
@@ -1116,6 +1121,7 @@ class CoqManager {
         });
 
         this.error = [];
+        this.tidy();
     }
 
     /**
