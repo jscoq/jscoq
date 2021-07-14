@@ -12,7 +12,7 @@ class CoqWorker {
         this.sids = [, new Future()];
 
         if (worker) {
-            this.worker = worker;
+            this.attachWorker(worker);
             this.when_created = Promise.resolve();
         }
         else {
@@ -20,9 +20,6 @@ class CoqWorker {
                 this.createWorker(scriptPath ||
                                   this.constructor.defaultScriptPath());
         }
-
-        this.worker.addEventListener('message', 
-            this._handler = evt => this.coq_handler(evt));
     }
 
     /**
@@ -45,14 +42,19 @@ class CoqWorker {
     createWorker(script_path) {
         this._worker_script = script_path;
 
-        this.worker = new Worker(this._worker_script);
+        this.attachWorker(new Worker(this._worker_script));
 
         if (typeof window !== 'undefined')
-            window.addEventListener('unload', () =>
-                this.worker && this.worker.terminate());
+            window.addEventListener('unload', () => this.end());
 
         this._boot = new Future();
         return this._boot.promise;
+    }
+
+    attachWorker(worker) {
+        this.worker = worker;
+        this.worker.addEventListener('message', 
+            this._handler = evt => this.coq_handler(evt));
     }
 
     sendCommand(msg) {
@@ -187,15 +189,17 @@ class CoqWorker {
     restart() {
         this.sids = [, new Future()];
 
-        this.worker.removeEventListener('message', this._handler);
-        this.worker.terminate();  // kill!
+        this.end();  // kill!
 
-        // Recreate worker
         this.createWorker(this._worker_script);
     }
 
     end() {
-        this.worker.terminate();
+        if (this.worker) {
+            this.worker.removeEventListener('message', this._handler);
+            this.worker.terminate();
+            this.worker = undefined;
+        }
     }
 
     // Promise-based APIs
