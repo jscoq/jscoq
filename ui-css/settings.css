@@ -9,9 +9,16 @@ div.settings-panel {
   min-width: 200px;
   font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
   font-size: 11pt;
+  font-weight: normal;
   padding: .75em .75em .2em .75em;
   box-shadow: -2px 3px 6px 0px #3332;
   outline: none !important;
+}
+
+div.settings-panel label {
+  display: block;  /* need to override bootstrap */
+  font-weight: inherit;
+  margin: 0;
 }
 
 div.settings-panel div.setting {
