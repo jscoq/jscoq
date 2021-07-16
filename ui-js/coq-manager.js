@@ -511,9 +511,6 @@ class CoqManager {
             this.coq.options = this.options;
             this.coq.observers.push(this);
 
-            //await this.coq.when_created;
-            //this.coq.interruptSetup();
-
             this.provider.wait_for = this.when_ready;
 
             // Setup package loader
@@ -563,6 +560,7 @@ class CoqManager {
     }
 
     async coqBoot() {
+        this.coq.interruptSetup();
         await this.packages.loadDeps(this.options.init_pkgs);
         this.coqInit();
     }
