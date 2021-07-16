@@ -464,7 +464,7 @@ class CoqManager {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
             CodeMirror.CompanyCoq.loadSymbols(
-                { lemmas: bunch.map(fp => CoqIdentifier.ofFullPath(fp)) },
+                { lemmas: bunch.map(fp => CoqIdentifier.ofQualifiedName(fp)) },
                 'locals', /*replace_existing=*/true)
         });
     }
@@ -1621,8 +1621,8 @@ class CoqIdentifier {
     }
 
     /**
-     * Constructs an identifier from a Coq Names.KerName.t.
-     * @param {array} param0 serialized form of KerName.
+     * Constructs an identifier from a Coq `Names.KerName.t`.
+     * @param {array} param0 serialized form of `KerName`.
      */
     static ofKerName([kername, modpath, label]) {
         /**/ console.assert(kername === 'KerName') /**/
@@ -1639,14 +1639,28 @@ class CoqIdentifier {
     }
 
     /**
-     * Constructs an identifier from a Libnames.full_path.
-     * @param {array} fp serialized form of full_path (from SearchResults).
+     * Constructs an identifier from a `Libnames.full_path`.
+     * @param {array} fp serialized form of `full_path`.
      */
     static ofFullPath(fp) {
         /**/ console.assert(fp.dirpath[0] === 'DirPath') /**/
         return new CoqIdentifier(
             fp.dirpath[1].slice().reverse().map(this._idToString),
             this._idToString(fp.basename));
+    }
+
+    /**
+     * Constructs an identifier from a `qualified_name`. This type comes from
+     * the worker protocol, and may contain a dirpath as well as a module path.
+     * @see inspect.ml
+     * @param {array} qn serialized form of `qualified_name` (from SearchResults).
+     */
+    static ofQualifiedName(qn) {
+        /**/ console.assert(qn.prefix.dp[0] === 'DirPath') /**/
+        return new CoqIdentifier(
+            qn.prefix.dp[1].slice().reverse().map(this._idToString)
+                .concat(qn.prefix.mod_ids),
+            this._idToString(qn.basename));
     }
 
     static _idToString(id) {
