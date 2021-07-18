@@ -389,7 +389,7 @@ class FormatPrettyPrint {
         function breakAt(brk) {
             var [width, offset] = brk.attr('data-break').split(',');
             indent += +offset;
-            brk.html("<br/>" + " ".repeat(indent));
+            brk.attr('data-x', 'h').html("<br/>" + " ".repeat(indent));
         }
 
         for (let el of boxes) {
@@ -408,9 +408,9 @@ class FormatPrettyPrint {
             }
             else /* vertical */ {
                 // re-apply nearest indent
-                var pindent = box.prev('.Pp_break').html() || '<br/>';
+                var pindent = box.prev('.Pp_break[data-x]').html() || '<br/>';
                 for (let brk of brks) 
-                    $(brk).html(pindent);
+                    $(brk).attr('data-x', 'v').html(pindent);
             }
         }
 

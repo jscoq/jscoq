@@ -97,12 +97,25 @@ var loadJsCoq, JsCoq;
 
         is_npm: false,  /* indicates that jsCoq was installed via `npm install` */
 
-        load(base_path, node_modules_path) {
+        load(...args) {
+            let opts = this._getopt(...args),
+                {base_path, node_modules_path} = opts;
+            return this._load(base_path, node_modules_path).then(() => opts);
+        },
+
+        _load(base_path, node_modules_path) {
             return this.loaded ||
                 (this.loaded = loadJsCoq(base_path, node_modules_path));
         },
 
         async start(...args) {
+            let opts = this._getopt(...args),
+                {base_path, node_modules_path, jscoq_ids, jscoq_opts} = opts;
+            await this._load(base_path, node_modules_path);
+            return new CoqManager(jscoq_ids, jscoq_opts)
+        },
+
+        _getopt(...args) {
             var base_path = undefined, node_modules_path = undefined,
                 jscoq_ids = ['ide-wrapper'], jscoq_opts = {};
             
@@ -117,8 +130,7 @@ var loadJsCoq, JsCoq;
             jscoq_opts.base_path = jscoq_opts.base_path || base_path || JsCoq.base_path;
             base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
 
-            await this.load(base_path, node_modules_path);
-            return new CoqManager(jscoq_ids, jscoq_opts)
+            return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
         }
     };
 
