@@ -5,23 +5,32 @@
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
     <link rel="icon" href="../../ui-images/favicon.png">
 
-    <title>jsCoq – The Coq Theorem Prover Online IDE</title>
+    <title>jsCoq Tests — Pretty-print gallery</title>
     <style>
       #pprint {
         font-family: Courier, monospace;
-        white-space: pre;
+        table-layout:fixed;
         padding: 9px;
+        width: 100%;
       }
-      #pprint > div {
+      #pprint td {
+        vertical-align: top;
+        overflow: auto;
+      }
+      #pprint td > div {
         background-color: #eee;
         outline: 2px solid #eee;
+        white-space: pre;
       }
     </style>
+    <script src="./gallery.js"></script>
   </head>
 
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
-    <div id="pprint"></div>
+    <table id="pprint">
+      <colgroup><col style="width: 50%"><col> </colgroup> 
+    </table>
   </div>
 
   <script src="../../ui-js/jscoq-loader.js" type="text/javascript"></script>
@@ -35,27 +44,13 @@
     /* Global reference */
     var coq, gallery;
 
-    JsCoq.start([], jscoq_opts).then(res => {
-      coq = res;
-
-      (async () => {
-        var json_urls = [
-          './gallery/01-remove_first_range.json',
-          './gallery/02-remove_first_in.json',
-          './gallery/03-remove_first_in-unfolded.json'
-        ];
-        gallery = await Promise.all(json_urls.map(
-          async url => await (await fetch(url)).json()));
-
-        for (let goals of gallery) {
-          let hgoals = coq.pprint.goals2DOM(goals);
-          console.log(coq.company_coq.markup.applyToDOM(hgoals[0]));
-
-          $('#pprint').append(hgoals);
-          coq.pprint.adjustBreaks(hgoals);
-          coq.when_ready.then(() => coq.pprint.adjustBreaks(hgoals));
-        }
-      })();
+    JsCoq.load([], jscoq_opts).then(opts => {
+      coq = {
+        pprint: new FormatPrettyPrint(),
+        company_coq: new CodeMirror.CompanyCoq()
+      };
+      gallery = new Gallery($('#pprint'), coq);
+      gallery.showAll();
     });
   </script>
 </body>
