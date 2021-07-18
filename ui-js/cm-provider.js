@@ -83,6 +83,9 @@ class CmCoqProvider {
         if (makeHidden && !editor_element.is(':hidden'))
             editor_element.css({display: "none"});
 
+        // Some hack to prevent CodeMirror from consuming PageUp/PageDn
+        if (replace) pageUpDownOverride(editor_element[0]);
+
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
 
@@ -652,6 +655,22 @@ CodeMirror.keyMap['jscoq-snippet'] = {
     //'Cmd-Up': false,   /** @todo this does not work? */
     //'Cmd-Down': false
 };
+
+/**
+ * Workaround to prevent CodeMirror from consuming PageUp/PageDn.
+ * This means that editor focus is lost when scrolling with the keyboard;
+ * but seems better than the alternative, which is the user having to
+ * click PageUp/PageDn twice to initiate scroll.
+ */
+function pageUpDownOverride(element) {
+    var scrollable = document.querySelector('#page'); /** @todo */
+    if (scrollable)
+        element.addEventListener('keydown', ev => {
+            if (ev.key === 'PageDown' || ev.key === 'PageUp') {
+                ev.stopPropagation(); scrollable.focus();
+            }
+        }, {capture: true});
+}
 
 /**
  * For HTML-formatted Coq snippets created by coqdoc.
