@@ -1,0 +1,19 @@
+1 subgoal
+
+  v : nat
+  l : list nat
+  ============================
+  In v l ->
+  exists j : nat,
+    (fix remove_first (v0 : nat) (l0 : list nat) {struct l0} :
+         option (list nat * nat) :=
+       match l0 with
+       | [] => None
+       | x :: xs =>
+           if Nat.eqb x v0
+           then Some (xs, 0)
+           else
+            option_map
+              (fun l'i : list nat * nat => (x :: fst l'i, snd l'i + 1))
+              (remove_first v0 xs)
+       end) v l = Some (removen j l, j) /\ nth_error l j = Some v

@@ -561,6 +561,25 @@ div.Pp_box[data-mode="horizontal"] {
   cursor: text;
 }
 
+/*
+ * Adjust line breaks and indentation to appear in appropriate modes:
+ * - Vertical mode or horizontal when line is broken: hide spaces, show br and indents.
+ * - Horizontal mode when line not broken: show spaces, hide br and indents.
+ */
+div.Pp_box .Pp_break.br > span.spaces,
+div.Pp_box[data-mode="vertical"] > .Pp_break > span.spaces {
+  display: none;
+}
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > br,
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > span.indent,
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > span.prev-indent {
+  display: none;
+}
+
+/* for debugging (usually invisible, as these spans only contain spaces) */
+div.Pp_box .Pp_break > span { opacity: 0.25; }
+div.Pp_box .Pp_break > span.indent { color: red; }
+
 #goal-text > div.Pp_box[data-mode="vertical"],
 #goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
   display: block;
