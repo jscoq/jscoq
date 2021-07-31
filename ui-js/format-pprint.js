@@ -68,8 +68,9 @@ class FormatPrettyPrint {
 
         // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
         case "Pp_box":
-            let mode = ct[0] == 'Pp_vbox' ? 'vertical' : 'horizontal';
-            return this.makeBox(this.pp2DOM(pp[2]), mode);
+            let [bty, offset] = ct,
+                mode = (bty == 'Pp_vbox') ? 'vertical' : 'horizontal';
+            return this.makeBox(this.pp2DOM(pp[2]), mode, bty, offset);
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
@@ -81,8 +82,11 @@ class FormatPrettyPrint {
 
         // ["Pp_print_break", nspaces, indent-offset]
         case "Pp_print_break":
-            return $('<span>').addClass('Pp_break').attr('data-break', pp.slice(1))
-                .text(" ");
+            var [nspaces, indent] = pp.slice(1);
+            var spn = (n, c) => $('<span>').text(" ".repeat(n)).addClass(c);
+            return $('<span>').addClass('Pp_break').attr('data-args', pp.slice(1))
+                .append(spn(nspaces, 'spaces'), $('<br/>'),
+                        spn(0, 'prev-indent'), spn(indent, 'indent'));
 
         case "Pp_empty":
             return $([]);
@@ -93,6 +97,9 @@ class FormatPrettyPrint {
         }
     }
 
+    /**
+     * @deprecated use pp2DOM
+     */
     pp2HTML(msg, state) {
 
         // Elements are ...
@@ -169,7 +176,7 @@ class FormatPrettyPrint {
             if (state.breakMode === 'vertical'|| (msg[1] == 0 && msg[2] > 0 /* XXX need to count columns etc. */)) {
                 ret = "<br/>";
             } else if (state.breakMode === 'horizontal') {
-                ret = `<span class="Pp_break" data-break="${msg.slice(1)}"> </span>`;
+                ret = `<span class="Pp_break" data-args="${msg.slice(1)}"> </span>`;
             } else if (state.breakMode === 'skip-vertical') {
                 state.breakMode = 'vertical';
             }
@@ -306,7 +313,7 @@ class FormatPrettyPrint {
                 $('<p>').addClass('no-goals').text(msg),
                 notices.map(aside)
             );
-        } 
+        }
         else {
             /* Construct a display of all the subgoals (first is focused) */
             let head = ngoals === 1 ? `1 goal` : `${ngoals} goals`,
@@ -358,22 +365,9 @@ class FormatPrettyPrint {
             : 1;
     }
 
-    makeBox(jdom, mode) {
-        return this.adjustBox(
-            $('<div>').addClass('Pp_box').attr('data-mode', mode)
-                .append(jdom));
-    }
-
-    adjustBox(jdom) {
-        let mode = jdom.attr('data-mode');
-
-        if (mode == 'vertical') {
-            for (let el of jdom.children('.Pp_break')) {
-                $(el).html('<br/>');
-            }
-        }
-
-        return jdom;
+    makeBox(jdom, mode, bty, offset) {
+        return $('<div>').addClass('Pp_box').append(jdom)
+            .attr({'data-mode': mode, 'data-bty': bty, 'data-offset': offset});
     }
 
     /**
@@ -385,32 +379,43 @@ class FormatPrettyPrint {
         var width = jdom.width(),
             boxes = jdom.find('.Pp_box');
 
-        var indent = 0;
-        function breakAt(brk) {
-            var [width, offset] = brk.attr('data-break').split(',');
-            indent += +offset;
-            brk.attr('data-x', 'h').html("<br/>" + " ".repeat(indent));
+        /** @todo should probably reset the state of all breaks, in case `adjustBreaks` is called a second time e.g. after resize */
+
+        function closest($el, p) {
+            return [...$el.parents()].find(p);
+        }
+        function isBlockLike(el) {
+            return BLOCK_LIKE.includes(window.getComputedStyle(el).display);
+        }
+
+        function breakAt(brk, boxOffset = 0, boxOffsetLeft = 0) {
+            var offsetText = " ".repeat(boxOffset);
+            brk.addClass('br')
+                .children('.prev-indent').text(offsetText)
+                .css({marginLeft: boxOffsetLeft})
         }
 
         for (let el of boxes) {
             let box = $(el),
                 mode = box.attr('data-mode') || 'horizontal',
+                offset = +box.attr('data-offset') || 0,
+                offsetLeft = box[0].offsetLeft - closest(box, isBlockLike).offsetLeft,// jdom[0].offsetLeft,
                 brks = box.children('.Pp_break');
-            if (mode == 'horizontal') {
+            if (mode == 'horizontal') {  /** @todo hov mode */
                 var prev = null;
                 for (let brk of brks) {
                     if (prev && $(brk).position().left >= width)
-                        breakAt(prev);
+                        breakAt(prev, offset, offsetLeft);
                     prev = $(brk);
                 }
                 if (prev && box.position().left + box.width() > width)
-                    breakAt(prev);
+                    breakAt(prev, offset, offsetLeft);
             }
             else /* vertical */ {
-                // re-apply nearest indent
-                var pindent = box.prev('.Pp_break[data-x]').html() || '<br/>';
-                for (let brk of brks) 
-                    $(brk).attr('data-x', 'v').html(pindent);
+                for (let brk of brks) {
+                    $(brk).children('.prev-indent').text('')
+                        .css({marginLeft: offsetLeft})
+                }
             }
         }
 
@@ -452,6 +457,8 @@ class FormatPrettyPrint {
 
 }
 
+
+const BLOCK_LIKE = ['block', 'inline-block', 'inline-flex', 'inline-table', 'inline-grid'];
 
 
 if (typeof module !== 'undefined')

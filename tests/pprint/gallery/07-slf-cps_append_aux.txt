@@ -1,0 +1,33 @@
+1 subgoal
+
+  L2 : list val
+  p2 : loc
+  Q : val -> hprop
+  L1 : list val
+  IH : forall y : list val,
+       list_sub y L1 ->
+       forall p1 (k : val) (M : hprop),
+       (forall p',
+        triple (k p') (M \* MList (y ++ L2) p') Q) ->
+       triple (cps_append_aux p1 p2 k)
+         (M \* MList y p1 \* MList L2 p2) Q
+  p1 : loc
+  k : val
+  M : hprop
+  H : forall p',
+      triple (k p') (M \* MList (L1 ++ L2) p') Q
+  ============================
+  PRE (M \* MList L1 p1 \* MList L2 p2)
+  CODE <[
+       Let v := `(App val_eq p1 null) in
+       `(If_ v Then
+           `(App k p2)
+         Else
+           `(Let v0 := `(App (val_get_field tail) p1) in
+             `(Let v1 := `(Fun v1 => `(
+                           Seq `(App
+                                 (val_set_field tail)
+                                 p1 v1) ;
+                           `(App k p1)) ) in
+               `(App (cps_append_aux v0) p2 v1)))) ]>
+  POST Q
