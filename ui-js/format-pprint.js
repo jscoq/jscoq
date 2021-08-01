@@ -387,6 +387,10 @@ class FormatPrettyPrint {
         function isBlockLike(el) {
             return BLOCK_LIKE.includes(window.getComputedStyle(el).display);
         }
+        function contentLeft(el) { // get offset where content actually starts (after left padding)
+            // using the `firstChild` cleverly skips the padding, but oh it assumes so much...
+            return el.firstChild.offsetLeft;
+        }
 
         function breakAt(brk, boxOffset = 0, boxOffsetLeft = 0) {
             var offsetText = " ".repeat(boxOffset);
@@ -399,7 +403,7 @@ class FormatPrettyPrint {
             let box = $(el),
                 mode = box.attr('data-mode') || 'horizontal',
                 offset = +box.attr('data-offset') || 0,
-                offsetLeft = box[0].offsetLeft - closest(box, isBlockLike).offsetLeft,// jdom[0].offsetLeft,
+                offsetLeft = box[0].offsetLeft - contentLeft(closest(box, isBlockLike)),
                 brks = box.children('.Pp_break');
             if (mode == 'horizontal') {  /** @todo hov mode */
                 var prev = null;
