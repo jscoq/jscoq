@@ -1,4 +1,14 @@
 
+const ALL_JSON_URLS = [
+    './gallery/01-remove_first_range.json',
+    './gallery/02-remove_first_in.json',
+    './gallery/03-remove_first_in-unfolded.json',
+    './gallery/04-slf-triple-incr.json',
+    './gallery/05-slf-triple-mlength.json',
+    './gallery/06-slf-triple-miter.json',
+    './gallery/07-slf-cps_append_aux.json'
+];
+
 
 class Gallery {
 
@@ -33,10 +43,3 @@ class Gallery {
     }
 }
 
-const ALL_JSON_URLS = [
-        './gallery/01-remove_first_range.json',
-        './gallery/02-remove_first_in.json',
-        './gallery/03-remove_first_in-unfolded.json',
-        './gallery/04-slf-triple-incr.json',
-        './gallery/05-slf-triple-mlength.json',
-    ];

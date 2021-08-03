@@ -8,7 +8,9 @@
  - Added some missing symbols for code completion. (@corwin-of-amber)
  - A utility script `jscoqdoc` to quickly generate HTML pages with
    jsCoq embedded. (@corwin-of-amber)
- - Some trouble with comments just before error marker (closes #241,
+ - Some trouble with comments just before error marker. (closes #241,
+   @corwin-of-amber)
+ - Improved indentation in pretty-printing of goals and terms. (#245,
    @corwin-of-amber)
 
 # jsCoq 0.13.0 "Better late than never"
