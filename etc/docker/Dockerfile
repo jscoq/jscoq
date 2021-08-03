@@ -3,83 +3,96 @@ FROM debian:10-slim as opam
 # ------------
 #   Get OPAM
 # ------------
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && apt-get install --no-install-recommends -y \
     wget ca-certificates \
-    m4 bubblewrap gcc gcc-multilib libc6-dev binutils make patch unzip
+    m4 bubblewrap gcc gcc-multilib libc6-dev libgmp-dev:i386 binutils make patch unzip
 
 # We need to install OPAM 2.0 manually for now.
-RUN wget https://github.com/ocaml/opam/releases/download/2.0.6/opam-2.0.6-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
+RUN wget https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
 
 # Basic OPAM setup
 ARG NJOBS=2
 ENV OPAMJOBS=${NJOBS}          \
     OPAMROOT=/root/.opamcache  \
-    OPAMROOTISOK=true
+    OPAMROOTISOK=true          \
+    OPAMYES=true
 
 RUN opam init -a --bare --disable-sandboxing
 
 # -----------------
-# jsCoq pre-install
+# waCoq pre-install
 # -----------------
-RUN opam switch create jscoq+32bit ocaml-variants.4.10.2+32bit
+RUN opam switch create wacoq --packages="ocaml-base-compiler.4.12.0"
 
-RUN apt install --no-install-recommends -y git rsync bzip2 nodejs curl
-RUN curl https://www.npmjs.com/install.sh | sh
-# ^ https://github.com/nodejs/help/issues/1877
+ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
+RUN wget -O- https://deb.nodesource.com/setup_16.x | bash -
+# ^ https://github.com/nodesource/distributions/blob/master/README.md
+RUN apt-get install --no-install-recommends -y $APT_PACKAGES
+#RUN curl https://www.npmjs.com/install.sh | sh
+## ^ https://github.com/nodejs/help/issues/1877
+
+ARG WASI_SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz"
+RUN wget -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
+RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
 
 # ---------------------
-# jsCoq toolchain setup
+# waCoq toolchain setup
 # ---------------------
-FROM opam as jscoq-prereq
+FROM opam as wacoq-prereq
 
-ARG REPO=https://github.com/jscoq/jscoq
+ARG WACOQ_BIN_REPO=https://github.com/corwin-of-amber/wacoq-bin.git
+ARG WACOQ_BIN_BRANCH=v8.13
 
 WORKDIR /root
-RUN git clone --recursive ${REPO}
+RUN git clone --recursive -b ${WACOQ_BIN_BRANCH} ${WACOQ_BIN_REPO} wacoq-bin
 
-WORKDIR jscoq
-RUN ./etc/toolchain-setup.sh --32
+WORKDIR wacoq-bin
+RUN opam update
+RUN ./etc/setup.sh
 RUN opam clean -a -c
+RUN opam list
 
-# -----------
-# jsCoq build
-# -----------
-FROM jscoq-prereq as jscoq
+# -----------------
+# waCoq+jsCoq build
+# -----------------
+FROM wacoq-prereq as wacoq
+
+ARG JSCOQ_REPO=https://github.com/jscoq/jscoq.git
+ARG JSCOQ_BRANCH=v8.13+wacoq
 
 ARG NJOBS=4
 
 RUN git pull
-RUN eval $(opam env) && make coq && make jscoq
+RUN npm install
+RUN eval $(opam env) && make coq && make
+RUN make dist-npm
 
-# - addons
-#  (one per RUN, for easy resume)
-RUN eval $(opam env) && make addons ADDONS="mathcomp"
-RUN eval $(opam env) && opam install -y elpi.1.8.0 && make addons ADDONS="elpi"
-RUN eval $(opam env) && make addons ADDONS="equations"
-RUN eval $(opam env) && make addons ADDONS="extlib"
-RUN eval $(opam env) && make addons ADDONS="simpleio"
-RUN eval $(opam env) && make addons ADDONS="quickchick"
+WORKDIR /root
+RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO} jscoq+wacoq
 
-# - remake packages after addon build
-#   (also creates `*.cma.js`)
-RUN eval $(opam env) && rm -rf _build/jscoq+64bit/coq-pkgs \
-       && make jscoq ADDONS="mathcomp elpi equations extlib simpleio quickchick"
+WORKDIR jscoq+wacoq
+RUN npm install ../wacoq-bin/wacoq-bin-*.tar.gz
+RUN npm install
+RUN make
+RUN make dist-npm
 
 # - dist tarballs
-RUN eval $(opam env) && make dist-tarball && make dist-npm \
-        && mkdir dist && mv _build/dist/*.tar.gz dist
+RUN mkdir dist && mv *.tgz ../wacoq-bin/*.tar.gz dist
 
 # --------------
 # Addon packages
 # --------------
-FROM jscoq as jscoq-addons
-
-# - install to OPAM for use by package builds
-RUN eval $(opam env) && make install &&   \
-    cd _build/jscoq+* && npm link
+FROM wacoq as wacoq-addons
 
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=v8.12
+ARG ADDONS_BRANCH=v8.13
+
+ARG CONTEXT=wacoq
+
+# - install to OPAM for use by package builds
+WORKDIR /root/wacoq-bin
+RUN eval $(opam env) && make install && npm link
 
 # - fetch submodules with ssh urls using https instead
 #   (to avoid the need for an ssh key)
@@ -89,26 +102,30 @@ WORKDIR /root
 RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
 
 WORKDIR jscoq-addons
-RUN make set-ver VER=`jscoq --version`
-RUN eval $(opam env) && make
+RUN make set-ver CONTEXT=${CONTEXT}
+RUN eval $(opam env) && make CONTEXT=${CONTEXT}
 
 # Private repos: re-enable SSH
-COPY /_ssh /_ssh 
-RUN [ -e /_ssh/id_rsa ] && rm ~/.gitconfig && apt-get install -y openssh-client
-ENV GIT_SSH_COMMAND 'ssh -i /_ssh/id_rsa -o StrictHostKeyChecking=no'
+COPY Dockerfile _ssh* /root/_ssh/
+#    ^ this is a hack in case `_ssh` does not exist (https://stackoverflow.com/a/46801962/37639)
+ENV GIT_SSH_COMMAND 'ssh -i /root/_ssh/id_rsa -o StrictHostKeyChecking=no'
 
-RUN [ -e /_ssh/id_rsa ] && eval $(opam env) && make privates WITH_PRIVATE=software-foundations
+RUN if [ -e /root/_ssh/id_rsa ] ; then rm ~/.gitconfig && apt-get update && apt-get install -y openssh-client ; fi
+RUN if [ -e /root/_ssh/id_rsa ] ; then eval $(opam env) && make privates WITH_PRIVATE=software-foundations CONTEXT=${CONTEXT} ; fi
 
-RUN make pack
+RUN make pack CONTEXT=${CONTEXT}
 
+# ---------
 # jsCoq SDK
+# ---------
 
-#RUN cp -rL _build/install/jscoq+64bit/ ./dist && \
-#    rm dist/bin/*.byte dist/bin/*.opt \
-#       dist/lib/coq/*/*.cmxs \
-#       `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
+FROM jscoq as jscoq-sdk-prepare
 
-#FROM debian:10-slim
+RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
+    rm dist-sdk/bin/*.byte dist-sdk/bin/*.opt \
+       dist-sdk/lib/coq/*/*.cmxs \
+       `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
-#COPY --from=0 /root/jscoq/dist /opt/jscoq
+FROM debian:10-slim as jscoq-sdk
 
+COPY --from=jscoq-sdk-prepare /root/jscoq/dist-sdk /opt/jscoq
