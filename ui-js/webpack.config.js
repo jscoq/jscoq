@@ -20,7 +20,8 @@ module.exports = (env, argv) => [{
     libraryTarget: 'umd'
   },
   externals: {
-    fs: 'empty', child_process: 'empty'
+    fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
+    'wacoq-bin/dist/subproc': 'commonjs2'
   },
   module: {
     rules: [

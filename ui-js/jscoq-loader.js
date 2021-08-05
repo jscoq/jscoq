@@ -24,6 +24,9 @@ var loadJsCoq, JsCoq;
 
 (function(){
 
+    if (typeof module !== 'undefined')
+        module = undefined;  /* for Electron */
+    
     var loadCss = function(css) {
 
         var link   = document.createElement("link");
@@ -91,6 +94,8 @@ var loadJsCoq, JsCoq;
     };
 
     JsCoq = {
+        backend: 'js',  /* 'js' or 'wa' */
+
         base_path: scriptDir ? `${scriptDir}../` : "./",
         node_modules_path: '',
         loaded: undefined,
@@ -127,8 +132,8 @@ var loadJsCoq, JsCoq;
             if (args.length > 0) console.warn('too many arguments to JsCoq.start()');
 
             // Umm.
-            jscoq_opts.base_path = jscoq_opts.base_path || base_path || JsCoq.base_path;
             base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
+            jscoq_opts.base_path = jscoq_opts.base_path || base_path;
 
             return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
         }

@@ -682,7 +682,7 @@ class CoqManager {
 
         this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
             .then(() => {
-                this.coq.reassureLoadPath(this.getLoadPath());
+                this.coq.refreshLoadPath(this.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
                 cleanup();
             });

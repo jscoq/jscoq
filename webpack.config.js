@@ -20,7 +20,8 @@ module.exports = [
     ],
   },
   externals: {  /* do not bundle the worker */
-    './coq-js/jscoq_worker.bc.js': 'commonjs2 ./coq-js/jscoq_worker.bc.js'
+    './coq-js/jscoq_worker.bc.js': 'commonjs2 ./coq-js/jscoq_worker.bc.js',
+    'wacoq-bin/dist/subproc': 'commonjs2'
   },
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ],
