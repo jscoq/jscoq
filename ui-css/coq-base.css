@@ -78,7 +78,7 @@ a, a:link, a:visited, a:active {
 
 .jscoq.CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
-  font-family: monospace, times, Arial Unicode MS;
+  font-family: monospace, times, 'Arial Unicode MS';
 }
 
 .coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
@@ -126,7 +126,7 @@ body.jscoq-main .CodeMirror-linenumber {
   padding: 4px;
   margin-bottom: .5em;
   border: 1px dashed #888;
-  font-family: monospace;
+  font-family: monospace, times, 'Arial Unicode MS';
   font-size: 80%;
 }
 
@@ -214,7 +214,7 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .content {
   flex: 1 0 0;
   padding: 0 4px;
-  font-family: monospace, "Arial Unicode MS";
+  font-family: monospace, times, 'Arial Unicode MS';
   line-height: 1.2;  /* because some characters are too tall (due to alternative font glyph rendering) */
   overflow: auto;
   overscroll-behavior: contain;
@@ -671,7 +671,7 @@ div.Pp_box .Pp_break > span.indent { color: red; }
   left: 0;
   background: rgba(255, 255, 255, 0.9);
   border-top: 1px solid rgba(0,0,0,0.25);
-  font-family: monospace;
+  font-family: monospace, times, 'Arial Unicode MS';
   font-size: 9pt;
   padding: 0 0.75em 2px 3px;
   white-space: pre-wrap;
