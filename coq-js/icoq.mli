@@ -53,6 +53,16 @@ type doc_opts = {
 
 type in_mode = Proof | General (* pun intended *)
 
+type qualified_object_prefix = {
+  dp: Names.DirPath.t;
+  mod_ids: Names.Id.t list
+}
+
+type qualified_name = {
+  prefix: qualified_object_prefix;
+  basename: Names.Id.t
+}
+
 type 'a seq = 'a Seq.t
 
 (** [init opts] Initialize the Coq engine *)
@@ -65,9 +75,11 @@ val version : string * string * string * string * int32
 val mode_of_stm : doc:Stm.doc -> Stateid.t -> in_mode
 val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
 
-val inspect_globals : env:Environ.env -> unit -> Libnames.full_path seq
-val inspect_library : env:Environ.env -> unit -> Libnames.full_path seq
-val inspect_locals  : env:Environ.env -> ?dir_path:Names.DirPath.t -> unit -> Libnames.full_path seq
+val inspect_globals : env:Environ.env -> unit -> qualified_name seq
+val inspect_library : env:Environ.env -> unit -> qualified_name seq
+val inspect_locals  : env:Environ.env -> ?dir_path:Names.DirPath.t -> unit -> qualified_name seq
+
+val string_of_qualified_name : qualified_name -> string
 
 val compile_vo : doc:Stm.doc -> string -> string
 

@@ -64,6 +64,13 @@ type doc_options =
 type in_mode = Icoq.in_mode
 let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
 
+type qualified_object_prefix =
+  [%import: Icoq.qualified_object_prefix]
+  [@@deriving yojson]
+type qualified_name =
+  [%import: Icoq.qualified_name]
+  [@@deriving yojson]
+
 type search_query =
   | All
   | CurrentFile
@@ -136,7 +143,7 @@ type jscoq_answer =
   | Log       of Feedback.level * Pp.t
   | Feedback  of Feedback.feedback
 
-  | SearchResults of Feedback.route_id * Libnames.full_path Seq.t
+  | SearchResults of Feedback.route_id * qualified_name Seq.t
 
   | Loaded    of string * Stateid.t
   | Compiled  of string

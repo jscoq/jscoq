@@ -131,8 +131,8 @@ let rec seq_append s1 s2 =  (* use batteries?? *)
   | Seq.Nil -> s2
   | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
-let is_within path prefix =
-  let dp, _ = Libnames.repr_path path in
+let is_within qn prefix =
+  let {Icoq.prefix = {dp}} = qn in
   Libnames.is_dirpath_prefix_of prefix dp
 
 let symbols_for (q : search_query) env =
@@ -147,7 +147,7 @@ let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
   | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
-  | Keyword s -> (fun nm -> string_contains (Libnames.string_of_path nm) s)
+  | Keyword s -> (fun nm -> string_contains (Icoq.string_of_qualified_name nm) s)
 
 (** main Query handler *)
 let exec_query doc ~span_id ~route query =
