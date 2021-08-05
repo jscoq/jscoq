@@ -23,19 +23,12 @@ type require_lib = (string * string option * bool option)
 type top_mode = Interactive | Vo
 
 type coq_opts = {
-
   (* callback to handle async feedback *)
   fb_handler : Feedback.feedback -> unit;
-
   (* Async flags *)
   aopts        : async_flags;
-
-  (* Initial values for Coq options *)
-  opt_values   : (string list * Goptions.option_value) list;
-
   (* callback to load cma/cmo files *)
   ml_load      : string -> unit;
-
   (* Enable debug mode *)
   debug        : bool;
 }
@@ -49,6 +42,8 @@ type doc_opts = {
   top_name     : string;
   (* document mode: interactive or batch *)
   mode         : top_mode;
+  (* Initial values for Coq options *)
+  opt_values   : (string list * Goptions.option_value) list;
 }
 
 type in_mode = Proof | General (* pun intended *)

@@ -12,7 +12,7 @@ open Js_of_ocaml
 open Jscoq_proto.Proto
 open Jslibmng
 
-let opts = ref { implicit_libs = true; stm_debug = false; coq_options = [] }
+let opts = ref { implicit_libs = true; debug = {coq = false; stm = false} }
 
 (* XXX *)
 let post_message = ref (fun _ -> ())
@@ -52,8 +52,6 @@ let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg;
   post_lib_event msg
 
-let opts = ref { implicit_libs = true; stm_debug = false; coq_options = [] }
-
 let mk_feedback ~span_id ?(route=0) contents =
   Feedback {doc_id = 0; span_id; route; contents}
 
@@ -67,12 +65,11 @@ let exec_init (set_opts : jscoq_options) =
   Icoq.coq_init ({
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = post_feedback;
-      opt_values   = opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
                      };
-      debug        = opts.stm_debug;
+      debug        = opts.debug.stm;
     })
 
 (* opts  : document initialization options *)
@@ -81,7 +78,8 @@ let create_doc (opts : doc_options) =
       top_name      = opts.top_name;
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init;
-      vo_path       = mk_vo_path opts.lib_path
+      vo_path       = mk_vo_path opts.lib_path;
+      opt_values    = opts.coq_options;
     })
 
 (* I refuse to comment on this part of Coq code... *)

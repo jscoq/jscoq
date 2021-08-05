@@ -808,19 +808,24 @@ class CoqManager {
         this.packages.collapse();
 
         this.layout.systemNotification(
-            "===> JsCoq filesystem initialized successfully!\n" +
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        let init_opts = {implicit_libs: this.options.implicit_libs, /* stm_debug: false, */
-                         coq_options: this._parseOptions(this.options.coq || {})},
-            lib_init = this.options.prelude ? [PKG_ALIASES.prelude] : [];
+        let init_opts = {
+                implicit_libs: this.options.implicit_libs,
+                debug: {coq: false, stm: false}
+            },
+            doc_opts = {
+                coq_options: this._parseOptions(this.options.coq || {}),
+                lib_path: this.getLoadPath(),                        
+                lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
+            };
 
         for (let pkg of this.options.init_import || []) {
-            lib_init.push(PKG_ALIASES[pkg] || pkg.split('.'));
+            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg.split('.'));
         }
 
-        this.coq.init(init_opts, {lib_init, lib_path: this.getLoadPath()});
+        this.coq.init(init_opts, doc_opts);
         // Almost done!
     }
 
