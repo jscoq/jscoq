@@ -494,8 +494,9 @@ class CoqManager {
     }
 
     getLoadPath() {
-        return [this.packages, this.project].map(p => 
-                    p ? p.getLoadPath() : []).flatten();
+        if (this.options.subproc) return [this.coq.worker.packages.dir];
+        else return [this.packages, this.project].map(p => 
+                        p ? p.getLoadPath() : []).flatten();
     }
 
     /**
@@ -505,19 +506,17 @@ class CoqManager {
     async launch() {
         try {
             // Setup the Coq worker.
-            this.coq           = new CoqWorker(this.options.base_path + 'coq-js/jscoq_worker.bc.js');
-            this.coq.options   = this.options;
+            this.coq = this.options.subproc ? new CoqSubprocessAdapter()
+                                            : new CoqWorker();
+            this.coq.options = this.options;
             this.coq.observers.push(this);
-
-            await this.coq.when_created;
-            this.coq.interruptSetup();
 
             this.provider.wait_for = this.when_ready;
 
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${JsCoq.node_modules_path}@jscoq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${JsCoq.node_modules_path}@${JsCoq.backend}coq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(this.layout.packages,
@@ -534,10 +533,8 @@ class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            // The fun starts:
-            // load init packages and initialize the worker
-            await this.packages.loadDeps(this.options.init_pkgs);
-            this.coqInit();
+            if (JsCoq.backend !== 'wa')
+                this.coqBoot();  // only the WA backend emits `Boot` events
         }
         catch (err) {
             this.handleLaunchFailure(err);
@@ -563,6 +560,12 @@ class CoqManager {
             $(item).removeClass('loading').text(msg);
         else
             this.layout.log(msg, 'Info', {fast: true});
+    }
+
+    async coqBoot() {
+        this.coq.interruptSetup();
+        await this.packages.loadDeps(this.options.init_pkgs);
+        this.coqInit();
     }
 
     /**
@@ -706,6 +709,14 @@ class CoqManager {
         this.refreshGoals();
     }
 
+    coqBackTo(sid) {
+        let new_tip = this.doc.stm_id[sid];
+        if (new_tip && this.error.length == 0) {
+            this.truncate(new_tip, true);
+            this.refreshGoals();
+        }
+    }
+
     coqModeInfo(sid, in_mode) {
         let stm = this.doc.stm_id[sid];
         if (stm) {
@@ -801,7 +812,7 @@ class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        let init_opts = {implicit_libs: this.options.implicit_libs, stm_debug: false,
+        let init_opts = {implicit_libs: this.options.implicit_libs, /* stm_debug: false, */
                          coq_options: this._parseOptions(this.options.coq || {})},
             lib_init = this.options.prelude ? [PKG_ALIASES.prelude] : [];
 
@@ -1029,9 +1040,19 @@ class CoqManager {
      * Removes all the sentences from stm to the end of the document.
      * If stm as an error sentence, leave the sentence itself (so that the
      * error mark remains visible), and remove all following sentences.
+     * @param stm a Sentence
+     * @param plus_one if `true`, will skip `stm` and start instead from
+     *   the *following* sentence.
      */
-    truncate(stm) {
+    truncate(stm, plus_one=false) {
         let stm_index = this.doc.sentences.indexOf(stm);
+
+        if (stm_index === -1) return;
+
+        if (plus_one) {
+            stm = this.doc.sentences[++stm_index];
+            if (!stm) return;  /* this was the last sentence */
+        }
 
         if (stm.phase === Phases.ERROR) {
             // Do not clear the mark, to keep the error indicator.
@@ -1341,11 +1362,11 @@ const Phases = {
 };
 
 const PKG_ALIASES = {
-    prelude: ["Coq", "Init", "Prelude"],
-    utf8: ["Coq", "Unicode", "Utf8"]
+    prelude: "Coq.Init.Prelude",
+    utf8: "Coq.Unicode.Utf8"
 };
 
-const PKG_AFFILIATES = [  // Affiliated packages in @jscoq scope
+const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
     'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
     'software-foundations',
     'hahn', 'paco', 'snu-sflib', 'promising',

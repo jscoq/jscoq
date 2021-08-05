@@ -54,9 +54,9 @@ type top_mode =
   [@@deriving yojson]
 
 type doc_options =
-  { lib_init: string list list   [@default []]
+  { top_name: string             [@default "JsCoq"]
+  ; lib_init: string list        [@default ["Coq.Init.Prelude"]]
   ; lib_path: lib_path           [@default []]
-  ; top_name: string             [@default "JsCoq"]
   ; mode: top_mode               [@default Interactive]
   }
   [@@deriving yojson]
