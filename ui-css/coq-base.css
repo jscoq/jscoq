@@ -45,7 +45,7 @@ a, a:link, a:visited, a:active {
   padding-right: 0px;
 }
 
-#ide-wrapper.layout-flex > *:not(.CodeMirror-hints) {
+#ide-wrapper.layout-flex > * {
   overflow-x: hidden;
   max-height: 100%;
   box-sizing: border-box;
@@ -57,7 +57,7 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane):not(.CodeMirror-hints) {
   flex-grow: 1; /* take all remaining space */
-  flex-basis: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
+  width: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
 }
 
 #ide-wrapper #document {
@@ -78,11 +78,12 @@ a, a:link, a:visited, a:active {
 
 .jscoq.CodeMirror span[role=presentation] {
   line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
-  font-family: monospace, times, Arial Unicode MS;
+  font-family: monospace, times, 'Arial Unicode MS';
 }
 
 .coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
-  cursor: crosshair;
+  cursor: url(../ui-images/eye.png) 2 2, cell;
+  cursor: -webkit-image-set(url(../ui-images/eye@2x.png) 2x, url(../ui-images/eye.png) 1x) 2 2, cell;
 }
 
 .jscoq.CodeMirror .CodeMirror-crosshair {
@@ -125,7 +126,7 @@ body.jscoq-main .CodeMirror-linenumber {
   padding: 4px;
   margin-bottom: .5em;
   border: 1px dashed #888;
-  font-family: monospace;
+  font-family: monospace, times, 'Arial Unicode MS';
   font-size: 80%;
 }
 
@@ -213,7 +214,7 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .content {
   flex: 1 0 0;
   padding: 0 4px;
-  font-family: monospace, "Arial Unicode MS";
+  font-family: monospace, times, 'Arial Unicode MS';
   line-height: 1.2;  /* because some characters are too tall (due to alternative font glyph rendering) */
   overflow: auto;
   overscroll-behavior: contain;
@@ -320,13 +321,13 @@ body.jscoq-main .CodeMirror-linenumber {
   padding-left: .5em;
 }
 
-#toolbar .js-logo {
+#toolbar .wa-logo {
   height: 20px;
   margin-top: 3px;
   vertical-align: top;
 }
 
-#toolbar .js-logo ~ i { color: #c96; }
+#toolbar .wa-logo ~ i { color: #56c; }
 
 #toolbar .coq-logo {
   height: 35px;
@@ -632,6 +633,11 @@ div.Pp_box .Pp_break > span.indent { color: red; }
   color: #777;
 }
 
+.coq-hypothesis > label ~ div {
+  display: inline-table;  /* this is used to indent hypothesis at their labels */
+  table-layout: fixed;
+}
+
 .coq-env hr {
   margin: 0.5em 0;
   border: 1px inset;
@@ -665,7 +671,7 @@ div.Pp_box .Pp_break > span.indent { color: red; }
   left: 0;
   background: rgba(255, 255, 255, 0.9);
   border-top: 1px solid rgba(0,0,0,0.25);
-  font-family: monospace;
+  font-family: monospace, times, 'Arial Unicode MS';
   font-size: 9pt;
   padding: 0 0.75em 2px 3px;
   white-space: pre-wrap;
