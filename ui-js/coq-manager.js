@@ -683,12 +683,17 @@ class CoqManager {
             cleanup = () => { this.packages.collapse(); this.enable(); }
         }
 
-        this.packages.loadDeps(pkg_deps).then(() => ontop_finished)
-            .then(() => {
+        this.packages.loadDeps(pkg_deps).then(pkgs => {
+            if (pkgs.length)
+                this.layout.systemNotification(
+                    `===> Loaded packages [${pkgs.map(p => p.name).join(', ')}]`);
+
+            ontop_finished.then(() => {
                 this.coq.refreshLoadPath(this.getLoadPath());
                 this.coq.resolve(ontop.coq_sid, nsid, stm.text);
                 cleanup();
             });
+        });
     }
 
     // Gets a list of cancelled sids.
@@ -1343,9 +1348,10 @@ class CoqManager {
                 this.packages.expand();
                 this.disable();
     
-                return this.packages.loadDeps(pkgs).then(() => {
+                return this.packages.loadDeps(pkgs).then(pkgs => {
                     this.packages.collapse(); 
                     this.enable();
+                    console.warn(pkgs);
                 });
 
             default:

@@ -129,7 +129,7 @@ class CoqWorker {
     loadPkg(url) {
         switch (JsCoq.backend) {
         case 'js':
-            this.sendCommand(["LoadPkg", this.resolveUri(base_path), pkg]);
+            this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
             break;
         case 'wa':
             if (url instanceof URL) url = url.href;

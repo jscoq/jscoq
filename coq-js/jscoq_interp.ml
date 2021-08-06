@@ -40,6 +40,16 @@ let post_feedback fb =
 
 (** Coq stuff **)
 
+let coq_info_string () =
+  let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
+  let jsoov = Sys_js.js_of_ocaml_version                      in
+  let header1 = Printf.sprintf
+      "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
+      Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
+  let header2 = Printf.sprintf
+      "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
+  header1 ^ header2
+
 (** When a new package is loaded, the library load path has to be updated *)
 let update_loadpath (msg : lib_event) : unit =
   match msg with
@@ -223,7 +233,7 @@ let jscoq_execute =
     let ast = Stm.get_ast ~doc:(fst !doc) sid in
     out_fn @@ Ast ast
 
-  | Init opts -> exec_init opts
+  | Init opts -> exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
   | NewDoc opts ->
     let ndoc, iid = create_doc opts in
@@ -234,17 +244,7 @@ let jscoq_execute =
     Lwt.async (fun () -> Jslibmng.load_pkg process_lib_event base pkg)
 
   | InfoPkg(base, pkgs) ->
-    Lwt.(async (fun () ->
-        let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
-        let jsoov = Sys_js.js_of_ocaml_version                      in
-        let header1 = Printf.sprintf
-            "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
-            Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
-        let header2 = Printf.sprintf
-            "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
-        Jslibmng.info_pkg post_lib_event base pkgs                  >>= fun () ->
-        return @@ out_fn @@ CoqInfo (header1 ^ header2)
-      ))
+    Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
 
   | InterruptSetup shmem -> !interrupt_setup (Js.Unsafe.coerce shmem)
 
