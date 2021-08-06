@@ -198,11 +198,69 @@ type CompileTaskOptions = {
 
 type LoadPath = [string[], string[]][];
 
-const PRELUDE = [["Coq", "Init", "Prelude"]];
+const PRELUDE = ["Coq.Init.Prelude"];
+
+
+class AnalyzeTask {
+
+    batch: Batch
+
+    constructor(batch: Batch) {
+        this.batch = batch;
+    }
+
+    async prepare() {
+        await this.batch.do(
+            ['Init', {}],
+            ['NewDoc', {}],   msg => msg[0] === 'Ready'
+        );
+    }
+
+    async runVernac(cmds: string[]) {
+        let add = (st: string) => ['Add', null, null, st, true],
+            vernac = (st: string) => [add(st), msg => msg[0] === 'Added'];
+
+        try {
+            var vr = await this.batch.do(...([].concat(...cmds.map(vernac))));
+        }
+        catch { console.log('> vernac execution failed.'); throw new BuildError(); }
+
+        var tip = vr.length > 0 ? vr.slice(-1)[0][1] : 0;
+        if (tip)
+            await this.batch.do(['Exec', tip]);  /** @todo wait for `Processed`? */
+        return tip;
+    }
+
+    async inspectSymbolsOfModules(pkgs: {[pkg: string]: string[]}) {
+        var modules = [].concat(...Object.values(pkgs)) as string[],
+            tip = await this.runVernac(modules.map(mp => `Require Import ${mp}.`));
+
+        var sr = await this.batch.do(
+            ['Query', tip, 0, ['Inspect', ['All']]],
+            msg => msg[0] === 'SearchResults'
+        );
+
+        var symb = Object.fromEntries(Object.keys(pkgs).map(k => [k, []]));
+
+        for (let r of sr) {
+            for (let entry of r[2]) {
+                var label = entry.basename[1],
+                    dp = entry.prefix.dp[1].map(x => x[1]).reverse(),
+                    prefix = dp.concat(entry.prefix.mod_ids.map(id => id[1])),
+                    mod = dp.join('.');
+                for (let [pkg, mns] of Object.entries(pkgs))
+                    if (mns.includes(mod)) symb[pkg].push({prefix, label});
+            }
+        }
+
+        return symb;
+    }
+
+}
 
 
 class BuildError { }
 
 
 
-export { Batch, BatchWorker, CompileTask, CompileTaskOptions, BuildError }
+export { Batch, BatchWorker, CompileTask, CompileTaskOptions, AnalyzeTask, BuildError }

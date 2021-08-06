@@ -2,7 +2,8 @@ import path from 'path';
 import { FSInterface, fsif_native } from './fsif';
 import { CoqDep } from './coqdep';
 import arreq from 'array-equal';
-import JSZip from 'jszip';
+import type JSZip from 'jszip';
+import { zipSync, ZipOptions } from 'fflate';
 import { neatJSON } from 'neatjson';
 
 const fs = fsif_native.fs;
@@ -27,10 +28,7 @@ class CoqProject {
 
         this.opts = {
             json: { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 },
-            zip: {
-                compression: 'DEFLATE', createFolders: false,
-                date: new Date("1/1/2000 UTC") // dummy date (otherwise, zip changes every time it is created...)
-            }     
+            zip: { }     
         };
     }
 
@@ -156,18 +154,16 @@ class CoqProject {
   
     async toZip(withManifest?: string, extensions = ['.vo', '.cma'],
                 prep: PackagePreprocess = (x=>[x])) {
-        const JSZip = (await import('jszip')).default,
-              z = new JSZip();
+        var z = new Zipped(this.opts.zip);
 
-        if (withManifest) z.file('coq-pkg.json', withManifest, this.opts.zip);
+        if (withManifest) z.writeFileSync('coq-pkg.json', withManifest);
 
         for (let emod of this.modulesByExts(extensions)) {
             for (let mod of prep(emod)) {
                 var ext = mod.ext || mod.physical.match(/[.][^.]+$/)[0];
                 try {
-                    z.file(mod.logical.join('/') + ext,
-                        mod.payload || mod.volume.fs.readFileSync(mod.physical),
-                        this.opts.zip);
+                    z.writeFileSync(mod.logical.join('/') + ext,
+                        mod.payload || mod.volume.fs.readFileSync(mod.physical));
                 }
                 catch (e) {
                     console.warn(`skipped ${mod.physical} (${e})`);
@@ -200,20 +196,35 @@ type DirPathFlag = string | {logical: string, rec?: boolean};
 
 type PackageOptions = {
     json: any /* neatjson options */
-    zip: JSZip.JSZipFileOptions
+    zip: ZipOptions
 };
 
+class Zipped {
+    z: {[filename: string]: Uint8Array} = {}
+    opts?: ZipOptions
+
+    constructor(opts?: ZipOptions) { this.opts = opts; }
+    writeFileSync(filename: string, content: string | Uint8Array) {
+        if (typeof content === 'string')
+            content = new TextEncoder().encode(content);
+        this.z[filename] = content;
+    }
+    zipSync() {
+        return zipSync(this.z);
+    }
+}
+
 class PackageResult {
-    pkg:      {filename: string, zip: JSZip}
+    pkg:      {filename: string, zip: Zipped}
     manifest: {filename: string, json: string, object: any}
 
-    constructor(pkg:      {filename: string, zip: JSZip},
+    constructor(pkg:      {filename: string, zip: Zipped},
                 manifest: {filename: string, json: string, object: any}) {
         this.pkg = pkg;
         this.manifest = manifest;
     }
 
-    save(bundle?: {chunks?: any[]}): Promise<PackageResult> {
+    async save(bundle?: {chunks?: any[]}): Promise<PackageResult> {
         const mkdirp = require('mkdirp').sync;
         mkdirp(path.dirname(this.pkg.filename));
         if (bundle) {
@@ -224,12 +235,8 @@ class PackageResult {
             mkdirp(path.dirname(this.manifest.filename));
             fs.writeFileSync(this.manifest.filename, this.manifest.json);
         }
-        return new Promise(async (resolve, reject) => {
-            this.pkg.zip.generateNodeStream()
-                .pipe(fs.createWriteStream(this.pkg.filename))
-                .on('error', (e:any) => reject(e))
-                .on('finish', () => resolve(this));
-        });
+        fs.writeFileSync(this.pkg.filename, this.pkg.zip.zipSync());
+        return this;
     }
 };
 
@@ -316,6 +323,15 @@ class SearchPath {
     *modulesOf(pkg: string=undefined) {
         for (let mod of this.modules())
             if (mod.pkg === pkg) yield mod;
+    }
+
+    modulesByExt(ext: string) {
+        return this.modulesByExts([ext]);
+    }
+
+    *modulesByExts(exts: string[]) {
+        for (let mod of this.modules())
+            if (exts.some(ext => mod.physical.endsWith(ext))) yield mod;
     }
 
     listModules() {
@@ -514,7 +530,7 @@ class InMemoryVolume extends StoreVolume {
 
 
 class ZipVolume extends StoreVolume {
-    zip: JSZip
+    zip: JSZip  /** @todo use fflate */
 
     _files: string[]
 
@@ -539,13 +555,13 @@ class ZipVolume extends StoreVolume {
     }
 
     static async fromFile(zipFilename: string) {
-        const JSZip = (await import('jszip')).default;
+        const JSZip = _default(await import('jszip'));
         return new ZipVolume(
             await JSZip.loadAsync((0 || fs.readFileSync)(zipFilename)));
     }
 
     static async fromBlob(blob: Blob | Promise<Blob>) {
-        const JSZip = (await import('jszip')).default;
+        const JSZip = _default(await import('jszip'));;
         return new ZipVolume(await JSZip.loadAsync(<any>blob));
     }
 
@@ -559,6 +575,10 @@ class ZipVolume extends StoreVolume {
             return entry._data.compressedContent;
     }
 
+}
+
+function _default<T>(m: {default: T}): T { // Parcel compat
+    return m.default || (<any>m);
 }
 
 
