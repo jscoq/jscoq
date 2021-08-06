@@ -104,8 +104,7 @@ libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq
 .PHONY: test watch serve dev
 
 test:
-	@cp -r tests $(BUILDDIR)
-	cd $(BUILDDIR) && npx mocha tests/main.js
+	npx mocha tests/main.js
 
 watch: DUNE_FLAGS+=--watch
 watch: jscoq
