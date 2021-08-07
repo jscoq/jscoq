@@ -1,9 +1,9 @@
 {
   "name": "jscoq",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
-    "jscoq": "./cli.js",
+    "jscoq": "./dist/cli.js",
     "jscoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
@@ -46,6 +46,19 @@
     "vue-template-compiler": "^2.6.12",
     "webpack": "^5.49.0",
     "webpack-cli": "^4.7.2"
+  },
+  "files": [
+    "ui-js",
+    "ui-css",
+    "ui-images",
+    "ui-external/CodeMirror-TeX-input/addon",
+    "examples"
+  ],
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack",
+    "watch": "webpack -w",
+    "prepack": "sed -i.bak 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
   },
   "repository": {
     "type": "git",

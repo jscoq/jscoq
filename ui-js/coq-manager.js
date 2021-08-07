@@ -471,14 +471,13 @@ class CoqManager {
 
     async openProject(name) {
         var pane = this.layout.createOutline();
-        await this._load('ui-js/ide-project.browser.js');
-                         //'ui-js/ide-project.browser.css');   // if using Parcel
+        await this._load('dist/ide-project.browser.js');
 
         this.project = ideProject.ProjectPanel.attach(this, pane, name);
     }
 
     async openCollab(documentKey) {
-        await this._load('ui-js/addon/collab.browser.js');
+        await this._load('dist/addon/collab.browser.js');
         this.collab = addonCollab.Hastebin.attach(this, documentKey);
     }
 

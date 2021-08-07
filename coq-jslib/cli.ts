@@ -128,7 +128,7 @@ class CLI {
 
     static stdlibPkgDir() {
         // assumes cli is run from `dist/` directory.
-        return path.join(__dirname, 'coq-pkgs');
+        return path.join(__dirname, '../coq-pkgs');
     }
 
 }
