@@ -134,6 +134,7 @@ var loadJsCoq, JsCoq;
             // Umm.
             base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
             jscoq_opts.base_path = jscoq_opts.base_path || base_path;
+            JsCoq.backend = jscoq_opts.backend || JsCoq.backend;
 
             return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
         }
