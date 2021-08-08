@@ -1,10 +1,9 @@
 {
-  "name": "jscoq",
+  "name": "wacoq",
   "version": "0.13.2",
-  "description": "A port of Coq to JavaScript -- run Coq in your browser",
+  "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "bin": {
-    "jscoq": "./dist/cli.js",
-    "jscoqdoc": "ui-js/jscoqdoc.js"
+    "wacoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
     "@corwin.amber/hastebin": "^0.1.1",
@@ -25,7 +24,8 @@
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
     "vue": "^2.6.12",
-    "vue-context": "^5.1.0"
+    "vue-context": "^5.1.0",
+    "wacoq-bin": "0.13.2"
   },
   "devDependencies": {
     "@types/find": "^0.2.1",
@@ -52,8 +52,6 @@
     "ui-css",
     "ui-images",
     "ui-external",
-    "coq-js/*.bc.js",
-    "coq-pkgs",
     "examples",
     "dist",
     "index.html"

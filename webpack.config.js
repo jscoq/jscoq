@@ -122,7 +122,7 @@ module.exports = (env, argv) => [
   },
   output: {
     filename: 'collab.browser.js',
-    path: path.join(__dirname, '../dist/addon'),
+    path: path.join(__dirname, 'dist/addon'),
     library: 'addonCollab',
     libraryTarget: 'umd'
   },
