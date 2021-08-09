@@ -60,7 +60,8 @@ class PackageManager {
 
         return Promise.all(this.packages.map(async pkg => {
             var manifest = await pkg.fetchInfo();
-            manifest && this.addBundleInfo(pkg.name, manifest);
+            if (manifest) this.addBundleInfo(pkg.name, manifest);
+            else this.coqLibError(pkg.name);
         }));
     }
 
@@ -187,6 +188,7 @@ class PackageManager {
             };
             if (!observe())
                 this.addEventListener('change', observe);
+            /** @todo reject the promise if there are no more packages whose infos are pending */
         });
     }
 
@@ -329,6 +331,18 @@ class PackageManager {
         catch(e) { console.warn(e); }
     }
 
+    coqLibError(pkg) {
+        var pkg_name = this._packageByURL(pkg) || pkg;
+        this.loaded_pkgs.push(pkg_name);
+
+        try {
+            var pkg = this.getPackage(pkg_name),
+                err = {msg: `error loading package '${pkg_name}'`};
+            if (pkg._reject) pkg._reject(err);
+            else pkg.promise = Promise.reject(err);
+        }
+        catch(e) { console.warn(e);  /* do we even care? */ }
+    }
     /**
      * Loads a package from the preconfigured path.
      * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
@@ -366,7 +380,7 @@ class PackageManager {
                               .then(() => this.coqLibLoaded(pkg.name));
         case 'wa':
             return new Promise((resolve, reject) => {
-                pkg._resolve = resolve 
+                pkg._resolve = resolve; pkg._reject = reject;
                 this.coq.loadPkg(pkg.getDownloadURL());
             });
         }

@@ -563,7 +563,13 @@ class CoqManager {
 
     async coqBoot() {
         this.coq.interruptSetup();
-        await this.packages.loadDeps(this.options.init_pkgs);
+        try {
+            await this.packages.loadDeps(this.options.init_pkgs);
+        }
+        catch (e) {
+            this.layout.systemNotification(
+                `===> Failed loading initial packages [${this.options.init_pkgs.join(', ')}]`);
+        }
         this.coqInit();
     }
 
@@ -831,6 +837,7 @@ class CoqManager {
 
         this.coq.init(init_opts, doc_opts);
         // Almost done!
+        // Now we just wait for the `Ready` event.
     }
 
     /**
