@@ -529,12 +529,8 @@ class CoqPkgInfo {
 
     async fetchInfo(resource = `${this.name}.json`) {
         var req = await fetch(this.getUrl(resource));
-        if (req.status == 200) {
-            this.info = await req.json();
-            for (let rec of [this.info, ...this.info.chunks])
-                rec.name = rec.name || rec.desc;  /** @todo change jsCoq manifest format to `name` as well */
-            return this.info;
-        }
+        if (req.status == 200)
+            return await req.json();
     }
 
     setArchive(resource = `${this.name}.coq-pkg`) {

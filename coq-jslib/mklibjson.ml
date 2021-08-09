@@ -2,6 +2,9 @@
  *
  * (C) Mines ParisTech
  * Written by: Emilio J. Gallego Arias
+ *
+ * (This is currently superseded by the CLI in `ui-js/cli.ts` but is kept
+ * for posterity)
  *)
 
 open Format
@@ -72,7 +75,7 @@ let build_bundle (pkg, deps, p_mod) =
   let out    = open_out (out_pref ^ pkg ^ ".json") in
   let ofmt   = formatter_of_out_channel out        in
   let p_mod  = map (build_pkg pkg) p_mod           in
-  let bundle = { desc = pkg;
+  let bundle = { name = pkg;
                  chunks = None;
                  deps = deps;
                  archive = None;

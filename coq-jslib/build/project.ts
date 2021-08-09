@@ -622,7 +622,7 @@ class JsCoqCompat {
             if (deps) modDeps[k] = deps;
         }
         var archive = manifest.archive || (pkgfile && path.basename(pkgfile));
-        return {desc: manifest.name, deps: manifest.deps || [],
+        return {name: manifest.name, deps: manifest.deps || [],
                 archive, pkgs, modDeps};
     }
 

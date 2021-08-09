@@ -29,7 +29,7 @@ let to_desc  pkg = String.concat "." pkg.pkg_id
 let no_files pkg = List.length pkg.vo_files + List.length pkg.cma_files
 
 type coq_bundle =
-  { desc      : string
+  { name      : string
   ; chunks    : coq_bundle list option [@default None]
   ; deps      : string list
   ; pkgs      : coq_pkg list
