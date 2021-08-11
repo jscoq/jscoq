@@ -38,7 +38,7 @@ class HeadlessCoqWorker extends CoqWorker {
     spawn() { return new HeadlessCoqWorker(); }
 
     static instance() {
-        var jscoq = require('./coq-js/jscoq_worker.bc.js').jsCoq;
+        var jscoq = require('../coq-js/jscoq_worker.bc.js').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
             jscoq.onmessage = handler;
