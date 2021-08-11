@@ -24,16 +24,14 @@ type require_lib = (string * string option * bool option)
 type top_mode = Interactive | Vo
 
 type coq_opts = {
-
   (* callback to handle async feedback *)
   fb_handler : Feedback.feedback -> unit;
-
   (* Async flags *)
   aopts        : async_flags;
-
   (* callback to load cma/cmo files *)
   ml_load      : string -> unit;
-
+  (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
+  opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
   debug        : bool;
 }
@@ -47,8 +45,6 @@ type doc_opts = {
   top_name     : string;
   (* document mode: interactive or batch *)
   mode         : top_mode;
-  (* Initial values for Coq options *)
-  opt_values   : (string list * Goptions.option_value) list;
 }
 
 type in_mode = Proof | General (* pun intended *)
@@ -105,6 +101,7 @@ let coq_init opts =
   Global.set_native_compiler false;
   Flags.set_native_compiler false;
   CWarnings.set_flags default_warning_flags;
+  set_options opts.opt_values;
 
   (**************************************************************************)
   (* Feedback setup                                                         *)
@@ -120,7 +117,6 @@ let coq_init opts =
   Stm.init_core ()
 
 let new_doc opts =
-  set_options opts.opt_values;
   let doc_type = match opts.mode with
     | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in
                      Stm.Interactive (Stm.TopLogical dp)

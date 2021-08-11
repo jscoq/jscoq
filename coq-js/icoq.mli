@@ -29,6 +29,8 @@ type coq_opts = {
   aopts        : async_flags;
   (* callback to load cma/cmo files *)
   ml_load      : string -> unit;
+  (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
+  opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
   debug        : bool;
 }
@@ -42,8 +44,6 @@ type doc_opts = {
   top_name     : string;
   (* document mode: interactive or batch *)
   mode         : top_mode;
-  (* Initial values for Coq options *)
-  opt_values   : (string list * Goptions.option_value) list;
 }
 
 type in_mode = Proof | General (* pun intended *)

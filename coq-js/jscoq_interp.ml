@@ -12,7 +12,7 @@ open Js_of_ocaml
 open Jscoq_proto.Proto
 open Jslibmng
 
-let opts = ref { implicit_libs = true; debug = {coq = false; stm = false} }
+let opts = ref { implicit_libs = true; coq_options = []; debug = {coq = false; stm = false} }
 
 (* XXX *)
 let post_message = ref (fun _ -> ())
@@ -79,6 +79,7 @@ let exec_init (set_opts : jscoq_options) =
                        async_full   = false;
                        deep_edits   = false;
                      };
+      opt_values   = opts.coq_options;
       debug        = opts.debug.stm;
     })
 
@@ -89,7 +90,6 @@ let create_doc (opts : doc_options) =
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init;
       vo_path       = mk_vo_path opts.lib_path;
-      opt_values    = opts.coq_options;
     })
 
 (* I refuse to comment on this part of Coq code... *)
