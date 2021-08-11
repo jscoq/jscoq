@@ -1,0 +1,61 @@
+.ctx-menu-container.compact {
+    border: none;
+}
+
+.ctx-menu-container.compact ul[role=menu] {
+    font-family: sans-serif;
+    font-size: 10pt;
+    line-height: 15pt;
+    padding: 2px 0;
+    background: #eeee;
+}
+
+.ctx-menu-container.compact ul[role=menu] > li {
+    padding: 1px 1rem;
+    white-space: nowrap;
+}
+
+.ctx-menu-container.compact ul[role=menu] > li.disabled {
+    pointer-events: none;
+    color: #888;
+}
+
+.ctx-menu-container.compact ul[role=menu] > li:hover {
+    background: rgb(46, 103, 160);
+    color: white;
+    cursor: default;
+}
+
+.ctx-menu-container.compact ul[role=menu] > hr {
+    margin: 4px;
+    opacity: 0.5;
+}
+
+.ctx-menu-container ul[role=menu] li.has-companion {
+    display: flex;
+}
+
+.ctx-menu-container ul[role=menu] li.has-companion > span:first-child {
+    flex-grow: 1;
+}
+
+.ctx-menu-container ul[role=menu] button.companion {
+    float: right;
+    font-family: STIXGeneral;  /* @todo get rid of this */
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.3;
+    border-radius: 99px;
+    padding: 0 .7em;
+    margin-left: 1.5em;
+    margin-right: -.3em;    
+}
+
+.ctx-menu-container ul[role=menu] li:hover button.companion {
+    opacity: 0.7;
+    background: #fff3;
+}
+.ctx-menu-container ul[role=menu] li:hover button.companion:hover {
+    opacity: 1;
+}

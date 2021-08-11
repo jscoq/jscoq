@@ -24,7 +24,7 @@
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
     "vue": "^2.6.12",
-    "vue-context": "^5.1.0",
+    "vue-context-menu": "^2.0.6",
     "wacoq-bin": "0.13.2"
   },
   "devDependencies": {

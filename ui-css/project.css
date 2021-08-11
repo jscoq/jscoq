@@ -78,39 +78,6 @@
     fill: white;
 }
 
-.v-context,
-.v-context ul {
-    font-family: sans-serif;
-    font-size: 10pt;
-    line-height: 15pt;
-    padding: 2px 0;
-    background: #eeee;
-}
-
-.v-context > li > a,
-.v-context ul > li > a {
-    padding: 1px 1rem !important;
-}
-
-.v-context > li > a:hover,
-.v-context ul > li > a:hover {
-    background: rgb(46, 103, 160);
-    color: white;
-    cursor: default;
-}
-
-.v-context > li > a[disabled] {
-    color: #888;
-}
-.v-context > li > a[disabled]:hover {
-    color: #888;
-    background: transparent;
-}
-
-.v-context__sub > a:after {
-    content: "▸";
-}
-
 button:focus, button:active {
     outline: none;
 }

@@ -1,45 +1,44 @@
 <template>
     <span class="project-context-menu" :class="{open: isOpen}">
-        <button @click.stop.prevent="open"><hamburger-svg/></button>
-        <vue-context ref="m" @open="isOpen = true" @close="isOpen = false">
-            <li><a name="new" @click="action" :disabled="$root.building">New Project</a></li>
-            <li><a name="open" @click="action" :disabled="$root.building">Open Project...</a></li>
+        <button @click.stop.prevent="toggle"><hamburger-svg/></button>
+        <context-menu ref="m" @open="isOpen = true" @close="isOpen = false"
+                @action="$emit('action', $event)">
+            <item name="new" :enabled="!$root.building">New Project</item>
+            <item name="open" :enabled="!$root.building">Open Project...</item>
+            <!-- @todo submenus currently not supported in vue-context-menu
             <li class="v-context__sub" v-if="recent"><a>Open Recent</a>
                 <ul>
-                    <li v-for="entry in recent" :key="entry.uri">
-                        <a name="open" @click="action($event, entry)">{{entry.uri}}</a>
-                    </li>
+                    <item v-for="entry in recent" :key="entry.uri" 
+                        name="open-recent">{{entry.uri}}</item>
                 </ul>
-            </li>
-            <li><a name="download-v" @click="action">Download sources</a></li>
-            <li><a name="download-vo" @click="action" :disabled="$root.building || !$root.compiled">Download compiled</a></li>
-        </vue-context>
+            </li> -->
+            <item name="download-v">Download sources</item>
+            <item name="download-vo" :enabled="!$root.building && $root.compiled">Download compiled</item>
+        </context-menu>
     </span>
 </template>
 
 <script>
-import VueContext from 'vue-context';
+import ContextMenu from './context-menu/context-menu.vue';
+import ContextMenuItem from './context-menu/context-menu-item.vue';
 import HamburgerSvg from './hamburger-svg.vue';
 
-function vueContextCleanup() {
-    if ($('.v-context').is(':visible')) $(document.body).click();
+function vueContextMenuCleanup() {
+    if ($('.ctx-menu-container').is(':visible')) $(document.body).click();
 }
 
 export default {
     props: ['recent'],
     data: () => ({isOpen: false}),
-    components: {VueContext, HamburgerSvg},
+    components: {ContextMenu, item: ContextMenuItem, HamburgerSvg},
     methods: {
-        open() {
+        toggle() {
+            console.log(this.$refs.m.show)
             if (this.$refs.m.show) this.$refs.m.close();
             else {
-                vueContextCleanup();
+                vueContextMenuCleanup();
                 this.$refs.m.open({clientX: this.$parent.$el.clientWidth, clientY: 0}); 
             }
-        },
-        action(ev, props={}) {
-            if (!$(ev.currentTarget).is('[disabled]'))
-                this.$emit('action', {type: ev.currentTarget.name, ...props});
         }
     }   
 }

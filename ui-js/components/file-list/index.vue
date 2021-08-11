@@ -37,8 +37,8 @@ export default {
                 path = [...this._path, item_name],
                 kind = target.hasClass('folder') ? 'folder' : 'file';
             this.action({type: 'select', path, kind});
-            if ($('.v-context').is(':visible'))
-                $(document.body).click();
+            //if ($('.ctx-menu-container').is(':visible'))
+            //    $(document.body).click();
         },
         onrightclick(ev) {
             if (ev.which === 3 || ev.button === 2)   /* Right click... :\ */
@@ -150,7 +150,7 @@ export default {
             }
         },
 
-        lookup(rel_path) {
+        lookup(path) {
             path = promotePath(path);
 
             var cwd = {name: '/', files: this.files};

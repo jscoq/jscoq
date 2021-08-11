@@ -2,7 +2,6 @@ import './public-path';
 
 import assert from 'assert';
 import Vue from 'vue';
-import 'vue-context/src/sass/vue-context.scss';
 
 import { BatchWorker, CompileTask } from '../coq-jslib/build/batch';
 import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project';
@@ -262,7 +261,7 @@ class ProjectPanel {
     }
 
     async _download(zip, fn) {
-        var blob = await zip.generateAsync({type: 'blob'}),
+        var blob = new Blob([zip.zipSync()], {type: 'application/octet-stream'}),
             a = $('<a>').attr({'href': URL.createObjectURL(blob),
                                'download': fn});
         a[0].click();
