@@ -17,10 +17,8 @@ _build
 
 # Node stuff
 node_modules
-# (webpack, if building in source dir)
-ui-js/addon/*.png
-*.browser.js
-*.js.map
+# - npm packages
+/*.tgz
 
 # Links for in-place serving
 coq-pkgs

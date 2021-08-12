@@ -18,7 +18,7 @@
 class CoqLayoutClassic {
 
     html(params) {
-        var {base_path, kb} = params;
+        var {base_path, backend, kb} = params;
         return `
     <svg id="hide-panel" viewBox="0 0 32 32" title="Toggle panel (F8)">
       <path d="M16.001,0C7.165,0,0,7.164,0,16.001S7.162,32,16.001,32C24.838,32,32,24.835,32,15.999S24.838,0,16.001,0L16.001,0z"/>
@@ -34,7 +34,7 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <img class="js-logo" src="${base_path}/ui-images/js-logo.svg" alt="js"><i>+</i><!--
+        <img class="${backend}-logo" src="${base_path}/ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
           --><a href="https://coq.inria.fr"><!--
           --><img class="coq-logo" src="${base_path}/ui-images/coq-logo.png" alt="Coq">
         </a>
@@ -99,7 +99,8 @@ class CoqLayoutClassic {
 
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
-        this.panel.innerHTML = this.html({base_path: options.base_path, ...params});
+        this.panel.innerHTML = this.html({base_path: options.base_path,
+            backend: JsCoq.backend, ...params});
 
         this.ide.appendChild(this.panel);
 

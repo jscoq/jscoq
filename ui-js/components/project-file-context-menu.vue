@@ -1,29 +1,26 @@
 <template>
-    <vue-context ref="m">
-        <li><a name="new-file" @click="action">New file</a></li>
-        <li><a name="new-folder" @click="action">New foler</a></li>
-        <li><a name="rename" @click="action">Rename</a></li>
-    </vue-context>
+    <context-menu ref="m" @action="$emit('action', $event)">
+        <item name="new-file">New file</item>
+        <item name="new-folder">New folder</item>
+        <item name="rename">Rename</item>
+    </context-menu>
 </template>
 
 <script>
-import VueContext from 'vue-context';
+//import VueContext from 'vue-context';
+import ContextMenu from './context-menu/context-menu.vue';
+import ContextMenuItem from './context-menu/context-menu-item.vue';
 
-function vueContextCleanup() {
-    if ($('.v-context').is(':visible')) $(document.body).click();
+function vueContextMenuCleanup() {
+    if ($('.ctx-menu-container').is(':visible')) $(document.body).click();
 }
 
 export default {
-    components: {VueContext},
+    components: { ContextMenu, item: ContextMenuItem },
     methods: {
         open(ev, action) {
-            vueContextCleanup();
-            this._for = action;
-            this.$refs.m.open(ev); 
-        },
-        action(ev) {
-            if (!$(ev.currentTarget).is('[disabled]'))
-                this.$emit('action', {type: ev.currentTarget.name, for: this._for});
+            vueContextMenuCleanup();
+            this.$refs.m.open(ev, action); 
         }
     }    
 }

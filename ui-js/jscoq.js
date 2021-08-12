@@ -12,7 +12,7 @@ class CoqWorker {
         this.sids = [, new Future()];
 
         if (worker) {
-            this.worker = worker;
+            this.attachWorker(worker);
             this.when_created = Promise.resolve();
         }
         else {
@@ -20,10 +20,6 @@ class CoqWorker {
                 this.createWorker(scriptPath ||
                                   this.constructor.defaultScriptPath());
         }
-
-        this.when_created.then(() => {
-            this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
-        });
     }
 
     /**
@@ -31,15 +27,10 @@ class CoqWorker {
      * from which this script is loaded.
      */
     static defaultScriptPath() {
-        return new URL("../coq-js/jscoq_worker.bc.js", this.scriptUrl).href;
-    }
-
-    /**
-     * Alternate script path, for when serving for source tree.
-     * (Basically removes `.bc` from the suffix.)
-     */
-    static alternateScriptPath(script_path) {
-        return script_path.replace(/\.bc\.js$/, '.js');
+        var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
+        return new URL({'js': "../coq-js/jscoq_worker.bc.js",
+                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[JsCoq.backend],
+                       this.scriptUrl).href;
     }
 
     /**
@@ -50,33 +41,37 @@ class CoqWorker {
         return new URL(uri, window.location).href;
     }
 
-    async createWorker(script_path) {
-        let alt_script_path = this.constructor.alternateScriptPath(script_path);
+    createWorker(script_path) {
+        this._worker_script = script_path;
 
-        this._worker_script = await
-            this.constructor._searchResource([script_path, alt_script_path]);
-
-        this.worker = new Worker(this._worker_script);
+        this.attachWorker(new Worker(this._worker_script));
 
         if (typeof window !== 'undefined')
-            window.addEventListener('unload', () => this.worker.terminate());
+            window.addEventListener('unload', () => this.end());
+
+        if (JsCoq.backend == 'wa') {
+            this._boot = new Future();
+            return this._boot.promise;
+        }
+        else return Promise.resolve();
     }
 
-    static async _searchResource(urls) {
-        let head = (url) => new Promise((resolve, reject) =>
-            $.ajax({type: 'HEAD', dataType: 'text', url}).then(() => resolve(url)).fail(reject));
-
-        for (let url of urls) {
-            try { return await head(url); } catch { }
-        }
-        throw new Error(`resource not found; [${urls}]`);
+    attachWorker(worker) {
+        this.worker = worker;
+        this.worker.addEventListener('message', 
+            this._handler = evt => this.coq_handler(evt));
     }
 
     sendCommand(msg) {
         if(this.options.debug) {
             console.log("Posting: ", msg);
         }
+        if (JsCoq.backend === 'wa') msg = JSON.stringify(msg);
         this.worker.postMessage(msg);
+    }
+
+    sendDirective(msg) {   // directives are intercepted by the JS part of the worker
+        this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
     init(coq_opts, doc_opts) {
@@ -131,29 +126,41 @@ class CoqWorker {
         this.sendCommand(["GetOpt", option_name]);
     }
 
-    loadPkg(base_path, pkg) {
-        this.sendCommand(["LoadPkg", this.resolveUri(base_path), pkg]);
+    loadPkg(url) {
+        switch (JsCoq.backend) {
+        case 'js':
+            this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
+            break;
+        case 'wa':
+            if (url instanceof URL) url = url.href;
+            this.sendDirective(["LoadPkg", url]); break;
+        }
     }
 
     infoPkg(base_path, pkgs) {
         this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
     }
 
-    reassureLoadPath(load_path) {
-        this.sendCommand(["ReassureLoadPath", load_path]);
+    refreshLoadPath(load_path) {
+        switch (JsCoq.backend) {
+        case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
+        case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
+        }
     }
 
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
+        var abuf = content;
         if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-            content = this.arrayBufferOfBuffer(content);
+            abuf = this.arrayBufferOfBuffer(content);
+            content = new Buffer(abuf);
         }
 
         var msg = ["Put", filename, content];
         if(this.options.debug) {
             console.debug("Posting file: ", msg);
         }
-        this.worker.postMessage(msg, transferOwnership ? [content] : []);
+        this.worker.postMessage(msg, transferOwnership ? [abuf] : []);
         /* Notice: when transferOwnership is true, the 'content' buffer is
          * transferred to the worker (for efficiency);
          * it becomes unusable in the original context.
@@ -176,7 +183,7 @@ class CoqWorker {
         if (typeof SharedArrayBuffer !== 'undefined') {
             this.intvec = new Int32Array(new SharedArrayBuffer(4));
             try {
-                this.sendCommand(["InterruptSetup", this.intvec]);
+                this.sendDirective(["InterruptSetup", this.intvec]);
             }
             catch (e) {  /* this fails in Firefox 72 even with SharedArrayBuffer enabled */
                 console.warn('SharedArrayBuffer is available but not serializable -- interrupts disabled');
@@ -197,15 +204,17 @@ class CoqWorker {
     restart() {
         this.sids = [, new Future()];
 
-        this.worker.terminate();  // kill!
+        this.end();  // kill!
 
-        // Recreate worker
-        this.worker = new Worker(this._worker_script);
-        this.worker.onmessage = this._handler = evt => this.coq_handler(evt);
+        this.createWorker(this._worker_script);
     }
 
     end() {
-        this.worker.terminate();
+        if (this.worker) {
+            this.worker.removeEventListener('message', this._handler);
+            this.worker.terminate();
+            this.worker = undefined;
+        }
     }
 
     // Promise-based APIs
@@ -238,16 +247,19 @@ class CoqWorker {
     }
 
     spawn() {
+        this.worker.removeEventListener('message', this._handler);
         return new CoqWorker(null, this.worker);
     }
 
     join(child) {
-        this.worker.onmessage = this._handler;
+        this.worker.removeEventListener('message', child._handler);
+        this.worker.addEventListener('message', this._handler);
     }
 
     // Internal event handling
 
     coq_handler(evt) {
+
         var msg     = evt.data;
         var msg_tag = msg[0];
         var msg_args = msg.slice(1);
@@ -272,6 +284,11 @@ class CoqWorker {
          if (!handled && this.options.warn) {
             console.warn('Message ', msg, ' not handled');
         }
+    }
+
+    coqBoot() {
+        if (this._boot)
+            this._boot.resolve();
     }
 
     coqFeedback(fb_msg, in_mode) {
@@ -335,6 +352,8 @@ class Future {
     resolve(val) { if (!this._done) { this._done = this._success = true; this._resolve(val); } }
     reject(err) { if (!this._done) { this._done = true; this._reject(err); } }
 
+    then(cont)      { return this.promise.then(cont); }
+
     isDone()        { return this._done; }
     isSuccessful()  { return this._success; }
     isFailed()      { return this._done && !this._success; }
@@ -378,11 +397,23 @@ class PromiseFeedbackRoute extends Future {
 }
 
 
+class CoqSubprocessAdapter extends CoqWorker {
+    constructor() {
+        const subproc = require('wacoq-bin/dist/subproc');
+        super(null, new subproc.IcoqSubprocess());
+        window.addEventListener('beforeunload', () => this.worker.end());
+    }
+    coq_handler(...a) {
+        setTimeout(() => super.coq_handler(...a), 0); // force window context
+    }
+}
+
+
 if (typeof document !== 'undefined' && document.currentScript)
     CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
 
 if (typeof module !== 'undefined')
-    module.exports = {CoqWorker, Future, PromiseFeedbackRoute}
+    module.exports = {CoqWorker, CoqSubprocessAdapter, Future, PromiseFeedbackRoute}
 
 // Local Variables:
 // js-indent-level: 4

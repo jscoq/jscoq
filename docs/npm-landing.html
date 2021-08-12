@@ -2,10 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-    <title>Using jsCoq with NPM (a template)</title>
+    <title>jsCoq NPM package</title>
 
-    <!-- important: this will not work from *within* the jsCoq package dir; -->
-    <!-- this template is meant to be copied to your project dir and edited -->
     <script src="./ui-js/jscoq-loader.js"></script>
   </head>
 
@@ -34,12 +32,11 @@ Inductive and_they_run := too(*!*).
     var jscoq_opts = {
         prelude:       true,
         implicit_libs: true,
-        base_path:     './node_modules/jscoq/',
-        editor:        { mode: { 'company-coq': true }, keyMap: 'default' },
+        editor:        { mode: { 'company-coq': true } },
         init_pkgs:     ['init'],
         all_pkgs:      ['coq']
     };
 
-    JsCoq.start(jscoq_opts.base_path, '..', jscoq_ids, jscoq_opts);
+    JsCoq.start(jscoq_ids, jscoq_opts);
   </script>
 </body>

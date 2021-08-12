@@ -1,3 +1,10 @@
+# jsCoq 0.13.2 "That Sounds Like an Excellent Idea"
+---------------------------------------
+
+ - Merged the `8.13+wacoq` branch. The frontend can now operate
+   with either the JavaScript backend or the WebAssembly one.
+   (#247, corwin-of-amber)
+
 # jsCoq 0.13.1 "Action Display"
 ---------------------------------------
 

@@ -104,8 +104,6 @@ class CLI {
         }
 
         if (bundle) {
-            // @ts-ignore  (some jsCoq/waCoq sillyness)
-            bundle.manifest.desc = bundle.manifest.name;  delete bundle.manifest.name;
             bundle.save();
             this.progress(`wrote ${bundle.filename}.`, true);
         }
@@ -128,7 +126,7 @@ class CLI {
 
     static stdlibPkgDir() {
         // assumes cli is run from `dist/` directory.
-        return path.join(__dirname, 'coq-pkgs');
+        return path.join(__dirname, '../coq-pkgs');
     }
 
 }

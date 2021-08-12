@@ -1,7 +1,10 @@
 (*
-   Build the std filesystem for jscoq
-
-   By Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Build the std filesystem for jscoq
+ *
+ * By Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ *
+ * (This is currently superseded by the CLI in `ui-js/cli.ts` but is kept
+ * for posterity)
 *)
 
 open Format
@@ -54,7 +57,7 @@ let include_pat fn =
    which are assumed to be built using -R instead of -Q *)
 let copy_subdir ?extra_prefix coqdir basepath dirpath =
   let subdirpath = basepath :: dirpath                               in
-  let desc       = Dl.to_dir subdirpath                              in
+  let name       = Dl.to_dir subdirpath                              in
   let indir      = Dl.to_dir (coqdir :: subdirpath)                  in
   let libpath    = option_map_default
       (fun ep -> ep :: dirpath) dirpath extra_prefix                 in
@@ -65,7 +68,7 @@ let copy_subdir ?extra_prefix coqdir basepath dirpath =
     try
       Fileutils.file_update (indir / fn) (outdir / fn)
     with Sys_error _ ->
-      eprintf " * @[failed to copy:@ %s/%s@]\n%!" desc fn
+      eprintf " * @[failed to copy:@ %s/%s@]\n%!" name fn
   in
 
   try

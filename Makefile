@@ -19,7 +19,7 @@ OS := ${shell uname}
 ARCH := $(OS)/$(WORD_SIZE)
 
 ifeq ($(WORD_SIZE),64)
-DUNE_WORKSPACE = $(current_dir)/dune-workspace-64
+DUNE_WORKSPACE = $(current_dir)/dune-workspace.64
 VARIANT = +64bit
 else
 VARIANT = +32bit
@@ -66,13 +66,15 @@ endif
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
-	@echo "     jscoq: build jscoq [javascript and libraries]"
+	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
+	@echo "     wacoq: build waCoq [JavaScript, frontend only; depends on wacoq-bin]"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
 	@echo "      dist: create a distribution suitable for a web server"
+	@echo "  dist-npm: create NPM packages suitable for `npm install`"
 	@echo "       coq: download and build Coq and addon libraries"
-	@echo "   install: install Coq and jsCoq to ~/.opam/$(BUILD_CONTEXT)"
+	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
@@ -97,6 +99,11 @@ coq-pkgs/%.symb: coq-pkgs/%.json
 
 libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
 
+wacoq:
+	# Currently, this builds in the source tree
+	[ -d node_modules ] || npm install
+	npm run build
+
 ########################################################################
 # Developer Zone                                                       #
 ########################################################################
@@ -104,8 +111,7 @@ libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq
 .PHONY: test watch serve dev
 
 test:
-	@cp -r tests $(BUILDDIR)
-	cd $(BUILDDIR) && npx mocha tests/main.js
+	npx mocha tests/main.js
 
 watch: DUNE_FLAGS+=--watch
 watch: jscoq
@@ -133,9 +139,8 @@ distclean: clean
 ########################################################################
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	cli.js coq-js/jscoq_worker.bc.js coq-pkgs \
-	ui-js ui-css ui-images examples \
-	node_modules ui-external/CodeMirror-TeX-input}
+	coq-js/jscoq_worker.bc.js coq-pkgs \
+	ui-js ui-css ui-images ui-external examples dist}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -145,7 +150,8 @@ dist: jscoq
 	mkdir -p $(DISTDIR)
 	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
-TAREXCLUDE = --exclude assets --exclude node_modules --exclude '*.cma' \
+TAREXCLUDE = --exclude assets --exclude '*.cma' \
+	--exclude '*.bak' --exclude '*.tar.gz' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
@@ -153,25 +159,36 @@ dist-tarball: dist
 	# Hack to make the tar contain a jscoq-x.x directory
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz   \
-	    -C _build $(TAREXCLUDE) --exclude '*.bak' --exclude '*.tar.gz' \
+	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz -C _build $(TAREXCLUDE) \
 	    --dereference jscoq-$(PACKAGE_VERSION)
 	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
-NPMOBJ = ${filter-out %/node_modules %/index.html, $(DISTOBJ)}
+NPMOBJ = ${filter-out index.html package-lock.json, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
-NPMEXCLUDE = --delete-excluded --exclude assets --exclude '*.cma' \
-    ${foreach dir, Coq Ltac2 mathcomp, \
-		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
+NPMEXCLUDE = --delete-excluded --exclude assets
 
 dist-npm:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	sed -i.bak 's/\(is_npm:\) false/\1 true/' $(NPMSTAGEDIR)/ui-js/jscoq-loader.js
-	tar zcf $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tar.gz   \
-	    -C ${dir $(NPMSTAGEDIR)} --exclude '*.bak' ${notdir $(NPMSTAGEDIR)}
+	npm pack ./$(NPMSTAGEDIR)
+
+WACOQ_NPMOBJ = README.md \
+	ui-js ui-css ui-images ui-external examples dist
+# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment	
+
+dist-npm-wacoq:
+	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
+	rm -rf ${add-prefix $(NPMSTAGEDIR)/, coq-js coq-pkgs}  # in case these were created by jsCoq :/
+	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
+	cp package.json.wacoq $(NPMSTAGEDIR)/package.json
+	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
+	npm pack ./$(NPMSTAGEDIR)
+
+# The need to maintain and update `package.json.wacoq` alongside `package.json`
+# is absolutely bothersome. I could not conjure a more sustainable way to emit
+# two separate NPM packages from the same source tree, though.
 
 ########################################################################
 # Local stuff and distributions

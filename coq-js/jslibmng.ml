@@ -244,7 +244,7 @@ let paths_to_coqpath ?(implicit=false) lib_path =
   ) lib_path
 
 let require_libs libs =
-  List.map (fun lp -> String.concat "." lp, None, Some true) libs
+  List.map (fun lp -> lp, None, Some true) libs
   (* Last coordinate: *)
   (*   None       : just require            *)
   (*   Some false : import but don't export *)

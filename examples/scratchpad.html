@@ -29,7 +29,9 @@
 
 
     var jscoq_opts = {
-        all_pkgs:  ['coq', 'mathcomp', 'extlib', 'simpleio', 'equations', 
+        backend:   sp.get('backend'),
+        subproc:   sp.has('app'),
+        all_pkgs:  ['coq', 'mathcomp', 'extlib', 'simpleio', 'equations',
                     'elpi', 'quickchick', 'software-foundations',
                     'hahn', 'paco', 'snu-sflib', 'promising',
                     'fcsl-pcm', 'htt', 'pnp'],

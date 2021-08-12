@@ -24,19 +24,14 @@ type require_lib = (string * string option * bool option)
 type top_mode = Interactive | Vo
 
 type coq_opts = {
-
   (* callback to handle async feedback *)
   fb_handler : Feedback.feedback -> unit;
-
   (* Async flags *)
   aopts        : async_flags;
-
-  (* Initial values for Coq options *)
-  opt_values   : (string list * Goptions.option_value) list;
-
   (* callback to load cma/cmo files *)
   ml_load      : string -> unit;
-
+  (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
+  opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
   debug        : bool;
 }
@@ -53,6 +48,16 @@ type doc_opts = {
 }
 
 type in_mode = Proof | General (* pun intended *)
+
+type qualified_object_prefix = {
+  dp: Names.DirPath.t;
+  mod_ids: Names.Id.t list
+}
+
+type qualified_name = {
+  prefix: qualified_object_prefix;
+  basename: Names.Id.t
+}
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
@@ -144,16 +149,32 @@ let context_of_stm ~doc sid =
 
 (* Inspection subroutines *)
 
-let full_path_of_kn kn =
+let qualified_object_prefix_of_mp mp =
+  let dp, mod_ids = Lib.split_modpath mp in {dp; mod_ids}
+
+let qualified_object_prefix_of_dp dp = {dp; mod_ids = []}
+
+let qualified_name_of_kn kn =
   let mp, l = Names.KerName.repr kn in
-  Libnames.make_path (Lib.dp_of_mp mp) (Names.Label.to_id l)
+  {prefix = qualified_object_prefix_of_mp mp; basename = Names.Label.to_id l}
 
-let full_path_of_constant c = full_path_of_kn (Names.Constant.user c)
+let qualified_name_of_constant c = qualified_name_of_kn (Names.Constant.user c)
 
+let qualified_name_of_full_path fp =
+  let (dp, id) = Libnames.repr_path fp in
+  {prefix = qualified_object_prefix_of_dp dp; basename = id}
+
+let string_of_qualified_name qn =
+  let {prefix = {dp; mod_ids}; basename} = qn in (* todo use `ids` as well *)
+  let dp = match Names.DirPath.repr dp with
+    | [] -> [] | _ -> [Names.DirPath.to_string dp] in
+  String.concat "." (dp @ (List.map Names.Id.to_string mod_ids) @ [Names.Id.to_string basename])
+
+(* Get constants in global scope *)
 let inspect_globals ~env () =
   let global_consts = List.to_seq @@
       Environ.fold_constants (fun name _ l -> name :: l) env [] in
-  Seq.map full_path_of_constant global_consts
+  Seq.map qualified_name_of_constant global_consts
 
 
 let libobj_is_leaf obj =
@@ -181,18 +202,20 @@ let find_definitions env obj_path =
     | _ -> Seq.empty
   with Not_found -> Seq.empty
 
+(* Get definitions in current module *)
 let inspect_library ~env () =
   let ls = Lib.contents () in
   Seq.flat_map (fun ((obj_path, _), obj) ->
     if libobj_is_leaf obj then find_definitions env obj_path
     else Seq.empty)
-    (List.to_seq ls)
+    (List.to_seq ls) |> Seq.map qualified_name_of_full_path
 
-
+(* Get local names in proof context *)
 let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
   let named_ctx = Environ.named_context env in
   List.to_seq (Context.Named.to_vars named_ctx |> Names.Id.Set.elements) |>
     Seq.map (Libnames.make_path dir_path)
+    |> Seq.map qualified_name_of_full_path
 
 
 (* Compilation *)

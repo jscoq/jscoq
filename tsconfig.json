@@ -6,5 +6,6 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "downlevelIteration": true
-  }
+  },
+  "exclude": ["_build", "dist"]
 }

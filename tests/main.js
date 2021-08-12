@@ -7,8 +7,8 @@ const assert = require('assert'),
 const cliJsPath = locateCliJs();
 
 function locateCliJs() {
-    var alts = glob.sync('_build/jscoq+*/cli.js');
-    if (alts.length == 0) throw new Error('coq-cli.js not found');
+    var alts = glob.sync('_build/jscoq+*/dist/cli.js');
+    if (alts.length == 0) throw new Error('cli.js not found');
     else if (alts.length > 1) throw new Error('multiple builds found: ' + alts);
     return alts[0];
 }
@@ -44,6 +44,14 @@ describe('qa0 - sanity test', function() {
                 return;
             }
             throw new Error('terminated without error');
+        });
+    });
+
+    describe('options', function() {
+        it('should read default option value', async function() {
+            rc = await cliSubprocess(['run', '-e', "Test Silent."]);
+            var expected = fs.readFileSync('tests/qa0/options-0.out', 'utf-8');
+            assert.strictEqual(rc.stdout, expected);
         });
     });
 });

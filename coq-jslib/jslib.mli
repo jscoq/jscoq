@@ -29,7 +29,7 @@ val to_desc : coq_pkg -> string
 val no_files : coq_pkg -> int
 
 type coq_bundle = {
-  desc      : string;
+  name      : string;
   chunks    : coq_bundle list option;
   deps      : string list;
   pkgs      : coq_pkg list;

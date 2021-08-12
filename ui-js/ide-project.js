@@ -2,7 +2,6 @@ import './public-path';
 
 import assert from 'assert';
 import Vue from 'vue';
-import 'vue-context/src/sass/vue-context.scss';
 
 import { BatchWorker, CompileTask } from '../coq-jslib/build/batch';
 import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project';
@@ -226,17 +225,22 @@ class ProjectPanel {
     }
 
     _createBuildWorker() {
-        var coqw = new CoqWorker();
+        var coqw = (this.coq && this.coq.options.subproc)
+              ? new CoqSubprocessAdapter()
+              : new CoqWorker();
         coqw.options.warn = false;
         coqw.observers.push(this);
         return coqw;
     }
 
     _createBuildTask(coqw) {
-        var pkgr = this.coq && this.coq.packages;
+        var pkgr = this.coq && this.coq.packages,
+            buildDir = (this.coq && this.coq.options.subproc) ? '/tmp/build' : '/lib';
 
-        return new CompileTask(new JsCoqBatchWorker(coqw, pkgr),
-                               this.project);
+        return new CompileTask({
+                'js': () => new JsCoqBatchWorker(coqw, pkgr),
+                'wa': () => new WacoqBatchWorker(coqw, pkgr)
+            }[JsCoq.backend](), this.project, {buildDir});
     }
 
     feedMessage(sid, lvl, loc, msg) {
@@ -257,7 +261,7 @@ class ProjectPanel {
     }
 
     async _download(zip, fn) {
-        var blob = await zip.generateAsync({type: 'blob'}),
+        var blob = new Blob([zip.zipSync()], {type: 'application/octet-stream'}),
             a = $('<a>').attr({'href': URL.createObjectURL(blob),
                                'download': fn});
         a[0].click();
@@ -479,6 +483,11 @@ class WacoqBatchWorker extends BatchWorker {
             var p = this.pkgr.getPackage(pkg);  /**/ assert(p); /**/
             return p.getDownloadURL().href;
         });
+    }
+
+    docOpts(mod, outfn) {
+        return { top_name: outfn, mode: ['Vo'], 
+                 lib_init: ["Coq.Init.Prelude"], lib_path: this.loadpath };
     }
 
     async install(mod, volume, root, outfn, compiledfn, content) {

@@ -1,0 +1,75 @@
+{
+  "name": "wacoq",
+  "version": "0.13.2",
+  "description": "A port of Coq to WebAssembly -- run Coq in your browser",
+  "bin": {
+    "wacoqdoc": "ui-js/jscoqdoc.js"
+  },
+  "dependencies": {
+    "@corwin.amber/hastebin": "^0.1.1",
+    "array-equal": "^1.0.0",
+    "bootstrap": "^3.4.1",
+    "child-process-promise": "^2.2.1",
+    "codemirror": "^5.61.0",
+    "commander": "^5.0.0",
+    "fflate-unzip": "^0.7.0",
+    "find": "^0.3.0",
+    "glob": "^7.1.3",
+    "jquery": "^3.6.0",
+    "jszip": "^3.5.0",
+    "localforage": "^1.7.3",
+    "lodash": "^4.17.20",
+    "minimatch": "^3.0.4",
+    "mkdirp": "^1.0.4",
+    "neatjson": "^0.8.3",
+    "path": "^0.12.7",
+    "vue": "^2.6.12",
+    "vue-context-menu": "^2.0.6",
+    "wacoq-bin": "0.13.2"
+  },
+  "devDependencies": {
+    "@types/find": "^0.2.1",
+    "@types/mkdirp": "^1.0.1",
+    "@types/node": "^13.11.1",
+    "assert": "^2.0.0",
+    "css-loader": "^5.2.4",
+    "file-loader": "^6.0.0",
+    "mocha": "^9.0.3",
+    "process": "^0.11.10",
+    "sass": "^1.26.3",
+    "sass-loader": "^8.0.2",
+    "stream-browserify": "^3.0.0",
+    "style-loader": "^1.1.3",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.3.5",
+    "vue-loader": "^15.9.8",
+    "vue-template-compiler": "^2.6.12",
+    "webpack": "^5.49.0",
+    "webpack-cli": "^4.7.2"
+  },
+  "files": [
+    "ui-js",
+    "ui-css",
+    "ui-images",
+    "ui-external",
+    "examples",
+    "dist",
+    "index.html"
+  ],
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack",
+    "watch": "webpack -w",
+    "prepack": "sed -i.bak 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ejgallego/jscoq.git"
+  },
+  "author": "ejgallego",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/ejgallego/jscoq/issues"
+  },
+  "homepage": "https://jscoq.github.io"
+}

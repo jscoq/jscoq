@@ -10,30 +10,31 @@
 
 "use strict";
 
-var loadJs = function(js) {
-    return new Promise(function (resolve, error) {
-        var script    = document.createElement('script');
-        script.type   = 'text/javascript';
-        script.src    = js + '.js';
-        script.onload = resolve;
-        document.head.appendChild(script);
-    });
-};
-
 var loadJsCoq, JsCoq;
 
-(function(){
+(function() {
 
-    var loadCss = function(css) {
-
+    if (typeof module !== 'undefined')
+        module = undefined;  /* for Electron */
+    
+    var loadCss = function(fn) {
         var link   = document.createElement("link");
-        link.href  = css+'.css';
+        link.href  = fn + '.css';
         link.type  = "text/css";
         link.rel   = "stylesheet";
-
         document.head.appendChild(link);
     };
 
+    var loadJs = function(fn) {
+        return new Promise(function (resolve, error) {
+            var script    = document.createElement('script');
+            script.type   = 'text/javascript';
+            script.src    = fn + '.js';
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    };
+    
     var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
         document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined;
 
@@ -56,18 +57,18 @@ var loadJsCoq, JsCoq;
                             .replace(/([^/])$/, '$1/')
         JsCoq.node_modules_path = node_modules_path;
 
-        loadCss(node_modules_path + 'codemirror/lib/codemirror');
-        loadCss(node_modules_path + 'codemirror/theme/blackboard');
-        loadCss(node_modules_path + 'codemirror/theme/darcula');
-        loadCss(node_modules_path + 'codemirror/addon/hint/show-hint');
-        loadCss(node_modules_path + 'codemirror/addon/dialog/dialog');
-        loadCss(base_path + 'ui-css/coq-log');
-        loadCss(base_path + 'ui-css/coq-base');
-        loadCss(base_path + 'ui-css/coq-light');
-        loadCss(base_path + 'ui-css/coq-dark');
-        loadCss(base_path + 'ui-css/settings');
-
-        var files = [node_modules_path + 'codemirror/lib/codemirror',
+        var files = {
+            'css':  [node_modules_path + 'codemirror/lib/codemirror',
+                     node_modules_path + 'codemirror/theme/blackboard',
+                     node_modules_path + 'codemirror/theme/darcula',
+                     node_modules_path + 'codemirror/addon/hint/show-hint',
+                     node_modules_path + 'codemirror/addon/dialog/dialog',
+                     base_path + 'ui-css/coq-log',
+                     base_path + 'ui-css/coq-base',
+                     base_path + 'ui-css/coq-light',
+                     base_path + 'ui-css/coq-dark',
+                     base_path + 'ui-css/settings'],
+            'js':   [node_modules_path + 'codemirror/lib/codemirror',
                      node_modules_path + 'codemirror/keymap/emacs',
                      node_modules_path + 'codemirror/addon/selection/mark-selection',
                      node_modules_path + 'codemirror/addon/edit/matchbrackets',
@@ -85,12 +86,16 @@ var loadJsCoq, JsCoq;
                      base_path + 'ui-js/settings',
                      base_path + 'ui-js/coq-packages',
                      base_path + 'ui-js/coq-layout-classic',
-                     base_path + 'ui-js/coq-manager'];
+                     base_path + 'ui-js/coq-manager']
+        };
 
-        for (let js of files) await loadJs(js);
+        for (let fn of files.css)  loadCss(fn)
+        for (let fn of files.js)   await loadJs(fn);
     };
 
     JsCoq = {
+        backend: 'js',  /* 'js' or 'wa' */
+
         base_path: scriptDir ? `${scriptDir}../` : "./",
         node_modules_path: '',
         loaded: undefined,
@@ -127,8 +132,9 @@ var loadJsCoq, JsCoq;
             if (args.length > 0) console.warn('too many arguments to JsCoq.start()');
 
             // Umm.
-            jscoq_opts.base_path = jscoq_opts.base_path || base_path || JsCoq.base_path;
             base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
+            jscoq_opts.base_path = jscoq_opts.base_path || base_path;
+            JsCoq.backend = jscoq_opts.backend || JsCoq.backend;
 
             return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
         }

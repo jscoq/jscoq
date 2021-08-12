@@ -12,7 +12,7 @@ open Js_of_ocaml
 open Jscoq_proto.Proto
 open Jslibmng
 
-let opts = ref { implicit_libs = true; stm_debug = false; coq_options = [] }
+let opts = ref { implicit_libs = true; coq_options = []; debug = {coq = false; stm = false} }
 
 (* XXX *)
 let post_message = ref (fun _ -> ())
@@ -40,6 +40,16 @@ let post_feedback fb =
 
 (** Coq stuff **)
 
+let coq_info_string () =
+  let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
+  let jsoov = Sys_js.js_of_ocaml_version                      in
+  let header1 = Printf.sprintf
+      "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
+      Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
+  let header2 = Printf.sprintf
+      "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
+  header1 ^ header2
+
 (** When a new package is loaded, the library load path has to be updated *)
 let update_loadpath (msg : lib_event) : unit =
   match msg with
@@ -51,8 +61,6 @@ let update_loadpath (msg : lib_event) : unit =
 let process_lib_event (msg : lib_event) : unit =
   update_loadpath msg;
   post_lib_event msg
-
-let opts = ref { implicit_libs = true; stm_debug = false; coq_options = [] }
 
 let mk_feedback ~span_id ?(route=0) contents =
   Feedback {doc_id = 0; span_id; route; contents}
@@ -67,12 +75,12 @@ let exec_init (set_opts : jscoq_options) =
   Icoq.coq_init ({
       ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = post_feedback;
-      opt_values   = opts.coq_options;
       aopts        = { enable_async = None;
                        async_full   = false;
                        deep_edits   = false;
                      };
-      debug        = opts.stm_debug;
+      opt_values   = opts.coq_options;
+      debug        = opts.debug.stm;
     })
 
 (* opts  : document initialization options *)
@@ -81,7 +89,7 @@ let create_doc (opts : doc_options) =
       top_name      = opts.top_name;
       mode          = opts.mode;
       require_libs  = Jslibmng.require_libs opts.lib_init;
-      vo_path       = mk_vo_path opts.lib_path
+      vo_path       = mk_vo_path opts.lib_path;
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -131,8 +139,8 @@ let rec seq_append s1 s2 =  (* use batteries?? *)
   | Seq.Nil -> s2
   | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
 
-let is_within path prefix =
-  let dp, _ = Libnames.repr_path path in
+let is_within qn prefix =
+  let {Icoq.prefix = {dp}} = qn in
   Libnames.is_dirpath_prefix_of prefix dp
 
 let symbols_for (q : search_query) env =
@@ -147,7 +155,7 @@ let filter_by (q : search_query) =
   match q with
   | All | CurrentFile | Locals -> (fun _ -> true)
   | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
-  | Keyword s -> (fun nm -> string_contains (Libnames.string_of_path nm) s)
+  | Keyword s -> (fun nm -> string_contains (Icoq.string_of_qualified_name nm) s)
 
 (** main Query handler *)
 let exec_query doc ~span_id ~route query =
@@ -225,7 +233,7 @@ let jscoq_execute =
     let ast = Stm.get_ast ~doc:(fst !doc) sid in
     out_fn @@ Ast ast
 
-  | Init opts -> exec_init opts
+  | Init opts -> exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
   | NewDoc opts ->
     let ndoc, iid = create_doc opts in
@@ -236,17 +244,7 @@ let jscoq_execute =
     Lwt.async (fun () -> Jslibmng.load_pkg process_lib_event base pkg)
 
   | InfoPkg(base, pkgs) ->
-    Lwt.(async (fun () ->
-        let coqv, coqd, ccd, ccv, cmag = Icoq.version               in
-        let jsoov = Sys_js.js_of_ocaml_version                      in
-        let header1 = Printf.sprintf
-            "jsCoq (%s), Coq %s/%4d (%s),\n  compiled on %s\n"
-            Jscoq_version.jscoq_version coqv (Int32.to_int cmag) coqd ccd in
-        let header2 = Printf.sprintf
-            "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
-        Jslibmng.info_pkg post_lib_event base pkgs                  >>= fun () ->
-        return @@ out_fn @@ CoqInfo (header1 ^ header2)
-      ))
+    Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
 
   | InterruptSetup shmem -> !interrupt_setup (Js.Unsafe.coerce shmem)
 

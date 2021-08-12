@@ -48,7 +48,7 @@ val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list 
 val paths_to_coqpath : ?implicit:bool -> (string list * string list) list -> Loadpath.vo_path list
 val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Loadpath.vo_path list
 
-val require_libs : string list list -> (string * string option * bool option) list
+val require_libs : string list -> (string * string option * bool option) list
 
 val path_of_dirpath : Names.DirPath.t -> string list
 val module_name_of_qualid : Libnames.qualid -> string list

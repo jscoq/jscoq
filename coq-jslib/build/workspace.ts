@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { neatJSON } from 'neatjson';
-import { CoqProject, SearchPath, ZipVolume } from './project';
+import { CoqProject, SearchPath, SearchPathElement, ZipVolume } from './project';
 import { BuildError } from './batch';
 
 
@@ -88,12 +88,30 @@ class Workspace {
         };
     }
 
+    listPackageContents(nameFilter?: string | RegExp): Workspace.PackagesAndContents {
+        var pkgs: Workspace.PackagesAndContents = {},
+            pred = this._filt(nameFilter);
+        for (let mod of this.searchPath.modulesByExt('.vo')) {
+            var k = mod.pkg;
+            if (k && pred(k)) (pkgs[k] ??= []).push(mod);
+        }
+        return pkgs;
+    }
+
+    _filt(e: undefined | string | RegExp): (s: string) => boolean {
+        return e ? (typeof e === 'string' ? ((s: string) => s === e)
+                                          : ((s: string) => !!s.match(e)))
+                 : (() => true);
+    }
 }
+
 
 namespace Workspace {
     export type Options = {
         ignoreMissing?: boolean
-    }
+    };
+
+    export type PackagesAndContents = {[pkg: string]: SearchPathElement[]};
 }
 
 

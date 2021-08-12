@@ -9,8 +9,8 @@
   (package coq))
  (action
   (progn
-   (run node %{dep:cli.js} %{dep:coq-jslib/metadata/coq-pkgs.json}
-             --rootdir %{env:COQBUILDDIR_REL=.} --nostdlib))))
+   (run node %{dep:dist}/cli.js %{dep:coq-jslib/metadata/coq-pkgs.json}
+             --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib))))
 
 (rule
  (targets node_modules)
@@ -31,13 +31,13 @@
    coq-pkgs
    node_modules
    coq-js/jscoq_worker.js
-   ui-js/ide-project.browser.js
-   ui-js/addon/collab.browser.js
-   cli.js
+   dist
    jscoq.install))
 
+; JavaScript build (Webpack)
+; cli.js, ide-project.browser.js, collab.browser.js
 (rule
- (targets cli.js cli.js.map)
+ (target dist)
  (deps
   (source_tree coq-jslib)
   (source_tree ui-js)
@@ -45,9 +45,7 @@
   tsconfig.json
   node_modules)
  (action
-  (progn
-   (run npx webpack --config-name cli)
-   (run chmod +x cli.js))))
+  (run npm run build)))
 
 ; Just the worker
 (alias
@@ -55,4 +53,4 @@
   (deps
     coq-js/jscoq_worker.js))
 
-(dirs (:standard _vendor+* \ node_modules))
+(dirs (:standard _vendor+* \ dist node_modules))

@@ -1,0 +1,8 @@
+(lang dune 2.4)
+
+(profile release)
+
+(context
+ (opam (switch jscoq+64bit)
+  (disable_dynamically_linked_foreign_archives false) ; https://github.com/ocaml/dune/issues/3262
+  (merlin)))

@@ -49,15 +49,20 @@ class PackageManager {
     }
 
     static defaultPkgPath() {
-        return new URL('../coq-pkgs/', CoqWorker.scriptUrl).href;
+        return {
+            'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
+            'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath()).href
+        }[JsCoq.backend];
     }
 
     populate() {
         this.index = new PackageIndex();
 
-        for (let [base_uri, pkgs] of Object.entries(this.packages_by_uri)) {
-            this.coq.infoPkg(base_uri, pkgs);
-        }
+        return Promise.all(this.packages.map(async pkg => {
+            var manifest = await pkg.fetchInfo();
+            if (manifest) this.addBundleInfo(pkg.name, manifest);
+            else this.coqLibError(pkg.name);
+        }));
     }
 
     addPackage(pkg) {
@@ -82,7 +87,7 @@ class PackageManager {
         var row = $('<div>').addClass('package-row').attr('data-name', bname)
             .append($('<button>').addClass('download-icon')
                     .attr('title', "Download package")
-                    .on('click', () => { this.startPackageDownload(bname); }))
+                    .on('click', () => { this.loadPkg(bname); }))
             .append($('<span>').addClass('desc').text(desc)
                     .on('click', () => { this._expandCollapseRow(row); }));
 
@@ -112,25 +117,33 @@ class PackageManager {
 
     addBundleInfo(bname, pkg_info, parent) {
 
-        var bundle = this.addRow(bname, pkg_info.desc, parent);
+        var bundle = this.addRow(bname, pkg_info.name, parent);
 
         var pkg = this.getPackage(bname);
-        pkg.setInfo(pkg_info);
-
-        if (pkg.archive) {
-            pkg.archive.onProgress = evt => this.showPackageProgress(bname, evt);
-        }
 
         if (pkg_info.chunks) {
             pkg.chunks = [];
 
             for (let chunk of pkg_info.chunks) {
-                var subpkg = new CoqPkgInfo(chunk.desc, pkg.base_uri);
+                var subpkg = new CoqPkgInfo(chunk.name, pkg.base_uri);
+                subpkg.info = chunk;
                 this.addPackage(subpkg);
                 this.addBundleInfo(subpkg.name, chunk, bundle);
                 pkg.chunks.push(subpkg);
                 subpkg.parent = pkg;
             }
+        }
+        else {
+            pkg.setArchive(pkg_info.archive);
+        }
+
+        if (pkg.archive) {
+            pkg.archive.onProgress = evt => this.showPackageProgress(bname, evt);
+        }
+        else {
+            /** @todo is this case even needed? */
+            if (!pkg.chunks)
+                throw new Error("packages without archives are obsolete");
         }
 
         this.index.add(pkg_info);
@@ -144,7 +157,7 @@ class PackageManager {
         var archive = await new CoqPkgArchive(resource).load();
 
         return archive.getPackageInfo().then(pi => {
-            bname = bname || pi.desc;
+            bname = bname || pi.name;
 
             if (!bname) throw new Error('invalid archive: missing package manifest (coq-pkg.json)');
             if (this.packages_by_name[bname]) throw new Error(`package ${bname} is already present`);
@@ -175,6 +188,7 @@ class PackageManager {
             };
             if (!observe())
                 this.addEventListener('change', observe);
+            /** @todo reject the promise if there are no more packages whose infos are pending */
         });
     }
 
@@ -183,42 +197,16 @@ class PackageManager {
     }
 
     getLoadPath() {
-        return this.loaded_pkgs.map( pkg_name => {
-            let pkg = this.getPackage(pkg_name),
-                phys = pkg.archive ? ['/lib'] : [];
-            return pkg.info.pkgs.map( pkg => [pkg.pkg_id, phys] );
-        }).flatten();
-    }
-
-    /**
-     * Loads a package from the preconfigured path.
-     * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
-     */
-    startPackageDownload(pkg_name) {
-        var pkg = this.getPackage(pkg_name), promise;
-
-        if (pkg.promise) return pkg.promise;  /* load issued already */
-
-        if (pkg.info.chunks) {
-            promise = this.loadDeps(pkg.info.chunks.map(x => x.desc));
+        switch (JsCoq.backend) {
+        case 'js':
+            return this.loaded_pkgs.map( pkg_name => {
+                let pkg = this.getPackage(pkg_name),
+                    phys = pkg.archive ? ['/lib'] : [];
+                return pkg.info.pkgs.map( pkg => [pkg.pkg_id, phys] );
+            }).flatten();
+        case 'wa':
+            return ['/lib'];
         }
-        else if (pkg.archive) {
-            promise = 
-                Promise.all([this.loadDeps(pkg.info.deps),
-                             pkg.archive.unpack(this.coq)])
-                .then(() => this.coqLibLoaded(pkg_name));
-        }
-        else {
-            promise = 
-                Promise.all([this.loadDeps(pkg.info.deps),
-                             this.loadPkg(pkg_name)]);
-        }
-
-        this.showPackage(pkg_name);
-        this.showPackageProgress(pkg_name);
-
-        pkg.promise = promise;
-        return promise;
     }
 
     showPackage(bname) {
@@ -251,8 +239,8 @@ class PackageManager {
             bundle.row.append($('<div>').addClass('rel-pos').append(bundle.bar));
         }
 
-        if (info) {
-            var progress = info.loaded / info.total,
+        if (info && info.total) {
+            var progress = (info.downloaded || info.loaded) / info.total,
                 angle    = (progress * 1500) % 360;
             bundle.egg.css('transform', `rotate(${angle}deg)`);
             bundle.bar.css('width', `${Math.min(1.0, progress) * 100}%`);
@@ -268,7 +256,7 @@ class PackageManager {
 
         bundle.row.children('.rel-pos').remove();
         bundle.row.children('button.download-icon').addClass('checked')
-                  .attr('title', "Downloaded");
+                  .attr('title', 'Downloaded');
 
         var pkg = this.getPackage(bname);
         pkg.status = 'loaded';
@@ -304,45 +292,98 @@ class PackageManager {
     dropPackage(file) {
         this.expand();
         this.addBundleZip(undefined, file).then(pkg => {
-            this.bundles[pkg.name].row[0].scrollIntoViewIfNeeded();
-            this.startPackageDownload(pkg.name);
+            this.bundles[pkg.name].div.scrollIntoViewIfNeeded();
+            this.loadPkg(pkg.name);
         })
         .catch(err => { alert(`${file.name}: ${err}`); });
     }
 
-    coqLibInfo(bname, bi) {
-        this.addBundleInfo(bname, bi);
+    _packageByURL(url) {
+        var s = this._absoluteURL(url);
+        for (let pkg of this.packages) {
+            if (pkg.archive && s == pkg.archive.url) return pkg.name;
+        }
+    }
+
+    _absoluteURL(url) {
+        return new URL(url, this.coq._worker_script).toString();
     }
 
     coqLibProgress(evt) {
-        var info = this.getPackage(evt.bundle).info;
-        ++info.loaded; // this is not actually the number of files loaded :\
+        var pkg_name = this._packageByURL(evt.uri);
 
-        this.showPackageProgress(evt.bundle, info);
+        if (pkg_name) {
+            this.showPackageProgress(pkg_name, evt.download);
+        }
     }
 
-    coqLibLoaded(bname) {
-        this.loaded_pkgs.push(bname);
+    coqLibLoaded(pkg) {
+        var pkg_name = this._packageByURL(pkg) || pkg;
+        this.loaded_pkgs.push(pkg_name);
 
-        var pkg = this.getPackage(bname);
-        if (pkg._resolve) pkg._resolve();
+        try {
+            var pkg = this.getPackage(pkg_name);
+            if (pkg._resolve) pkg._resolve();
+            else pkg.promise = Promise.resolve();
 
-        this.showPackageCompleted(bname);
+            this.showPackageCompleted(pkg_name);
+        }
+        catch(e) { console.warn(e); }
     }
 
-    async loadDeps(deps) {
+    coqLibError(pkg) {
+        var pkg_name = this._packageByURL(pkg) || pkg;
+        this.loaded_pkgs.push(pkg_name);
+
+        try {
+            var pkg = this.getPackage(pkg_name),
+                err = {msg: `error loading package '${pkg_name}'`};
+            if (pkg._reject) pkg._reject(err);
+            else pkg.promise = Promise.reject(err);
+        }
+        catch(e) { console.warn(e);  /* do we even care? */ }
+    }
+    /**
+     * Loads a package from the preconfigured path.
+     * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
+     * @param {boolean} show if `true`, the package is exposed in the list
+     */
+    loadPkg(pkg_name, show=true) {
+        var pkg = this.getPackage(pkg_name), promise;
+
+        if (pkg.promise) return pkg.promise;  /* load issued already */
+
+        if (pkg.info.chunks) {
+            promise = this.loadDeps(pkg.info.chunks.map(x => x.name), show);
+        }
+        else {
+            promise = Promise.all([this.loadDeps(pkg.info.deps || [], show),
+                                   this.loadArchive(pkg)]);
+        }
+
+        if (show) this.showPackage(pkg_name);
+
+        pkg.promise = promise;
+        return promise.then(() => pkg);
+    }
+
+    async loadDeps(deps, show=true) {
         await this.waitFor(deps);
         return Promise.all(
-            deps.map(pkg => this.startPackageDownload(pkg)));
+            deps.map(pkg => this.loadPkg(pkg, show)));
     }
 
-    loadPkg(pkg_name) {
-        var pkg = this.getPackage(pkg_name);
-
-        return new Promise((resolve, reject) => {
-            pkg._resolve = resolve 
-            this.coq.loadPkg(pkg.base_uri, pkg_name);
-        });
+    loadArchive(pkg) {
+        switch (JsCoq.backend) {
+        case 'js':
+            return pkg.archive.unpack(this.coq)
+                              .then(() => this.coqLibLoaded(pkg.name));
+        case 'wa':
+            return new Promise((resolve, reject) => {
+                pkg._resolve = resolve; pkg._reject = reject;
+                this.coq.loadPkg(pkg.getDownloadURL());
+            });
+        }
     }
 
     /**
@@ -407,16 +448,27 @@ class PackageIndex {
 
     constructor() {
         this.moduleIndex = new Map();
-        this.intrinsicPrefix = 'Coq';
+        this.intrinsicPrefix = "Coq";
     }
 
     add(pkgInfo) {
+        if (JsCoq.backend === 'js')
+            pkgInfo.modules = this._listModules(pkgInfo);
+
+        for (let mod in pkgInfo.modules || {})
+            this.moduleIndex.set(mod, pkgInfo);
+    }
+
+    _listModules(pkgInfo) {
+        /** @todo for jsCoq; should put this in the manifest like in waCoq */
+        var modules = {};
         for (let {pkg_id, vo_files} of pkgInfo.pkgs || []) {
             for (let [vo] of vo_files) {
-                var mod = [...pkg_id, vo.replace(/[.]vo$/, '')];
-                this.moduleIndex.set(mod.join('.'), pkgInfo);
+                var mod = [...pkg_id, vo.replace(/[.]vo$/, '')].join('.');
+                modules[mod] = {deps: (pkgInfo.modDeps || {})[mod] || []};
             }
         }
+        return modules;
     }
 
     *findModules(prefix, suffix, exact=false) {
@@ -441,14 +493,15 @@ class PackageIndex {
     findPackageDeps(prefix, suffix, exact=false) {
         var pdeps = new Set();
         for (let m of this.alldeps(this.findModules(prefix, suffix, exact)))
-            pdeps.add(this.moduleIndex.get(m).desc);
+            pdeps.add(this.moduleIndex.get(m).name);
         return pdeps;
     }
 
     alldeps(mods) {
         return closure(new Set(mods), mod => {
-            let pkg = this.moduleIndex.get(mod);
-            return (pkg && pkg.modDeps || {})[mod] || [];
+            let pkg = this.moduleIndex.get(mod),
+                o = (pkg && pkg.modules || {})[mod];
+            return (o && o.deps) || [];
         });
     }
     
@@ -480,20 +533,22 @@ class CoqPkgInfo {
 
     getUrl(resource) {
         // Generate URL with the package's base_uri as the base
-        return this.base_uri + resource;//new URL(resource, new URL(this.base_uri));
+        return new URL(resource, new URL(this.base_uri, location));
     }
 
-    setInfo(info) {
-        this.info = info;
+    getDownloadURL() {
+        // @todo create blob url for dropped files
+        return this.archive && this.archive.url;
+    }
 
-        // Compute total number of files
-        info.loaded = 0;
-        info.total  = info.pkgs.map(pkg => pkg.vo_files.length)  // pkg.cma_files.length XXX
-                               .reduce((x, y) => x + y, 0);
+    async fetchInfo(resource = `${this.name}.json`) {
+        var req = await fetch(this.getUrl(resource));
+        if (req.status == 200)
+            return await req.json();
+    }
 
-        // Get archive if specified
-        if (info.archive)
-            this.archive = new CoqPkgArchive(this.getUrl(info.archive));
+    setArchive(resource = `${this.name}.coq-pkg`) {
+        this.archive = new CoqPkgArchive(this.getUrl(resource));
     }
 }
 

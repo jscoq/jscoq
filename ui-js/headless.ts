@@ -15,6 +15,8 @@ import { FSInterface, fsif_native } from '../coq-jslib/build/fsif';
 import { CoqProject } from '../coq-jslib/build/project';
 
 
+(<any>global).JsCoq = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
+
 
 class HeadlessCoqWorker extends CoqWorker {
     when_created: Promise<any>
@@ -25,7 +27,7 @@ class HeadlessCoqWorker extends CoqWorker {
     options: any
 
     constructor() {
-        super(null, require('./coq-js/jscoq_worker.bc.js').jsCoq);
+        super(null, HeadlessCoqWorker.instance());
         this.when_created.then(() => {
             this.worker.onmessage = this._handler = evt => {
                 process.nextTick(() => this.coq_handler({data: evt}));
@@ -34,6 +36,14 @@ class HeadlessCoqWorker extends CoqWorker {
     }
 
     spawn() { return new HeadlessCoqWorker(); }
+
+    static instance() {
+        var jscoq = require('../coq-js/jscoq_worker.bc.js').jsCoq;
+        /** @oops monkey-patch to make it look like a Worker instance */
+        jscoq.addEventListener = (_: "message", handler: () => void) =>
+            jscoq.onmessage = handler;
+        return jscoq;
+    }
 }
 
 /**
@@ -98,9 +108,8 @@ class HeadlessCoqManager {
 
         // Initialize Coq
         let init_opts = {top_name: this.options.top_name,
-                        implicit_libs: this.options.implicit_libs,
-                        stm_debug: false},
-            lib_init = this.options.prelude ? [["Coq", "Init", "Prelude"]] : [];
+                         implicit_libs: this.options.implicit_libs},
+            lib_init = this.options.prelude ? ["Coq.Init.Prelude"] : [];
 
         this.coq.init(init_opts, {lib_init, lib_path: this.getLoadPath()});
     }
@@ -184,6 +193,8 @@ class HeadlessCoqManager {
             console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
         });
     }
+
+    coqCoqInfo() { }
 
     coqReady() {
         if (this.options.log_debug)
