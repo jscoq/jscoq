@@ -102,6 +102,7 @@ libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq
 wacoq:
 	# Currently, this builds in the source tree
 	[ -d node_modules ] || npm install
+	rm -rf dist
 	npm run build
 
 ########################################################################
@@ -181,7 +182,7 @@ WACOQ_NPMOBJ = README.md \
 dist-npm-wacoq:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rm -rf ${add-prefix $(NPMSTAGEDIR)/, coq-js coq-pkgs}  # in case these were created by jsCoq :/
-	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
+	rsync -apR --delete $(NPMEXCLUDE) $(WACOQ_NPMOBJ) $(NPMSTAGEDIR)
 	cp package.json.wacoq $(NPMSTAGEDIR)/package.json
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
 	npm pack ./$(NPMSTAGEDIR)
