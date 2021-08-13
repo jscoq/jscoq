@@ -130,7 +130,7 @@ dev:
 
 clean:
 	$(DUNE) clean
-	rm -f jscoq-*.tar.gz
+	rm -f jscoq-*.tgz
 
 distclean: clean
 	rm -rf $(COQSRC)
@@ -152,7 +152,7 @@ dist: jscoq
 	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
 TAREXCLUDE = --exclude assets --exclude '*.cma' \
-	--exclude '*.bak' --exclude '*.tar.gz' \
+	--exclude '*.bak' --exclude '*.tgz' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
@@ -160,9 +160,9 @@ dist-tarball: dist
 	# Hack to make the tar contain a jscoq-x.x directory
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tar.gz -C _build $(TAREXCLUDE) \
+	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tgz -C _build $(TAREXCLUDE) \
 	    --dereference jscoq-$(PACKAGE_VERSION)
-	mv /tmp/jscoq-$(PACKAGE_VERSION).tar.gz $(DISTDIR)
+	mv /tmp/jscoq-$(PACKAGE_VERSION).tgz $(DISTDIR)
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 
 NPMOBJ = ${filter-out index.html package-lock.json, $(DISTOBJ)}
@@ -173,7 +173,10 @@ dist-npm:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	npm pack ./$(NPMSTAGEDIR)
+	mv /tmp/$$( cd /tmp && npm pack $(PWD)/$(NPMSTAGEDIR) | tail -1 ) \
+		$(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
+	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
+	
 
 WACOQ_NPMOBJ = README.md \
 	ui-js ui-css ui-images ui-external examples dist

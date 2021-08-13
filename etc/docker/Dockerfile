@@ -66,7 +66,7 @@ RUN eval $(opam env) && make coq && make jscoq
 
 # - dist tarballs
 RUN eval $(opam env) && make dist-tarball && make dist-npm \
-        && mkdir dist && mv _build/dist/*.tar.gz dist
+        && mkdir dist && mv _build/dist/*.tgz dist
 
 # --------------
 # Addon packages
