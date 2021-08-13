@@ -333,7 +333,6 @@ class PackageManager {
 
     coqLibError(pkg) {
         var pkg_name = this._packageByURL(pkg) || pkg;
-        this.loaded_pkgs.push(pkg_name);
 
         try {
             var pkg = this.getPackage(pkg_name),
