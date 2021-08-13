@@ -120,6 +120,7 @@ class PackageManager {
         var bundle = this.addRow(bname, pkg_info.name, parent);
 
         var pkg = this.getPackage(bname);
+        pkg.info = pkg_info;
 
         if (pkg_info.chunks) {
             pkg.chunks = [];
