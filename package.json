@@ -62,7 +62,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack",
     "watch": "webpack -w",
-    "prepack": "sed -i.bak 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
+    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
   },
   "repository": {
     "type": "git",
