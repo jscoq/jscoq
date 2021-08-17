@@ -1032,7 +1032,7 @@ class CoqManager {
             }
         }
 
-        this.cancelled(stm);
+        //this.cancelled(stm);
     }
 
     cancelled(stm) {
