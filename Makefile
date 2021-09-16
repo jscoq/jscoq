@@ -223,17 +223,16 @@ COQ_REPOS = https://github.com/coq/coq.git
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
-COQ_PATCHES|Darwin/32 = byte-only
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	# cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq_configure=./tools/configure/configure.exe
 
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
-	cd $(COQSRC) && dune exec $(coq_configure) --context=jscoq+32bit -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

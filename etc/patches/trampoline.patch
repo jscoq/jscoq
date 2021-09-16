@@ -1,5 +1,5 @@
 diff --git a/engine/logic_monad.ml b/engine/logic_monad.ml
-index 4c7ed9047..b5318326e 100644
+index 38ec668..6f33890 100644
 --- a/engine/logic_monad.ml
 +++ b/engine/logic_monad.ml
 @@ -145,6 +145,17 @@ type ('a, 'b, 'e) list_view =
@@ -117,10 +117,10 @@ index 4c7ed9047..b5318326e 100644
  
   end
 diff --git a/pretyping/constr_matching.ml b/pretyping/constr_matching.ml
-index a3f1c0b00..cf90ed903 100644
+index 15d1ddb..b6a3cf4 100644
 --- a/pretyping/constr_matching.ml
 +++ b/pretyping/constr_matching.ml
-@@ -453,14 +453,25 @@ let matches_head env sigma pat c =
+@@ -478,14 +478,25 @@ let matches_head env sigma pat c =
      | _ -> c in
    matches env sigma pat head
  
@@ -149,7 +149,7 @@ index a3f1c0b00..cf90ed903 100644
  
  let subargs env v = Array.map_to_list (fun c -> (env, c)) v
  
-@@ -475,42 +486,42 @@ let sub_match ?(closed=true) env sigma pat c =
+@@ -500,35 +511,35 @@ let sub_match ?(closed=true) env sigma pat c =
        | [c1] -> mk_ctx (mkCast (c1, k, c2))
        | _ -> assert false
        in
@@ -187,18 +187,19 @@ index a3f1c0b00..cf90ed903 100644
         | _ -> assert false in
 -     try_aux [(env, app); (env, Array.last lc)] mk_ctx next
 +     TailCall (fun () -> try_aux [(env, app); (env, Array.last lc)] mk_ctx next)
-   | Case (ci,hd,iv,c1,lc) ->
-       let next_mk_ctx = function
-       | c1 :: hd :: lc -> mk_ctx (mkCase (ci,hd,iv,c1,Array.of_list lc))
+   | Case (ci,u,pms,hd0,iv,c1,lc0) ->
+       let (mib, mip) = Inductive.lookup_mind_specif env ci.ci_ind in
+       let (_, hd, _, _, br) = expand_case env sigma (ci, u, pms, hd0, iv, c1, lc0) in
+@@ -553,7 +564,7 @@ let sub_match ?(closed=true) env sigma pat c =
        | _ -> assert false
        in
-       let sub = (env, c1) :: (env, hd) :: subargs env lc in
+       let sub = (env, c1) :: Array.fold_right (fun c accu -> (env, c) :: accu) pms (hd :: lc) in
 -      try_aux sub next_mk_ctx next
 +      TailCall (fun () -> try_aux sub next_mk_ctx next)
    | Fix (indx,(names,types,bodies as recdefs)) ->
      let nb_fix = Array.length types in
      let next_mk_ctx le =
-@@ -518,7 +529,7 @@ let sub_match ?(closed=true) env sigma pat c =
+@@ -561,7 +572,7 @@ let sub_match ?(closed=true) env sigma pat c =
        mk_ctx (mkFix (indx,(names, Array.of_list ntypes, Array.of_list nbodies))) in
      let env' = push_rec_types recdefs env in
      let sub = subargs env types @ subargs env' bodies in
@@ -207,23 +208,22 @@ index a3f1c0b00..cf90ed903 100644
    | CoFix (i,(names,types,bodies as recdefs)) ->
      let nb_fix = Array.length types in
      let next_mk_ctx le =
-@@ -526,12 +537,12 @@ let sub_match ?(closed=true) env sigma pat c =
+@@ -569,11 +580,11 @@ let sub_match ?(closed=true) env sigma pat c =
        mk_ctx (mkCoFix (i,(names, Array.of_list ntypes, Array.of_list nbodies))) in
      let env' = push_rec_types recdefs env in
      let sub = subargs env types @ subargs env' bodies in
 -    try_aux sub next_mk_ctx next
 +    TailCall (fun () -> try_aux sub next_mk_ctx next)
    | Proj (p,c') ->
-     begin try
-       let term = Retyping.expand_projection env sigma p c' [] in
--      aux env term mk_ctx next
--    with Retyping.RetypeError _ -> next ()
-+      TailCall (fun () -> aux env term mk_ctx next)
-+    with Retyping.RetypeError _ -> TailCall next
+     begin match Retyping.expand_projection env sigma p c' [] with
+-    | term -> aux env term mk_ctx next
+-    | exception Retyping.RetypeError _ -> next ()
++    | term -> TailCall (fun () -> aux env term mk_ctx next)
++    | exception Retyping.RetypeError _ -> TailCall next
      end
    | Array(u, t, def, ty) ->
      let next_mk_ctx = function
-@@ -539,9 +550,9 @@ let sub_match ?(closed=true) env sigma pat c =
+@@ -581,9 +592,9 @@ let sub_match ?(closed=true) env sigma pat c =
      | _ -> assert false
      in
      let sub = (env,def) :: (env,ty) :: subargs env t in
@@ -235,7 +235,7 @@ index a3f1c0b00..cf90ed903 100644
    in
    here next
  
-@@ -549,16 +560,16 @@ let sub_match ?(closed=true) env sigma pat c =
+@@ -591,16 +602,16 @@ let sub_match ?(closed=true) env sigma pat c =
    and try_aux lc mk_ctx next =
      let rec try_sub_match_rec lacc lc =
        match lc with

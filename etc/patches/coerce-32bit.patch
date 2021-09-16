@@ -1,8 +1,17 @@
 diff --git a/clib/hashset.ml b/clib/hashset.ml
-index 89136e787..4d89155a0 100644
+index ae43e7d..883decb 100644
 --- a/clib/hashset.ml
 +++ b/clib/hashset.ml
-@@ -225,9 +225,9 @@ module Combine = struct
+@@ -11,6 +11,8 @@
+ (** Adapted from Damien Doligez, projet Para, INRIA Rocquencourt,
+     OCaml stdlib. *)
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ (** The following functor is a specialized version of [Weak.Make].
+     Here, the responsibility of computing the hash function is now
+     given to the caller, which makes possible the interleaving of the
+@@ -229,9 +231,9 @@ module Combine = struct
         this topic. Therefore, there must be room for improvement here. *)
      let alpha = 65599
      let beta  = 7
@@ -15,7 +24,7 @@ index 89136e787..4d89155a0 100644
 +    let combinesmall x y = (beta * x + y) land 0x3fffffff
  end
 diff --git a/kernel/dune b/kernel/dune
-index bd663974d..2c98ca103 100644
+index f5106ee..455e729 100644
 --- a/kernel/dune
 +++ b/kernel/dune
 @@ -16,12 +16,12 @@
@@ -33,8 +42,21 @@ index bd663974d..2c98ca103 100644
   (action (copy# %{gen-file} %{targets})))
  
  (documentation
+diff --git a/kernel/nativecode.ml b/kernel/nativecode.ml
+index 4f3f38d..9ebbc20 100644
+--- a/kernel/nativecode.ml
++++ b/kernel/nativecode.ml
+@@ -18,6 +18,8 @@ open Nativevalues
+ open Nativelambda
+ open Environ
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ [@@@ocaml.warning "-32-37"]
+ 
+ (** This file defines the mllambda code generation phase of the native
 diff --git a/kernel/uint63_31.ml b/kernel/uint63_31.ml
-index 988611df3..0a25a43b2 100644
+index e8759ef..5045969 100644
 --- a/kernel/uint63_31.ml
 +++ b/kernel/uint63_31.ml
 @@ -11,7 +11,7 @@
@@ -46,8 +68,21 @@ index 988611df3..0a25a43b2 100644
  
  let uint_size = 63
  
+diff --git a/lib/objFile.ml b/lib/objFile.ml
+index 26367aa..fa6034f 100644
+--- a/lib/objFile.ml
++++ b/lib/objFile.ml
+@@ -138,7 +138,7 @@ let marshal_out_segment h ~segment v =
+   let { out_channel = ch } = h in
+   let () = assert (not (CString.Map.mem segment h.out_segments)) in
+   let pos = LargeFile.pos_out ch in
+-  let () = Marshal.to_channel ch v [] in
++  let () = Marshal.to_channel ch v [Marshal.Compat_32] in
+   let () = flush ch in
+   let pos' = LargeFile.pos_out ch in
+   let len = Int64.sub pos' pos in
 diff --git a/lib/system.ml b/lib/system.ml
-index 1aadaf6d3..fd53a4319 100644
+index 1aadaf6..fd53a43 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
 @@ -184,7 +184,7 @@ let input_binary_int f ch =
@@ -59,11 +94,128 @@ index 1aadaf6d3..fd53a4319 100644
  let marshal_in filename ch =
    try Marshal.from_channel ch
    with
-diff --git a/theories/Numbers/Cyclic/Int63/Int63.v b/theories/Numbers/Cyclic/Int63/Int63.v
-index dbca2f094..177fb1fac 100644
---- a/theories/Numbers/Cyclic/Int63/Int63.v
-+++ b/theories/Numbers/Cyclic/Int63/Int63.v
-@@ -1172,8 +1172,8 @@ Proof.
+diff --git a/plugins/extraction/extract_env.ml b/plugins/extraction/extract_env.ml
+index e75344a..715c60e 100644
+--- a/plugins/extraction/extract_env.ml
++++ b/plugins/extraction/extract_env.ml
+@@ -22,6 +22,8 @@ open Extraction
+ open Modutil
+ open Common
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ (***************************************)
+ (*S Part I: computing Coq environment. *)
+ (***************************************)
+diff --git a/plugins/extraction/mlutil.ml b/plugins/extraction/mlutil.ml
+index 268d4bf..30ba948 100644
+--- a/plugins/extraction/mlutil.ml
++++ b/plugins/extraction/mlutil.ml
+@@ -16,6 +16,8 @@ open Table
+ open Miniml
+ (*i*)
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ (*s Exceptions. *)
+ 
+ exception Found
+diff --git a/plugins/ltac/tacentries.ml b/plugins/ltac/tacentries.ml
+index 8a9fc90..aba2cf8 100644
+--- a/plugins/ltac/tacentries.ml
++++ b/plugins/ltac/tacentries.ml
+@@ -243,7 +243,7 @@ let make_fresh_key =
+     (* We embed the hash of the kernel name in the label so that the identifier
+        should be mostly unique. This ensures that including two modules
+        together won't confuse the corresponding labels. *)
+-    let hash = (cur lxor (ModPath.hash (Lib.current_mp ()))) land 0x7FFFFFFF in
++    let hash = (cur lxor (ModPath.hash (Lib.current_mp ()))) land 0x3FFFFFFF in
+     let lbl = Id.of_string_soft (Printf.sprintf "%s_%08X" prods hash) in
+     Lib.make_kn lbl
+ 
+diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
+index b23ae63..ee3ff0d 100644
+--- a/plugins/micromega/coq_micromega.ml
++++ b/plugins/micromega/coq_micromega.ml
+@@ -26,6 +26,8 @@ open Constr
+ open Context
+ open Tactypes
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ (**
+   * Debug flag
+   *)
+diff --git a/plugins/micromega/mfourier.ml b/plugins/micromega/mfourier.ml
+index f4d17b8..121384e 100644
+--- a/plugins/micromega/mfourier.ml
++++ b/plugins/micromega/mfourier.ml
+@@ -14,6 +14,8 @@ open Util
+ open Polynomial
+ open Vect
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ let debug = false
+ let compare_float (p : float) q = pervasives_compare p q
+ 
+diff --git a/plugins/micromega/persistent_cache.ml b/plugins/micromega/persistent_cache.ml
+index 6e99769..038190e 100644
+--- a/plugins/micromega/persistent_cache.ml
++++ b/plugins/micromega/persistent_cache.ml
+@@ -180,7 +180,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
+   let add t k e =
+     let {outch} = t in
+     let fd = descr_of_out_channel outch in
+-    let h = Key.hash k land 0x7FFFFFFF in
++    let h = Key.hash k land 0x3FFFFFFF in
+     let dump () =
+       let () = output_binary_int outch h in
+       let pos = pos_out outch in
+@@ -193,7 +193,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
+ 
+   let find t k =
+     let {outch; htbl = tbl} = t in
+-    let h = Key.hash k land 0x7FFFFFFF in
++    let h = Key.hash k land 0x3FFFFFFF in
+     let lpos = Table.find h tbl in
+     (* First look for already live data *)
+     let find data = match data.obj with
+diff --git a/plugins/micromega/polynomial.ml b/plugins/micromega/polynomial.ml
+index d68ea63..5dd7974 100644
+--- a/plugins/micromega/polynomial.ml
++++ b/plugins/micromega/polynomial.ml
+@@ -19,6 +19,8 @@ open Q.Notations
+ open Mutils
+ module Mc = Micromega
+ 
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ let max_nb_cstr = ref max_int
+ 
+ type var = int
+diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
+index 008d552..7b9f612 100644
+--- a/theories/Numbers/Cyclic/Int63/Ring63.v
++++ b/theories/Numbers/Cyclic/Int63/Ring63.v
+@@ -61,9 +61,10 @@ Add Ring Uint63Ring : Uint63Ring
+   constants [Uint63cst]).
+ 
+ Section TestRing.
+-Let test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
++Goal forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
+ intros. ring.
+-Qed.
++(* Qed. *)
++Admitted.
+ End TestRing.
+ 
+ #[deprecated(since="8.14",note="Use isUint63cst instead")]
+diff --git a/theories/Numbers/Cyclic/Int63/Uint63.v b/theories/Numbers/Cyclic/Int63/Uint63.v
+index ec40ef4..3647abc 100644
+--- a/theories/Numbers/Cyclic/Int63/Uint63.v
++++ b/theories/Numbers/Cyclic/Int63/Uint63.v
+@@ -1110,8 +1110,8 @@ Proof.
   apply to_Z_inj.
   rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
   pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
@@ -74,18 +226,16 @@ index dbca2f094..177fb1fac 100644
  
  Lemma addmuldiv_spec x y p :
    φ p <= φ digits  ->
-diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index 1d93267fe..0d7fa12aa 100644
---- a/theories/Numbers/Cyclic/Int63/Ring63.v
-+++ b/theories/Numbers/Cyclic/Int63/Ring63.v
-@@ -60,8 +60,10 @@ Add Ring Int63Ring : Int63Ring
-  (decidable eq31_correct,
-   constants [Int63cst]).
+diff --git a/vernac/metasyntax.ml b/vernac/metasyntax.ml
+index cb374ca..4695f7f 100644
+--- a/vernac/metasyntax.ml
++++ b/vernac/metasyntax.ml
+@@ -26,6 +26,8 @@ open Libnames
+ open Notation
+ open Nameops
  
-+(*
- Section TestRing.
- Let test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
- intros. ring.
- Qed.
- End TestRing.
-+*)
++let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
++
+ (**********************************************************************)
+ (* Tokens                                                             *)
+ 
