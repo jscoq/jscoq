@@ -66,7 +66,7 @@ jobs:
           echo 'Using Node.js:' && node --version
           set -e
           echo 'Building Coq...' # && echo -en 'travis_fold:start:coq.build\\r'
-          make coq-get
+          make coq-get-latest
           # echo -en 'travis_fold:end:coq.build\\r'
       - name: jsCoq build
         run: |
