@@ -68,12 +68,11 @@ index af30c9a..84e31fa 100644
   (libraries coq-core.clib coq-core.config))
 diff --git a/lib/jscoq_extern.c b/lib/jscoq_extern.c
 new file mode 100644
-index 0000000..a416a16
+index 0000000..0cc1e5c
 --- /dev/null
 +++ b/lib/jscoq_extern.c
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,4 @@
 +#include <caml/mlvalues.h>
-+
 +
 +// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
 +value interrupt_pending() { return Val_false; }
