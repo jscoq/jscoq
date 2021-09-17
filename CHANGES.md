@@ -1,3 +1,9 @@
+# jsCoq 0.13.3 "The Name of the Version is Called"
+---------------------------------------
+
+ - A critical bug fix for error sentences. (#249, corwin-of-amber)
+ - Added Coqoban package :ferris_wheel: (corwin-of-amber)
+
 # jsCoq 0.13.2 "That Sounds Like an Excellent Idea"
 ---------------------------------------
 
