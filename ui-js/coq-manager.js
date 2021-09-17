@@ -1027,12 +1027,13 @@ class CoqManager {
             case Phases.ADDED:
             case Phases.PROCESSING:
             case Phases.PROCESSED:
+                stm.phase = Phases.CANCELLING;
                 this.coq.cancel(stm.coq_sid);
                 break;
             }
         }
 
-        //this.cancelled(stm);
+        this.provider.mark(stm, 'clear');
     }
 
     cancelled(stm) {
@@ -1131,7 +1132,7 @@ class CoqManager {
         // (yes, it's a filter with side effects)
         this.doc.sentences = this.doc.sentences.filter(stm => {
             if (stm.phase === Phases.ERROR) {
-                this.cancel(stm);
+                this.cancelled(stm);
                 return false;
             }
             return true;
@@ -1375,6 +1376,7 @@ const Phases = {
     PENDING: 'pending',
     ADDING: 'adding',         ADDED: 'added',
     PROCESSING: 'processing', PROCESSED: 'processed',
+    CANCELLING: 'cancelling',
     ERROR: 'error'
 };
 
