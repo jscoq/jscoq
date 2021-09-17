@@ -154,7 +154,11 @@ type jscoq_answer =
   | Compiled  of string
 
   (* Low-level *)
-  | CoqExn    of Loc.t option * (Stateid.t * Stateid.t) option * Pp.t
+  | CoqExn    of { loc : Loc.t option
+                 ; sid : (Stateid.t * Stateid.t) option
+                 ; msg : string
+                 ; pp : Pp.t
+                 }
   | JsonExn   of string
   [@@deriving to_yojson]
 end

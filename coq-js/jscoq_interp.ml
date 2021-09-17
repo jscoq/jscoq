@@ -101,7 +101,8 @@ let exec_getopt opt =
 let coq_exn_info exn =
     let (e, info) = Exninfo.capture exn in
     let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
-    CoqExn (Loc.get_loc info, Stateid.get info, pp_exn)
+    let msg = Format.asprintf "@[%a@]" Pp.pp_with pp_exn in
+    CoqExn { loc = Loc.get_loc info; sid = Stateid.get info; msg; pp = pp_exn }
 
 (** Used by the Add command *)
 let requires ast =
@@ -174,8 +175,8 @@ let exec_query doc ~span_id ~route query =
       Jscoq_doc.query ~doc:!doc ~at:span_id ~route command;
       [mk_feedback ~span_id ~route Complete]
     with exn ->
-      let CoqExn(loc,_,msg) = coq_exn_info exn [@@warning "-8"] in
-      [mk_feedback ~span_id ~route (Message(Error, loc, msg ));
+      let CoqExn { loc; pp; _ } = coq_exn_info exn [@@warning "-8"] in
+      [mk_feedback ~span_id ~route (Message(Error, loc, pp ));
        mk_feedback ~span_id ~route Incomplete]
     end
   | Inspect q ->
@@ -199,8 +200,8 @@ let jscoq_execute =
             let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
             doc := ndoc; out_fn @@ Added (newid,loc)
         with exn ->
-          let CoqExn(loc,_,msg) as exn_info = coq_exn_info exn [@@warning "-8"] in
-          out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, msg));
+          let CoqExn { loc; pp; _ } as exn_info = coq_exn_info exn [@@warning "-8"] in
+          out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, pp));
           out_fn @@ Cancelled [newid];
           out_fn @@ exn_info
       end
