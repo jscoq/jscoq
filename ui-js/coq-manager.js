@@ -773,7 +773,11 @@ class CoqManager {
         this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
     }
 
-    coqCoqExn(loc, sids, msg) {
+    coqCoqExn(exn) {
+
+        let msg = exn.pp;
+        let sids = exn.sid;
+
         console.error('Coq Exception', msg);
 
         // If error has already been reported by Feedback, bail

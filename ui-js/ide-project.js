@@ -529,8 +529,13 @@ class BuildReport {
     }
 
     decorateError(coqexn, mod) {
-        let [, loc, , msg] = coqexn,
-            err = {loc: {filename: mod.physical.replace(/^[/]/, '')}};
+
+        let [,exn] = coqexn;
+        let msg = exn.pp;
+        let loc = exn.loc;
+
+        let err = {loc: {filename: mod.physical.replace(/^[/]/, '')}};
+
         // Convert character positions to {line, ch}
         if (loc) {
             try {
