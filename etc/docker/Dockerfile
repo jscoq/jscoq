@@ -145,7 +145,7 @@ RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
 # ---------------------
 FROM wacoq-preinstall as wacoq-prereq
 
-ARG WACOQ_BIN_REPO=https://github.com/corwin-of-amber/wacoq-bin.git
+ARG WACOQ_BIN_REPO=https://github.com/jscoq/wacoq-bin.git
 ARG WACOQ_BIN_BRANCH=v8.14
 
 WORKDIR /root
@@ -176,7 +176,7 @@ WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO} jscoq+wacoq
 
 WORKDIR jscoq+wacoq
-RUN npm install ../wacoq-bin/wacoq-bin-*.tar.gz
+RUN cp ../wacoq-bin/wacoq-bin-*.tar.gz . && npm install ./wacoq-bin-*.tar.gz
 RUN npm install
 RUN make wacoq
 RUN make dist-npm-wacoq

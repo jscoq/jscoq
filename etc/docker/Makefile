@@ -5,7 +5,7 @@ WHO = jscoq
 export JSCOQ_REPO = https://github.com/$(WHO)/jscoq.git
 export JSCOQ_BRANCH = v8.13
 
-export WACOQ_BIN_REPO = https://github.com/corwin-of-amber/wacoq-bin.git
+export WACOQ_BIN_REPO = https://github.com/$(WHO)/wacoq-bin.git
 export WACOQ_BIN_BRANCH = v8.13
 
 export NJOBS ?= 4
@@ -20,8 +20,8 @@ ARGS = --build-arg JSCOQ_REPO --build-arg JSCOQ_BRANCH \
 
 -include _config.mk
 
-EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'}
-EXISTING_IMAGES += ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'}
+JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'}
+WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'}
 
 js-build:
 	docker build . --target jscoq-preinstall $(ARGS)  -t jscoq:preinstall
@@ -54,13 +54,28 @@ wa-dist: clean-dist
 	docker cp wacoq-get-dist:/root/jscoq-addons/dist .
 	docker rm wacoq-get-dist
 
-I = ${filter-out jscoq:pre% wacoq:pre%, $(EXISTING_IMAGES)}
+JS_CLEAN = ${filter-out jscoq:pre%, $(JS_EXISTING_IMAGES)}
+WA_CLEAN = ${filter-out wacoq:pre%, $(WA_EXISTING_IMAGES)}
 
-clean:
-	${if $(I), docker image rm $(I)}
+clean: js-clean wa-clean
 
-clean-slate:
-	${if $(EXISTING_IMAGES), docker image rm $(EXISTING_IMAGES)}
+js-clean:
+	${if $(JS_CLEAN), docker image rm $(JS_CLEAN)}
+	docker system prune -f   # this seems to be required with BuildKit
+
+wa-clean:
+	${if $(WA_CLEAN), docker image rm $(WA_CLEAN)}
+	docker system prune -f
+
+clean-slate: js-clean-slate wa-clean-slate
+
+js-clean-slate:
+	${if $(JS_EXISTING_IMAGES), docker image rm $(JS_EXISTING_IMAGES)}
+	docker system prune -f
+
+wa-clean-slate:
+	${if $(WA_EXISTING_IMAGES), docker image rm $(WA_EXISTING_IMAGES)}
+	docker system prune -f
 
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \
