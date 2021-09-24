@@ -773,15 +773,15 @@ class CoqManager {
         this.layout.log(`Package '${bname}' is missing (${msg})`, 'Warning');
     }
 
-    coqCoqExn({pp: msg, sids}) {
+    coqCoqExn({pp, msg, sids}) {
 
         console.error('Coq Exception', msg);
 
         // If error has already been reported by Feedback, bail
-        if (this.error.some(stm => stm.feedback.some(x => arreq_deep(x.msg, msg))))
+        if (this.error.some(stm => stm.feedback.some(x => arreq_deep(x.msg, pp))))
             return;
 
-        var fmsg = this.pprint.msg2DOM(msg);
+        var fmsg = this.pprint.msg2DOM(pp);
 
         var item = this.layout.log(fmsg, 'Error', sids && {'data-coq-sid': sids[0]});
         this.pprint.adjustBreaks(item);
