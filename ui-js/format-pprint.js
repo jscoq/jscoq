@@ -423,8 +423,7 @@ class FormatPrettyPrint {
             }
         }
 
-        if (this._isFlat(jdom))
-            jdom.addClass("text-only");
+        jdom.toggleClass("text-only", this._isFlat(jdom));
     }
 
     _isFlat(jdom) {

@@ -512,8 +512,9 @@ class BuildReport {
     add(e, mod) {
         switch (e[0]) {
         case 'CoqExn':
-            var err = this.decorateError(e, mod);
-            coq.layout.log(err.msg, 'Error');   // oops
+            var err = this.decorateError(e[1], mod),
+                item = coq.layout.log(err.msg, 'Error');   // oops
+            this.pprint.adjustBreaks(item);
             if (mod) {
                 this.errors.set(mod.physical,
                     (this.errors.get(mod.physical) || []).concat([err]));
@@ -528,9 +529,8 @@ class BuildReport {
         this._updateMarks();
     }
 
-    decorateError(coqexn, mod) {
+    decorateError(exn, mod) {
 
-        let [,exn] = coqexn;
         let msg = exn.pp;
         let loc = exn.loc;
 
