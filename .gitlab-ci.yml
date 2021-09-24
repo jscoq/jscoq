@@ -1,6 +1,0 @@
-lint:
-  image: ubuntu:bionic
-  script:
-    - cat /proc/{cpu,mem}info || true
-    - ls -a # figure out if artifacts are around
-    - printenv -0 | sort -z | tr '\0' '\n'
