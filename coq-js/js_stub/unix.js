@@ -148,12 +148,6 @@ function unix_listen() {
   return 0;
 }
 
-//Provides: unix_mkdir
-//Requires: unix_ll
-function unix_mkdir() {
-  unix_ll("unix_mkdir", arguments);
-  return 0;
-}
 //Provides: unix_pipe
 //Requires: unix_ll
 function unix_pipe() {
@@ -257,14 +251,6 @@ function unix_waitpid() {
   return 0;
 }
 
-//Provides: unix_stat
-//Requires: unix_ll
-function unix_stat() {
-  unix_ll("unix_stat", arguments);
-  return 0;
-}
-
-
 // Provides: unix_accept
 // Requires: unix_ll
 function unix_accept()                 { unix_ll("unix_accept", arguments); }
@@ -361,9 +347,6 @@ function unix_getprotobyname()        { unix_ll("unix_getprotobyname", arguments
 // Provides: unix_getprotobynumber
 // Requires: unix_ll
 function unix_getprotobynumber()      { unix_ll("unix_getprotobynumber", arguments); }
-// Provides: unix_getpwuid
-// Requires: unix_ll
-function unix_getpwuid()              { unix_ll("unix_getpwuid", arguments); }
 // Provides: unix_getservbyname
 // Requires: unix_ll
 function unix_getservbyname()         { unix_ll("unix_getservbyname", arguments); }
@@ -373,12 +356,6 @@ function unix_getservbyport()         { unix_ll("unix_getservbyport", arguments)
 // Provides: unix_getsockopt
 // Requires: unix_ll
 function unix_getsockopt()            { unix_ll("unix_getsockopt", arguments); }
-// Provides: unix_getuid
-// Requires: unix_ll
-function unix_getuid()                { unix_ll("unix_getuid", arguments); }
-// Provides: unix_has_symlink
-// Requires: unix_ll
-function unix_has_symlink()           { unix_ll("unix_has_symlink", arguments); }
 // Provides: unix_initgroups
 // Requires: unix_ll
 function unix_initgroups()            { unix_ll("unix_initgroups", arguments); }
@@ -394,12 +371,6 @@ function unix_lseek()                 { unix_ll("unix_lseek", arguments); }
 // Provides: unix_lseek_64
 // Requires: unix_ll
 function unix_lseek_64()              { unix_ll("unix_lseek_64", arguments); }
-// Provides: unix_lstat
-// Requires: unix_ll
-function unix_lstat()                 { unix_ll("unix_lstat", arguments); }
-// Provides: unix_lstat_64
-// Requires: unix_ll
-function unix_lstat_64()              { unix_ll("unix_lstat_64", arguments); }
 // Provides: unix_mkfifo
 // Requires: unix_ll
 function unix_mkfifo()                { unix_ll("unix_mkfifo", arguments); }
@@ -412,10 +383,6 @@ function unix_open()                  { unix_ll("unix_open", arguments); }
 // Provides: unix_putenv
 // Requires: unix_ll
 function unix_putenv()                { unix_ll("unix_putenv", arguments); }
-// Provides: unix_readlink
-// Requires: unix_ll, caml_raise_unix_error
-function unix_readlink()              { unix_ll("unix_readlink", arguments);
-                                        caml_raise_unix_error("not implemented: unix_readlink"); }
 // Provides: unix_recv
 // Requires: unix_ll
 function unix_recv()                  { unix_ll("unix_recv", arguments); }
@@ -428,9 +395,6 @@ function unix_rename()                { unix_ll("unix_rename", arguments); }
 // Provides: unix_rewinddir
 // Requires: unix_ll
 function unix_rewinddir()             { unix_ll("unix_rewinddir", arguments); }
-// Provides: unix_rmdir
-// Requires: unix_ll
-function unix_rmdir()                 { unix_ll("unix_rmdir", arguments); }
 // Provides: unix_send
 // Requires: unix_ll
 function unix_send()                  { unix_ll("unix_send", arguments); }
@@ -473,12 +437,6 @@ function unix_single_write()          { unix_ll("unix_single_write", arguments);
 // Provides: unix_socketpair
 // Requires: unix_ll
 function unix_socketpair()            { unix_ll("unix_socketpair", arguments); }
-// Provides: unix_stat_64
-// Requires: unix_ll
-function unix_stat_64()               { unix_ll("unix_stat_64", arguments); }
-// Provides: unix_symlink
-// Requires: unix_ll
-function unix_symlink()               { unix_ll("unix_symlink", arguments); }
 // Provides: unix_tcdrain
 // Requires: unix_ll
 function unix_tcdrain()               { unix_ll("unix_tcdrain", arguments); }
@@ -506,9 +464,6 @@ function unix_truncate_64()           { unix_ll("unix_truncate_64", arguments); 
 // Provides: unix_umask
 // Requires: unix_ll
 function unix_umask()                 { unix_ll("unix_umask", arguments); }
-// Provides: unix_unlink
-// Requires: unix_ll
-function unix_unlink()                { unix_ll("unix_unlink", arguments); }
 // Provides: unix_utimes
 // Requires: unix_ll
 function unix_utimes()                { unix_ll("unix_utimes", arguments); }
@@ -533,9 +488,6 @@ function unix_outchannel_of_filedescr() { unix_ll("unix_outchannel_of_filedescr"
 // Provides: caml_mutex_try_lock
 // Requires: unix_ll
 function caml_mutex_try_lock()       { unix_ll("caml_mutex_try_lock", arguments); }
-// Provides: caml_obj_add_offset
-// Requires: unix_ll
-function caml_obj_add_offset()       { unix_ll("caml_obj_add_offset", arguments); }
 // Provides: caml_thread_join
 // Requires: unix_ll
 function caml_thread_join()          { unix_ll("caml_thread_join", arguments); }
