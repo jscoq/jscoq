@@ -1,6 +1,6 @@
 {
   "name": "wacoq",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "bin": {
     "wacoqdoc": "ui-js/jscoqdoc.js"
