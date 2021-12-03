@@ -108,13 +108,20 @@ RUN make pack
 FROM jscoq as jscoq-sdk-prepare
 
 RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
-    rm dist-sdk/bin/*.byte dist-sdk/bin/*.opt \
-       dist-sdk/lib/coq/*/*.cmxs \
-       `find dist -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
+    rm dist-sdk/bin/*.byte dist-sdk/bin/*.opt
+
+# @todo these have moved; probably some of them are actually needed too.
+# rm dist-sdk/lib/coq/*/*.cmxs \
+# `find dist-sdk -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
 FROM debian:10-slim as jscoq-sdk
 
 COPY --from=jscoq-sdk-prepare /root/jscoq/dist-sdk /opt/jscoq
+
+COPY sdk-startup.sh /root/sdk-startup.sh
+
+ENTRYPOINT ["/root/sdk-startup.sh"]
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
 
 # ----------------------------------------------------------
 #

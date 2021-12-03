@@ -3,10 +3,10 @@
 WHO = jscoq
 
 export JSCOQ_REPO = https://github.com/$(WHO)/jscoq.git
-export JSCOQ_BRANCH = v8.13
+export JSCOQ_BRANCH = v8.14
 
 export WACOQ_BIN_REPO = https://github.com/$(WHO)/wacoq-bin.git
-export WACOQ_BIN_BRANCH = v8.13
+export WACOQ_BIN_BRANCH = v8.14
 
 export NJOBS ?= 4
 
@@ -28,6 +28,9 @@ js-build:
 	docker build . --target jscoq-prereq     $(ARGS)  -t jscoq:prereq
 	docker build . --target jscoq            $(ARGS)  -t jscoq
 	docker build . --target jscoq-addons     $(ARGS)  -t jscoq:addons
+
+js-build-sdk:
+	docker build . --target jscoq-sdk        $(ARGS)  -t jscoq:sdk
 
 wa-build:
 	docker build . --target wacoq-preinstall $(ARGS)  -t wacoq:preinstall
