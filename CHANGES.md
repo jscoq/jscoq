@@ -1,3 +1,8 @@
+# jsCoq 0.14.1 "Leap of Faith"
+------------------------------
+
+ - Update to Coq 8.14.1 (@corwin-of-amber)
+
 # jsCoq 0.14.0 "Ahead of time"
 ------------------------------
 

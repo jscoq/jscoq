@@ -7,7 +7,7 @@ jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
 accessibility of the Coq platform itself. Current stable version is
-jsCoq 0.14.0 supporting Coq 8.14.0, try it:
+jsCoq 0.14.1 supporting Coq 8.14.1, try it:
 
 <https://jscoq.github.io>
 
