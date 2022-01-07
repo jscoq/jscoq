@@ -3,8 +3,8 @@ FROM debian:10-slim as opam
 # ------------
 #   Get OPAM
 # ------------
-RUN dpkg --add-architecture i386 && \
-    apt-get update && apt-get install --no-install-recommends -y \
+RUN dpkg --add-architecture i386 && apt-get update && apt-get upgrade -y apt && \
+    apt-get install --no-install-recommends -y \
     wget ca-certificates \
     m4 bubblewrap gcc gcc-multilib libc6-dev libgmp-dev:i386 binutils make patch unzip
 

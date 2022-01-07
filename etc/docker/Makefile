@@ -82,7 +82,7 @@ wa-clean-slate:
 
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \
-		npx static-server -p 8080 _build/dist
+		sh -c "cd _build/dist && npm i && npx -y static-server -p 8080"
 
 dist-serve:
 	npx http-server -p 8080 dist
