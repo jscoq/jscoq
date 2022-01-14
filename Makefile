@@ -79,7 +79,7 @@ all:
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
 	@echo "      dist: create a distribution suitable for a web server"
-	@echo "  dist-npm: create NPM packages suitable for `npm install`"
+	@echo "  dist-npm: create NPM packages suitable for \`npm install\`"
 	@echo "       coq: download and build Coq and addon libraries"
 	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 

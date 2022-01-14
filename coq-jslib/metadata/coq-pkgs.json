@@ -41,18 +41,22 @@
             },
             "plugins": {
                 "prefix": "Coq",
-                "dirpaths": ["ring", "micromega"]
+                "dirpaths": ["ring"]
             }
         },
         "coq-reals": {
             "theories": {
                 "prefix": "Coq",
-                "dirpaths": ["Reals", "Floats",
-                             "micromega", "nsatz"]
+                "dirpaths": ["Reals", "Floats", "micromega", "nsatz"]
             },
             "plugins": {
                 "prefix": "Coq",
                 "dirpaths": ["micromega", "nsatz"]
+            }
+        },
+        "ltac2": {
+            "user-contrib/Ltac2": {
+                "prefix": "Ltac2"
             }
         }
     }

@@ -1390,7 +1390,7 @@ const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
     'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
     'software-foundations',
     'hahn', 'paco', 'snu-sflib', 'promising',
-    'fcsl-pcm', 'htt', 'pnp', 'coqoban'
+    'fcsl-pcm', 'htt', 'pnp', 'coqoban', 'stdpp', 'iris'
 ];
 
 
