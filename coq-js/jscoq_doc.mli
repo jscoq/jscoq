@@ -24,7 +24,7 @@ val add :
   ontop:Stateid.t    ->
   newid:Stateid.t    ->
   string             ->
-  Loc.t option * [ `NewTip | `Unfocus of Stateid.t ] * ser_doc
+  Loc.t option * Stm.add_focus * ser_doc
 
 val query :
   doc:ser_doc              ->

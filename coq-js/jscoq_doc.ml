@@ -136,14 +136,14 @@ let cancel ~doc can_st =
   in
   let doc, eres = Stm.edit_at ~doc edit_st in
   match eres with
-  | `NewTip -> c_ran, (doc,k_ran)
+  | NewTip -> c_ran, (doc,k_ran)
     (* - [tip] is the new document tip.
        - [st]   -- [stop] is dropped.
        - [stop] -- [tip]  has been kept.
        - [start] is where the editing zone starts
        - [add] happen on top of [id].
     *)
-  | `Focus foc -> cancel_interval edit_st foc, (doc, sdoc)
+  | Focus foc -> cancel_interval edit_st foc, (doc, sdoc)
 
 
 (* Edit is deprecated, we implement it in terms of cancel. *)
@@ -154,8 +154,8 @@ let edit ~doc edit_st =
   else
     let doc, eres = Stm.edit_at ~doc edit_st in
     match eres with
-    | `NewTip    -> let cc, sdoc = split_while sdoc ~f:(fun st -> Stateid.newer_than st edit_st) in cc, (doc, sdoc)
-    | `Focus foc -> cancel_interval edit_st foc, (doc, sdoc)
+    | NewTip    -> let cc, sdoc = split_while sdoc ~f:(fun st -> Stateid.newer_than st edit_st) in cc, (doc, sdoc)
+    | Focus foc -> cancel_interval edit_st foc, (doc, sdoc)
 
 let observe ~doc sid =
   let doc, sdoc = doc in
