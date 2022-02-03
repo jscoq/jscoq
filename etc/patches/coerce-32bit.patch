@@ -24,7 +24,7 @@ index ae43e7d..883decb 100644
 +    let combinesmall x y = (beta * x + y) land 0x3fffffff
  end
 diff --git a/kernel/dune b/kernel/dune
-index f5106ee..455e729 100644
+index 88d059e..f2aeb95 100644
 --- a/kernel/dune
 +++ b/kernel/dune
 @@ -16,12 +16,12 @@
@@ -43,7 +43,7 @@ index f5106ee..455e729 100644
  
  (documentation
 diff --git a/kernel/nativecode.ml b/kernel/nativecode.ml
-index 4f3f38d..9ebbc20 100644
+index 595aaae..3349370 100644
 --- a/kernel/nativecode.ml
 +++ b/kernel/nativecode.ml
 @@ -18,6 +18,8 @@ open Nativevalues
@@ -69,7 +69,7 @@ index e8759ef..5045969 100644
  let uint_size = 63
  
 diff --git a/lib/objFile.ml b/lib/objFile.ml
-index 26367aa..fa6034f 100644
+index a499b04..2aa0762 100644
 --- a/lib/objFile.ml
 +++ b/lib/objFile.ml
 @@ -138,7 +138,7 @@ let marshal_out_segment h ~segment v =
@@ -82,12 +82,12 @@ index 26367aa..fa6034f 100644
    let pos' = LargeFile.pos_out ch in
    let len = Int64.sub pos' pos in
 diff --git a/lib/system.ml b/lib/system.ml
-index 1aadaf6..fd53a43 100644
+index b3dfee3..d01077d 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
-@@ -184,7 +184,7 @@ let input_binary_int f ch =
-   | Failure s -> error_corrupted f s
- let output_binary_int ch x = output_binary_int ch x; flush ch
+@@ -168,7 +168,7 @@ let check_caml_version ~caml:s ~file:f =
+     be compatible.")
+   else ()
  
 -let marshal_out ch v = Marshal.to_channel ch v []; flush ch
 +let marshal_out ch v = Marshal.to_channel ch v [Marshal.Compat_32]; flush ch
@@ -95,7 +95,7 @@ index 1aadaf6..fd53a43 100644
    try Marshal.from_channel ch
    with
 diff --git a/plugins/extraction/extract_env.ml b/plugins/extraction/extract_env.ml
-index e75344a..715c60e 100644
+index a5c063e..f117b87 100644
 --- a/plugins/extraction/extract_env.ml
 +++ b/plugins/extraction/extract_env.ml
 @@ -22,6 +22,8 @@ open Extraction
@@ -121,7 +121,7 @@ index 268d4bf..30ba948 100644
  
  exception Found
 diff --git a/plugins/ltac/tacentries.ml b/plugins/ltac/tacentries.ml
-index 8a9fc90..aba2cf8 100644
+index 4293160..bd46d25 100644
 --- a/plugins/ltac/tacentries.ml
 +++ b/plugins/ltac/tacentries.ml
 @@ -243,7 +243,7 @@ let make_fresh_key =
@@ -134,7 +134,7 @@ index 8a9fc90..aba2cf8 100644
      Lib.make_kn lbl
  
 diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
-index b23ae63..ee3ff0d 100644
+index 8846b09..f6b3a6a 100644
 --- a/plugins/micromega/coq_micromega.ml
 +++ b/plugins/micromega/coq_micromega.ml
 @@ -26,6 +26,8 @@ open Constr
@@ -212,7 +212,7 @@ index 008d552..7b9f612 100644
  
  #[deprecated(since="8.14",note="Use isUint63cst instead")]
 diff --git a/theories/Numbers/Cyclic/Int63/Uint63.v b/theories/Numbers/Cyclic/Int63/Uint63.v
-index ec40ef4..3647abc 100644
+index 1ea47ed..20f7c8f 100644
 --- a/theories/Numbers/Cyclic/Int63/Uint63.v
 +++ b/theories/Numbers/Cyclic/Int63/Uint63.v
 @@ -1110,8 +1110,8 @@ Proof.
@@ -227,7 +227,7 @@ index ec40ef4..3647abc 100644
  Lemma addmuldiv_spec x y p :
    φ p <= φ digits  ->
 diff --git a/vernac/metasyntax.ml b/vernac/metasyntax.ml
-index cb374ca..4695f7f 100644
+index 63f682e..071dc3b 100644
 --- a/vernac/metasyntax.ml
 +++ b/vernac/metasyntax.ml
 @@ -26,6 +26,8 @@ open Libnames
@@ -237,5 +237,5 @@ index cb374ca..4695f7f 100644
 +let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
 +
  (**********************************************************************)
- (* Tokens                                                             *)
+ (* Printing grammar entries                                           *)
  
