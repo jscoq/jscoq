@@ -1,259 +1,78 @@
-diff --git a/engine/logic_monad.ml b/engine/logic_monad.ml
-index 38ec668..6f33890 100644
---- a/engine/logic_monad.ml
-+++ b/engine/logic_monad.ml
-@@ -145,6 +145,17 @@ type ('a, 'b, 'e) list_view =
-   | Nil of 'e
-   | Cons of 'a * ('e -> 'b)
+diff --git a/lib/control.ml b/lib/control.ml
+index f3ce295..8dd815d 100644
+--- a/lib/control.ml
++++ b/lib/control.ml
+@@ -18,7 +18,19 @@ let enable_thread_delay = ref false
  
+ exception Timeout
+ 
++(* implemented in coq-js/js_stub/interrupt.js *)
++external interrupt_pending : unit -> bool = "interrupt_pending"
 +
-+type 'a thunk =
-+    | Fin of 'a
-+    | TailCall of (unit -> 'a thunk)
++let timeout_deadline : (float * (unit -> unit)) option ref = ref None
 +
-+let rec trampoline r = match r with
-+    | Fin a -> a
-+    | TailCall f -> trampoline (f ())
++let jscoq_event_yield () =
++  if interrupt_pending() then interrupt := true;
++  match !timeout_deadline with
++  | Some (time, callback) -> if Unix.gettimeofday () > time then callback ();
++  | None -> ()
 +
+ let check_for_interrupt () =
++  jscoq_event_yield ();
+   if !interrupt then begin interrupt := false; raise Sys.Break end;
+   if !enable_thread_delay then begin
+     incr steps;
+@@ -98,11 +110,30 @@ let windows_timeout n f x =
+     let () = killed := true in
+     Exninfo.iraise e
+ 
++let unwind ~(protect:unit -> unit) f =
++  try let y = f () in protect (); y
++  with e -> protect (); raise e
 +
++let jscoq_timeout n f x =
++  let expired = ref false in
++  timeout_deadline := Some (Unix.gettimeofday () +. n,
++                            fun () -> expired := true; interrupt := true);
++  let protect () = jscoq_event_yield (); timeout_deadline := None;
++                   interrupt := false in
++  let res = try Some(unwind ~protect (fun () -> f x))
++            with Sys.Break -> if !expired then None else raise Sys.Break in
++  if !expired then None
++  else res
 +
- module BackState =
- struct
+ type timeout = { timeout : 'a 'b. float -> ('a -> 'b) -> 'a -> 'b option }
  
-@@ -181,11 +192,11 @@ struct
++(*
+ let timeout_fun = match Sys.os_type with
+ | "Unix" | "Cygwin" -> { timeout = unix_timeout }
+ | _ -> { timeout = windows_timeout }
++*)
++let _ = windows_timeout, unix_timeout
++let timeout_fun = { timeout = jscoq_timeout }
  
-   type ('a, 'i, 'o, 'e) t =
-       { iolist : 'r. 'i -> ('e -> 'r NonLogical.t) ->
--                     ('a -> 'o -> ('e -> 'r NonLogical.t) -> 'r NonLogical.t) ->
--                     'r NonLogical.t }
-+                     ('a -> 'o -> ('e -> 'r NonLogical.t) -> 'r NonLogical.t thunk) ->
-+                     'r NonLogical.t thunk }
- 
-   let return x =
--    { iolist = fun s nil cons -> cons x s nil }
-+    { iolist = fun s nil cons -> TailCall (fun () -> cons x s nil) }
- 
-   let (>>=) m f =
-     { iolist = fun s nil cons ->
-@@ -199,16 +210,16 @@ struct
-     { iolist = fun s nil cons -> m.iolist s nil (fun x s next -> cons (f x) s next) }
- 
-   let zero e =
--    { iolist = fun _ nil cons -> nil e }
-+    { iolist = fun _ nil cons -> Fin (nil e) }
- 
-   let plus m1 m2 =
--    { iolist = fun s nil cons -> m1.iolist s (fun e -> (m2 e).iolist s nil cons) cons }
-+    { iolist = fun s nil cons -> m1.iolist s (fun e -> trampoline @@ (m2 e).iolist s nil cons) cons }
- 
-   let ignore m =
-     { iolist = fun s nil cons -> m.iolist s nil (fun _ s next -> cons () s next) }
- 
-   let lift m =
--    { iolist = fun s nil cons -> NonLogical.(m >>= fun x -> cons x s nil) }
-+    { iolist = fun s nil cons -> Fin NonLogical.(m >>= fun x -> trampoline @@ cons x s nil) }
- 
-   (** State related *)
- 
-@@ -247,30 +258,31 @@ struct
-     { iolist = fun s0 nil cons ->
-       let next = function
-       | Nil e -> nil e
--      | Cons ((x, s), l) -> cons x s (fun e -> (reflect (l e)).iolist s0 nil cons)
-+      | Cons ((x, s), l) -> trampoline @@ cons x s (fun e -> trampoline @@ (reflect (l e)).iolist s0 nil cons)
-       in
--      NonLogical.(m >>= next)
-+      Fin NonLogical.(m >>= next)
-     }
- 
-   let split m : ((_, _, _) list_view, _, _, _) t =
-     let rnil e = NonLogical.return (Nil e) in
--    let rcons p s l = NonLogical.return (Cons ((p, s), l)) in
-+    let rcons p s l = Fin (NonLogical.return (Cons ((p, s), l))) in
-     { iolist = fun s nil cons ->
-       let open NonLogical in
--      m.iolist s rnil rcons >>= begin function
--      | Nil e -> cons (Nil e) s nil
-+      Fin ((trampoline @@
-+      m.iolist s rnil rcons) >>= begin function
-+      | Nil e -> trampoline @@ cons (Nil e) s nil
-       | Cons ((x, s), l) ->
-         let l e = reflect (l e) in
--        cons (Cons (x, l)) s nil
--      end }
-+        trampoline @@ cons (Cons (x, l)) s nil
-+      end) }
- 
-   let run m s =
-     let rnil e = NonLogical.return (Nil e) in
-     let rcons x s l =
-       let p = (x, s) in
--      NonLogical.return (Cons (p, l))
-+      Fin (NonLogical.return (Cons (p, l)))
-     in
--    m.iolist s rnil rcons
-+    trampoline @@ m.iolist s rnil rcons
- 
-   let repr x = x
- end
-@@ -350,7 +362,7 @@ struct
-       writer) and efficiency. *)
- 
-   let get =
--    { iolist = fun s nil cons -> cons s.sstate s nil }
-+    { iolist = fun s nil cons -> TailCall (fun () -> cons s.sstate s nil) }
- 
-   let set (sstate : P.s) =
-     { iolist = fun s nil cons -> cons () { s with sstate } nil }
-@@ -379,8 +391,8 @@ struct
-     let rnil e = NonLogical.return (Nil e) in
-     let rcons x s l =
-       let p = (x, s.sstate, s.wstate, s.ustate) in
--      NonLogical.return (Cons (p, l))
-+      Fin (NonLogical.return (Cons (p, l)))
-     in
--    m.iolist s rnil rcons
-+    trampoline @@ m.iolist s rnil rcons
- 
-  end
-diff --git a/pretyping/constr_matching.ml b/pretyping/constr_matching.ml
-index 15d1ddb..b6a3cf4 100644
---- a/pretyping/constr_matching.ml
-+++ b/pretyping/constr_matching.ml
-@@ -478,14 +478,25 @@ let matches_head env sigma pat c =
-     | _ -> c in
-   matches env sigma pat head
- 
+ let timeout_fun_ref = ref timeout_fun
+ let set_timeout f = timeout_fun_ref := f
+diff --git a/lib/dune b/lib/dune
+index 43ee8f7..ac82c4e 100644
+--- a/lib/dune
++++ b/lib/dune
+@@ -4,4 +4,8 @@
+  (public_name coq-core.lib)
+  (wrapped false)
+  (modules_without_implementation xml_datatype)
++ (foreign_stubs
++  (language c)
++  (names jscoq_extern)
++  (flags (:include %{project_root}/config/dune.c_flags)))
+  (libraries coq-core.boot coq-core.clib coq-core.config))
+diff --git a/lib/jscoq_extern.c b/lib/jscoq_extern.c
+new file mode 100644
+index 0000000..0cc1e5c
+--- /dev/null
++++ b/lib/jscoq_extern.c
+@@ -0,0 +1,4 @@
++#include <caml/mlvalues.h>
 +
-+type 'a thunk =
-+    | Fin of 'a
-+    | TailCall of (unit -> 'a thunk)
-+
-+let rec trampoline r = match r with
-+    | Fin a -> a
-+    | TailCall f -> trampoline (f ())
-+
-+let tlift f () = trampoline (f ())
-+
- (* Tells if it is an authorized occurrence and if the instance is closed *)
- let authorized_occ env sigma closed pat c mk_ctx =
-   try
-     let subst = matches_core_closed env sigma pat c in
-     if closed && Id.Map.exists (fun _ c -> not (closed0 sigma c)) (snd subst)
--    then (fun next -> next ())
--    else (fun next -> mkresult subst (lazy (mk_ctx (mkMeta special_meta))) next)
--  with PatternMatchingFailure -> (fun next -> next ())
-+    then (fun next -> TailCall next)
-+    else (fun next -> Fin (mkresult subst (lazy (mk_ctx (mkMeta special_meta))) (tlift next)))
-+  with PatternMatchingFailure -> (fun next -> TailCall next)
- 
- let subargs env v = Array.map_to_list (fun c -> (env, c)) v
- 
-@@ -500,35 +511,35 @@ let sub_match ?(closed=true) env sigma pat c =
-       | [c1] -> mk_ctx (mkCast (c1, k, c2))
-       | _ -> assert false
-       in
--      try_aux [env, c1] next_mk_ctx next
-+      TailCall (fun () -> try_aux [env, c1] next_mk_ctx next)
-   | Lambda (x,c1,c2) ->
-       let next_mk_ctx = function
-       | [c1; c2] -> mk_ctx (mkLambda (x, c1, c2))
-       | _ -> assert false
-       in
-       let env' = EConstr.push_rel (LocalAssum (x,c1)) env in
--      try_aux [(env, c1); (env', c2)] next_mk_ctx next
-+      TailCall (fun () -> try_aux [(env, c1); (env', c2)] next_mk_ctx next)
-   | Prod (x,c1,c2) ->
-       let next_mk_ctx = function
-       | [c1; c2] -> mk_ctx (mkProd (x, c1, c2))
-       | _ -> assert false
-       in
-       let env' = EConstr.push_rel (LocalAssum (x,c1)) env in
--      try_aux [(env, c1); (env', c2)] next_mk_ctx next
-+      TailCall (fun () -> try_aux [(env, c1); (env', c2)] next_mk_ctx next)
-   | LetIn (x,c1,t,c2) ->
-       let next_mk_ctx = function
-       | [c1; c2] -> mk_ctx (mkLetIn (x, c1, t, c2))
-       | _ -> assert false
-       in
-       let env' = EConstr.push_rel (LocalDef (x,c1,t)) env in
--      try_aux [(env, c1); (env', c2)] next_mk_ctx next
-+      TailCall (fun () -> try_aux [(env, c1); (env', c2)] next_mk_ctx next)
-   | App (c1,lc) ->
-      let lc1 = Array.sub lc 0 (Array.length lc - 1) in
-      let app = mkApp (c1,lc1) in
-      let mk_ctx = function
-        | [app';c] -> mk_ctx (mkApp (app',[|c|]))
-        | _ -> assert false in
--     try_aux [(env, app); (env, Array.last lc)] mk_ctx next
-+     TailCall (fun () -> try_aux [(env, app); (env, Array.last lc)] mk_ctx next)
-   | Case (ci,u,pms,hd0,iv,c1,lc0) ->
-       let (mib, mip) = Inductive.lookup_mind_specif env ci.ci_ind in
-       let (_, hd, _, _, br) = expand_case env sigma (ci, u, pms, hd0, iv, c1, lc0) in
-@@ -553,7 +564,7 @@ let sub_match ?(closed=true) env sigma pat c =
-       | _ -> assert false
-       in
-       let sub = (env, c1) :: Array.fold_right (fun c accu -> (env, c) :: accu) pms (hd :: lc) in
--      try_aux sub next_mk_ctx next
-+      TailCall (fun () -> try_aux sub next_mk_ctx next)
-   | Fix (indx,(names,types,bodies as recdefs)) ->
-     let nb_fix = Array.length types in
-     let next_mk_ctx le =
-@@ -561,7 +572,7 @@ let sub_match ?(closed=true) env sigma pat c =
-       mk_ctx (mkFix (indx,(names, Array.of_list ntypes, Array.of_list nbodies))) in
-     let env' = push_rec_types recdefs env in
-     let sub = subargs env types @ subargs env' bodies in
--    try_aux sub next_mk_ctx next
-+    TailCall (fun () -> try_aux sub next_mk_ctx next)
-   | CoFix (i,(names,types,bodies as recdefs)) ->
-     let nb_fix = Array.length types in
-     let next_mk_ctx le =
-@@ -569,11 +580,11 @@ let sub_match ?(closed=true) env sigma pat c =
-       mk_ctx (mkCoFix (i,(names, Array.of_list ntypes, Array.of_list nbodies))) in
-     let env' = push_rec_types recdefs env in
-     let sub = subargs env types @ subargs env' bodies in
--    try_aux sub next_mk_ctx next
-+    TailCall (fun () -> try_aux sub next_mk_ctx next)
-   | Proj (p,c') ->
-     begin match Retyping.expand_projection env sigma p c' [] with
--    | term -> aux env term mk_ctx next
--    | exception Retyping.RetypeError _ -> next ()
-+    | term -> TailCall (fun () -> aux env term mk_ctx next)
-+    | exception Retyping.RetypeError _ -> TailCall next
-     end
-   | Array(u, t, def, ty) ->
-     let next_mk_ctx = function
-@@ -581,9 +592,9 @@ let sub_match ?(closed=true) env sigma pat c =
-     | _ -> assert false
-     in
-     let sub = (env,def) :: (env,ty) :: subargs env t in
--    try_aux sub next_mk_ctx next
-+    TailCall (fun () -> try_aux sub next_mk_ctx next)
-   | Construct _|Ind _|Evar _|Const _|Rel _|Meta _|Var _|Sort _|Int _|Float _ ->
--    next ()
-+    TailCall next
-   in
-   here next
- 
-@@ -591,16 +602,16 @@ let sub_match ?(closed=true) env sigma pat c =
-   and try_aux lc mk_ctx next =
-     let rec try_sub_match_rec lacc lc =
-       match lc with
--      | [] -> next ()
-+      | [] -> TailCall next
-       | (env, c) :: tl ->
-         let mk_ctx ce = mk_ctx (List.rev_append lacc (ce :: List.map snd tl)) in
-         let next () = try_sub_match_rec (c :: lacc) tl in
--        aux env c mk_ctx next
-+        TailCall (fun () -> aux env c mk_ctx next)
-     in
--    try_sub_match_rec [] lc in
--  let lempty () = IStream.Nil in
-+    TailCall (fun () -> try_sub_match_rec [] lc) in
-+  let lempty () = Fin (IStream.Nil) in
-   let result () = aux env c (fun x -> x) lempty in
--  IStream.thunk result
-+  IStream.thunk (tlift result)
- 
- let match_subterm env sigma pat c = sub_match env sigma pat c
- 
++// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
++value interrupt_pending() { return Val_false; }
