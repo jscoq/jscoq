@@ -201,10 +201,13 @@ let coq_cma_link cmo_file =
     let js_code =
       try (Hashtbl.find file_cache cmo_file).file_content
       with Not_found -> Sys_js.read_file ~name:(cmo_file ^ ".js") in
+    let js_code =
+      if String.sub js_code 0 1 = "(" then js_code 
+      else "(" ^ js_code ^ ")" (* jsoo < 4.0 *) in
     (* When eval'ed, the js_code will return a closure waiting for the
        jsoo global object to link the plugin.
     *)
-    Js.Unsafe.((eval_string ("(" ^ js_code ^ ")") : < .. > Js.t -> unit) global);
+    Js.Unsafe.((eval_string js_code : < .. > Js.t -> unit) global);
     Feedback.feedback (Feedback.FileLoaded(cmo_file, cmo_file));
   with
   | Sys_error _ ->

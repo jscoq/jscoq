@@ -13,9 +13,9 @@ doc:          "https://github.com/jscoq/jscoq#readme"
 depends: [
   "ocaml"               { >= "4.12.0"           }
   "dune"                { >= "2.8.0"            }
-  "js_of_ocaml"         { >= "3.11.0"           }
-  "js_of_ocaml-ppx"     { >= "3.11.0"           }
-  "js_of_ocaml-lwt"     { >= "3.11.0"           }
+  "js_of_ocaml"         { >= "4.0.0" & < "5"    }
+  "js_of_ocaml-ppx"     { >= "4.0.0" & < "5"    }
+  "js_of_ocaml-lwt"     { >= "4.0.0" & < "5"    }
   "yojson"              { >= "1.7.0"            }
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.8.0"            }
