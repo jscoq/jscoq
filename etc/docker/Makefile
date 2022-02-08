@@ -2,11 +2,13 @@
 
 WHO = jscoq
 
+BRANCH = v8.15
+
 export JSCOQ_REPO = https://github.com/$(WHO)/jscoq.git
-export JSCOQ_BRANCH = v8.14
+export JSCOQ_BRANCH = $(BRANCH)
 
 export WACOQ_BIN_REPO = https://github.com/$(WHO)/wacoq-bin.git
-export WACOQ_BIN_BRANCH = v8.14
+export WACOQ_BIN_BRANCH = $(BRANCH)
 
 export NJOBS ?= 4
 
@@ -14,9 +16,9 @@ export NJOBS ?= 4
 # This is needed for jscoq/wacoq branching in Dockerfile
 export DOCKER_BUILDKIT = 1
 
-ARGS = --build-arg JSCOQ_REPO --build-arg JSCOQ_BRANCH \
-	   --build-arg WACOQ_BIN_REPO --build-arg WACOQ_BIN_BRANCH \
-	   --build-arg NJOBS
+ARGS = --build-arg BRANCH --build-arg NJOBS \
+	   --build-arg JSCOQ_REPO --build-arg JSCOQ_BRANCH \
+	   --build-arg WACOQ_BIN_REPO --build-arg WACOQ_BIN_BRANCH
 
 -include _config.mk
 
