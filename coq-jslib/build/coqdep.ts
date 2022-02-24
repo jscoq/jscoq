@@ -133,7 +133,7 @@ class CoqDep {
 
     *_extractImportsBase(v_text: string) {
         // Strip comments
-        v_text = v_text.replace(/\(\*([^*]|[*][^)])*?\*\)/g, ' ');
+        v_text = v_text.replace(/\(\*[^]*?\*\)/g, ' '); /** @todo nested comments */
 
         // Split sentences
         for (let sentence of v_text.split(/[.](?:\s|$)/)) {
