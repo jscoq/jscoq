@@ -10,6 +10,7 @@ val intern_reference : Libnames.qualid -> Names.GlobRef.t option
 
 (* val recover_notation : Environ.env -> Evd.evar_map -> Constrexpr.constr_expr -> Constrexpr.constr_expr option *)
 
+(** [notation_raw env sigma expr] will return [Some raw_expr] if [raw_expr] is the unfolding of a notation [expr] *)
 val notation_raw :
   Environ.env
   -> Evd.evar_map

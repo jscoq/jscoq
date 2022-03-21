@@ -58,6 +58,12 @@ let _recover_notation env sigma t =
 (* From a notation to a notation-free term *)
 let notation_raw env sigma t =
   if !debug then Feedback.msg_warning Pp.(str "nr [<-] " ++ Ppconstr.pr_constr_expr env sigma t);
+  (* Wish: In place of full internalization + notation-free extern, we could have an operation
+   *
+   * [expand_notation : constr_expr -> constr_expr]
+   * [expand_implicits : constr_expr -> constr_expr]
+   *
+   *)
   let gt = Constrintern.intern_constr env sigma t in
   let r =
   set_flag

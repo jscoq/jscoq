@@ -13,6 +13,25 @@
 open CAst
 open Constrexpr
 
+(* notes with the discussion with Hugo:
+
+ - there are two kinds of information that the printer can know:
+
+   + parsing-level: this includes notations, implicit arities, etc...
+   + semantic-level: only after typchecking has run! For example coertions!
+
+ - how to remember for example the type of a sub-expression:
+
+   The expression goes from Ast.t to Term.t, then goes back to Ast.t for printing.
+
+   + doing it for all types, it is too expensive
+   + doing it for some, requires a way to specify which
+   + an interesting idea is to attach all the possible requests over the structure of a term
+     in the term itself once it has been recosntructed from the typing phase
+
+ - continuation maybe a meeting with Clement and Shachar?
+
+ *)
 
 module BM = BoxModel
 
