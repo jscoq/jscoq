@@ -47,3 +47,4 @@ val observe : doc:ser_doc -> Stateid.t -> ser_doc
 (* Deprecated *)
 val edit   : doc:ser_doc -> Stateid.t -> Stateid.t list * ser_doc
 
+val tactic_info : doc:ser_doc -> sid:Stateid.t -> string -> Names.Id.t list list

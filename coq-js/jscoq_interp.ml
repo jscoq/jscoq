@@ -224,6 +224,10 @@ let jscoq_execute =
   | Query (sid, rid, query) ->
     exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
 
+  | TacticInfo (sid, tac) ->
+    let gids = Jscoq_doc.tactic_info ~doc:!doc ~sid tac in
+    out_fn (TacticInfo gids)
+
   | Register file_path  ->
     Jslibmng.register_cma ~file_path
 

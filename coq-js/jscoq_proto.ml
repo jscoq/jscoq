@@ -70,7 +70,7 @@ type in_mode = Icoq.in_mode
 let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
 
 type qualified_object_prefix =
-  [%import: Icoq.qualified_object_prefix]
+  [%import: Icoq.qualified_object_prefix](** List of new identifiers added to the context for each new goal *)
   [@@deriving yojson]
 type qualified_name =
   [%import: Icoq.qualified_name]
@@ -111,6 +111,9 @@ type jscoq_cmd =
   | Query   of Stateid.t * Feedback.route_id * query
   | Ast     of Stateid.t
 
+  | TacticInfo of Stateid.t * string
+  (** "Speculatively" execute a tactic and return information about how the goal changed *)
+
   (*            filename content *)
   | Register of string
   | Put      of string * string
@@ -147,6 +150,9 @@ type jscoq_answer =
   | CoqOpt    of string list * Goptions.option_value
   | Log       of Feedback.level * Pp.t
   | Feedback  of Feedback.feedback
+
+  | TacticInfo of Names.Id.t list list
+  (** List of new identifiers added to the context for each new goal *)
 
   | SearchResults of Feedback.route_id * qualified_name Seq.t
 

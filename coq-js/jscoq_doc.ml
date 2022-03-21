@@ -161,3 +161,79 @@ let observe ~doc sid =
   let doc, sdoc = doc in
   let doc = Stm.observe ~doc sid in
   doc, sdoc
+
+(** tactic info *)
+let _count_goals (pst : Declare.Proof.t) : int =
+  let pf = Declare.Proof.get pst in
+  let { Proof.goals ; _ } = Proof.data pf in
+  List.length goals
+
+let get_hyp_name sigma (g : Evar.t) =
+  let open Context.Named in
+  (* The next 4 lines will find the hypothesis (env of type
+     named_context) of a particular goal, it is indeed black magic :( *)
+  let evi = Evd.find sigma g in
+  let env, _sigma = Evd.evar_filtered_env (Global.env ()) evi, Evd.evar_concl evi in
+  let env = Environ.named_context env in
+  (* We just fold over the name context to extract the names *)
+  let names = fold_inside (fun acc d -> Declaration.get_id d :: acc) env ~init:[] in
+  names
+
+let get_hyps_name sigma pst =
+  let pf = Declare.Proof.get pst in
+  let { Proof.goals ; _ } = Proof.data pf in
+  List.map (get_hyp_name sigma) goals
+
+let diff_pstates sigma (_pst1 : Declare.Proof.t) (pst2 : Declare.Proof.t) =
+  get_hyps_name sigma pst2
+
+(* Hack for now *)
+let tmp_sid : int ref = ref (max_int - 1)
+
+let pstate_of_st m = match m with
+  | Stm.Valid (Some { Vernacstate.lemmas; _ } ) ->
+    Option.map (Vernacstate.LemmaStack.with_top ~f:(fun p -> p)) lemmas
+  | _ -> None
+
+let context_of_st m = match m with
+  | Stm.Valid (Some { Vernacstate.lemmas = Some lemma; _ } ) ->
+    Vernacstate.LemmaStack.with_top lemma
+      ~f:(fun p -> Declare.Proof.get_current_context p)
+    (* let pstate = st.Vernacstate.proof in *)
+    (* let summary = States.summary_of_state st.Vernacstate.system in
+     * Safe_typing.env_of_safe_env Summary.(project_from_summary summary Global.global_env_summary_tag) *)
+  | _ ->
+    let env = Global.env () in Evd.from_env env, env
+
+let exec_tactic_speculatively ~doc ~pstate ~sid tac =
+  let pa = Pcoq.Parsable.make (Stream.of_string tac) in
+  let entry = Pvernac.main_entry in
+
+  match Stm.parse_sentence ~doc sid ~entry pa with
+  | None -> []
+  | Some ast ->
+    (* Execute the sentence. TODO add a fucntion to atomically add and
+       execute a sentence. *)
+    decr tmp_sid;
+    (* nsid == newtip ; also todo check add_focus *)
+    let doc, nsid, _add_focus = Stm.add ~doc ~ontop:sid ~newtip:(Stateid.of_int !tmp_sid) false ast in
+    let doc = Stm.observe ~doc nsid in
+    let st = Stm.state_of_id ~doc nsid in
+    let pstate' = pstate_of_st st in
+    let sigma', _env = context_of_st st in
+    let _doc, _focus = Stm.edit_at ~doc sid in
+    match pstate' with
+    | None -> []                  (* the proof was closed *)
+    | Some pstate' ->
+      diff_pstates sigma' pstate pstate'
+
+let tactic_info ~doc ~sid tac =
+  let doc, _ = doc in
+  let st = Stm.state_of_id ~doc sid in
+  (* let sigma, env = context_of_st st in *)
+  let pstate = pstate_of_st st in
+  match pstate with
+  | None -> []                    (* No open proof *)
+  | Some pstate ->
+    exec_tactic_speculatively ~doc ~pstate ~sid tac
+
