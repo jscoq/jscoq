@@ -1,3 +1,8 @@
+# jsCoq 0.15.0 "Steady State"
+------------------------------
+
+ - Update to Coq 8.15.0 (@corwin-of-amber)
+
 # jsCoq 0.14.1 "Leap of Faith"
 ------------------------------
 
