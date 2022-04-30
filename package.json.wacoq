@@ -1,6 +1,6 @@
 {
   "name": "wacoq",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "bin": {
     "wacoqdoc": "ui-js/jscoqdoc.js"
@@ -25,7 +25,7 @@
     "path": "^0.12.7",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
-    "wacoq-bin": "0.15.0"
+    "wacoq-bin": "0.15.1"
   },
   "devDependencies": {
     "@types/find": "^0.2.1",

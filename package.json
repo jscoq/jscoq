@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
     "jscoq": "./dist/cli.js",
