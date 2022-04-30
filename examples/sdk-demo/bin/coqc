@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+const child_process = require('child_process');
+
+const ME = 'jscoq',
+      DOCKER_IMAGE = `${ME}:sdk`;
+
+function mounts() {
+    var cwd = process.cwd(),
+        mnt = cwd.match(/[/][^/]+/)[0];
+
+    if (!mnt)
+        console.warn(`${ME}: cannot detect working directory root for '${cwd}';\n` +
+                     `       this will probably not work.`)
+
+    return (mnt ? [mnt] : []).map(d => `-v${d}:${d}`);
+}
+
+function run(args) {
+    var cmd = 'docker', args = [
+        'run', ...mounts(), `-w${process.cwd()}`, '--rm',
+        DOCKER_IMAGE, 'coqc', ...args
+    ];
+    var rc = child_process.spawnSync(cmd, args, {stdio: 'inherit'});
+
+    if (rc.error) {
+        console.log(`${ME}: failed to run Docker; ${rc.error}\n` +
+                    `  (${cmd} ${args.join(' ')})`);
+        process.exit(1);
+    }
+    if (rc.status) process.exit(rc.status);
+    if (rc.signal) { console.log('Killed'); process.exit(1); }
+}
+
+run(process.argv.slice(2));

@@ -1,0 +1,10 @@
+
+(rule
+ (targets coq-pkgs)
+ (deps
+  (package coq-coqoban))
+ (action
+  (run npx %{env:pkgtool=jscoq} build workdir --top Coqoban
+       --package coq-pkgs/coqoban.coq-pkg)))
+
+(dirs workdir)
