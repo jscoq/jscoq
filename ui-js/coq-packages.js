@@ -161,7 +161,8 @@ class PackageManager {
             bname = bname || pi.name;
 
             if (!bname) throw new Error('invalid archive: missing package manifest (coq-pkg.json)');
-            if (this.packages_by_name[bname]) throw new Error(`package ${bname} is already present`);
+            if (this.packages_by_name[bname] && this.packages_by_name[bname].info)
+                throw new Error(`package ${bname} is already present`);
 
             for (let k in pi)
                 if (!pkg_info[k]) pkg_info[k] = pi[k];
@@ -293,7 +294,7 @@ class PackageManager {
     dropPackage(file) {
         this.expand();
         this.addBundleZip(undefined, file).then(pkg => {
-            this.bundles[pkg.name].div.scrollIntoViewIfNeeded();
+            this._scrollTo(this.bundles[pkg.name].row[0]);
             this.loadPkg(pkg.name);
         })
         .catch(err => { alert(`${file.name}: ${err}`); });
