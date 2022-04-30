@@ -18,8 +18,11 @@ function mounts() {
 }
 
 function user() {
-    var {uid, gid} = os.userInfo();
-    return ['-e', `LOCAL_USER_ID=${uid}`, '-e', `LOCAL_GROUP_ID=${gid}`];
+    if (os.platform() === 'darwin') return [];  // seems to not work in macOS, and also unneeded
+    else {
+        var {uid, gid} = os.userInfo();
+        return ['-e', `LOCAL_USER_ID=${uid}`, '-e', `LOCAL_GROUP_ID=${gid}`];
+    }
 }
 
 function run(args) {

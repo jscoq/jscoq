@@ -18,7 +18,9 @@
 USER_ID=${LOCAL_USER_ID:-9001}
 GROUP_ID=${LOCAL_GROUP_ID:-$USER_ID}
 
-echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
+if [ x"$LOCAL_USER_ID" != x ] ; then
+  echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
+fi
 groupadd -g $GROUP_ID thegroup
 useradd --shell /bin/bash -u $USER_ID -g thegroup -o -c "" -m user
 export HOME=/home/user
