@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-const child_process = require('child_process');
+const os = require('os'),
+      child_process = require('child_process');
 
 const ME = 'jscoq',
       DOCKER_IMAGE = `${ME}:sdk`;
@@ -16,11 +17,16 @@ function mounts() {
     return (mnt ? [mnt] : []).map(d => `-v${d}:${d}`);
 }
 
+function user() {
+    var {uid, gid} = os.userInfo();
+    return ['-e', `LOCAL_USER_ID=${uid}`, '-e', `LOCAL_GROUP_ID=${gid}`];
+}
+
 function run(args) {
     var cmd = 'docker', args = [
-        'run', ...mounts(), `-w${process.cwd()}`, '--rm',
-        DOCKER_IMAGE, 'coqc', ...args
-    ];
+            'run', ...mounts(), ...user(), `-w${process.cwd()}`, '--rm',
+            DOCKER_IMAGE, 'coqc', ...args
+        ];
     var rc = child_process.spawnSync(cmd, args, {stdio: 'inherit'});
 
     if (rc.error) {
