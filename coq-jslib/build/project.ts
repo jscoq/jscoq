@@ -609,6 +609,7 @@ class JsCoqCompat {
         var d: {[dp: string]: string[]} = {}
         for (let k in manifest.modules) {
             var [dp, mod] = k.split(/[.]([^.]+)$/); 
+            if (!mod) { mod = dp; dp = ""; }
             (d[dp] = d[dp] || []).push(mod); 
         }
         var pkgs = Object.entries(d).map(([a,b]) => ({ 
