@@ -139,7 +139,7 @@ async function main() {
         rc = 0;
 
     var prog = commander
-        .name('wacoq')
+        .name('jscoq')
         .version(manifest.version);
     prog.command('build', {isDefault: true})
         .option('--workspace <w.json>',       'build projects from specified workspace')
