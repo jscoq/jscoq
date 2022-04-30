@@ -142,12 +142,16 @@ COPY --from=jscoq-sdk-prepare /root/jscoq/dist-sdk /opt/jscoq
 COPY gosu-entrypoint.sh /root/gosu-entrypoint.sh
 ENTRYPOINT ["/root/gosu-entrypoint.sh"]
 
+# Needs to be squashed into a single step to facilitate cleanup
 RUN if [ ${WORDSIZE} = 32 ] ; then \
         dpkg --add-architecture i386 && apt-get update && \
         apt-get install --no-install-recommends -y \
             libgmp10:i386 libc6-i386 ; \
-    fi
-RUN apt-get install gosu && apt-get clean
+    else apt-get update ; \
+    fi ; \
+    apt-get install --no-install-recommends -y gosu && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
 
 # ----------------------------------------------------------
