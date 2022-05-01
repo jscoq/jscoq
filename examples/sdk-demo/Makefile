@@ -1,11 +1,12 @@
 
-REPO = https://github.com/coq-community/coqoban
+REPO = https://github.com/coq-contribs/group-theory.git
 WORKDIR = workdir
 
 PATH := $(PWD)/bin:$(PATH)
 export PATH
 
 build: $(WORKDIR)
+	cp dune-files/dune $(WORKDIR)/
 	# Use current workspace, not jsCoq's
 	dune build --root .
 
