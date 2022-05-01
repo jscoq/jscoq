@@ -7,13 +7,11 @@ which reduces to considering an isosceles right triangle.
 
 Below, we prove a statement in Coq of the irrationality
 of the square root of two that is expressed only in terms
-of natural numbers (Coq's <<nat>>). The proof is a simplified version of a
-#<a href="https://github.com/coq-community/qarith-stern-brocot/blob/master/theories/sqrt2.v">proof by Milad Niqui</a>#.
-*)
+of natural numbers (Coq's <<nat>>). The proof is a simplified
+version of a #<a href="https://github.com/coq-community/qarith-stern-brocot/blob/master/theories/sqrt2.v">proof by Milad Niqui</a>#.
 
-(**
-We begin by loading results on arithmetic on natural numbers, and
-the lia arithmetic proof tactic.
+We begin by loading results on arithmetic on natural numbers,
+and the lia arithmetic solver tactic.
 *)
 From Coq Require Import Arith Lia.
 
@@ -25,8 +23,8 @@ Lemma lt_monotonic_inverse :
  forall x y : nat, f x < f y -> x < y.
 Proof.
 intros f Hmon x y Hlt; case (le_gt_dec y x); auto.
-intros Hle; case (le_lt_or_eq _ _ Hle).
-intros Hlt'; case (lt_asym _ _ Hlt); apply Hmon; auto.
+intros Hle; case (proj1 (Nat.lt_eq_cases _ _) Hle).
+intros Hlt'; case (Nat.lt_asymm _ _ Hlt); apply Hmon; auto.
 intros Heq; case (Nat.lt_neq _ _ Hlt); rewrite Heq; auto.
 Qed.
  
@@ -34,7 +32,7 @@ Lemma sub_square_identity :
  forall a b : nat, b <= a -> (a - b) * (a - b) = a * a + b * b - 2 * (a * b).
 Proof.
 intros a b H.
-rewrite (le_plus_minus b a H); lia.
+rewrite <- (Nat.sub_add b a H); lia.
 Qed.
 
 Lemma root_monotonic : forall x y : nat, x * x < y * y -> x < y.
@@ -60,13 +58,13 @@ Proof. lia. Qed.
 (** We define a local custom proof tactic. *)
 Local Ltac solve_comparison :=
   apply root_monotonic; repeat rewrite square_recompose; rewrite hyp_sqrt;
-   rewrite (mult_assoc _ 2 _); apply mult_lt_compat_r;
+   rewrite (Nat.mul_assoc _ 2 _); apply Nat.mul_lt_mono_pos_r;
     auto using sqrt_q_non_zero with arith.
  
 Lemma comparison1 : q < p.
 Proof.
-replace q with (1 * q); try lia.
-replace p with (1 * p); try lia.
+replace q with (1 * q) by lia.
+replace p with (1 * p) by lia.
 solve_comparison.
 Qed.
 
@@ -78,12 +76,12 @@ Proof. solve_comparison. Qed.
 
 Lemma comparison4 : 3 * q - 2 * p < q.
 Proof.
-apply plus_lt_reg_l with (2 * p).
-rewrite <- le_plus_minus; 
- try (simple apply lt_le_weak; auto using comparison2 with arith).
-replace (3 * q) with (2 * q + q); try lia.
-apply plus_lt_le_compat; auto.
-repeat rewrite (mult_comm 2); apply mult_lt_compat_r;
+apply Nat.add_lt_mono_l with (2 * p).
+rewrite Nat.add_comm, Nat.sub_add;
+ try (simple apply Nat.lt_le_incl; auto using comparison2 with arith).
+replace (3 * q) with (2 * q + q) by lia.
+apply Nat.add_lt_le_mono; auto.
+repeat rewrite (Nat.mul_comm 2); apply Nat.mul_lt_mono_pos_r;
 auto using comparison1 with arith.
 Qed.
  
@@ -107,18 +105,18 @@ End sqrt2_decrease.
 We apply the induction hypothesis with the numbers <<3 * q - 2 * q>>
 and <<3 * p - 4 * q>>. This leaves two key proof goals:
 - <<3 * q - 2 * p <> 0>>, which we prove using arithmetic and the
-  [comparison2] lemma above.
+  [comparison2] lemma above
 - <<(3 * p - 4 * q) * (3 * p - 4 * q) = 2 * ((3 * q - 2 * p) * (3 * q - 2 * p))>>,
-  which we prove using the [new_equality] lemma above.
+  which we prove using the [new_equality] lemma above
 *)
 Theorem sqrt2_not_rational :
  forall p q : nat, q <> 0 -> p * p = 2 * (q * q) -> False.
 Proof.
 intros p q; generalize p; clear p; elim q using (well_founded_ind lt_wf).
 clear q; intros q Hrec p Hneq.
-generalize (neq_O_lt _ (sym_not_equal Hneq)); intros Hlt_O_q Heq.
+generalize (proj1 (Nat.neq_0_lt_0 _) Hneq); intros Hlt_O_q Heq.
 apply (Hrec (3 * q - 2 * p) (comparison4 _ _ Hlt_O_q Heq) (3 * p - 4 * q)).
-- apply sym_not_equal; apply Nat.lt_neq; apply plus_lt_reg_l with (2 * p).
-  rewrite <- plus_n_O; rewrite <- le_plus_minus; auto using lt_le_weak,comparison2.
+- apply sym_not_equal; apply Nat.lt_neq; apply Nat.add_lt_mono_l with (2 * p).
+  rewrite <- plus_n_O, Nat.add_comm, Nat.sub_add; auto using Nat.lt_le_incl,comparison2.
 - apply new_equality; auto.
 Qed.
