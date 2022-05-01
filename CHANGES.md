@@ -1,7 +1,8 @@
-# jsCoq 0.15.0 "Go For Your Toad, or Similar"
-------------------------------
+# jsCoq 0.15.1 "Go For Your Toad, or Similar"
+---------------------------------------
 
  - Update to Coq 8.15.1 (@corwin-of-amber)
+ - Stabilized jsCoq SDK Docker image (@corwin-of-amber)
 
 # jsCoq 0.15.0 "Steady State"
 ------------------------------
