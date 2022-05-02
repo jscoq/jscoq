@@ -3,6 +3,55 @@ const webpack = require('webpack'),
       path = require('path'),
       { VueLoaderPlugin } = require('vue-loader');
 
+const
+  basics = (argv) => ({
+    mode: 'development',
+    devtool: argv.mode !== 'production' ? "source-map" : undefined,
+    stats: {
+      hash: false, version: false, modules: false  // reduce verbosity
+    },
+    performance: {
+      maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
+    },
+  }),
+  ts = {
+    test: /\.tsx?$/,
+    use: 'ts-loader',
+    exclude: /node_modules/,
+  },
+  css = {
+    test: /\.css$/i,
+    use: ['style-loader', 'css-loader'],
+  },
+  scss = {
+    test: /\.scss$/i,  /* Vue.js has some */
+    use: ['style-loader', 'css-loader', 'sass-loader'],
+  },
+  imgs = {
+    test: /\.(png|jpe?g|gif)$/i,
+    loader: 'file-loader',
+    options: {
+      outputPath: 'ide-project-images',
+    }
+  },
+  vuesfc = {
+    test: /\.vue$/,
+    use: 'vue-loader'
+  },
+  cliPlugins = (scriptName) => [
+    new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
+    new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
+    function() {
+      this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0755));
+    }
+  ],
+  resolve = {
+    extensions: [ '.tsx', '.ts', '.js' ]
+  },
+  output = (dirname, filename) => ({
+    filename, path: path.join(__dirname, dirname)
+  });
+
 module.exports = (env, argv) => [
 /**
  * jsCoq CLI
@@ -12,38 +61,30 @@ module.exports = (env, argv) => [
   name: 'cli',
   target: 'node',
   entry: './coq-jslib/cli.ts',
-  mode: 'development',
-  devtool: argv.mode !== 'production' ? "source-map" : undefined,
-  stats: {
-    hash: false, version: false, modules: false  // reduce verbosity
-  },
+  ...basics(argv),
   module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-    ],
+    rules: [ts]
   },
   externals: {  /* do not bundle the worker */
     '../coq-js/jscoq_worker.bc.js': 'commonjs2 ../coq-js/jscoq_worker.bc.js',
     'wacoq-bin/dist/subproc': 'commonjs2'
   },
-  resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+  resolve,
+  output: output('dist', 'cli.js'),
+  plugins: cliPlugins('dist/cli.js'),
+  node: false
+},
+{
+  name: 'toolkit',
+  target: 'node',
+  entry: './coq-jslib/build/sdk/toolkit.js',
+  ...basics(argv),
+  module: {
+    rules: [ts]
   },
-  output: {
-    filename: 'cli.js',
-    path: path.join(__dirname, 'dist')
-  },
-  plugins: [
-    new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
-    new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
-    function() {
-      this.hooks.afterDone.tap('chmod', () => fs.chmodSync('dist/cli.js', 0755));
-    }
-  ],
+  resolve,
+  output: output('dist', 'toolkit.js'),
+  plugins: cliPlugins('dist/toolkit.js'),
   node: false
 },
 /**
@@ -51,15 +92,8 @@ module.exports = (env, argv) => [
  */
 {
   name: 'ide-project',
-  mode: 'development',
   entry: './ui-js/ide-project.js',
-  devtool: argv.mode !== 'production' ? "source-map" : undefined,
-  stats: {
-    hash: false, version: false, modules: false  // reduce verbosity
-  },
-  performance: {
-    maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
-  },
+  ...basics(argv),
   output: {
     filename: 'ide-project.browser.js',
     path: path.join(__dirname, 'dist'),
@@ -71,35 +105,10 @@ module.exports = (env, argv) => [
     'wacoq-bin/dist/subproc': 'commonjs2'
   },
   module: {
-    rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.scss$/i,  /* Vue.js has some */
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-      },
-      {
-        test: /\.(png|jpe?g|gif)$/i,
-        loader: 'file-loader',
-        options: {
-          outputPath: 'ide-project-images',
-        }
-      },
-      {
-        test: /\.vue$/,
-        use: 'vue-loader'
-      }
-    ],
+    rules: [ts, css, scss, imgs, vuesfc]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+    ...resolve,
     fallback: { "stream": require.resolve("stream-browserify") }
   },
   plugins: [new VueLoaderPlugin(), 
@@ -111,15 +120,8 @@ module.exports = (env, argv) => [
  */
 {
   name: 'collab',
-  mode: 'development',
   entry: './ui-js/addon/collab.js',
-  devtool: argv.mode !== 'production' ? "source-map" : undefined,
-  stats: {
-    hash: false, version: false, modules: false  // reduce verbosity
-  },
-  performance: {
-    maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
-  },
+  ...basics(argv),
   output: {
     filename: 'collab.browser.js',
     path: path.join(__dirname, 'dist/addon'),
@@ -127,19 +129,7 @@ module.exports = (env, argv) => [
     libraryTarget: 'umd'
   },
   module: {
-    rules: [
-      {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
-      },
-      {
-        test: /\.(png|jpe?g|gif)$/i,
-        loader: 'file-loader',
-        options: {
-          outputPath: 'collab-images',
-        }
-      }
-    ]
+    rules: [css, imgs]
   }
 }
 ];

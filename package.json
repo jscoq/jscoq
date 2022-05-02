@@ -4,6 +4,7 @@
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
     "jscoq": "./dist/cli.js",
+    "jscoq-sdk": "./dist/toolkit.js",
     "jscoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
