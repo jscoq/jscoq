@@ -1,17 +1,26 @@
 ARG BRANCH=v8.15
 
-FROM debian:10-slim as opam
+ARG WORDSIZE=32
+ARG SWITCH=jscoq+${WORDSIZE}bit
+
+FROM debian:11-slim as opam
 
 # ------------
 #   Get OPAM
 # ------------
-RUN dpkg --add-architecture i386 && apt-get update && apt-get upgrade -y apt && \
+
+ARG WORDSIZE
+
+RUN if [ ${WORDSIZE} = 32 ] ; then dpkg --add-architecture i386 ; fi
+
+RUN apt-get update && apt-get upgrade -y apt && \
     apt-get install --no-install-recommends -y \
     wget ca-certificates \
-    m4 bubblewrap gcc gcc-multilib libc6-dev libgmp-dev:i386 binutils make patch unzip
+    m4 bubblewrap gcc libc6-dev binutils make patch unzip \
+    opam
 
-# We need to install OPAM 2.0 manually for now.
-RUN wget https://github.com/ocaml/opam/releases/download/2.0.8/opam-2.0.8-x86_64-linux -O /usr/bin/opam && chmod 755 /usr/bin/opam
+RUN if [ ${WORDSIZE} = 32 ] ; then \
+    apt install --no-install-recommends -y gcc-multilib libgmp-dev:i386; fi
 
 # Basic OPAM setup
 ARG NJOBS=2
@@ -32,7 +41,10 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 FROM opam as jscoq-preinstall
 
-RUN opam switch create jscoq+32bit --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit"
+ARG SWITCH
+ARG WORDSIZE
+RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.12.0 ; fi
+RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit" ; fi
 
 # Other deps: Git, Node.js, GMP
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
@@ -46,6 +58,7 @@ RUN apt install --no-install-recommends -y $APT_PACKAGES
 FROM jscoq-preinstall as jscoq-prereq
 
 ARG BRANCH
+ARG WORDSIZE
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
 
@@ -53,7 +66,7 @@ WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
 
 WORKDIR jscoq
-RUN ./etc/toolchain-setup.sh --32
+RUN ./etc/toolchain-setup.sh --${WORDSIZE}
 RUN opam clean -a -c
 RUN opam list
 
@@ -64,7 +77,7 @@ FROM jscoq-prereq as jscoq
 
 ARG NJOBS=4
 
-RUN git pull
+RUN git pull --ff-only
 RUN eval $(opam env) && make coq && make jscoq
 
 # - dist tarballs
@@ -81,6 +94,8 @@ RUN eval $(opam env) && make install &&   \
     cd _build/jscoq+* && npm link
 
 ARG BRANCH
+ARG WORDSIZE
+ARG SWITCH
 ARG ADDONS_REPO=https://github.com/jscoq/addons
 ARG ADDONS_BRANCH=${BRANCH}
 
@@ -93,7 +108,7 @@ RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
 
 WORKDIR jscoq-addons
 RUN make set-ver VER=`jscoq --version`
-RUN eval $(opam env) && make
+RUN eval $(opam env) && make CONTEXT=${SWITCH}
 
 # Private repos: re-enable SSH
 COPY Dockerfile _ssh* /root/_ssh/
@@ -103,7 +118,7 @@ ENV GIT_SSH_COMMAND 'ssh -i /root/_ssh/id_rsa -o StrictHostKeyChecking=no'
 RUN if [ -e /root/_ssh/id_rsa ] ; then rm ~/.gitconfig && apt-get install -y openssh-client ; fi
 RUN if [ -e /root/_ssh/id_rsa ] ; then eval $(opam env) && make privates WITH_PRIVATE=software-foundations ; fi
 
-RUN make pack
+RUN make pack CONTEXT=${SWITCH}
 
 # ---------
 # jsCoq SDK
@@ -118,13 +133,25 @@ RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
 # rm dist-sdk/lib/coq/*/*.cmxs \
 # `find dist-sdk -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
-FROM debian:10-slim as jscoq-sdk
+FROM debian:11-slim as jscoq-sdk
+
+ARG WORDSIZE
 
 COPY --from=jscoq-sdk-prepare /root/jscoq/dist-sdk /opt/jscoq
 
-COPY sdk-startup.sh /root/sdk-startup.sh
+COPY gosu-entrypoint.sh /root/gosu-entrypoint.sh
+ENTRYPOINT ["/root/gosu-entrypoint.sh"]
 
-ENTRYPOINT ["/root/sdk-startup.sh"]
+# Needs to be squashed into a single step to facilitate cleanup
+RUN if [ ${WORDSIZE} = 32 ] ; then \
+        dpkg --add-architecture i386 && apt-get update && \
+        apt-get install --no-install-recommends -y \
+            libgmp10:i386 libc6-i386 ; \
+    else apt-get update ; \
+    fi ; \
+    apt-get install --no-install-recommends -y gosu && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
 
 # ----------------------------------------------------------
@@ -180,7 +207,7 @@ ARG JSCOQ_BRANCH=${BRANCH}
 
 ARG NJOBS=4
 
-RUN git pull
+RUN git pull --ff-only
 RUN npm install
 RUN eval $(opam env) && make coq && make
 RUN make dist-npm

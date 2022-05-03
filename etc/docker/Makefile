@@ -12,13 +12,20 @@ export WACOQ_BIN_BRANCH = $(BRANCH)
 
 export NJOBS ?= 4
 
+ifneq (${shell uname -m},x86_64)
+# 32-bit support is only available for x86 processors (esp., not arm64)
+export WORDSIZE = 64
+endif
+
 # Use BuildKit.
 # This is needed for jscoq/wacoq branching in Dockerfile
 export DOCKER_BUILDKIT = 1
 
-ARGS = --build-arg BRANCH --build-arg NJOBS \
-	   --build-arg JSCOQ_REPO --build-arg JSCOQ_BRANCH \
-	   --build-arg WACOQ_BIN_REPO --build-arg WACOQ_BIN_BRANCH
+BUILD_ARGS = BRANCH NJOBS WORDSIZE \
+             JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH
+
+ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
+       $(addprefix --build-arg , $(BUILD_ARGS))
 
 -include _config.mk
 
