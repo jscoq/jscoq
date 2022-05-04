@@ -1,4 +1,4 @@
-.PHONY: build dist serve clean clean-% wa-% js-%
+.PHONY: default build dist serve clean clean-% wa-% js-%
 
 WHO = jscoq
 
@@ -32,19 +32,30 @@ ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
 JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'}
 WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'}
 
-js-build:
+default: js-build
+
+js-build: js-build-addons
+
+js-build-core:
 	docker build . --target jscoq-preinstall $(ARGS)  -t jscoq:preinstall
 	docker build . --target jscoq-prereq     $(ARGS)  -t jscoq:prereq
 	docker build . --target jscoq            $(ARGS)  -t jscoq
 	docker build . --target jscoq-addons     $(ARGS)  -t jscoq:addons
 
+js-build-addons: js-build-core
+	docker build . --target jscoq-addons     $(ARGS)  -t jscoq:addons
+
 js-build-sdk:
 	docker build . --target jscoq-sdk        $(ARGS)  -t jscoq:sdk
 
-wa-build:
+wa-build: wa-build-addons
+
+wa-build-core:
 	docker build . --target wacoq-preinstall $(ARGS)  -t wacoq:preinstall
 	docker build . --target wacoq-prereq     $(ARGS)  -t wacoq:prereq
 	docker build . --target wacoq            $(ARGS)  -t wacoq
+
+wa-build-addons:
 	docker build . --target wacoq-addons     $(ARGS)  -t wacoq:addons
 
 dist: js-dist wa-dist
@@ -65,6 +76,13 @@ wa-dist: clean-dist
 	docker cp wacoq-get-dist:/root/jscoq+wacoq/dist .
 	docker cp wacoq-get-dist:/root/jscoq-addons/dist .
 	docker rm wacoq-get-dist
+
+# For getting just the jsCoq package, w/o addons
+js-dist-core: clean-dist
+	docker run --name jscoq-get-dist jscoq
+	docker cp jscoq-get-dist:/root/jscoq/dist .
+	docker rm jscoq-get-dist
+
 
 JS_CLEAN = ${filter-out jscoq:pre%, $(JS_EXISTING_IMAGES)}
 WA_CLEAN = ${filter-out wacoq:pre%, $(WA_EXISTING_IMAGES)}
