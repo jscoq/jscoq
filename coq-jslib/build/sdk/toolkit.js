@@ -69,12 +69,14 @@ class DockerTool extends Phase {
 
     mounts(cfg) {
         var cwd = process.cwd(),
-            mnt = cwd.match(/[/][^/]+/)[0],
+            mnt = cwd.match(/^[/][^/]+/)?.[0],
             coqlib = cfg.coqlib;
     
         if (!mnt)
             console.warn(`[${ME}-sdk] cannot detect working directory root for '${cwd}';\n` +
                          `            this will probably not work.`)
+        if (mnt.match(/^[/](Users|home)$/))
+            mnt = cwd.match(/^[/][^/]+[/][^/]+/)?.[0] ?? mnt; /* this is highly heuristic */
     
         return [mnt, coqlib].filter(x => x).map(d => `-v${d}:${d}`);
     }
