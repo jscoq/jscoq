@@ -8,17 +8,18 @@ import glob from 'glob';
 import unzip from 'fflate-unzip';
 import chld from 'child-process-promise';
 import type commander from 'commander';
+import { cas, dirstamp, ln_sf } from './shutil';
 
 
 const SDK = '/tmp/wacoq-sdk';
 
 
-async function sdk(basedir = SDK, includeNative = true) {
+async function setup(basedir = SDK, includeNative = true) {
     mkdirp.sync(basedir);
 
     // Locate `coq-pkgs`
     var nm = findNM(), coqpkgsDir: string;
-    for (let sp of ['jscoq/coq-pkgs', 'wacoq-bin/bin/coq']) {
+    for (let sp of ['../_build/jscoq+64bit/coq-pkgs', 'jscoq/coq-pkgs', 'wacoq-bin/bin/coq']) {
         var fp = path.join(nm, sp);
         if (fs.existsSync(fp)) coqpkgsDir = fp;
     }
@@ -82,45 +83,11 @@ async function findCoq() {
     return mo[1];
 }
 
-/*- some shutil -*/
-
-function cat(fn: string) {
-    try {
-        return fs.readFileSync(fn, 'utf-8');
-    }
-    catch { return undefined; }
-}
-
-/**
- * If `fn` contains `expectedValue`, do nothing;
- * Otherwise run `whenNeq` and update `fn`.
- * @returns `true` iff `fn` already contained `expectedValue`.
- */
-async function cas(fn: string, expectedValue: string, whenNeq: () => void | Promise<void>) {
-    if (cat(fn) === expectedValue) return true;
-    else {
-        await whenNeq();
-        fs.writeFileSync(fn, expectedValue);
-        return false;
-    }
-}
-
-function dirstamp(fn: string) {
-    try { var s = fs.statSync(fn).mtime.toISOString(); } catch { s = '??'; }
-    return `${fn} @ ${s}`;
-}
-
-function ln_sf(target: string, source: string) {
-    try { fs.unlinkSync(source); }
-    catch { }
-    fs.symlinkSync(target, source);
-}
-
 /*- main entry point -*/
 
 async function main(args: string[]) {
     try {
-        var cfg = await sdk();
+        var cfg = await setup();
         var ret = await runCoqC(cfg, args);
         return ret.code;
     }
@@ -140,4 +107,4 @@ function installCommand(commander: commander.CommanderStatic) {
 }
 
 
-export { main, sdk, installCommand }
+export { main, setup, installCommand }

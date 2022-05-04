@@ -67,24 +67,12 @@ module.exports = (env, argv) => [
   },
   externals: {  /* do not bundle the worker */
     '../coq-js/jscoq_worker.bc.js': 'commonjs2 ../coq-js/jscoq_worker.bc.js',
-    'wacoq-bin/dist/subproc': 'commonjs2'
+    'wacoq-bin/dist/subproc': 'undefined',
+    'cross-spawn': 'commonjs2 cross-spawn'
   },
   resolve,
   output: output('dist', 'cli.js'),
   plugins: cliPlugins('dist/cli.js'),
-  node: false
-},
-{
-  name: 'toolkit',
-  target: 'node',
-  entry: './coq-jslib/build/sdk/toolkit.js',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve,
-  output: output('dist', 'toolkit.js'),
-  plugins: cliPlugins('dist/toolkit.js'),
   node: false
 },
 /**

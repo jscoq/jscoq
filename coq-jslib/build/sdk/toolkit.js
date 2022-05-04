@@ -1,7 +1,10 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import child_process from 'child_process';
+import { existsExec } from './shutil';
+import * as sdk from './setup';
 
-const fs = require('fs'), path = require('path'), os = require('os'),
-      child_process = require('child_process'),
-      sdk = require('./sdk');
 
 const ME = 'jscoq',
       SDK_FLAGS = (process.env['JSCOQ'] || '').split(',').filter(x => x);
@@ -19,7 +22,7 @@ class Phase {
         for (let pe of process.env['PATH'].split(':')) {
             if (skipSelf && pe.startsWith(this.basedir)) continue;
             var full = path.join(pe, progname);
-            if (this.existsExec(full)) return full;
+            if (existsExec(full)) return full;
         }
         throw new Error(`${progname}: not found`);
     }
@@ -51,30 +54,15 @@ class Hijack extends Phase {
         }
         process.env['PATH'] = `${bindir}:${process.env['PATH']}`;
     }
-
-    existsExec(p) {
-        try {
-            let stat = fs.statSync(p);
-            return stat && stat.isFile() && (stat.mode & fs.constants.S_IXUSR);
-        }
-        catch (e) { return false; }
-    }
-
-    existsDir(p) {
-        try {
-            let stat = fs.statSync(p);
-            return stat && stat.isDirectory();
-        }
-        catch (e) { return false; }        
-    }
 }
 
 class DockerTool extends Phase {
+
     dockerImage = `${ME}:sdk`
     incdir = '/opt/jscoq/lib/coq-core';  /* points to Docker image */
 
     async run(prog, args) {
-        const cfg = await sdk.sdk(this.basedir, false);
+        const cfg = await sdk.setup(this.basedir, false);
         cfg.include = this.incdir;
         this.runInContainer(prog, args, cfg);
     }
@@ -115,10 +103,7 @@ class DockerTool extends Phase {
 }
 
 
-async function main() {
-    var prog = path.basename(process.argv[1]),
-        args = process.argv.slice(2);
-
+async function main(prog, args) {
     var Phase = {
             'coqc': DockerTool, 'coqdep': DockerTool, 'coqtop': DockerTool
         }[prog] ?? Hijack;
@@ -128,9 +113,17 @@ async function main() {
     }
     catch (e) {
         if (typeof e.status === 'number') process.exit(e.status);
-        console.error(`[${ME}-sdk]`, e);
+        console.error(`[${ME}-sdk]`, e.err ?? e);
         process.exit(1);
     }
 }
 
-main(); 
+function installCommand(commander/*: commander.CommanderStatic*/) {
+    commander.command('sdk')
+        .description("Runs a shell command with `coqc` redirected to jsCoq SDK.")
+        .allowUnknownOption(true)
+        .action(async opts => { await main('sdk', opts.args); });
+}
+
+
+export { main, installCommand }
