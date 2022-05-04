@@ -75,9 +75,11 @@ RUN opam list
 # -----------
 FROM jscoq-prereq as jscoq
 
+ARG SUB_BRANCH
 ARG NJOBS=4
 
 RUN git pull --ff-only
+RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --ff-only ; fi
 RUN eval $(opam env) && make coq && make jscoq
 
 # - dist tarballs

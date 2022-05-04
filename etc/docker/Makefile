@@ -12,7 +12,9 @@ export WACOQ_BIN_BRANCH = $(BRANCH)
 
 export NJOBS ?= 4
 
-ifneq (${shell uname -m},x86_64)
+M := ${shell uname -m}
+
+ifneq (${M},x86_64)
 # 32-bit support is only available for x86 processors (esp., not arm64)
 export WORDSIZE = 64
 endif
@@ -21,7 +23,7 @@ endif
 # This is needed for jscoq/wacoq branching in Dockerfile
 export DOCKER_BUILDKIT = 1
 
-BUILD_ARGS = BRANCH NJOBS WORDSIZE \
+BUILD_ARGS = BRANCH SUB_BRANCH NJOBS WORDSIZE \
              JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH
 
 ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
@@ -29,8 +31,8 @@ ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
 
 -include _config.mk
 
-JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'}
-WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'}
+JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/jscoq -q}
+WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/wacoq -q}
 
 default: js-build
 
@@ -40,12 +42,11 @@ js-build-core:
 	docker build . --target jscoq-preinstall $(ARGS)  -t jscoq:preinstall
 	docker build . --target jscoq-prereq     $(ARGS)  -t jscoq:prereq
 	docker build . --target jscoq            $(ARGS)  -t jscoq
-	docker build . --target jscoq-addons     $(ARGS)  -t jscoq:addons
 
 js-build-addons: js-build-core
 	docker build . --target jscoq-addons     $(ARGS)  -t jscoq:addons
 
-js-build-sdk:
+js-build-sdk: js-build-core
 	docker build . --target jscoq-sdk        $(ARGS)  -t jscoq:sdk
 
 wa-build: wa-build-addons
@@ -55,7 +56,7 @@ wa-build-core:
 	docker build . --target wacoq-prereq     $(ARGS)  -t wacoq:prereq
 	docker build . --target wacoq            $(ARGS)  -t wacoq
 
-wa-build-addons:
+wa-build-addons: wa-build-core
 	docker build . --target wacoq-addons     $(ARGS)  -t wacoq:addons
 
 dist: js-dist wa-dist
@@ -106,6 +107,17 @@ js-clean-slate:
 wa-clean-slate:
 	${if $(WA_EXISTING_IMAGES), docker image rm $(WA_EXISTING_IMAGES)}
 	docker system prune -f
+
+js-upload:
+	docker tag jscoq:sdk jscoq/jscoq:sdk-${M}
+	docker push jscoq/jscoq:sdk-${M}
+
+# Update the multi-arch manifest
+MANIFEST_ARCHS = x86_64 arm64
+js-upload-manifest:
+	docker manifest create --amend jscoq/jscoq:sdk \
+	       $(addprefix jscoq/jscoq:sdk-, ${MANIFEST_ARCHS})
+	docker manifest push jscoq/jscoq:sdk
 
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \
