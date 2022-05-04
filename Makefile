@@ -148,8 +148,9 @@ distclean: clean
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
 	coq-js/jscoq_worker.bc.js coq-pkgs \
-	ui-js ui-css ui-images ui-external examples dist}
-DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
+	ui-js ui-css ui-images ui-external dist}
+DISTOBJ = README.md index.html package.json package-lock.json examples \
+          $(BUILDOBJ)
 DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
