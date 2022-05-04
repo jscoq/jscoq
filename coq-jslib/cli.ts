@@ -148,7 +148,7 @@ async function main() {
     var prog = commander
         .name('jscoq')
         .version(manifest.version);
-    prog.command('build') //, {isDefault: true})
+    prog.command('build', {isDefault: true})
         .option('--workspace <w.json>',       'build projects from specified workspace')
         .option('--rootdir <dir>',            'toplevel directory for finding `.v` and `.vo` files')
         .option('--top <name>',               'logical name of toplevel directory')
@@ -166,9 +166,6 @@ async function main() {
     headless.installCommand(prog);
 
     sdk.installCommand(prog);
-
-    //var argv = process.argv.slice();  // default command hack
-    //if (argv[2] != 'build' && argv[2] != 'run') argv.splice(2, 0, 'build');
 
     await prog.parseAsync(process.argv);
     return rc || headless.rc;
