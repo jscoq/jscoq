@@ -4,7 +4,6 @@
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "bin": {
     "jscoq": "./dist/cli.js",
-    "jscoq-sdk": "./dist/toolkit.js",
     "jscoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
@@ -25,6 +24,7 @@
     "mkdirp": "^1.0.4",
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
+    "proper-lockfile": "^4.1.2",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6"
   },

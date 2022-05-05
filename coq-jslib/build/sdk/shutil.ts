@@ -1,4 +1,6 @@
 import fs from 'fs';
+import path from 'path';
+import lockfile from 'proper-lockfile';
 
 
 function cat(fn: string) {
@@ -14,13 +16,24 @@ function cat(fn: string) {
  * @returns `true` iff `fn` already contained `expectedValue`.
  */
 async function cas(fn: string, expectedValue: string, whenNeq: () => void | Promise<void>) {
-    if (cat(fn) === expectedValue) return true;
-    else {
-        await whenNeq();
-        fs.writeFileSync(fn, expectedValue);
-        return false;
+    if (cat(fn) === expectedValue) return true;  /* fast lane */
+    let dir = path.dirname(fn),
+        lopts = {lockfileName: fn + '.lock', retries: cas_retries};
+    await lockfile.lock(dir, lopts);
+    try {
+        if (cat(fn) === expectedValue) return true;
+        else {
+            await whenNeq();
+            fs.writeFileSync(fn, expectedValue);
+            return false;
+        }
+    }
+    finally {
+        lockfile.unlock(dir, lopts);
     }
 }
+
+const cas_retries = {forever: true, factor: 1, minTimeout: 500, maxTimeout: 1000};
 
 function dirstamp(fn: string) {
     try { var s = fs.statSync(fn).mtime.toISOString(); } catch { s = '??'; }
