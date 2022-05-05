@@ -6,6 +6,7 @@
     <link rel="icon" href="ui-images/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <style>
       kbd { background: #0003; color: #333; font-size: 80%; }
       table.doc-actions th, table.doc-actions td {
@@ -49,6 +50,20 @@
         top: 5px;
         right: 40px;
       }
+      nav {
+        z-index: 1 !important;
+      }
+      .navbar-brand img {
+        height: 2em;
+      }
+      img.symbol-sqrt {
+        height: 1em;
+        margin: -0.2em -0.55em 0 0;
+      }
+      img.symbol-book {
+        height: 1em;
+        margin-right: 0.3em;
+      }
     </style>
     <title>jsCoq – Use Coq in Your Browser</title>
   </head>
@@ -56,8 +71,51 @@
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
+  <div id="document-wrapper">
+    <!------------------------------->
+    <!--   N A V   B A R           -->
+    <!------------------------------->
+    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand"><img src="ui-images/favicon.png"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                About
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="#">jsCoq Dev Team</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Coq Proof Assistant</a></li>
+                <li><a class="dropdown-item" href="#">company-coq</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarExamples" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Examples
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="#">Infinitude of Primes</a></li>
+                <li><a class="dropdown-item" href="#">Irrationality of <img class="symbol-sqrt" src="ui-images/sqrt.svg">2</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="ui-images/book.svg">Software Foundations</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad"></a>
+    </nav>
+    <!------------------------------->
+  
   <div id="document">
-  <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad"></a>
   <div>
     <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
     <p>
@@ -227,6 +285,7 @@ Qed.</textarea>
     </ul>
   </div>
   </div> <!-- /#document -->
+  </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
