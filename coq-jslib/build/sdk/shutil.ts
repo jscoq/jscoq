@@ -18,7 +18,7 @@ function cat(fn: string) {
 async function cas(fn: string, expectedValue: string, whenNeq: () => void | Promise<void>) {
     if (cat(fn) === expectedValue) return true;  /* fast lane */
     let dir = path.dirname(fn),
-        lopts = {lockfileName: fn + '.lock', retries: cas_retries};
+        lopts = {lockfilePath: fn + '.lock', retries: cas_retries};
     await lockfile.lock(dir, lopts);
     try {
         if (cat(fn) === expectedValue) return true;

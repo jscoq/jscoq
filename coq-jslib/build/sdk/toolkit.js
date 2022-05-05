@@ -29,7 +29,7 @@ class Phase {
     
     _exec(prog, args, stdio='inherit') {
         if (SDK_FLAGS.includes('verbose')) {
-            console.log(`[${ME}-sdk]  `, prog, args.join(' '));
+            log(`[${ME}-sdk]  ${prog} ${args.join(' ')}`);
         }
         return child_process.execFileSync(prog, args, {stdio});
     }
@@ -65,7 +65,7 @@ class DockerTool extends Phase {
     async run(prog, args) {
         const cfg = await sdk.setup(this.basedir, false);
         cfg.include = this.incdir;
-        this.copyToVolume(cfg);
+        await this.copyToVolume(cfg);
         this.runInContainer(prog, args, cfg);
     }
 
@@ -101,9 +101,11 @@ class DockerTool extends Phase {
             ([k, v]) => v ? ['-e', `${k}=${v}`] : []));
     }
     
-    copyToVolume(cfg) {
+    async copyToVolume(cfg) {
         let {name, mnt} = this.dockerVolume;
-        cas(path.join(cfg.coqlib, '_volume'), 'jscoq-sdk', () => {
+        await cas(path.join(cfg.coqlib, '_volume'), 'jscoq-sdk', () => {
+            if (SDK_FLAGS.includes('verbose'))
+                log(`[${ME}-sdk] creating volume ${name}`);
             this._exec('docker',  ['volume', 'rm', '-f', name], ['ignore', 'ignore', 'inherit']);
             this._exec('docker',  ['volume', 'create', name], ['ignore', 'ignore', 'inherit']);
             this.runInContainer('sudo', ['cp', '-rf', cfg.coqlib, mnt], cfg);
@@ -118,6 +120,11 @@ class DockerTool extends Phase {
             prog, ...args
         ]);
     }
+}
+
+/** logs to stderr to avoid cluttering output, esp. for coqdep */
+function log(msg) {
+    process.stderr.write(msg + '\n');
 }
 
 
