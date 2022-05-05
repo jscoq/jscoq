@@ -22,7 +22,9 @@ if [ -t 2 ] && [ x"$LOCAL_USER_ID" != x ] ; then
   echo "# Starting with UID : $USER_ID, GID: $GROUP_ID" >&2
 fi
 groupadd -g $GROUP_ID ateam
-useradd --shell /bin/bash -u $USER_ID -g ateam -o -c "" -m jscoq
+useradd --shell /bin/bash -u $USER_ID -g ateam -G sudo -o -c "" -m jscoq
 export HOME=/home/jscoq
+
+echo 'jscoq ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 exec /usr/sbin/gosu jscoq:ateam "${@:-bash}"

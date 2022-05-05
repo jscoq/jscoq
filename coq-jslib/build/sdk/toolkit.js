@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import child_process from 'child_process';
-import { existsExec } from './shutil';
+import { existsExec, cas } from './shutil';
 import * as sdk from './setup';
 
 
@@ -27,11 +27,11 @@ class Phase {
         throw new Error(`${progname}: not found`);
     }
     
-    _exec(prog, args) {
+    _exec(prog, args, stdio='inherit') {
         if (SDK_FLAGS.includes('verbose')) {
             console.log(`[${ME}-sdk]  `, prog, args.join(' '));
         }
-        return child_process.execFileSync(prog, args, {stdio: 'inherit'});
+        return child_process.execFileSync(prog, args, {stdio});
     }
 }
 
@@ -59,18 +59,21 @@ class Hijack extends Phase {
 class DockerTool extends Phase {
 
     dockerImage = `${ME}:sdk`
+    dockerVolume = {name: 'jscoq-sdk', mnt: '/opt/jscoq-sdk'}
     incdir = '/opt/jscoq/lib/coq-core';  /* points to Docker image */
 
     async run(prog, args) {
         const cfg = await sdk.setup(this.basedir, false);
         cfg.include = this.incdir;
+        this.copyToVolume(cfg);
         this.runInContainer(prog, args, cfg);
     }
 
     mounts(cfg) {
         var cwd = process.cwd(),
             mnt = cwd.match(/^[/][^/]+/)?.[0],
-            coqlib = cfg.coqlib;
+            coqlib = cfg.coqlib,
+            vol = this.dockerVolume;
     
         if (!mnt)
             console.warn(`[${ME}-sdk] cannot detect working directory root for '${cwd}';\n` +
@@ -78,7 +81,10 @@ class DockerTool extends Phase {
         if (mnt.match(/^[/](Users|home)$/))
             mnt = cwd.match(/^[/][^/]+[/][^/]+/)?.[0] ?? mnt; /* this is highly heuristic */
     
-        return [mnt, coqlib].filter(x => x).map(d => `-v${d}:${d}`);
+        if (coqlib?.startsWith('/opt')) coqlib = undefined;
+
+        return [...[mnt, coqlib].filter(x => x).map(d => `-v${d}:${d}`),
+                `-v${vol.name}:${vol.mnt}`];
     }
     
     user() {
@@ -95,6 +101,16 @@ class DockerTool extends Phase {
             ([k, v]) => v ? ['-e', `${k}=${v}`] : []));
     }
     
+    copyToVolume(cfg) {
+        let {name, mnt} = this.dockerVolume;
+        cas(path.join(cfg.coqlib, '_volume'), 'jscoq-sdk', () => {
+            this._exec('docker',  ['volume', 'rm', '-f', name], ['ignore', 'ignore', 'inherit']);
+            this._exec('docker',  ['volume', 'create', name], ['ignore', 'ignore', 'inherit']);
+            this.runInContainer('sudo', ['cp', '-rf', cfg.coqlib, mnt], cfg);
+        });
+        cfg.coqlib = path.join(mnt, path.basename(cfg.coqlib));
+    }
+
     runInContainer(prog, args, cfg={}) {
         this._exec('docker', [
             'run', ...this.mounts(cfg), ...this.user(), ...this.env(cfg),
