@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
+    <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   </head>
 
 <body class="jscoq-main">
@@ -189,7 +190,11 @@ Qed.</textarea>
       other users in a manner that is similar to Pastebin.
     </p>
     <h5>There's more</h5>
-    See the official docs on GitHub
+    <p>
+      See the <a href="https://github.com/jscoq/jscoq/tree/v8.15/docs">official docs</a>
+      on GitHub for more details on using, building, embedding, and integrating
+      <span class="jscoq-name">jsCoq</span> in your developments.
+    </p>
 
     <p>
       <span class="jscoq-name">jsCoq</span> comes with a variety of addon packages,
@@ -233,16 +238,13 @@ Qed.</textarea>
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
-    var jscoq_ids  = ['.snippet', 'addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
+    var jscoq_ids  = ['.snippet'];
     var jscoq_opts = {
         implicit_libs: false,
         focus: false,
-        base_path: './',
         editor: { mode: { 'company-coq': true } },
-        init_pkgs: ['init'],
         all_pkgs:  {'+': ['coq', 'mathcomp', 'equations', 'elpi', 'quickchick', 'lf', 'plf'],
                     './examples': ['examples']}
     };

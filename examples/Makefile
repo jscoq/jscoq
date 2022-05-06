@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all clean
 .PRECIOUS: _build/%.v
 
 all: nahas_tutorial.html
@@ -22,10 +22,10 @@ _build/%.v: %.v
 _build/%.vo: _build/%.v
 	$(COQC) -R _build Examples $<
 
-sqrt_2.html: _build/sqrt_2.v _build/sqrt_2.vo
+%.html: _build/%.v _build/%.vo
 	JSCOQ_URL=.. ../ui-js/jscoqdoc.js --no-index --no-lib-name --parse-comments $<
 	@rm coqdoc.css  # urghh
 
-nahas_tutorial.html: _build/nahas_tutorial.v _build/nahas_tutorial.vo
-	JSCOQ_URL=.. ../ui-js/jscoqdoc.js --no-index --no-lib-name --parse-comments $<
-	@rm coqdoc.css  # urghh
+clean:
+	rm -rf _build \
+	  examples.coq-pkg examples.json sqrt_2.html nahas_tutorial.html
