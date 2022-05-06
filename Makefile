@@ -95,7 +95,7 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.js
+	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.bc.js
 
 links-clean:
 	rm -f coq-pkgs coq-js/jscoq_worker.js

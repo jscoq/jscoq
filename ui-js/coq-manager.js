@@ -1191,6 +1191,7 @@ class CoqManager {
               interrupt = () => this.interruptRequest();
         const nav_bindings = {
             '_Enter':     goCursor, '_NumpadEnter': goCursor,
+            '^Enter':     goCursor, '^NumpadEnter': goCursor,
             '_ArrowDown': goNext,
             '_ArrowUp':   goPrev,
             'F8': toggle,
