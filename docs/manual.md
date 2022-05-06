@@ -1,7 +1,6 @@
 ## Basic Usage
 
-The main page showcases jsCoq by walking through a proof for the infinitude of primes using
-[`math-comp`](https://github.com/math-comp/math-comp), due to Georges Gonthier.
+The main page showcases jsCoq by walking through a proof that the square root of 2 is not rational, due to Milad Niqui.
 
 Once jsCoq finishes loading, you can step through the proof using the
 arrow buttons on the toolbar (top right), or using these keyboard

@@ -33,11 +33,14 @@ span.jscoq-name {
   margin-top: 2em;
   border: 1px solid #eee;
   padding: 5px;
-}  
+}
+
+#panel-wrapper {
+  z-index: 1021 !important;  /* above navbar */
+}
 
 /* Navbar */
 nav.navbar {
-  z-index: 1; /* do not clobber power button */
   padding: 0;
   border-bottom: 1px solid #eee;
 }
@@ -51,6 +54,10 @@ img.symbol-sqrt {
 img.symbol-book {
   height: 1em;
   margin-right: 0.3em;
+}
+img.symbol-mouse {
+  height: 1.3em;
+  margin-left: 0.02em;  
 }
 
 a#scratchpad {
@@ -68,6 +75,10 @@ a#scratchpad {
 
 /* Keyboard shortcut reference */
 kbd { background: #0003; color: #333; font-size: 80%; }
+
+table.doc-actions {
+  margin-bottom: .5em;
+}
 
 table.doc-actions th, table.doc-actions td {
   padding: .2em .5em;

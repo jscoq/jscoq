@@ -101,7 +101,7 @@ Section sqrt2_decrease.
    *)
 End sqrt2_decrease.
 
-(* The Main Action: Statement and Proof *)
+(** ** The Main Action: Statement and Proof *)
 
 (**
    The proof proceeds by well-founded induction on q.

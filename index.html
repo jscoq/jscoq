@@ -27,23 +27,23 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 About
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#">jsCoq Dev Team</a></li>
+                <li><a class="dropdown-item" href="#team">jsCoq Dev Team</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Coq Proof Assistant</a></li>
-                <li><a class="dropdown-item" href="#">company-coq</a></li>
+                <li><a class="dropdown-item" href="https://coq.inria.fr">Coq Proof Assistant</a></li>
+                <li><a class="dropdown-item" href="https://github.com/cpitclaudel/company-coq">company-coq</a></li>
               </ul>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarExamples" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" id="navbarExamples" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Examples
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#">Infinitude of Primes</a></li>
-                <li><a class="dropdown-item" href="#">Irrationality of <img class="symbol-sqrt" src="ui-images/sqrt.svg">2</a></li>
+                <li><a class="dropdown-item" href="examples/inf-primes.html">Infinitude of Primes</a></li>
+                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <img class="symbol-sqrt" src="ui-images/sqrt.svg">2</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="ui-images/book.svg">Software Foundations</a></li>
               </ul>
@@ -77,10 +77,12 @@
       The following is a simple proof that <img class="symbol-sqrt" src="ui-images/sqrt.svg">2
       cannot be expressed as the ratio of two integers; that is, for every two integers
       <i>p</i> and <i>q</i>, (<i>p/q</i>)<sup>2</sup> ≠ 2.
+      This is a simplified version of a similar
+      <a href="https://github.com/coq-community/qarith-stern-brocot/blob/master/theories/sqrt2.v">proof by Milad Niqui</a>.
     </p>
     <p>
       Use <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> to step through the proof,
-      and observe the proof state in the right pane.
+      and observe the proof state on the right panel.
     </p>
       <textarea class="snippet">
 From Coq Require Import Utf8 Arith Lia.
@@ -138,17 +140,24 @@ Proof.
     + auto using comparison_4q3p, lt_le_weak.
 Qed.</textarea>
 
-    <h4>Instructions:</h4>
+    <hr/> <!-- end of proof -->
+
+    <h4>Quick start</h4>
     <p>
-      The following document contains embedded Coq code.
-      All the code is editable and can be run directly on the page.
-      Once <span class="jscoq-name">jsCoq</span> finishes loading, you are
-      free to experiment by stepping through the proof and viewing intermediate
-      proof states on the right panel.
+      <span class="jscoq-name">jsCoq</span> provides basic UI for running
+      and inspecting proofs, similar to IDEs such as <a href="https://coq.inria.fr/refman/practical-tools/coqide.html">CoqIDE</a>,
+      <a href="https://proofgeneral.github.io/">Proof General</a>,
+      and <a href="https://github.com/coq-community/vscoq">VSCoq</a>.
     </p>
-    <h5>Actions:</h5>
+
+    <h5>Actions</h5>
     <table class="doc-actions">
       <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
+      <tr>
+        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
+        <td><kbd>F8</kbd></td>
+        <td>Toggles the goal panel.</td>
+      </tr>
       <tr>
         <td><img src="ui-images/down.png" height="15px"><img src="ui-images/up.png" height="15px"></td>
         <td>
@@ -160,110 +169,38 @@ Qed.</textarea>
       <tr>
         <td><img src="ui-images/to-cursor.png" height="20px"></td>
         <td>
-          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Alt</kbd>+<kbd>→</kbd>
+          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
+          (⌘ on Mac)
         </td>
         <td>Run (or go back) to the current point.</td>
       </tr>
       <tr>
-        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
-        <td><kbd>F8</kbd></td>
-        <td>Toggles the goal panel.</td>
+        <td></td>
+        <td>
+          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="ui-images/pointer.svg">
+        </td>
+        <td>Hover executed statements to peek at the proof state after each step.</td>
       </tr>
     </table>
-    <h5>Creating your own proof scripts:</h5>
+    <h5>Creating your own proof scripts</h5>
     <p>
       The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
       storage functionality. It also allows you to share your development with
       other users in a manner that is similar to Pastebin.
     </p>
+    <h5>There's more</h5>
+    See the official docs on GitHub
 
-    <h4>A First Example: The Infinitude of Primes</h4>
     <p>
-      If you are new to Coq, check out this
-      <a href="examples/nahas_tutorial.html">introductory tutorial</a> by
-      <a href="https://mdnahas.github.io">Mike Nahas</a>.
-      As a more advanced showcase, we display a proof of the infinitude of primes in Coq.
-      The proof relies on the <a href="https://math-comp.github.io">Mathematical Components</a>
-      library from the
-      <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
-      by Georges Gonthier, so our first step will be to load it:
+      <span class="jscoq-name">jsCoq</span> comes with a variety of addon packages,
+      including Coq's standard library and the
+      <a href="https://math-comp.github.io">mathematical components</a>
+      library.
+      Feel free to experiment, and let us know if you have any suggestions
+      and/or when you have done something cool with <span class="jscoq-name">jsCoq</span>.
+      😎
     </p>
-  </div>
-  <div>
-    <textarea id="addnC" >
-From Coq Require Import ssreflect ssrfun ssrbool.
-From mathcomp Require Import eqtype ssrnat div prime. </textarea>
-  </div>
-  <div>
-    <h5>Ready to do Proofs!</h5>
     <p>
-      Once the basic environment has been set up, we can proceed to
-      the proof:
-    </p>
-  </div> <!-- panel-heading -->
-  <div>
-    <textarea id="prime_above1" >
-(* A nice proof of the infinitude of primes, by Georges Gonthier *)
-Lemma prime_above m : {p | m < p & prime p}.
-Proof. </textarea>
-    <p>
-      The lemma states that for any number <code>m</code>,
-      there is a prime number larger than <code>m</code>.
-
-      Coq is a <em>constructive system</em>, which among other things
-      implies that to show the existence of an object, we need to
-      actually provide an algorithm that will construct it.
-
-      In this case, we need to find a prime number <code>p</code>
-      that is greater than <code>m</code>.
-      What would be a suitable <code>p</code>?
-
-      Choosing <code>p</code> to be the first prime divisor of <code>m! + 1</code>
-      works.
-      As we will shortly see, properties of divisibility will imply that
-      <code>p</code> must be greater than <code>m</code>.
-    </p>
-    <textarea id="prime_above2" >
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1
-  by rewrite addn1 ltnS fact_gt0.</textarea>
-    <p>
-      Our first step is thus to use the library-provided lemma
-      <code>pdivP</code>, which states that every number is divided by a
-      prime. Thus, we obtain a number <code>p</code> and the corresponding
-      hypotheses <code>pr_p : prime p</code> and <code>p_dv_m1</code>,
-      "p divides m! + 1".
-      The ssreflect tactic <code>have</code> provides a convenient way to
-      instantiate this lemma and discard the side proof obligation
-      <code>1 &lt; m! + 1</code>.
-    </p>
-    <textarea id="prime_above3" >
-exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
-    <p>
-      It remains to prove that <code>p</code> is greater than <code>m</code>.
-      We reason by
-      contraposition with the divisibility hypothesis, which gives us
-      the goal "if <code>p ≤ m</code> then <code>p</code> is not a prime divisor of 
-      <code>m! + 1</code>".
-    </p>
-    <textarea id="prime_above4" >
-by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
-Qed.</textarea>
-    <p>
-      The goal follows from basic properties of divisibility, plus
-      from the fact that if <code>p ≤ m</code>, then <code>p</code> divides
-      <code>m!</code>, so that for <code>p</code> to divide
-      <code>m! + 1</code> it must also divide 1,
-      in contradiction to <code>p</code> being prime.
-    </p>
-    <hr/>
-  <p>
-    <span class="jscoq-name">jsCoq</span> provides many other packages,
-    including Coq's standard library and the
-    <a href="https://math-comp.github.io"></a>mathematical components</a>
-    library.
-    Feel free to experiment, and bear with the beta status of this demo.
-  </p>
-  <p>
     <i>¡Salut!</i>
   </p>
   </div> <!-- /#panel body -->
