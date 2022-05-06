@@ -89,3 +89,6 @@ table.doc-actions th, table.doc-actions td {
 table.doc-actions td {
   padding-bottom: .25em;
 }
+
+/* FOUC avoidance */
+body { visibility: visible; }
