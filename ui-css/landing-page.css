@@ -14,6 +14,17 @@ h5 {
   color: #089;
 }
 
+p.interim {
+  margin: .5em 0 .5em 2em;
+  line-height: 1.2;
+}
+span.symbol-minus, span.symbol-plus {
+  margin: 0 0.2em;
+}
+span.symbol-Q {
+  font-family: 'Arial Unicode MS', 'Times New Roman', Times, serif;
+}
+
 span.jscoq-name {
   color: #363;
 }

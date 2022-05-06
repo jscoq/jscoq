@@ -71,6 +71,73 @@
       feedback at <a href="https://github.com/jscoq/jscoq">GitHub</a>
       and <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq">Zulip</a>.
     </p>
+
+    <h4>A First Example: √2 ∉ <span class="symbol-Q">ℚ</span></h4>
+    <p>
+      The following is a simple proof that <img class="symbol-sqrt" src="ui-images/sqrt.svg">2
+      cannot be expressed as the ratio of two integers; that is, for every two integers
+      <i>p</i> and <i>q</i>, (<i>p/q</i>)<sup>2</sup> ≠ 2.
+    </p>
+    <p>
+      Use <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> to step through the proof,
+      and observe the proof state in the right pane.
+    </p>
+      <textarea class="snippet">
+From Coq Require Import Utf8 Arith Lia.
+From Examples Require Import sqrt_2.
+
+Theorem sqrt2_not_rational :
+  forall p q : nat, q <> 0 -> ¬ p ^ 2 = 2 * (q ^ 2).</textarea>
+
+    <p class="interim">
+      First, we simplify the goal a bit by inlining the
+      definition of □<sup>2</sup>.
+    </p>
+    <textarea class="snippet">
+Proof.
+  assert (forall x, x ^ 2 = x * x) as sq by (simpl; lia).
+  intros p q; rewrite! sq; clear sq.</textarea>
+
+    <p class="interim">
+      The proof proceeds by <a href="https://en.wikipedia.org/wiki/Mathematical_induction#Complete_(strong)_induction"></https:>complete induction</a>
+      on <span class="math"><i>q</i></span>, generalizing over
+      <span class="math"><i>p</i></code>.
+    </p>
+    <textarea class="snippet">
+  revert p.
+  induction q as [q IH] using (well_founded_ind lt_wf).
+  intros p Hneq.</textarea>
+
+    <p class="interim">
+      The gist of the proof is realizing that it can be obtained by
+      instantiating the induction hypothesis with values
+      3<i>q</i><span class="symbol-minus">–</span>2<i>p</i> and
+      3<i>p</i><span class="symbol-minus">–</span>4<i>q</i>.
+    </p>
+  
+    <textarea class="snippet">
+  specialize IH with (y := 3 * q - 2 * p) (p := 3 * p - 4 * q).</textarea>
+
+    <p class="interim">
+      The rest follows from simpler inequalities,
+      <span class="math">2<i>p</i> &lt; <span class="math">3<i>q</i>
+        &lt; 2<i>p</i><span class="symbol-plus">+</span>q</span>
+      and
+      <span class="math">4<i>q</i> &lt; <span class="math">3<i>p</i>.
+      These are not included in the example; for details, see
+      <a href="examples/sqrt_2.html">the full proof</a>.
+    </p>
+
+    <textarea class="snippet">
+  intro Heq; apply IH.
+  - apply comparison_3q2p. all: auto.
+  - apply Nat.sub_gt. apply comparison_2p3q. all: auto.
+  - rewrite! sub_square_identity.
+    + clear IH; lia.
+    + auto using comparison_2p3q, lt_le_weak.
+    + auto using comparison_4q3p, lt_le_weak.
+Qed.</textarea>
+
     <h4>Instructions:</h4>
     <p>
       The following document contains embedded Coq code.
@@ -232,14 +299,15 @@ Qed.</textarea>
   <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
 
-    var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
+    var jscoq_ids  = ['.snippet', 'addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {
         implicit_libs: false,
         focus: false,
         base_path: './',
         editor: { mode: { 'company-coq': true } },
         init_pkgs: ['init'],
-        all_pkgs:  ['coq', 'mathcomp', 'equations', 'elpi', 'quickchick', 'lf', 'plf']
+        all_pkgs:  {'+': ['coq', 'mathcomp', 'equations', 'elpi', 'quickchick', 'lf', 'plf'],
+                    './examples': ['examples']}
     };
 
     /* Global reference */
