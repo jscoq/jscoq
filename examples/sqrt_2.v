@@ -63,35 +63,35 @@ Section sqrt2_decrease.
      rewrite (mult_assoc _ 2 _); apply Nat.mul_lt_mono_pos_r;
       auto using sqrt_q_non_zero with arith.
 
-  Lemma comparison1 : q < p.
+  Lemma comparison_qp : q < p.
   Proof.
     replace q with (1 * q) by lia.
     replace p with (1 * p) by lia.
     solve_comparison.
   Qed.
 
-  Lemma comparison2 : 2 * p < 3 * q.
+  Lemma comparison_2p3q : 2 * p < 3 * q.
   Proof. solve_comparison. Qed.
 
-  Lemma comparison3 : 4 * q < 3 * p.
+  Lemma comparison_4q3p : 4 * q < 3 * p.
   Proof. solve_comparison. Qed.
 
-  Lemma comparison4 : 3 * q - 2 * p < q.
+  Lemma comparison_3q2p : 3 * q - 2 * p < q.
   Proof.
     apply Nat.add_lt_mono_l with (2 * p).
     rewrite Nat.add_comm, Nat.sub_add;
-    try (simple apply Nat.lt_le_incl; auto using comparison2 with arith).
+    try (simple apply Nat.lt_le_incl; auto using comparison_2p3q).
     replace (3 * q) with (2 * q + q) by lia.
     apply Nat.add_lt_le_mono; auto.
     repeat rewrite (Nat.mul_comm 2); apply Nat.mul_lt_mono_pos_r;
-    auto using comparison1 with arith.
+    auto using comparison_qp.
   Qed.
  
-Lemma new_equality :
- (3 * p - 4 * q) * (3 * p - 4 * q) = 2 * ((3 * q - 2 * p) * (3 * q - 2 * p)).
-Proof.
+  Lemma new_equality :
+    (3 * p - 4 * q) * (3 * p - 4 * q) = 2 * ((3 * q - 2 * p) * (3 * q - 2 * p)).
+  Proof.
     rewrite! sub_square_identity.
-    all: auto using comparison2,comparison3 with arith.
+    all: auto using comparison_2p3q, comparison_4q3p with arith.
     lia.
   Qed.
 
@@ -115,7 +115,7 @@ End sqrt2_decrease.
 Theorem sqrt2_not_rational :
   forall p q : nat, q <> 0 -> ¬ p ^ 2 = 2 * (q ^ 2).
 Proof.
-  assert (forall x, x ^ 2 = x * x) as sq. simpl; lia.
+  assert (forall x, x ^ 2 = x * x) as sq by (simpl; lia).
   intros p q; rewrite! sq; clear sq.
   revert p.
   induction q using (well_founded_ind lt_wf).
@@ -125,12 +125,7 @@ Proof.
   intros Heq.
   
   apply H.
-  - apply comparison4. all: auto.
-  - apply sym_not_equal. apply Nat.lt_neq.
-    eapply plus_lt_reg_l.
-    rewrite <- plus_n_O. rewrite <- le_plus_minus.
-    all: auto using comparison2, lt_le_weak.
-  - apply new_equality.
-    + lia.
-    + assumption.
+  - apply comparison_3q2p. all: auto.
+  - apply Nat.sub_gt. apply comparison_2p3q. all: auto.
+  - apply new_equality. all: auto.
 Qed.

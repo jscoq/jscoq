@@ -1,5 +1,10 @@
 _build
 nahas_tutorial.html
+sqrt_2.html
+.lia.cache
+
+examples.json
+examples.coq-pkg
 
 # This is quite meaningless for examples
 package-lock.json
