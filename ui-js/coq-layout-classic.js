@@ -34,9 +34,9 @@ class CoqLayoutClassic {
     </svg>        
     <div id="toolbar">
       <div class="exits">
-        <img class="${backend}-logo" src="${base_path}/ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
-          --><a href="https://coq.inria.fr"><!--
-          --><img class="coq-logo" src="${base_path}/ui-images/coq-logo.png" alt="Coq">
+        <a href="https://coq.now.sh">
+          <img class="${backend}-logo" src="${base_path}/ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
+            --><img class="coq-logo" src="${base_path}/ui-images/coq-logo.png" alt="Coq">
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">

@@ -1170,7 +1170,7 @@ class CoqManager {
 
     keyTooltips() {
         return navigator.isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
-            {up: 'Alt-P', down: 'Alt-N', cursor: 'Alt-Enter'}
+            {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter'}
     }
 
     /**
@@ -1190,7 +1190,7 @@ class CoqManager {
               toggle    = () => this.layout.toggle(),
               interrupt = () => this.interruptRequest();
         const nav_bindings = {
-            '_Enter':     goCursor, '_ArrowRight': goCursor,
+            '_Enter':     goCursor, '_NumpadEnter': goCursor,
             '_ArrowDown': goNext,
             '_ArrowUp':   goPrev,
             'F8': toggle,

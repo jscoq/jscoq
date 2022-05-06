@@ -1,71 +1,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <title>jsCoq – Use Coq in Your Browser</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
     <link rel="icon" href="ui-images/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-    <style>
-      kbd { background: #0003; color: #333; font-size: 80%; }
-      table.doc-actions th, table.doc-actions td {
-        padding: .2em .5em;
-        vertical-align: top;
-        border: 1px solid #999;
-      }
-      table.doc-actions td {
-        padding-bottom: .25em;
-      }
-      h4 {
-        background: #f6f9f9;
-        padding: 3px;
-        color: #089;
-        margin-top: 1em;
-      }
-      h5 {
-        margin-top: 12px;
-        margin-bottom: 7px;
-        font-size: 110%;
-        font-style: italic;
-        color: #089;
-      }
-      span.jscoq-name {
-        color: #363;
-      }
-      #team {
-        margin-top: 2em;
-        border: 1px solid #eee;
-        padding: 5px;
-      }
-      a#scratchpad {
-        height: 30px;
-        width: 30px;
-        background: url(ui-images/scratchpad.png);
-        background-repeat: no-repeat;
-        background-size: contain;
-        border: none;
-        outline: none;
-        position: absolute;
-        top: 5px;
-        right: 40px;
-      }
-      nav {
-        z-index: 1 !important;
-      }
-      .navbar-brand img {
-        height: 2em;
-      }
-      img.symbol-sqrt {
-        height: 1em;
-        margin: -0.2em -0.55em 0 0;
-      }
-      img.symbol-book {
-        height: 1em;
-        margin-right: 0.3em;
-      }
-    </style>
-    <title>jsCoq – Use Coq in Your Browser</title>
+    <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
   </head>
 
 <body class="jscoq-main">
@@ -83,9 +26,6 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 About

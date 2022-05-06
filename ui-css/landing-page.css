@@ -1,0 +1,69 @@
+
+h4 {
+  background: #f6f9f9;
+  padding: 3px;
+  color: #089;
+  margin-top: 1em;
+}
+
+h5 {
+  margin-top: 12px;
+  margin-bottom: 7px;
+  font-size: 110%;
+  font-style: italic;
+  color: #089;
+}
+
+span.jscoq-name {
+  color: #363;
+}
+
+#team {
+  margin-top: 2em;
+  border: 1px solid #eee;
+  padding: 5px;
+}  
+
+/* Navbar */
+nav.navbar {
+  z-index: 1; /* do not clobber power button */
+  padding: 0;
+  border-bottom: 1px solid #eee;
+}
+.navbar-brand img {
+  height: 2em;
+}
+img.symbol-sqrt {
+  height: 1em;
+  margin: -0.2em -0.55em 0 0;
+}
+img.symbol-book {
+  height: 1em;
+  margin-right: 0.3em;
+}
+
+a#scratchpad {
+  height: 30px;
+  width: 30px;
+  background: url(../ui-images/scratchpad.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: none;
+  outline: none;
+  position: absolute;
+  top: 5px;
+  right: 40px;
+}
+
+/* Keyboard shortcut reference */
+kbd { background: #0003; color: #333; font-size: 80%; }
+
+table.doc-actions th, table.doc-actions td {
+  padding: .2em .5em;
+  vertical-align: top;
+  border: 1px solid #999;
+}
+
+table.doc-actions td {
+  padding-bottom: .25em;
+}

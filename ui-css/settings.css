@@ -43,7 +43,8 @@ div.settings-panel div.links {
 }
 
 .link-to-github::after,
-.link-to-zulip::after {
+.link-to-zulip::after,
+.link-to-coq::after {
   content: "";
   display: inline-block;
   height: 25px;
@@ -65,6 +66,14 @@ div.settings-panel div.links {
   background-size: 20px 22px;
   background-position: 3px 2px;
   width: 23px;
+}
+
+.link-to-coq::after {
+  background-image: url(../ui-images/coq-logo.png);
+  background-size: contain;
+  padding-bottom: 0;
+  width: 17px;
+  margin-top: -2px;
 }
 
 /* Light switch (https://codepen.io/marcusconnor/pen/QJNvMa) */
