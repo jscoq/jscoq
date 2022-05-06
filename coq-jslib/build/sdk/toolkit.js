@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import child_process from 'child_process';
-import { existsExec, cas } from './shutil';
+import { existsExec, cat, cas, ln_sf, dirstamp } from './shutil';
 import * as sdk from './setup';
 
 
@@ -46,11 +46,9 @@ class Hijack extends Phase {
     }
 
     mkBin(bindir=path.join(this.basedir, 'hijack'), script=__filename) {
-        if (!fs.existsSync(bindir)) {
-            fs.mkdirSync(bindir, {recursive: true});
-            for (let tool of this.progs) {
-                fs.symlinkSync(script, path.join(bindir, tool));
-            }
+        fs.mkdirSync(bindir, {recursive: true});
+        for (let tool of this.progs) {
+            ln_sf(script, path.join(bindir, tool));
         }
         process.env['PATH'] = `${bindir}:${process.env['PATH']}`;
     }
@@ -102,8 +100,9 @@ class DockerTool extends Phase {
     }
     
     async copyToVolume(cfg) {
-        let {name, mnt} = this.dockerVolume;
-        await cas(path.join(cfg.coqlib, '_volume'), 'jscoq-sdk', () => {
+        let {name, mnt} = this.dockerVolume,
+            stamp = cat(path.join(cfg.coqlib, '_coq-pkgs')) ?? dirstamp(cfg.coqlib);
+        await cas(path.join(cfg.coqlib, '_volume'), stamp, () => {
             if (SDK_FLAGS.includes('verbose'))
                 log(`[${ME}-sdk] creating volume ${name}`);
             this._exec('docker',  ['volume', 'rm', '-f', name], ['ignore', 'ignore', 'inherit']);

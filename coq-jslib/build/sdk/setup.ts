@@ -8,20 +8,27 @@ import glob from 'glob';
 import unzip from 'fflate-unzip';
 import chld from 'child-process-promise';
 import type commander from 'commander';
-import { cas, dirstamp, ln_sf } from './shutil';
+import { cas, dirstamp, ln_sf, existsDir } from './shutil';
 
 
-const SDK = '/tmp/wacoq-sdk';
+const ME = 'jscoq',
+      SDK = `/tmp/${ME}-sdk`,
+      SDK_FLAGS = (process.env['JSCOQ'] || '').split(',').filter(x => x);
+
+const DEFAULT_PKGS_LOCATION = ['jscoq/coq-pkgs', 'wacoq-bin/bin/coq']
 
 
 async function setup(basedir = SDK, includeNative = true) {
     mkdirp.sync(basedir);
 
     // Locate `coq-pkgs`
-    var nm = findNM(), coqpkgsDir: string;
-    for (let sp of ['../_build/jscoq+64bit/coq-pkgs', 'jscoq/coq-pkgs', 'wacoq-bin/bin/coq']) {
+    var flag = SDK_FLAGS.map(s => s.match(/^coq-pkgs=(.*)$/)?.[1]).filter(x => x),
+        nm = findNM(),
+        coqpkgsDir: string;
+    for (let sp of flag.concat(DEFAULT_PKGS_LOCATION)) {
+        if (existsDir(sp)) { coqpkgsDir = sp; break; }
         var fp = path.join(nm, sp);
-        if (fs.existsSync(fp)) coqpkgsDir = fp;
+        if (existsDir(fp)) { coqpkgsDir = fp; break; }
     }
     if (!coqpkgsDir) throw {err: "Package bundles (*.coq-pkg) not found"};
 
