@@ -4,7 +4,6 @@
 
 (rule
  (targets coq-pkgs)
- ; (mode promote)  - blocked by https://github.com/ocaml/dune/issues/2070
  (deps
   (package coq-core)
   (package coq-stdlib))
@@ -31,7 +30,7 @@
    index.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.js
+   coq-js/jscoq_worker.bc.js
    dist
    jscoq.install))
 
@@ -52,6 +51,6 @@
 (alias
   (name jscoq_worker)
   (deps
-    coq-js/jscoq_worker.js))
+    coq-js/jscoq_worker.bc.js))
 
-(dirs (:standard _vendor+* \ dist node_modules examples))
+(dirs (:standard _vendor+* \ dist node_modules))

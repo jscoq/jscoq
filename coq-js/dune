@@ -36,16 +36,6 @@
  (action
   (copy js_stub/marshal%{ocaml-config:word_size}.js %{targets})))
 
-; Link jscoq_worker.js => jscoq_worker.bc.js
-; This is done to allow serving from either build or source tree the same way.
-; Notice the `promote` mode, since the source tree may have a (different) link
-; present, created by `make links`.
-(rule
- (targets jscoq_worker.js)
- (deps jscoq_worker.bc.js)
- (mode promote)
- (action (bash "ln -s %{deps} %{targets}")))
-
 ; Set debug flags if JSCOQ_DEBUG environment variable is set.
 ; (ugly, but there are no conditional expressions in Dune)
 (rule  
