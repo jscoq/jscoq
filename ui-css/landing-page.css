@@ -18,11 +18,17 @@ p.interim {
   margin: .5em 0 .5em 2em;
   line-height: 1.2;
 }
+/* poor-man's KaTeX for simple inline math */
+span.math {
+  font-family: KaTeX_Main;
+  font-size: 110%;
+  margin: 0 0.1em;
+}
 span.symbol-minus, span.symbol-plus {
   margin: 0 0.2em;
 }
-span.symbol-Q {
-  font-family: 'Arial Unicode MS', 'Times New Roman', Times, serif;
+span.symbol-square {
+  font-size: 70%;
 }
 
 span.jscoq-name {
