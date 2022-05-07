@@ -6,21 +6,23 @@ class HeadlessCLI {
     constructor() { this.rc = 0; }
 
     installCommand(commander) {
-        let requires = [], require_pkgs = [];
+        let loads = [], requires = [], require_pkgs = [];
         return commander.command('run')
             .option('--noinit',                                 'start without loading the Init library')
+            .option('--load <f.coq-pkg>',                       'load package(s) and place in load path (comma separated, may repeat)')
             .option('--require <path>',                         'load Coq library path and import it (Require Import path.)')
-            .option('--require-pkg <json>',                     'load a package and Require all modules included in it')
+            .option('--require-pkg <pkg>',                      'load package(s) and Require all modules included in it (comma separated, may repeat)')
             .option('-l, --load-vernac-source <f.v>',           'load Coq file f.v.')
             .option('--compile <f.v>',                          'compile Coq file f.v')
             .option('-o <f.vo>',                                'use f.vo as output file name')
             .option('--inspect <f.symb.json>',                  'inspect global symbols and serialize to file')
             .option('-e <command>',                             'run a vernacular command')
             .option('-v, --verbose',                            'print debug log messages and warnings')
-            .on('option:require',     path => { requires.push(path); })
-            .on('option:require-pkg', json => { require_pkgs.push(json); })
+            .on('option:load',        pkg => loads.push(...pkg.split(',')))
+            .on('option:require',     path => requires.push(path))
+            .on('option:require-pkg', pkg => require_pkgs.push(...pkg.split(',')))
             .action(async opts => {
-                this.rc = await this.run({...opts, requires, require_pkgs});
+                this.rc = await this.run({...opts, loads, requires, require_pkgs});
             });
     }
 
@@ -30,9 +32,13 @@ class HeadlessCLI {
         if (!opts.noinit) coq.options.prelude = true;
         if (opts.verbose) coq.options.log_debug = coq.options.warn = true;
 
+        coq.options.all_pkgs.push(...opts.loads);
+        coq.options.all_pkgs.push(...opts.require_pkgs.filter(x => !coq.options.all_pkgs.includes(x)));
+
         if (opts.loadVernacSource) coq.load(opts.loadVernacSource);
 
-        if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
+        for (let mod of opts.requires)
+            coq.require(mod, true);
 
         if (opts.inspect) {
             coq.options.inspect = {};
@@ -53,6 +59,8 @@ class HeadlessCLI {
                     (coq.options.inspect.modules ??= []).push(mod);
             }
         }
+
+        if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
 
         try {
             await coq.when_done.promise;

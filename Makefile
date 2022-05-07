@@ -148,9 +148,8 @@ distclean: clean
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
 	coq-js/jscoq_worker.bc.js coq-pkgs \
-	ui-js ui-css ui-images ui-external dist}
-DISTOBJ = README.md index.html package.json package-lock.json examples \
-          $(BUILDOBJ)
+	ui-js ui-css ui-images ui-external dist examples}
+DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
@@ -175,7 +174,7 @@ dist-tarball: dist
 
 NPMOBJ = ${filter-out index.html package-lock.json, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
-NPMEXCLUDE = --delete-excluded --exclude assets
+NPMEXCLUDE = --delete-excluded --exclude assets --exclude _build
 
 dist-npm:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
@@ -200,23 +199,6 @@ dist-npm-wacoq:
 # The need to maintain and update `package.json.wacoq` alongside `package.json`
 # is absolutely bothersome. I could not conjure a more sustainable way to emit
 # two separate NPM packages from the same source tree, though.
-
-########################################################################
-# Local stuff and distributions
-########################################################################
-
-# Private paths, for releases and local builds.
-WEB_DIR=~/x80/jscoq-builds/$(JSCOQ_VERSION)/
-RELEASE_DIR=~/research/jscoq-builds/
-
-dist-upload: dist
-	rsync -avzp --delete $(DISTDIR)/ $(WEB_DIR)
-
-dist-release: dist
-	rsync -avzp --delete --exclude=README.md --exclude=get-hashes.sh --exclude=.git $(DISTDIR)/ $(RELEASE_DIR)
-
-# all-dist: dist dist-release dist-upload
-all-dist: dist dist-release dist-upload
 
 ########################################################################
 # Externals
@@ -246,16 +228,3 @@ coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get
 
 coq: coq-get
-
-# - These are deprecated (use jscoq/addons repo instead)
-
-addon-%-get:
-	make -f coq-addons/$*.addon get
-
-addon-%-build:
-	make -f coq-addons/$*.addon build
-
-addons-get: ${foreach v,$(ADDONS),addon-$(v)-get}
-addons-build: ${foreach v,$(ADDONS),addon-$(v)-build}
-
-addons: addons-get addons-build
