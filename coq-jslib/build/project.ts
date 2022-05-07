@@ -122,8 +122,10 @@ class CoqProject {
             if (exts.some(ext => mod.physical.endsWith(ext))) yield mod;
     }
     
-    listModules() {
-        return this.searchPath._listNames(this.modules());
+    listModules(exts?: string | string[]) {
+        if (typeof exts === 'string') exts = [exts];
+        return this.searchPath._listNames(
+            exts ? [...this.modulesByExts(exts)] : this.modules());
     }
 
     createManifest() {
@@ -344,7 +346,8 @@ class SearchPath {
 
     _listNames(modules: Iterable<SearchPathElement>) {
         let s = new Set<string>(),
-            key = (mod: SearchPathElement) => mod.logical.join('.');
+            key = (mod: SearchPathElement) => mod.logical.join('.')
+                    + (mod.physical.endsWith('.cma') ? '@cma' : '');
         for (let mod of modules)
             s.add(key(mod));
         return s;
@@ -612,10 +615,10 @@ class JsCoqCompat {
             if (!mod) { mod = dp; dp = ""; }
             (d[dp] = d[dp] || []).push(mod); 
         }
-        var pkgs = Object.entries(d).map(([a,b]) => ({ 
-            pkg_id: a.split('.'),
-            vo_files: b.map(x => [`${x}.vo`, null]),
-            cma_files: []
+        var pkgs = Object.entries(d).map(([k,v]) => ({ 
+            pkg_id: k.split('.'),
+            vo_files: v.map(x => !x.endsWith('@cma') && [`${x}.vo`, null]).filter(x => x),
+            cma_files: v.map(x => x.endsWith('@cma') && [x, null]).filter(x => x)
         }));
         var modDeps = {};
         for (let k in manifest.modules) {

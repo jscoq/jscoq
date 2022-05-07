@@ -98,13 +98,13 @@ links:
 	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.bc.js
 
 links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.js
+	rm -f coq-pkgs coq-js/jscoq_worker.bc.js
 
 # Build symbol database files for autocomplete
-coq-pkgs/%.symb: coq-pkgs/%.json
-	node --max-old-space-size=2048 ui-js/coq-cli.js --require-pkg $< --inspect $@
+coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
+	node --max-old-space-size=2048 ./dist/cli.js run --require-pkg $* --inspect $@
 
-libs-symb: ${patsubst %.json, %.symb, coq-pkgs/init.json ${wildcard coq-pkgs/coq-*.json}}
+libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 
 wacoq:
 	# Currently, this builds in the source tree

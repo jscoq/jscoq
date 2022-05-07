@@ -57,6 +57,10 @@
         "ltac2": {
             "user-contrib/Ltac2": {
                 "prefix": "Ltac2"
+            },
+            "plugins": {
+                "prefix": "Coq",
+                "dirpaths": ["ltac2"]
             }
         }
     }
