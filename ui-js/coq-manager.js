@@ -526,7 +526,7 @@ class CoqManager {
 
             // Setup autocomplete
             for (let pkg of ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'])
-                this.loadSymbolsFrom(this.options.base_path + `ui-js/symbols/${pkg}.symb.json`);
+                this.loadSymbolsFrom(`${this.options.pkg_path}/${pkg}.symb.json`);
 
             // Setup contextual info bar
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
@@ -1408,6 +1408,9 @@ class CoqContextualInfo {
         this.pprint = pprint;
         this.company_coq = company_coq;
         this.el = $('<div>').addClass('contextual-info').hide();
+        this.content = $('<div>').addClass('content').appendTo(this.el);
+        this.shadow = $('<div>').addClass(['scroll-shadow', 'scroll-shadow--bottom']).appendTo(this.el);
+
         this.is_visible = false;
         this.is_sticky = false;
         this.focus = null;
@@ -1432,6 +1435,12 @@ class CoqContextualInfo {
         this.el.on('mouseenter',         evt => this.hideCancel());
         this.el.on('mousedown',          evt => { this.hideReq(); evt.stopPropagation(); });
         this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
+
+        this.content.on('scroll', () => {
+            var amount = this.content[0].scrollHeight - this.content[0].offsetHeight,
+                at = this.content[0].scrollTop;
+            this.shadow.css({opacity: Math.max(0, Math.min(100, amount - at)) / 100});
+        });
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
@@ -1490,33 +1499,46 @@ class CoqContextualInfo {
         this.is_visible = true;
         var msg = await this._query(command, title);
         if (msg && this.is_visible)
-            this.show(msg);
+            this.show(msg.pp);
     }
 
     async showQueries(queryArgs /* [command, title][] */) {
         this.is_visible = true;
-        var msgs = await Promise.all(queryArgs.map(
-            ([command, title]) => this._query(command, title)));
+        var msgs = (await Promise.all(queryArgs.map(
+            ([command, title]) => this._query(command, title))))
+            .filter(x => x);
+
+        // If there are more than 2 n/a, summarize them (to prevent a long useless list)
+        var na = msgs.filter(x => x.status === 'na');
+        if (msgs.some(x => x.status === 'ok') && na.length > 2) {
+            msgs = msgs.filter(x => x.status !== 'na')
+                .concat([{
+                    pp: this.formatText('...', `(+ ${na.length} unavailable symbols)`),
+                    status: 'na'
+                }]);
+        }
         // sort messages by tag length (shortest match first)
-        msgs = this._sortBy(msgs.filter(x => x), 
-                            x => (x.attr('tag') || '').length);
+        // penalize n/a results so that they appear last
+        msgs = this._sortBy(msgs,
+                            x => (x.pp.attr('tag') || '').length +
+                                 (x.status === 'na' ? 1000 : 0));
         if (msgs.length > 0 && this.is_visible)
-            this.show(msgs);
+            this.show(msgs.map(({pp}) => pp));
     }
 
     async _query(command, title) {
         try {
             var result = await this.coq.queryPromise(0, ['Vernac', command]);
-            return this.formatMessages(result);
+            return {pp: this.formatMessages(result), status: 'ok'}
         }
         catch (err) {
             if (title)
-                return this.formatText(title, "(not available)");
+                return {pp: this.formatText(title, "(not available)"), status: 'na'};
         }
     }
 
     show(html) {
-        this.el.html(html);
+        this.content.html(html);
         this.el.show();
         this.is_visible = true;
         this.minimal_exposure = this.elapse(this.MINIMAL_EXPOSURE_DURATION);
@@ -1524,6 +1546,8 @@ class CoqContextualInfo {
             this._key_bound = true;
             $(document).on('keydown keyup', this._keyHandler);
         }
+        // to adjust the scroll shadows
+        requestAnimationFrame(() => this.content.trigger('scroll'));
     }
 
     hide() {
@@ -1680,8 +1704,8 @@ class CoqIdentifier {
     static ofQualifiedName(qn) {
         /**/ console.assert(qn.prefix.dp[0] === 'DirPath') /**/
         return new CoqIdentifier(
-            qn.prefix.dp[1].slice().reverse().map(this._idToString)
-                .concat(qn.prefix.mod_ids),
+            qn.prefix.dp[1].slice().reverse()
+                .concat(qn.prefix.mod_ids).map(this._idToString),
             this._idToString(qn.basename));
     }
 

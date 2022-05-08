@@ -269,7 +269,10 @@ Qed.</textarea>
     /* Global reference */
     var coq;
 
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => coq = res);
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+      coq = res;
+      coq.loadSymbolsFrom('./examples/examples.symb.json');
+    });
   </script>
 </body>
 </html>
