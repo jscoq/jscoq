@@ -11,6 +11,7 @@
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
     <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="ui-css/kbd.css">
     <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   </head>
 
@@ -46,7 +47,7 @@
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" href="examples/inf-primes.html">Infinitude of Primes</a></li>
-                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <img class="symbol-sqrt" src="ui-images/sqrt.svg">2</a></li>
+                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <span class="math"><img class="symbol-sqrt" src="ui-images/sqrt.svg">2</span></a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="ui-images/book.svg">Software Foundations</a></li>
               </ul>
@@ -54,7 +55,9 @@
           </ul>
         </div>
       </div>
-      <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad"></a>
+      <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad">
+        <span class="newcomer scratchpad-tip">open the scratchpad<br/>to start editing</span>
+      </a>
     </nav>
     <!------------------------------->
   
@@ -89,7 +92,7 @@
       <a href="https://github.com/coq-community/qarith-stern-brocot/blob/master/theories/sqrt2.v">proof by Milad Niqui</a>.
     </p>
     <p>
-      Use <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> to step through the proof,
+      Use <span class="has-kbd"><kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd></span> to step through the proof,
       and observe the proof state on the right panel.
     </p>
       <textarea class="snippet">
@@ -144,14 +147,16 @@ Proof.
   - apply Nat.sub_gt. apply comparison_2p3q. all: auto.
   - rewrite! sub_square_identity.
     + clear IH; lia.
-    + auto using comparison_2p3q, lt_le_weak.
-    + auto using comparison_4q3p, lt_le_weak.
+    + auto using comparison_2p3q, Nat.lt_le_incl.
+    + auto using comparison_4q3p, Nat.lt_le_incl.
 Qed.</textarea>
 
     <hr/> <!-- end of proof -->
 
     <h4>Quick start</h4>
     <p>
+      Use the <a href="examples/scratchpad.html">scratchpad <span class="scratchpad-small"></span></a>
+      for a fresh page to write your proofs on.
       <span class="jscoq-name">jsCoq</span> provides basic UI for running
       and inspecting proofs, similar to IDEs such as <a href="https://coq.inria.fr/refman/practical-tools/coqide.html">CoqIDE</a>,
       <a href="https://proofgeneral.github.io/">Proof General</a>,
@@ -163,12 +168,12 @@ Qed.</textarea>
       <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
       <tr>
         <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
-        <td><kbd>F8</kbd></td>
+        <td class="has-kbd"><kbd>F8</kbd></td>
         <td>Toggles the goal panel.</td>
       </tr>
       <tr>
         <td><img src="ui-images/down.png" height="15px"><img src="ui-images/up.png" height="15px"></td>
-        <td>
+        <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
           <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
         </td>
@@ -176,7 +181,7 @@ Qed.</textarea>
       </tr>
       <tr>
         <td><img src="ui-images/to-cursor.png" height="20px"></td>
-        <td>
+        <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
           (⌘ on Mac)
         </td>
@@ -184,7 +189,7 @@ Qed.</textarea>
       </tr>
       <tr>
         <td></td>
-        <td>
+        <td class="has-kbd">
           <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="ui-images/pointer.svg">
         </td>
         <td>Hover executed statements to peek at the proof state after each step.</td>
@@ -246,6 +251,8 @@ Qed.</textarea>
   </div> <!-- /#ide-wrapper -->
 
   <script type="text/javascript">
+    if (!localStorage['scratchpad.last_filename'])
+      setTimeout(() => document.body.classList.add('welcome'), 1500);
 
     var jscoq_ids  = ['.snippet'];
     var jscoq_opts = {
