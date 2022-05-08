@@ -93,11 +93,11 @@
       and observe the proof state on the right panel.
     </p>
       <textarea class="snippet">
-From Coq Require Import Utf8 Arith Lia.
+From Coq Require Import Arith Lia.
 From Examples Require Import sqrt_2.
 
 Theorem sqrt2_not_rational :
-  forall p q : nat, q <> 0 -> ¬ p ^ 2 = 2 * (q ^ 2).</textarea>
+  forall p q : nat, q <> 0 -> p^2 <> 2 * q^2.</textarea>
 
     <p class="interim">
       First, we simplify the goal a bit by inlining the
