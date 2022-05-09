@@ -12,5 +12,11 @@ build: $(WORKDIR)
 $(WORKDIR):
 	git clone --recursive --depth=1 $(REPO) $@
 
+setup:
+	npm i
+	docker pull jscoq/jscoq:sdk
+	docker tag jscoq/jscoq:sdk jscoq:sdk
+	rm -rf /tmp/jscoq-sdk  # cleanup in case there was a previous build there
+
 clean:
 	dune clean --root .
