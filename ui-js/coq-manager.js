@@ -1436,11 +1436,9 @@ class CoqContextualInfo {
         this.el.on('mousedown',          evt => { this.hideReq(); evt.stopPropagation(); });
         this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
 
-        this.content.on('scroll', () => {
-            var amount = this.content[0].scrollHeight - this.content[0].offsetHeight,
-                at = this.content[0].scrollTop;
-            this.shadow.css({opacity: Math.max(0, Math.min(100, amount - at)) / 100});
-        });
+        // Need to bypass jQuery to set the passive flag for scroll event
+        this.content[0].addEventListener('scroll', () => this.adjustScrollShadow(),
+                                         {passive: true});
 
         this._keyHandler = this.keyHandler.bind(this);
         this._key_bound = false;
@@ -1546,8 +1544,7 @@ class CoqContextualInfo {
             this._key_bound = true;
             $(document).on('keydown keyup', this._keyHandler);
         }
-        // to adjust the scroll shadows
-        requestAnimationFrame(() => this.content.trigger('scroll'));
+        requestAnimationFrame(() => this.adjustScrollShadow());
     }
 
     hide() {
@@ -1575,6 +1572,15 @@ class CoqContextualInfo {
 
     unstick() {
         this.container.find('.contextual-focus').removeClass('contextual-focus');        
+    }
+
+    /**
+     * Provides a visual cue that there's more content to be had by scrolling.
+     */
+    adjustScrollShadow() {
+        var amount = this.content[0].scrollHeight - this.content[0].offsetHeight,
+            at = this.content[0].scrollTop;
+        this.shadow.css({opacity: Math.max(0, Math.min(100, amount - at)) / 100});
     }
 
     /**
