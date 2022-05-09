@@ -31,6 +31,8 @@ ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
 
 -include _config.mk
 
+#uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+
 JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/jscoq -q}
 WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/wacoq -q}
 
@@ -88,25 +90,27 @@ js-dist-core: clean-dist
 JS_CLEAN = ${filter-out jscoq:pre%, $(JS_EXISTING_IMAGES)}
 WA_CLEAN = ${filter-out wacoq:pre%, $(WA_EXISTING_IMAGES)}
 
+CLEAN_FLAGS = ${if $(JSCOQ_DEV)$(FORCE), -f,}
+
 clean: js-clean wa-clean
 
 js-clean:
-	${if $(JS_CLEAN), docker image rm $(JS_CLEAN)}
-	docker system prune -f   # this seems to be required with BuildKit
+	${if $(JS_CLEAN), docker image rm $(CLEAN_FLAGS) $(JS_CLEAN)}
+	docker system prune $(CLEAN_FLAGS)   # this seems to be required with BuildKit
 
 wa-clean:
-	${if $(WA_CLEAN), docker image rm $(WA_CLEAN)}
-	docker system prune -f
+	${if $(WA_CLEAN), docker image rm $(CLEAN_FLAGS) $(WA_CLEAN)}
+	docker system prune $(CLEAN_FLAGS)
 
 clean-slate: js-clean-slate wa-clean-slate
 
 js-clean-slate:
-	${if $(JS_EXISTING_IMAGES), docker image rm $(JS_EXISTING_IMAGES)}
-	docker system prune -f
+	${if $(JS_EXISTING_IMAGES), docker image rm $(CLEAN_FLAGS) $(JS_EXISTING_IMAGES)}
+	docker system prune $(CLEAN_FLAGS)
 
 wa-clean-slate:
-	${if $(WA_EXISTING_IMAGES), docker image rm $(WA_EXISTING_IMAGES)}
-	docker system prune -f
+	${if $(WA_EXISTING_IMAGES), docker image rm $(CLEAN_FLAGS) $(WA_EXISTING_IMAGES)}
+	docker system prune $(CLEAN_FLAGS)
 
 js-upload:
 	docker tag jscoq:sdk jscoq/jscoq:sdk-${M}
