@@ -78,77 +78,71 @@
       and <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq">Zulip</a>.
     </p>
 
-    <h4>A First Example: 
-      <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1017em;vertical-align:-0.1944em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9072em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord">2</span></span></span><span style="top:-2.8672em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
-        c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14 c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54 c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10 s173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429 c69,-144,104.5,-217.7,106.5,-221 l0 -0 c5.3,-9.3,12,-14,20,-14 H400000v40H845.2724 s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z M834 80h400000v40h-400000z'/></svg>
-        </span></span></span><span class="vlist-s"></span></span><span class="vlist-r"><span class="vlist" style="height:0.1328em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span></span><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8556em;vertical-align:-0.1667em;"></span><span class="mord mathbb">Q</span></span></span></span>
-    </h4>
+    <h4>A First Example: <code>rev</code> <code>∘</code> <code>rev = id</code></h4>
     <p>
-      The following is a simple proof that <span class="math"><img class="symbol-sqrt" src="ui-images/sqrt.svg">2</span>
-      cannot be expressed as the ratio of two integers; that is, for every two integers
-      <span class="math"><i>p</i></span> and <span class="math"><i>q</i></span>, 
-      <span class="math">(<i>p/q</i>)<sup>2</sup> ≠ 2</span>.
-      This is a simplified version of a similar
-      <a href="https://github.com/coq-community/qarith-stern-brocot/blob/master/theories/sqrt2.v">proof by Milad Niqui</a>.
+      The following is a simple proof that <code>rev</code>, the standard list
+      reversal function as commonly defined in ML and other languages of the
+      family, is an involution.
     </p>
     <p>
       Use <span class="has-kbd"><kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd></span> to step through the proof,
       and observe the proof state on the right panel.
     </p>
-      <textarea class="snippet">
-From Coq Require Import Arith Lia.
-From Examples Require Import sqrt_2.
+    <textarea class="snippet">
+From Coq Require Import List.
+Import ListNotations.</textarea>
+    <p class="interim">
+      We are going to need a simpler auxiliary lemma, one that connects
+      <code>rev</code>, <code>::</code> (the list constructor, also known
+      as <code>cons</code>), and <code>snoc</code> (the dual of
+      <code>cons</code>, a function that appends an element at the end of
+      a list).
+      This is because the latter two participate in the definition of
+      the former, <code>rev</code>.
+    </p>
 
-Theorem sqrt2_not_rational :
-  forall p q : nat, q <> 0 -> p^2 <> 2 * q^2.</textarea>
+    <textarea class="snippet">Lemma rev_snoc_cons A :
+  forall (x : A) (l : list A), rev (l ++ [x]) = x :: rev l.</textarea>
+    <p class="interim">
+      This proposition is proven by way of the standard induction on
+      the structure of the list <code>l</code>.
+    </p>
+    <textarea class="snippet">Proof.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite IHl. simpl. reflexivity.
+Qed.</textarea>
 
     <p class="interim">
-      First, we simplify the goal a bit by inlining the
-      definition of <span class="math"><span class="symbol-square">⃞</span><sup>2</sup></span>.
+      Now we prove the central equality with a similar induction.
     </p>
-    <textarea class="snippet">
+    <textarea class="snippet">Theorem rev_rev A : forall (l : list A), rev (rev l) = l.
 Proof.
-  assert (forall x, x ^ 2 = x * x) as sq by (simpl; lia).
-  intros p q; rewrite! sq; clear sq.</textarea>
+  induction l.
+  - reflexivity.
+  - simpl. rewrite rev_snoc_cons. rewrite IHl.
+    reflexivity.
+Qed.</textarea>
 
     <p class="interim">
-      The proof proceeds by <a href="https://en.wikipedia.org/wiki/Mathematical_induction#Complete_(strong)_induction"></https:>complete induction</a>
-      on <span class="math"><i>q</i></span>, generalizing over
-      <span class="math"><i>p</i></code>.
+      Finally, we apply functional extensionality to produce the equality
+      as it was written in the title.
     </p>
-    <textarea class="snippet">
-  revert p.
-  induction q as [q IH] using (well_founded_ind lt_wf).
-  intros p Hneq.</textarea>
-
     <p class="interim">
-      The gist of the proof is realizing that it can be obtained by
-      instantiating the induction hypothesis with values
-      <span class="math">3<i>q</i><span class="symbol-minus">–</span>2<i>p</i></span> and
-      <span class="math">3<i>p</i><span class="symbol-minus">–</span>4<i>q</i></span>.
+      There is only one syntactic difference, which is that, in Coq, we
+      need to pass an explicit value to the implicit (generic) type
+      parameter <code>A</code> of <code>rev</code>.
     </p>
-  
-    <textarea class="snippet">
-  specialize IH with (y := 3 * q - 2 * p) (p := 3 * p - 4 * q).</textarea>
+    <textarea class="snippet">From Coq.Program Require Import Basics.
+From Coq Require Import FunctionalExtensionality.
+Open Scope program_scope.
 
-    <p class="interim">
-      The rest follows from simpler inequalities,
-      <span class="math">2<i>p</i> &lt; 3<i>q</i>
-        &lt; 2<i>p</i><span class="symbol-plus">+</span><i>q</i></span>
-      and
-      <span class="math">4<i>q</i> &lt; 3<i>p</i></span>.
-      These are not included in the example; for details, see
-      <a href="examples/sqrt_2.html">the full proof</a>.
-    </p>
-
-    <textarea class="snippet">
-  intro Heq; apply IH.
-  - apply comparison_3q2p. all: auto.
-  - apply Nat.sub_gt. apply comparison_2p3q. all: auto.
-  - rewrite! sub_square_identity.
-    + clear IH; lia.
-    + auto using comparison_2p3q, Nat.lt_le_incl.
-    + auto using comparison_4q3p, Nat.lt_le_incl.
+Theorem rev_invol A : rev (A:=A) ∘ rev (A:=A) = id.
+Proof.
+  apply functional_extensionality.
+  intro x.
+  unfold compose, id. rewrite rev_rev.
+  reflexivity.
 Qed.</textarea>
 
     <hr/> <!-- end of proof -->
