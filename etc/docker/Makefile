@@ -36,7 +36,7 @@ WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format
 
 default: js-build
 
-js-build: js-build-addons
+js-build: js-build-core js-build-addons js-build-sdk
 
 js-build-core:
 	docker build . --target jscoq-preinstall $(ARGS)  -t jscoq:preinstall
@@ -49,7 +49,7 @@ js-build-addons: js-build-core
 js-build-sdk: js-build-core
 	docker build . --target jscoq-sdk        $(ARGS)  -t jscoq:sdk
 
-wa-build: wa-build-addons
+wa-build: wa-build-core wa-build-addons
 
 wa-build-core:
 	docker build . --target wacoq-preinstall $(ARGS)  -t wacoq:preinstall
