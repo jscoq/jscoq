@@ -47,6 +47,10 @@ span.jscoq-name {
   z-index: 1021 !important;  /* above navbar */
 }
 
+.jscoq-main .CodeMirror-hints {
+  z-index: 1022 !important;  /* eek */
+}
+
 /* Navbar */
 nav.navbar {
   padding: 0;
