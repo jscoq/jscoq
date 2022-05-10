@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <script src="./node_modules/jscoq/ui-js/jscoq-loader.js" type="text/javascript"></script>
+  </head>
+
+<body>
+  <script type="text/javascript">
+    class Observer {
+      constructor() {
+        this.when_ready = new Promise(resolve => this._ready = resolve);
+      }
+      coqReady() {  this._ready(); }
+      coqGoalInfo(sid, goals) {
+        var bar = `\n${"-".repeat(60)}\n`
+        console.log(bar, goals, bar);
+        $('body').append(this.pprint.goals2DOM(goals));
+      }
+    }
+
+    var coq, pm, o = new Observer;
+      
+    (async () => {
+      await JsCoq.load();
+
+      coq = new CoqWorker();
+      pm = new PackageManager(document.createElement('div'),  /* need a div, sry */
+                              {'node_modules/jscoq/coq-pkgs/': ['coq']}, {}, coq);
+      
+      coq.options.debug = true;
+      coq.options.warn = false;  // will silence warnings about unhandled messages
+      coq.observers.push(o);
+
+      // Load packages
+      await coq.when_created;
+      await pm.populate();
+      await pm.loadDeps(['coq']);
+      
+      // Initialize document
+      coq.init({}, {lib_init: [["Coq", "Init", "Prelude"]], lib_path: pm.getLoadPath()})
+      await o.when_ready;
+
+      // Pretty-printer to format messages and goals
+      o.pprint = new FormatPrettyPrint();
+
+      // Do some proofs
+      coq.add(1, 2, "Goal 3 = 3.");
+      await coq.execPromise(2);
+      coq.goals(2);
+    })();
+  </script>
+</body>
+</html>

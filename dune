@@ -54,4 +54,4 @@
   (deps
     coq-js/jscoq_worker.js))
 
-(dirs (:standard _vendor+* \ dist node_modules))
+(dirs (:standard _vendor+* \ dist node_modules examples))

@@ -1,2 +1,5 @@
 _build
 nahas_tutorial.html
+
+# This is quite meaningless for examples
+package-lock.json

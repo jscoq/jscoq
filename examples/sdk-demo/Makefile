@@ -1,13 +1,13 @@
 
-REPO = https://github.com/coq-community/coqoban
+REPO = https://github.com/coq-contribs/group-theory.git
 WORKDIR = workdir
 
-PATH := $(PWD)/bin:$(PATH)
-export PATH
+JSCOQ_CLI = npx jscoq
 
 build: $(WORKDIR)
+	cp dune-files/dune $(WORKDIR)/
 	# Use current workspace, not jsCoq's
-	dune build --root .
+	$(JSCOQ_CLI) sdk dune build --root .
 
 $(WORKDIR):
 	git clone --recursive --depth=1 $(REPO) $@

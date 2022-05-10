@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "jscoq": "^0.15.0"
+  }
+}

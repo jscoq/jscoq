@@ -8,6 +8,7 @@ import manifest from '../package.json';
 import { JsCoqCompat } from './build/project';
 import { Workspace } from './build/workspace';
 import { Batch, CompileTask, BuildError } from './build/batch';
+import * as sdk from './build/sdk/toolkit';
 
 import { HeadlessCLI } from '../ui-js/coq-cli';  // oops
 
@@ -134,6 +135,12 @@ class CLI {
 
 
 async function main() {
+    var progname = path.basename(process.argv[1]);
+    // delegate these to SDK
+    if (['coqc', 'coqdep', 'coqtop'].includes(progname)) {
+        await sdk.main(progname, process.argv.slice(2));
+        return 0;
+    }
 
     var loads: string[] = [],
         rc = 0;
@@ -155,14 +162,12 @@ async function main() {
         .option('--nostdlib',                 'skip loading the standard Coq packages')
         .on('option:load', pkg => loads.push(...pkg.split(',')))
         .action(async opts => { rc = await build(opts, loads); });
-
     var headless = new HeadlessCLI();
     headless.installCommand(prog);
 
-    var argv = process.argv.slice();  // default command hack
-    if (argv[2] != 'build' && argv[2] != 'run') argv.splice(2, 0, 'build');
+    sdk.installCommand(prog);
 
-    await prog.parseAsync(argv);
+    await prog.parseAsync(process.argv);
     return rc || headless.rc;
 }
 

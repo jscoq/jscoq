@@ -1,0 +1,8 @@
+; Copied to `workdir/` by Makefile
+
+(coq.theory
+ (name GroupTheory)
+ (synopsis "Elements of Group Theory")
+ (flags -w -deprecated -w -non-full-mutual -w -local-declaration))
+
+(include_subdirs qualified)
