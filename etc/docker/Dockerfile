@@ -122,6 +122,24 @@ RUN if [ -e /root/_ssh/id_rsa ] ; then eval $(opam env) && make privates WITH_PR
 
 RUN make pack CONTEXT=${SWITCH}
 
+# -------------------------
+# Building small increments
+# -------------------------
+
+FROM jscoq-addons AS jscoq-inc
+
+ARG SUB_BRANCH
+ARG NJOBS=4
+
+WORKDIR /root/jscoq
+RUN git pull --ff-only
+RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --ff-only ; fi
+RUN eval $(opam env) && make jscoq
+
+# - dist tarballs
+RUN eval $(opam env) && make dist-tarball && make dist-npm \
+        && mkdir -p dist && mv _build/dist/*.tgz dist
+
 # ---------
 # jsCoq SDK
 # ---------
