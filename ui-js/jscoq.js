@@ -11,6 +11,8 @@ class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
+        this.load_progress = pc => {};
+
         if (worker) {
             this.attachWorker(worker);
             this.when_created = Promise.resolve();
@@ -19,6 +21,7 @@ class CoqWorker {
             this.when_created = 
                 this.createWorker(scriptPath ||
                                   this.constructor.defaultScriptPath());
+            console.warn(this.when_created);
         }
     }
 
@@ -41,10 +44,11 @@ class CoqWorker {
         return new URL(uri, window.location).href;
     }
 
-    createWorker(script_path) {
+    async createWorker(script_path) {
         this._worker_script = script_path;
 
-        this.attachWorker(new Worker(this._worker_script));
+        this.attachWorker(await 
+            this.newWorkerWithProgress(this._worker_script)); // this._worker_script));
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
@@ -53,7 +57,11 @@ class CoqWorker {
             this._boot = new Future();
             return this._boot.promise;
         }
-        else return Promise.resolve();
+    }
+
+    async newWorkerWithProgress(url) {
+        var blob = await prefetchResource(url, pc => this.load_progress(pc));
+        return new Worker(URL.createObjectURL(blob));
     }
 
     attachWorker(worker) {
@@ -408,6 +416,24 @@ class CoqSubprocessAdapter extends CoqWorker {
     }
 }
 
+// some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
+function prefetchResource(url, progress=()=>{}) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.responseType = "blob";
+
+    return new Promise((resolve, reject) => {
+        xhr.addEventListener("load", () =>
+            (xhr.status === 200) ? resolve(xhr.response)
+               : reject(new Error(`status ${xhr.status}`)));
+
+        xhr.addEventListener("progress", (event) => {
+            if (event.lengthComputable)
+                progress(event.loaded / event.total);
+        });
+        xhr.send();
+    });
+}
 
 if (typeof document !== 'undefined' && document.currentScript)
     CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);

@@ -510,6 +510,10 @@ class CoqManager {
             this.coq.options = this.options;
             this.coq.observers.push(this);
 
+            // @todo load progress with an egg
+            this.coq.load_progress = pc => 
+                this.layout.splash(`Loading worker... ${Math.round(pc * 100)}%`, undefined, 'wait');
+
             this.provider.wait_for = this.when_ready;
 
             // Setup package loader
@@ -532,8 +536,10 @@ class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            if (JsCoq.backend !== 'wa')
+            if (JsCoq.backend !== 'wa') {
+                await this.coq.when_created;
                 this.coqBoot();  // only the WA backend emits `Boot` events
+            }
         }
         catch (err) {
             this.handleLaunchFailure(err);
