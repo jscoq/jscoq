@@ -71,6 +71,10 @@ body.goals-active #jscoq-plug {
   width: 0 !important;
 }
 
+.jscoqdoc .CodeMirror .CodeMirror-hscrollbar {
+  display: none !important;  /* sorry, just looks awkward in a snippet. use arrow keys. */
+}
+
 /*
  * Larger fonts in presentation mode (SF's `terse`)
  */
