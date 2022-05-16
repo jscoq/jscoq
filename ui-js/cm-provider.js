@@ -47,6 +47,8 @@ class CmCoqProvider {
             element.children.length == 1 && $(element.children[0]).is(':hidden');
 
         if (element.tagName === 'TEXTAREA') {
+            /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
+            element.value ||= element.textContent;
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
@@ -684,18 +686,22 @@ class Deprettify {
      * @param {HTMLElement} element 
      */
     static trim(element) {
-        if (element.firstChild && Deprettify.isWS(element.firstChild))
-            element.removeChild(element.firstChild);
-        if (element.firstChild && Deprettify.isBR(element.firstChild))
-            element.removeChild(element.firstChild);
-        if (element.lastChild && Deprettify.isWS(element.lastChild))
+        var c;
+        if ((c = element.firstChild) && Deprettify.isWS(c))
+            element.removeChild(c);
+        if ((c = element.firstChild) && Deprettify.isBR(c))
+            element.removeChild(c);
+        //if ((c = element.firstChild) && Deprettify.isWS(c))
+        //    element.removeChild(c);
+        while ((c = element.lastChild) && 
+                (Deprettify.isWS(c) || Deprettify.isBR(c)))
             element.removeChild(element.lastChild);
         return element;
     }
 
     static isWS(node) {
         return node.nodeType === Node.TEXT_NODE &&
-               node.nodeValue.match(/^\s*$/);
+               node.nodeValue.match(/^\s*\n$/);
     }
 
     static isBR(node) {
