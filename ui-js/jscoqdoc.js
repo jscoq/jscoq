@@ -9,6 +9,26 @@ const JSCOQ_URL = process.env['JSCOQ_URL'] || '.',
       SCRIPTS = ["ui-js/jscoq-loader.js", "ui-js/jscoq-agent.js"],
       STYLES = ["ui-css/jscoqdoc.css"];
 
+const DEFAULT_TEMPLATE =`
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  {{default-tags}}
+  <title>{{title}}</title>
+</head>
+<body>
+<div id="page">
+<div id="header"></div>
+<div id="main" class="jscoqdoc">
+{{the-document}}
+</div>
+</div>
+</body>
+</html>
+`
+
 function treatText(text) {
     return text
         .replace(/(<link href=")coqdoc[.]css(".*>)/, (_, pref, suf) =>
@@ -31,18 +51,49 @@ function mkStyle(fn) {
     return `<link href="${url(fn)}" rel="stylesheet" type="text/css" />`;
 }
 
-async function main() {
-    var args = process.argv.slice(2),
-        coqdocArgs = args.filter(x => !x.endsWith('.html')),
-        html = args.map(a => {
-            if (a.endsWith('.html')) return a;
-            else if (a.endsWith('.v'))
-                return path.basename(a).replace(/[.]v$/, '.html')
-        }).filter(x => x);
+function intoTemplate(template, values) {
+    return template.replace(/{{(.*)}}/g, (_, key) => values[key] ?? '');
+}
 
-    if (coqdocArgs.length > 0) {
-        await chld.spawn('coqdoc', coqdocArgs, {stdio: 'inherit'});
+function processBody(template, vFn, htmlFn) {
+    const title = path.basename(vFn),
+          tags = [...SCRIPTS.map(mkScript), ...STYLES.map(mkStyle)].join('\n');
+    return intoTemplate(template, {
+        'the-document': fs.readFileSync(htmlFn),
+        'default-tags': tags,
+        title
+    });
+}
+
+function parseArgs(args) {
+    var opts = {};
+    if (args[0] === '--template') {
+        opts['template'] = args[1];
+        args = args.slice(2);
     }
+    return {args, opts};
+}
+
+async function generateDocs(coqdocArgs, opts) {
+    template = opts.template ? fs.readFileSync(opts.template, 'utf-8')
+                             : DEFAULT_TEMPLATE;
+
+    await chld.spawn('coqdoc', ['--body-only', ...coqdocArgs], {stdio: 'inherit'});
+    for (let vFn of coqdocArgs) {
+        if (vFn.endsWith('.v')) {
+            let htmlFn = path.basename(vFn).replace(/[.]v$/, '.html');
+            fs.writeFileSync(htmlFn, processBody(template, vFn, htmlFn));
+        }
+    }
+}
+
+async function main() {
+    var {args, opts} = parseArgs(process.argv.slice(2)),
+        coqdocArgs = args.filter(x => !x.endsWith('.html')),
+        html = args.filter(x => x.endsWith('.html'));
+
+    if (coqdocArgs.length > 0)
+        await generateDocs(coqdocArgs, opts);
 
     for (let fn of html)
         treatFile(fn);

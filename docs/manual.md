@@ -1,6 +1,6 @@
 ## Basic Usage
 
-The main page showcases jsCoq by walking through a proof that the square root of 2 is not rational, due to Milad Niqui.
+The main page showcases a simple proof about lists (involutority of `rev`). Other examples are listed under the ‘Examples’ menu at the top navbar.
 
 Once jsCoq finishes loading, you can step through the proof using the
 arrow buttons on the toolbar (top right), or using these keyboard

@@ -25,8 +25,11 @@ _build/%.v: %.v
 _build/%.vo: _build/%.v
 	$(COQC) -R _build Examples $<
 
+sqrt_2!JSCOQDOC_FLAGS = --template sqrt_2.template.html
+
 %.html: _build/%.v _build/%.vo
-	JSCOQ_URL=.. ../ui-js/jscoqdoc.js --no-index --no-lib-name --parse-comments $<
+	JSCOQ_URL=.. ../ui-js/jscoqdoc.js $($*!JSCOQDOC_FLAGS) \
+	  --no-index --no-lib-name --parse-comments $<
 	@rm coqdoc.css  # urghh
 
 clean:
