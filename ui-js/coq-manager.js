@@ -1170,7 +1170,7 @@ class CoqManager {
 
     keyTooltips() {
         return navigator.isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
-            {up: 'Alt-P', down: 'Alt-N', cursor: 'Alt-Enter'}
+            {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter'}
     }
 
     /**
@@ -1190,7 +1190,8 @@ class CoqManager {
               toggle    = () => this.layout.toggle(),
               interrupt = () => this.interruptRequest();
         const nav_bindings = {
-            '_Enter':     goCursor, '_ArrowRight': goCursor,
+            '_Enter':     goCursor, '_NumpadEnter': goCursor,
+            '^Enter':     goCursor, '^NumpadEnter': goCursor,
             '_ArrowDown': goNext,
             '_ArrowUp':   goPrev,
             'F8': toggle,
@@ -1389,7 +1390,7 @@ const PKG_ALIASES = {
 const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
     'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
     'software-foundations',
-    'hahn', 'paco', 'snu-sflib', 'promising',
+    'hahn', 'paco', 'snu-sflib',
     'fcsl-pcm', 'htt', 'pnp', 'coqoban', 'stdpp', 'iris'
 ];
 

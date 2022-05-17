@@ -1,92 +1,173 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <title>jsCoq – Use Coq in Your Browser</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
     <link rel="icon" href="ui-images/favicon.png">
 
+    <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <style>
-      kbd { background: #0003; color: #333; font-size: 80%; }
-      table.doc-actions th, table.doc-actions td {
-        padding: .2em .5em;
-        vertical-align: top;
-        border: 1px solid #999;
-      }
-      table.doc-actions td {
-        padding-bottom: .25em;
-      }
-      h4 {
-        background: #f6f9f9;
-        padding: 3px;
-        color: #089;
-        margin-top: 1em;
-      }
-      h5 {
-        margin-top: 12px;
-        margin-bottom: 7px;
-        font-size: 110%;
-        font-style: italic;
-        color: #089;
-      }
-      span.jscoq-name {
-        color: #363;
-      }
-      #team {
-        margin-top: 2em;
-        border: 1px solid #eee;
-        padding: 5px;
-      }
-      a#scratchpad {
-        height: 30px;
-        width: 30px;
-        background: url(ui-images/scratchpad.png);
-        background-repeat: no-repeat;
-        background-size: contain;
-        border: none;
-        outline: none;
-        position: absolute;
-        top: 5px;
-        right: 40px;
-      }
-    </style>
-    <title>jsCoq – Use Coq in Your Browser</title>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
+    <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="ui-css/kbd.css">
+    <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   </head>
 
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
+  <div id="document-wrapper">
+    <!------------------------------->
+    <!--   N A V   B A R           -->
+    <!------------------------------->
+    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand"><img src="ui-images/favicon.png"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                About
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="#team">jsCoq Dev Team</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="https://coq.inria.fr">Coq Proof Assistant</a></li>
+                <li><a class="dropdown-item" href="https://github.com/cpitclaudel/company-coq">company-coq</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarExamples" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Examples
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="examples/inf-primes.html">Infinitude of Primes</a></li>
+                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <span class="math"><img class="symbol-sqrt" src="ui-images/sqrt.svg">2</span></a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="ui-images/book.svg">Software Foundations</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad">
+        <span class="newcomer scratchpad-tip">open the scratchpad<br/>to start editing</span>
+      </a>
+    </nav>
+    <!------------------------------->
+  
   <div id="document">
-  <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad"></a>
   <div>
     <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
     <p>
-      Welcome to the <span class="jscoq-name">jsCoq</span> technology demo!
       <span class="jscoq-name">jsCoq</span> is an interactive,
       web-based environment for the Coq Theorem prover, and is a collaborative
       development effort. See the <a href="#team">list of contributors</a>
       below.
     </p>
     <p>
-      <span class="jscoq-name">jsCoq</span> is open source. If you find any problem or want to make
-      any contribution, you are extremely welcome! We await your
-      feedback at <a href="https://github.com/jscoq/jscoq">GitHub</a>
+      <span class="jscoq-name">jsCoq</span> is open source. If you find any problem
+      that you wish to report or want to add your own contribution,
+      you are extremely welcome! We await your feedback at
+      <a href="https://github.com/jscoq/jscoq">GitHub</a>
       and <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq">Zulip</a>.
     </p>
-    <h4>Instructions:</h4>
+
+    <h4>A First Example: <code>rev</code> <code>∘</code> <code>rev = id</code></h4>
     <p>
-      The following document contains embedded Coq code.
-      All the code is editable and can be run directly on the page.
-      Once <span class="jscoq-name">jsCoq</span> finishes loading, you are
-      free to experiment by stepping through the proof and viewing intermediate
-      proof states on the right panel.
+      The following is a simple proof that <code>rev</code>, the standard list
+      reversal function as commonly defined in ML and other languages of the
+      family, is an involution.
     </p>
-    <h5>Actions:</h5>
+    <p>
+      Use <span class="has-kbd"><kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd></span> to step through the proof,
+      and observe the proof state on the right panel.
+    </p>
+    <textarea class="snippet">
+From Coq Require Import List.
+Import ListNotations.</textarea>
+    <p class="interim">
+      We are going to need a simpler auxiliary lemma, one that connects
+      <code>rev</code>, <code>::</code> (the list constructor, also known
+      as <code>cons</code>), and <code>snoc</code> (the dual of
+      <code>cons</code>, a function that appends an element at the end of
+      a list).
+      This is because the latter two participate in the definition of
+      the former, <code>rev</code>.
+    </p>
+
+    <textarea class="snippet">Lemma rev_snoc_cons A :
+  forall (x : A) (l : list A), rev (l ++ [x]) = x :: rev l.</textarea>
+    <p class="interim">
+      This proposition is proven by way of the standard induction on
+      the structure of the list <code>l</code>.
+    </p>
+    <textarea class="snippet">Proof.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite IHl. simpl. reflexivity.
+Qed.</textarea>
+
+    <p class="interim">
+      Now we prove the central equality with a similar induction.
+    </p>
+    <textarea class="snippet">Theorem rev_rev A : forall (l : list A), rev (rev l) = l.
+Proof.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite rev_snoc_cons. rewrite IHl.
+    reflexivity.
+Qed.</textarea>
+
+    <p class="interim">
+      Finally, we apply functional extensionality to produce the equality
+      as it was written in the title.
+    </p>
+    <p class="interim">
+      There is only one syntactic difference, which is that, in Coq, we
+      need to pass an explicit value to the implicit (generic) type
+      parameter <code>A</code> of <code>rev</code>.
+    </p>
+    <textarea class="snippet">From Coq.Program Require Import Basics.
+From Coq Require Import FunctionalExtensionality.
+Open Scope program_scope.
+
+Theorem rev_invol A : rev (A:=A) ∘ rev (A:=A) = id.
+Proof.
+  apply functional_extensionality.
+  intro x.
+  unfold compose, id. rewrite rev_rev.
+  reflexivity.
+Qed.</textarea>
+
+    <hr/> <!-- end of proof -->
+
+    <h4>Quick start</h4>
+    <p>
+      Use the <a href="examples/scratchpad.html">scratchpad <span class="scratchpad-small"></span></a>
+      for a fresh page to write your proofs on.
+      <span class="jscoq-name">jsCoq</span> provides basic UI for running
+      and inspecting proofs, similar to IDEs such as <a href="https://coq.inria.fr/refman/practical-tools/coqide.html">CoqIDE</a>,
+      <a href="https://proofgeneral.github.io/">Proof General</a>,
+      and <a href="https://github.com/coq-community/vscoq">VSCoq</a>.
+    </p>
+
+    <h5>Actions</h5>
     <table class="doc-actions">
       <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
       <tr>
+        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
+        <td class="has-kbd"><kbd>F8</kbd></td>
+        <td>Toggles the goal panel.</td>
+      </tr>
+      <tr>
         <td><img src="ui-images/down.png" height="15px"><img src="ui-images/up.png" height="15px"></td>
-        <td>
+        <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
           <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
         </td>
@@ -94,111 +175,43 @@
       </tr>
       <tr>
         <td><img src="ui-images/to-cursor.png" height="20px"></td>
-        <td>
-          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Alt</kbd>+<kbd>→</kbd>
+        <td class="has-kbd">
+          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
+          (⌘ on Mac)
         </td>
         <td>Run (or go back) to the current point.</td>
       </tr>
       <tr>
-        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
-        <td><kbd>F8</kbd></td>
-        <td>Toggles the goal panel.</td>
+        <td></td>
+        <td class="has-kbd">
+          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="ui-images/pointer.svg">
+        </td>
+        <td>Hover executed statements to peek at the proof state after each step.</td>
       </tr>
     </table>
-    <h5>Creating your own proof scripts:</h5>
+    <h5>Creating your own proof scripts</h5>
     <p>
       The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
       storage functionality. It also allows you to share your development with
       other users in a manner that is similar to Pastebin.
     </p>
+    <h5>There's more</h5>
+    <p>
+      See the <a href="https://github.com/jscoq/jscoq/tree/v8.15/docs">official docs</a>
+      on GitHub for more details on using, building, embedding, and integrating
+      <span class="jscoq-name">jsCoq</span> in your developments.
+    </p>
 
-    <h4>A First Example: The Infinitude of Primes</h4>
     <p>
-      If you are new to Coq, check out this
-      <a href="examples/nahas_tutorial.html">introductory tutorial</a> by
-      <a href="https://mdnahas.github.io">Mike Nahas</a>.
-      As a more advanced showcase, we display a proof of the infinitude of primes in Coq.
-      The proof relies on the <a href="https://math-comp.github.io">Mathematical Components</a>
-      library from the
-      <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
-      by Georges Gonthier, so our first step will be to load it:
+      <span class="jscoq-name">jsCoq</span> comes with a variety of addon packages,
+      including Coq's standard library and the
+      <a href="https://math-comp.github.io">mathematical components</a>
+      library.
+      Feel free to experiment, and let us know if you have any suggestions
+      and/or when you have done something cool with <span class="jscoq-name">jsCoq</span>.
+      😎
     </p>
-  </div>
-  <div>
-    <textarea id="addnC" >
-From Coq Require Import ssreflect ssrfun ssrbool.
-From mathcomp Require Import eqtype ssrnat div prime. </textarea>
-  </div>
-  <div>
-    <h5>Ready to do Proofs!</h5>
     <p>
-      Once the basic environment has been set up, we can proceed to
-      the proof:
-    </p>
-  </div> <!-- panel-heading -->
-  <div>
-    <textarea id="prime_above1" >
-(* A nice proof of the infinitude of primes, by Georges Gonthier *)
-Lemma prime_above m : {p | m < p & prime p}.
-Proof. </textarea>
-    <p>
-      The lemma states that for any number <code>m</code>,
-      there is a prime number larger than <code>m</code>.
-
-      Coq is a <em>constructive system</em>, which among other things
-      implies that to show the existence of an object, we need to
-      actually provide an algorithm that will construct it.
-
-      In this case, we need to find a prime number <code>p</code>
-      that is greater than <code>m</code>.
-      What would be a suitable <code>p</code>?
-
-      Choosing <code>p</code> to be the first prime divisor of <code>m! + 1</code>
-      works.
-      As we will shortly see, properties of divisibility will imply that
-      <code>p</code> must be greater than <code>m</code>.
-    </p>
-    <textarea id="prime_above2" >
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1
-  by rewrite addn1 ltnS fact_gt0.</textarea>
-    <p>
-      Our first step is thus to use the library-provided lemma
-      <code>pdivP</code>, which states that every number is divided by a
-      prime. Thus, we obtain a number <code>p</code> and the corresponding
-      hypotheses <code>pr_p : prime p</code> and <code>p_dv_m1</code>,
-      "p divides m! + 1".
-      The ssreflect tactic <code>have</code> provides a convenient way to
-      instantiate this lemma and discard the side proof obligation
-      <code>1 &lt; m! + 1</code>.
-    </p>
-    <textarea id="prime_above3" >
-exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
-    <p>
-      It remains to prove that <code>p</code> is greater than <code>m</code>.
-      We reason by
-      contraposition with the divisibility hypothesis, which gives us
-      the goal "if <code>p ≤ m</code> then <code>p</code> is not a prime divisor of 
-      <code>m! + 1</code>".
-    </p>
-    <textarea id="prime_above4" >
-by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
-Qed.</textarea>
-    <p>
-      The goal follows from basic properties of divisibility, plus
-      from the fact that if <code>p ≤ m</code>, then <code>p</code> divides
-      <code>m!</code>, so that for <code>p</code> to divide
-      <code>m! + 1</code> it must also divide 1,
-      in contradiction to <code>p</code> being prime.
-    </p>
-    <hr/>
-  <p>
-    <span class="jscoq-name">jsCoq</span> provides many other packages,
-    including Coq's standard library and the
-    <a href="https://math-comp.github.io"></a>mathematical components</a>
-    library.
-    Feel free to experiment, and bear with the beta status of this demo.
-  </p>
-  <p>
     <i>¡Salut!</i>
   </p>
   </div> <!-- /#panel body -->
@@ -227,20 +240,24 @@ Qed.</textarea>
     </ul>
   </div>
   </div> <!-- /#document -->
+  </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
   <script type="text/javascript">
+    if (!localStorage['scratchpad.last_filename'])
+      setTimeout(() => document.body.classList.add('welcome'), 1500);
 
-    var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
+    var jscoq_ids  = ['.snippet'];
     var jscoq_opts = {
         implicit_libs: false,
         focus: false,
-        base_path: './',
         editor: { mode: { 'company-coq': true } },
-        init_pkgs: ['init'],
-        all_pkgs:  ['coq', 'mathcomp', 'equations', 'elpi', 'quickchick', 'lf', 'plf']
+        all_pkgs:  {'+': ['coq', 'mathcomp', 'equations', 'elpi',
+                          'quickchick', 'software-foundations',
+                          'hahn', 'paco', 'snu-sflib',
+                          'fcsl-pcm', 'htt', 'pnp', 'stdpp', 'iris'],
+                    './examples': ['examples']}
     };
 
     /* Global reference */

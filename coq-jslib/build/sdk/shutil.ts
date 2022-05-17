@@ -37,7 +37,7 @@ const cas_retries = {forever: true, factor: 1, minTimeout: 500, maxTimeout: 1000
 
 function dirstamp(fn: string) {
     try { var s = fs.statSync(fn).mtime.toISOString(); } catch { s = '??'; }
-    return `${fn} @ ${s}`;
+    return `${fs.realpathSync(fn)} @ ${s}`;
 }
 
 function ln_sf(target: string, source: string) {

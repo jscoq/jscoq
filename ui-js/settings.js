@@ -22,6 +22,7 @@ class SettingsPanel {
                 </label>
             </div>
             <div class="links">
+                <a href="https://coq.inria.fr" title="Coq" class="link-to-coq"></a>
                 <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq" title="Zulip" class="link-to-zulip"></a>
                 <a href="https://github.com/jscoq/jscoq" title="GitHub" class="link-to-github"></a>
             </div>

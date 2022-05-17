@@ -46,10 +46,13 @@ class CLI {
             await workspace.loadDeps(opts.loads);
         if (opts.workspace)
             workspace.open(opts.workspace, opts.rootdir, opts);
-        else if (opts.rootdir)
+        else if (opts.rootdir) {
+            var dirpaths = opts.dirpaths.split(/[, ]/) as any[];
+            if (!opts.recurse)
+                dirpaths = dirpaths.map(d => ({logical: d, rec: false}));
             workspace.openProjectDirect(opts.package || path.basename(opts.rootdir),
-                                        opts.rootdir, opts.top,
-                                        opts.dirpaths.split(/[, ]/));
+                                        opts.rootdir, opts.top, dirpaths);
+        }
         else {
             console.error('what to build? specify either rootdir or workspace.');
             throw new BuildError();
@@ -153,6 +156,7 @@ async function main() {
         .option('--rootdir <dir>',            'toplevel directory for finding `.v` and `.vo` files')
         .option('--top <name>',               'logical name of toplevel directory')
         .option('--dirpaths <a.b.c>',         'logical paths containing modules (comma separated)', '')
+        .option('--no-recurse',               'do not process subdirectories recursively')
         .option('--package <f.coq-pkg>',      'create a package (default extension is `.coq-pkg`)')
         .option('-d,--outdir <dir>',          'set default output directory')
         .option('--ignore-missing',           'skip missing projects in workspace, unless they are all missing')
