@@ -21,7 +21,6 @@ class CoqWorker {
             this.when_created = 
                 this.createWorker(scriptPath ||
                                   this.constructor.defaultScriptPath());
-            console.warn(this.when_created);
         }
     }
 
