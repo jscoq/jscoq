@@ -1,8 +1,13 @@
 # jsCoq 0.15.1 "Go For Your Toad, or Similar"
 ---------------------------------------
 
- - Update to Coq 8.15.1 (@corwin-of-amber)
- - Stabilized jsCoq SDK Docker image (@corwin-of-amber)
+ - Update to Coq 8.15.1. (@corwin-of-amber)
+ - Stabilized jsCoq SDK Docker image. (@corwin-of-amber)
+ - A new landing-page example that is more focused on showing
+   jsCoq features; added links to examples. (@corwin-of-amber,
+   help & suggestions by @hannelita, @palmskog)
+ - Added symbol generation to the build pipeline, to keep
+   completion results current. (@corwin-of-amber)
 
 # jsCoq 0.15.0 "Steady State"
 ------------------------------
