@@ -31,7 +31,7 @@ done
 create_switch() {
 
   case $WORD_SIZE in
-    32) switch_name=jscoq+32bit; packages="ocaml-variants.$OCAML_VER+options ocaml-option-32bit";;
+    32) switch_name=jscoq+32bit; packages="ocaml-variants.$OCAML_VER+options,ocaml-option-32bit";;
     64) switch_name=jscoq+64bit; packages=ocaml-base-compiler.$OCAML_VER ;;
   esac
 
