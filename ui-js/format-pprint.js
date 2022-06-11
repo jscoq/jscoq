@@ -83,7 +83,8 @@ class FormatPrettyPrint {
         // ["Pp_print_break", nspaces, indent-offset]
         case "Pp_print_break":
             var [nspaces, indent] = pp.slice(1);
-            var spn = (n, c) => $('<span>').text(" ".repeat(n)).addClass(c);
+            // notice that `n` may be negative (#263) -- not sure how to handle this case
+            var spn = (n, c) => $('<span>').text(" ".repeat(Math.max(0, n))).addClass(c);
             return $('<span>').addClass('Pp_break').attr('data-args', pp.slice(1))
                 .append(spn(nspaces, 'spaces'), $('<br/>'),
                         spn(0, 'prev-indent'), spn(indent, 'indent'));
