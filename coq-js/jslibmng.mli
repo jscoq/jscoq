@@ -30,7 +30,7 @@ type out_fn = lib_event -> unit
 val info_pkg : out_fn -> string -> string list -> unit Lwt.t
 
 (** [load_pkg base_path pkg_file] loads package [pkg_file] *)
-val load_pkg : out_fn -> string -> string -> unit Lwt.t
+val load_pkg : verb:bool -> out_fn -> string -> string -> unit Lwt.t
 (** [info_pkg lib_path available_pkg ] gather package list
     [available_pkg] from directory [lib_path] *)
 
@@ -48,7 +48,7 @@ val path_to_coqpath : ?implicit:bool -> ?unix_prefix:string list -> string list 
 val paths_to_coqpath : ?implicit:bool -> (string list * string list) list -> Loadpath.vo_path list
 val coqpath_of_bundle : ?implicit:bool -> Jslib.coq_bundle -> Loadpath.vo_path list
 
-val require_libs : string list -> (string * string option * bool option) list
+val require_libs : string list -> (string * string option * Lib.export_flag option) list
 
 val path_of_dirpath : Names.DirPath.t -> string list
 val module_name_of_qualid : Libnames.qualid -> string list

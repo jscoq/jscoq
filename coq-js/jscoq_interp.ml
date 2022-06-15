@@ -116,7 +116,11 @@ let requires ast =
     let prefix_str = match prefix with
     | Some ref -> Jslibmng.module_name_of_qualid ref
     | _ -> [] in
-    let module_refs_str = List.map (fun modref -> Jslibmng.module_name_of_qualid modref) module_refs in
+    let module_refs_str =
+      (* XXX *)
+      let module_refs = List.map fst module_refs in
+      List.map (fun modref -> Jslibmng.module_name_of_qualid modref) module_refs
+    in
     Some ((prefix_str, module_refs_str))
   | _ -> None
   [@@warning "-4"]
@@ -248,7 +252,8 @@ let jscoq_execute =
     out_fn @@ Ready iid
 
   | LoadPkg(base, pkg)  ->
-    Lwt.async (fun () -> Jslibmng.load_pkg process_lib_event base pkg)
+    let verb = false in
+    Lwt.async (fun () -> Jslibmng.load_pkg ~verb process_lib_event base pkg)
 
   | InfoPkg(base, pkgs) ->
     Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)

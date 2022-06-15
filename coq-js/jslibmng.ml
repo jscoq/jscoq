@@ -47,7 +47,9 @@ type out_fn = lib_event -> unit
 
 exception DynLinkFailed of string
 
-let is_bytecode file = Filename.(check_suffix file "cma" || check_suffix file "cmo")
+let is_bytecode file =
+  let chk sf = Filename.check_suffix file sf in
+  chk "cma" || chk "cmo" || chk "cma.js" || chk "cmo.js"
 
 let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t =
   let open JL.XmlHttpRequest                        in
@@ -84,7 +86,7 @@ let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t 
   end
   else Lwt.return_unit
 
-let preload_pkg ?(verb=false) out_fn base_path bundle pkg : unit Lwt.t =
+let preload_pkg ~verb out_fn base_path bundle pkg : unit Lwt.t =
   let pkg_dir = to_dir pkg                                           in
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = no_files pkg                                         in
@@ -130,12 +132,12 @@ let only_once lref s =
   end
 
 (* Load a bundle *)
-let rec preload_from_file ?(verb=false) out_fn base_path bundle_name =
+let rec preload_from_file ~verb out_fn base_path bundle_name =
   if only_once load_under_way bundle_name then
     try%lwt
       parse_bundle base_path bundle_name >>= fun bundle ->
       (* Load sub-packages in parallel *)
-      Lwt_list.iter_p (preload_pkg ~verb:verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
+      Lwt_list.iter_p (preload_pkg ~verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
       return @@ out_fn (LibLoaded (bundle_name, bundle))
     with
     | Failure _ ->
@@ -154,8 +156,8 @@ let info_pkg out_fn base_path pkgs =
   Lwt_list.iter_p (info_from_file out_fn base_path) pkgs
 
 (* Hack *)
-let load_pkg out_fn base_path pkg_file =
-  preload_from_file out_fn base_path pkg_file (*>>= fun () ->
+let load_pkg ~verb out_fn base_path pkg_file =
+  preload_from_file ~verb out_fn base_path pkg_file (*>>= fun () ->
   parse_bundle base_path pkg_file *)
 
 (* let _is_bad_url _ = false *)
@@ -187,6 +189,8 @@ let coq_vo_req url =
 
 let coq_cma_link cmo_file =
   let open Format in
+  (* Coq 8.16 doesn't append the extension anymore when submitting this *)
+  let cmo_file = cmo_file ^ ".cma" in
   if verb then eprintf "bytecode file %s requested\n%!" cmo_file;
   let cmo_file =
     try Hashtbl.find cma_cache cmo_file ^ "/" ^ cmo_file
@@ -247,7 +251,7 @@ let paths_to_coqpath ?(implicit=false) lib_path =
   ) lib_path
 
 let require_libs libs =
-  List.map (fun lp -> lp, None, Some true) libs
+  List.map (fun lp -> lp, None, Some Lib.Export) libs
   (* Last coordinate: *)
   (*   None       : just require            *)
   (*   Some false : import but don't export *)

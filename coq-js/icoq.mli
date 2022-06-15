@@ -19,7 +19,7 @@ type async_flags = {
   deep_edits   : bool;
 }
 
-type require_lib = (string * string option * bool option)
+type require_lib = (string * string option * Lib.export_flag option)
 type top_mode = Interactive | Vo
 
 type coq_opts = {

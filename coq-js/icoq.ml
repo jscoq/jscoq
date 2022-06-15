@@ -20,7 +20,7 @@ type async_flags = {
   deep_edits   : bool;
 }
 
-type require_lib = (string * string option * bool option)
+type require_lib = (string * string option * Lib.export_flag option)
 type top_mode = Interactive | Vo
 
 type coq_opts = {
@@ -74,6 +74,11 @@ let set_options opt_values =
 
 let default_warning_flags = "-notation-overridden"
 
+let load_plugin ml_load pg =
+  match Mltop.PluginSpec.repr pg with
+  | None, _pkg -> ()            (* Not implemented *)
+  | Some cma, _ -> ml_load cma  (* Legacy loading method *)
+
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
@@ -85,11 +90,11 @@ let coq_init opts =
 
   (* Custom toplevel is used for bytecode-to-js dynlink  *)
   let ser_mltop : Mltop.toplevel = let open Mltop in
-    {
-    load_obj = opts.ml_load;
+    { load_plugin = load_plugin opts.ml_load
+    ; load_module = opts.ml_load
     (* We ignore all the other operations for now. *)
-    add_dir  = (fun _ -> ());
-    ml_loop  = (fun _ -> ());
+    ; add_dir  = (fun _ -> ())
+    ; ml_loop  = (fun _ -> ());
   } in
 
   Mltop.set_top ser_mltop;
@@ -182,9 +187,9 @@ let inspect_globals ~env () =
   Seq.map qualified_name_of_constant global_consts
 
 
-let libobj_is_leaf obj =
-  match obj with
-  | Lib.Leaf _ -> true | _ -> false [@@warning "-4"]
+let libobj_is_leaf _obj = false
+  (* match obj with
+   * | Lib.Leaf _ -> true | _ -> false [@@warning "-4"] *)
 
 let full_path_sibling path id =
   Libnames.make_path (Libnames.dirpath path) id
@@ -208,12 +213,17 @@ let find_definitions env obj_path =
   with Not_found -> Seq.empty
 
 (* Get definitions in current module *)
-let inspect_library ~env () =
-  let ls = Lib.contents () in
+
+(* XXX *)
+let _inspect_library ~env () =
+  let _ls = Lib.contents () in
   Seq.flat_map (fun ((obj_path, _), obj) ->
     if libobj_is_leaf obj then find_definitions env obj_path
     else Seq.empty)
-    (List.to_seq ls) |> Seq.map qualified_name_of_full_path
+    Seq.empty
+    (* (List.to_seq ls) |> Seq.map qualified_name_of_full_path *)
+
+let inspect_library ~env:_ () = Seq.empty
 
 (* Get local names in proof context *)
 let inspect_locals ~env ?(dir_path=Names.DirPath.empty) () =
