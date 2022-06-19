@@ -38,6 +38,7 @@ class HeadlessCoqWorker extends CoqWorker {
     spawn() { return new HeadlessCoqWorker(); }
 
     static instance() {
+        global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
         var jscoq = require('../coq-js/jscoq_worker.bc.js').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
@@ -75,7 +76,7 @@ class HeadlessCoqManager {
             prelude: false,
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
-            all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'],
+            all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2'],
             pkg_path: undefined,  /* default: automatic */
             inspect: false,
             log_debug: false,
@@ -97,21 +98,38 @@ class HeadlessCoqManager {
         // Configure load path
         this.options.pkg_path = this.options.pkg_path || this.findPackageDir();
         await this.packages.loadPackages(this.options.all_pkgs.map(pkg =>
-            `${this.options.pkg_path}/${pkg}.coq-pkg`));
+            this.getPackagePath(pkg)));
 
         this.project.searchPath.addRecursive(
-            {physical: `${this.packages.dir}/Coq`, logical: 'Coq'});
+            {physical: `${this.packages.dir}`, logical: ''});
         
         for (let mod of this.project.modulesByExt('.cma')) {
             this.coq.register(mod.physical);
         }
 
         // Initialize Coq
-        let init_opts = {top_name: this.options.top_name,
-                         implicit_libs: this.options.implicit_libs},
-            lib_init = this.options.prelude ? ["Coq.Init.Prelude"] : [];
+        let init_opts = {
+                top_name: this.options.top_name,
+                implicit_libs: this.options.implicit_libs,
+                lib_path: this.getLoadPath()
+            },
+            doc_opts = {
+                lib_init: this.options.prelude ? ["Coq.Init.Prelude"] : []
+            };
 
-        this.coq.init(init_opts, {lib_init, lib_path: this.getLoadPath()});
+        this.coq.init(init_opts, doc_opts);
+    }
+
+    getPackagePath(pkg: string) {
+        var filenames = [pkg, `${pkg}.coq-pkg`],
+            dirs = ['', this.options.pkg_path];
+        for (let d of dirs) {
+            for (let fn of filenames) {
+                let fp = path.join(d, fn);
+                if (fs.existsSync(fp)) return fp;
+            }
+        }
+        throw new Error(`package not found: '${pkg}'`);
     }
 
     getLoadPath() {
@@ -185,13 +203,14 @@ class HeadlessCoqManager {
         var out_fn = inspect.filename || 'inspect.symb',
             query_filter = inspect.modules ? 
                 (id => inspect.modules.some(m => this._identifierWithin(id, m)))
-              : (id =>true);
+              : (id => true);
         this.coq.inspectPromise(0, ["All"]).then(results => {
-            var symbols = results.map(fp => CoqIdentifier.ofFullPath(fp))
+            var symbols = results.map(fp => CoqIdentifier.ofQualifiedName(fp))
                             .filter(query_filter);
             this.volume.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
             console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
-        });
+        })
+        .catch((err: Error) => console.error(err));
     }
 
     coqCoqInfo() { }
@@ -273,7 +292,7 @@ class HeadlessCoqManager {
                          .map(rel => path.join(__dirname, rel));
         
         for (let path_el of searchPath) {
-            for (let dirpat of ['..', '../_build/jscoq+*']) {
+            for (let dirpat of ['.', '_build/jscoq+*']) {
                 for (let rel of glob.sync(dirpat, {cwd: path_el})) {
                     var dir = path.join(path_el, rel, dirname);
                     if (this._isDirectory(dir))
@@ -341,11 +360,15 @@ class QueueCoqProvider {
 
 class PackageDirectory extends EventEmitter {
     dir: string
+    packages_by_name: {[name: string]: PackageManifest}
+    packages_by_uri: {[name: string]: PackageManifest}
     _plugins: Promise<void>
 
     constructor(dir: string) {
         super();
         this.dir = dir;
+        this.packages_by_name = {};
+        this.packages_by_uri = {};
     }
 
     async loadPackages(uris: string | string[]) {
@@ -354,7 +377,9 @@ class PackageDirectory extends EventEmitter {
         var loaded = [];
         for (let uri of uris) {
             try {
-                await this.unzip(uri);   // not much use running async
+                let info = await this.unzip(uri);   // must not run async; no much use of it anyway
+                this.packages_by_name[info.name] = info;
+                this.packages_by_uri[uri] = info;
                 loaded.push(uri);
                 this.emit('message', {data: ['LibProgress', {uri, done: true}]});
             }
@@ -366,9 +391,23 @@ class PackageDirectory extends EventEmitter {
     }
 
     async unzip(uri: string) {
-        var data = typeof fetch !== 'undefined' ? 
-            await (await fetch(uri)).arrayBuffer() : fs.readFileSync(uri);
-        return unzip(data, {to: {directory: this.dir}});
+        /** @todo `typeof fetch` is not a good way to detect env */
+        var data = /*typeof fetch !== 'undefined' ? 
+            await (await fetch(uri)).arrayBuffer() :*/ fs.readFileSync(uri);
+        await unzip(data, {to: {directory: this.dir}});
+        /** @oops not reentrant (`coq-pkg.json` is overwritten every time) */
+        return JSON.parse(
+            fs.readFileSync(path.join(this.dir, 'coq-pkg.json'), 'utf-8'));
+    }
+
+    listModules(pkg: string | PackageManifest) {
+        if (typeof pkg === 'string')
+            pkg = this.packages_by_uri[pkg] ?? this.packages_by_name[pkg]
+                ?? (() => { throw new Error(`package '${pkg}' not loaded`)})();
+
+        return [].concat(...pkg.pkgs.map(({pkg_id, vo_files}) =>
+            vo_files.map(([fn]) =>
+                [...pkg_id, fn.replace(/[.].*/, '')].join('.'))));
     }
 
     /**
@@ -396,6 +435,14 @@ class PackageDirectory extends EventEmitter {
         catch { }
         fs.symlinkSync(target, source);
     }
+}
+
+type PackageManifest = {
+    name: string
+    pkgs: {
+        pkg_id: string[]
+        vo_files: [string, null][]
+    }[]
 }
 
 

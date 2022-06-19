@@ -21,7 +21,7 @@
 
 //Provides: caml_input_value_from_reader mutable
 //Requires: caml_failwith
-//Requires: caml_float_of_bytes, caml_int64_of_bytes
+//Requires: caml_float_of_bytes, caml_custom_ops
 
 /*** !!! This overrides the implementation from js_of_ocaml !!! ***/
 
@@ -123,7 +123,7 @@ function caml_input_value_from_reader(reader, ofs) {
           var len = reader.read8u();
           var v = new Array(len+1);
           v[0] = 254;
-          var t = new Array(8);
+          var t = new Array(8);;
           if (intern_obj_table) intern_obj_table[obj_counter++] = v;
           for (var i = 1;i <= len;i++) {
             for (var j = 0;j < 8;j++) t[j] = reader.read8u();
@@ -156,36 +156,37 @@ function caml_input_value_from_reader(reader, ofs) {
           caml_failwith ("input_value: code pointer");
           break;
         case 0x12: //cst.CODE_CUSTOM:
+        case 0x18: //cst.CODE_CUSTOM_LEN:
+        case 0x19: //cst.CODE_CUSTOM_FIXED:
           var c, s = "";
           while ((c = reader.read8u ()) != 0) s += String.fromCharCode (c);
-          switch(s) {
-          case "_j":
-            // Int64
-            var t = new Array(8);;
-            for (var j = 0;j < 8;j++) t[j] = reader.read8u();
-            var v = caml_int64_of_bytes (t);
-            if (intern_obj_table) intern_obj_table[obj_counter++] = v;
-            return v;
-          case "_i":
-            // Int32
-            var v = reader.read32s ();
-            if (intern_obj_table) intern_obj_table[obj_counter++] = v;
-            return v;
-          case "_n":
-            // Nativeint
-            switch (reader.read8u ()) {
-            case 1:
-              var v = reader.read32s ();
-              if (intern_obj_table) intern_obj_table[obj_counter++] = v;
-              return v;
-            case 2:
-              caml_failwith("input_value: native integer value too large");
-            default:
-              caml_failwith("input_value: ill-formed native integer");
-            }
-          default:
+          var ops = caml_custom_ops[s];
+          var expected_size;
+          if(!ops)
             caml_failwith("input_value: unknown custom block identifier");
+          switch(code){
+          case 0x12: // cst.CODE_CUSTOM (deprecated)
+            break;
+          case 0x19: // cst.CODE_CUSTOM_FIXED
+            if(!ops.fixed_length)
+              caml_failwith("input_value: expected a fixed-size custom block");
+            expected_size = ops.fixed_length;
+            break;
+          case 0x18: // cst.CODE_CUSTOM_LEN
+            expected_size = reader.read32u ();
+            // Skip size64
+            reader.read32s(); reader.read32s();
+            break;
           }
+          var old_pos = reader.i;
+          var size = [0];
+          var v = ops.deserialize(reader, size);
+          if(expected_size != undefined){
+            if(expected_size != size[0])
+              caml_failwith("input_value: incorrect length of serialized custom block");
+          }
+          if (intern_obj_table) intern_obj_table[obj_counter++] = v;
+          return v;
         default:
           caml_failwith ("input_value: ill-formed message");
         }

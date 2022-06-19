@@ -6,56 +6,62 @@ class HeadlessCLI {
     constructor() { this.rc = 0; }
 
     installCommand(commander) {
+        let loads = [], requires = [], require_pkgs = [];
         return commander.command('run')
             .option('--noinit',                                 'start without loading the Init library')
+            .option('--load <f.coq-pkg>',                       'load package(s) and place in load path (comma separated, may repeat)')
             .option('--require <path>',                         'load Coq library path and import it (Require Import path.)')
-            .option('--require-pkg <json>',                     'load a package and Require all modules included in it')
+            .option('--require-pkg <pkg>',                      'load package(s) and Require all modules included in it (comma separated, may repeat)')
             .option('-l, --load-vernac-source <f.v>',           'load Coq file f.v.')
             .option('--compile <f.v>',                          'compile Coq file f.v')
             .option('-o <f.vo>',                                'use f.vo as output file name')
             .option('--inspect <f.symb.json>',                  'inspect global symbols and serialize to file')
             .option('-e <command>',                             'run a vernacular command')
             .option('-v, --verbose',                            'print debug log messages and warnings')
-            .on('option:require',     path => { requires.push(path); })
-            .on('option:require-pkg', json => { require_pkgs.push(json); })
-            .action(async opts => { this.rc = await this.run(opts); });
+            .on('option:load',        pkg => loads.push(...pkg.split(',')))
+            .on('option:require',     path => requires.push(path))
+            .on('option:require-pkg', pkg => require_pkgs.push(...pkg.split(',')))
+            .action(async opts => {
+                this.rc = await this.run({...opts, loads, requires, require_pkgs});
+            });
     }
 
     async run(opts) {
-        var requires = [], require_pkgs = [];
-
         var coq = new HeadlessCoqManager();
-
-        var modules = requires.slice();
-
-        for (let modul of requires)
-            coq.require(modul, true);
-
-        for (let json_fn of require_pkgs) {
-            var bundle = mkpkg.PackageDefinition.fromFile(json_fn);
-
-            for (let modul of bundle.listModules()) {
-                coq.require(modul);
-                modules.push(modul);
-            }
-        }
 
         if (!opts.noinit) coq.options.prelude = true;
         if (opts.verbose) coq.options.log_debug = coq.options.warn = true;
 
+        coq.options.all_pkgs.push(...opts.loads);
+        coq.options.all_pkgs.push(...opts.require_pkgs.filter(x => !coq.options.all_pkgs.includes(x)));
+
         if (opts.loadVernacSource) coq.load(opts.loadVernacSource);
 
-        if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
+        for (let mod of opts.requires)
+            coq.require(mod, true);
 
         if (opts.inspect) {
             coq.options.inspect = {};
             if (typeof opts.inspect === 'string')
                 coq.options.inspect.filename = opts.inspect;
-            if (modules.length > 0)
-                coq.options.inspect.modules = modules;
+            if (opts.requires.length > 0)
+                coq.options.inspect.modules = opts.requires.slice();
         }
 
         await coq.start();
+
+        // `--require-pkg`s can only be handled after package manifests
+        // have been loaded
+        for (let pkg of opts.require_pkgs) {
+            for (let mod of coq.packages.listModules(pkg)) {
+                coq.require(mod);
+                if (coq.options.inspect)
+                    (coq.options.inspect.modules ??= []).push(mod);
+            }
+        }
+
+        if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
+
         try {
             await coq.when_done.promise;
         }

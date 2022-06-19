@@ -4,14 +4,16 @@
 
 (rule
  (targets coq-pkgs)
- ; (mode promote)  - blocked by https://github.com/ocaml/dune/issues/2070
  (deps
   (package coq-core)
-  (package coq-stdlib))
+  (package coq-stdlib)
+  Makefile)
  (action
   (progn
    (run node %{dep:dist}/cli.js %{dep:coq-jslib/metadata/coq-pkgs.json}
-             --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib))))
+             --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib)
+   ; building symbols using Make because Dune has no pattern rules T.T
+   (run make libs-symb))))
 
 (rule
  (targets node_modules)
@@ -31,7 +33,7 @@
    index.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.js
+   coq-js/jscoq_worker.bc.js
    dist
    jscoq.install))
 
@@ -52,6 +54,6 @@
 (alias
   (name jscoq_worker)
   (deps
-    coq-js/jscoq_worker.js))
+    coq-js/jscoq_worker.bc.js))
 
-(dirs (:standard _vendor+* \ dist node_modules examples))
+(dirs (:standard _vendor+* \ dist node_modules))

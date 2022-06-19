@@ -10,7 +10,9 @@ on a Unix-like system. The required packages can be obtained using
    - `bubblewrap` is a dependency of OPAM, you can either install it (`apt install bubblewrap`),
      or skip it by running `opam init --disable-sandboxing`
  * m4 (`apt install m4`)
- * npm (bundled with latest Nodejs, follow the [instructions](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)).
+ * Node.js 16.x or above + NPM 
+   - Default versions from `apt` are typically too old; follow the
+     [Node.js installation instructions](https://nodejs.org/en/download/package-manager/) to get a newer version.
 
 ## Build steps
 

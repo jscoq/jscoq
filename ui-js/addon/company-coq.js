@@ -402,9 +402,19 @@ class AutoComplete {
         }
 
         matching.sort((x, y) => (x.text.indexOf(match) - y.text.indexOf(match)) ||
-                                (x.text.length - y.text.length));
+                                (x.text.length - y.text.length) ||
+                                (this._modulePref(x.prefix) - this._modulePref(y.prefix)));
     
         return matching;
+    }
+
+    /**
+     * Some heuristic to make a reasonable order of the same symbol when it is
+     * defined in different modules.
+     * (lower is better)
+     */
+    _modulePref(mod) {
+        return mod.length + mod.join('').length;
     }
 
     _render(el, data, match, cm) {
@@ -423,7 +433,7 @@ class AutoComplete {
             );
         // Make element active on hover (mostly in order to show tips)
         // but only if the mouse is actually moved
-        $(el).mousemove(() => {
+        $(el).on('mousemove', () => {
             var cA = cm.state.completionActive;
             if (cA && cA.widget)
                 cA.widget.changeActive($(el).index());
@@ -499,7 +509,7 @@ const special_tokens = {
         {re: /(__)([^_].*)$/,  make: underscore_sub}
     ],
     reserved = {
-        tokens: ['Int31', 'Int63', 'Utf8', 'Coq88', 'Coq89', 'Coq810'],
+        tokens: ['Int31', 'Int63', 'Uint63', 'Ltac2', 'Utf8', 'Coq88', 'Coq89', 'Coq810'],
         types:  ['comment', 'tactic']
     };
 

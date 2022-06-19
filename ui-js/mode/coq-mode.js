@@ -102,7 +102,7 @@
       'case', 'change', 'clear', 'compute', 'congruence', 'constructor',
       'congr', 'cut', 'cutrewrite',
       'dependent', 'destruct',
-      'eapply', 'eassumption', 'eauto', 'ecase', 'econstructor', 'edestruct',
+      'eapply', 'eauto', 'ecase', 'econstructor', 'edestruct',
       'ediscriminate', 'eelim', 'eenough', 'eexists', 'eexact', 'einduction',
       'einjection', 'eleft', 'epose', 'eright', 'esplit',
       'elim', 'enough', 'exists',
@@ -124,6 +124,7 @@
 
     var terminators = [
       'assumption',
+      'eassumption',
       'by',
       'contradiction',
       'discriminate',
