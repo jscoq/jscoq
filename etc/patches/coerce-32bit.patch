@@ -1,5 +1,5 @@
 diff --git a/clib/hashset.ml b/clib/hashset.ml
-index ae43e7d..883decb 100644
+index 183c997..b2af771 100644
 --- a/clib/hashset.ml
 +++ b/clib/hashset.ml
 @@ -11,6 +11,8 @@
@@ -11,7 +11,7 @@ index ae43e7d..883decb 100644
  (** The following functor is a specialized version of [Weak.Make].
      Here, the responsibility of computing the hash function is now
      given to the caller, which makes possible the interleaving of the
-@@ -229,9 +231,9 @@ module Combine = struct
+@@ -230,9 +232,9 @@ module Combine = struct
         this topic. Therefore, there must be room for improvement here. *)
      let alpha = 65599
      let beta  = 7
@@ -24,7 +24,7 @@ index ae43e7d..883decb 100644
 +    let combinesmall x y = (beta * x + y) land 0x3fffffff
  end
 diff --git a/kernel/dune b/kernel/dune
-index 88d059e..f2aeb95 100644
+index 228ea54..83d907f 100644
 --- a/kernel/dune
 +++ b/kernel/dune
 @@ -16,12 +16,12 @@
@@ -43,7 +43,7 @@ index 88d059e..f2aeb95 100644
  
  (documentation
 diff --git a/kernel/nativecode.ml b/kernel/nativecode.ml
-index 595aaae..3349370 100644
+index f9c07d3..9a259ee 100644
 --- a/kernel/nativecode.ml
 +++ b/kernel/nativecode.ml
 @@ -18,6 +18,8 @@ open Nativevalues
@@ -52,11 +52,11 @@ index 595aaae..3349370 100644
  
 +let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
 +
- [@@@ocaml.warning "-32-37"]
+ [@@@ocaml.warning "-37"]
  
  (** This file defines the mllambda code generation phase of the native
 diff --git a/kernel/uint63_31.ml b/kernel/uint63_31.ml
-index e8759ef..5045969 100644
+index 6f88edb..68a4d05 100644
 --- a/kernel/uint63_31.ml
 +++ b/kernel/uint63_31.ml
 @@ -11,7 +11,7 @@
@@ -69,10 +69,10 @@ index e8759ef..5045969 100644
  let uint_size = 63
  
 diff --git a/lib/objFile.ml b/lib/objFile.ml
-index a499b04..2aa0762 100644
+index 26c496c..ea8cd95 100644
 --- a/lib/objFile.ml
 +++ b/lib/objFile.ml
-@@ -138,7 +138,7 @@ let marshal_out_segment h ~segment v =
+@@ -113,7 +113,7 @@ let marshal_out_segment h ~segment v =
    let { out_channel = ch } = h in
    let () = assert (not (CString.Map.mem segment h.out_segments)) in
    let pos = LargeFile.pos_out ch in
@@ -82,10 +82,10 @@ index a499b04..2aa0762 100644
    let pos' = LargeFile.pos_out ch in
    let len = Int64.sub pos' pos in
 diff --git a/lib/system.ml b/lib/system.ml
-index b3dfee3..d01077d 100644
+index 3c0d1eb..9d403ad 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
-@@ -168,7 +168,7 @@ let check_caml_version ~caml:s ~file:f =
+@@ -230,7 +230,7 @@ let check_caml_version ~caml:s ~file:f =
      be compatible.")
    else ()
  
@@ -95,7 +95,7 @@ index b3dfee3..d01077d 100644
    try Marshal.from_channel ch
    with
 diff --git a/plugins/extraction/extract_env.ml b/plugins/extraction/extract_env.ml
-index a5c063e..f117b87 100644
+index 6fa1988..de1e535 100644
 --- a/plugins/extraction/extract_env.ml
 +++ b/plugins/extraction/extract_env.ml
 @@ -22,6 +22,8 @@ open Extraction
@@ -121,7 +121,7 @@ index 268d4bf..30ba948 100644
  
  exception Found
 diff --git a/plugins/ltac/tacentries.ml b/plugins/ltac/tacentries.ml
-index 4293160..bd46d25 100644
+index a823f87..3727997 100644
 --- a/plugins/ltac/tacentries.ml
 +++ b/plugins/ltac/tacentries.ml
 @@ -243,7 +243,7 @@ let make_fresh_key =
@@ -134,36 +134,23 @@ index 4293160..bd46d25 100644
      Lib.make_kn lbl
  
 diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
-index 8846b09..f6b3a6a 100644
+index ccd5c9c..ce991de 100644
 --- a/plugins/micromega/coq_micromega.ml
 +++ b/plugins/micromega/coq_micromega.ml
-@@ -26,6 +26,8 @@ open Constr
- open Context
+@@ -27,6 +27,8 @@ open Context
  open Tactypes
+ open McPrinter
  
 +let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
 +
  (**
    * Debug flag
    *)
-diff --git a/plugins/micromega/mfourier.ml b/plugins/micromega/mfourier.ml
-index f4d17b8..121384e 100644
---- a/plugins/micromega/mfourier.ml
-+++ b/plugins/micromega/mfourier.ml
-@@ -14,6 +14,8 @@ open Util
- open Polynomial
- open Vect
- 
-+let max_int = (1 lsl 30) - 1  (* coerce-32bit.patch *)
-+
- let debug = false
- let compare_float (p : float) q = pervasives_compare p q
- 
 diff --git a/plugins/micromega/persistent_cache.ml b/plugins/micromega/persistent_cache.ml
-index 6e99769..038190e 100644
+index 94c5329..1b68ca1 100644
 --- a/plugins/micromega/persistent_cache.ml
 +++ b/plugins/micromega/persistent_cache.ml
-@@ -180,7 +180,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
+@@ -160,7 +160,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
    let add t k e =
      let {outch} = t in
      let fd = descr_of_out_channel outch in
@@ -171,8 +158,8 @@ index 6e99769..038190e 100644
 +    let h = Key.hash k land 0x3FFFFFFF in
      let dump () =
        let () = output_binary_int outch h in
-       let pos = pos_out outch in
-@@ -193,7 +193,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
+       let () = Marshal.to_channel outch (k, e) [] in
+@@ -172,7 +172,7 @@ module PHashtable (Key : HashedType) : PHashtable with type key = Key.t = struct
  
    let find t k =
      let {outch; htbl = tbl} = t in
@@ -182,7 +169,7 @@ index 6e99769..038190e 100644
      (* First look for already live data *)
      let find data = match data.obj with
 diff --git a/plugins/micromega/polynomial.ml b/plugins/micromega/polynomial.ml
-index d68ea63..5dd7974 100644
+index 5586152..896e9e8 100644
 --- a/plugins/micromega/polynomial.ml
 +++ b/plugins/micromega/polynomial.ml
 @@ -19,6 +19,8 @@ open Q.Notations
@@ -195,24 +182,21 @@ index d68ea63..5dd7974 100644
  
  type var = int
 diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index 008d552..7b9f612 100644
+index 9ccf4cc..9584347 100644
 --- a/theories/Numbers/Cyclic/Int63/Ring63.v
 +++ b/theories/Numbers/Cyclic/Int63/Ring63.v
-@@ -61,9 +61,10 @@ Add Ring Uint63Ring : Uint63Ring
+@@ -61,7 +61,7 @@ Add Ring Uint63Ring : Uint63Ring
    constants [Uint63cst]).
  
  Section TestRing.
 -Let test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
-+Goal forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
++Goal test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
  intros. ring.
 -Qed.
-+(* Qed. *)
-+Admitted.
++(* Qed. *) Admitted.
  End TestRing.
- 
- #[deprecated(since="8.14",note="Use isUint63cst instead")]
 diff --git a/theories/Numbers/Cyclic/Int63/Uint63.v b/theories/Numbers/Cyclic/Int63/Uint63.v
-index 1ea47ed..20f7c8f 100644
+index 93d34a7..6f98541 100644
 --- a/theories/Numbers/Cyclic/Int63/Uint63.v
 +++ b/theories/Numbers/Cyclic/Int63/Uint63.v
 @@ -1110,8 +1110,8 @@ Proof.
@@ -227,7 +211,7 @@ index 1ea47ed..20f7c8f 100644
  Lemma addmuldiv_spec x y p :
    φ p <= φ digits  ->
 diff --git a/vernac/metasyntax.ml b/vernac/metasyntax.ml
-index 63f682e..071dc3b 100644
+index 7f80a52..56ad4c1 100644
 --- a/vernac/metasyntax.ml
 +++ b/vernac/metasyntax.ml
 @@ -26,6 +26,8 @@ open Libnames
