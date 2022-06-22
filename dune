@@ -16,11 +16,15 @@
    (run make libs-symb))))
 
 (rule
- (targets node_modules)
+ (alias node_modules)
+ (mode promote)
  (deps
    package.json
    package-lock.json)
- (action (run npm install)))
+ (action
+  (progn
+   (run chmod +w package-lock.json)
+   (run npm install))))
 
 (alias
  (name jscoq)
@@ -32,7 +36,7 @@
    (source_tree examples)
    index.html
    coq-pkgs
-   node_modules
+   (alias node_modules)
    coq-js/jscoq_worker.bc.js
    dist
    jscoq.install))
@@ -46,7 +50,7 @@
   (source_tree ui-js)
   webpack.config.js
   tsconfig.json
-  node_modules)
+  (alias node_modules))
  (action
   (run npm run build)))
 

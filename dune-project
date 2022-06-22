@@ -1,5 +1,3 @@
-(lang dune 2.1)
+(lang dune 3.2)
 (name jscoq)
-
-; Must fix
-(allow_approximate_merlin)
+(using coq 0.2)
