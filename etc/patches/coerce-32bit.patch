@@ -182,7 +182,7 @@ index 5586152..896e9e8 100644
  
  type var = int
 diff --git a/theories/Numbers/Cyclic/Int63/Ring63.v b/theories/Numbers/Cyclic/Int63/Ring63.v
-index 9ccf4cc..9584347 100644
+index 9ccf4cc..422e986 100644
 --- a/theories/Numbers/Cyclic/Int63/Ring63.v
 +++ b/theories/Numbers/Cyclic/Int63/Ring63.v
 @@ -61,7 +61,7 @@ Add Ring Uint63Ring : Uint63Ring
@@ -190,7 +190,7 @@ index 9ccf4cc..9584347 100644
  
  Section TestRing.
 -Let test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
-+Goal test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
++Example test : forall x y, 1 + x*y + x*x + 1 = 1*1 + 1 + y*x + 1*x*x.
  intros. ring.
 -Qed.
 +(* Qed. *) Admitted.
