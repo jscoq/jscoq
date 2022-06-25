@@ -253,9 +253,9 @@ let paths_to_coqpath ?(implicit=false) lib_path =
 let require_libs libs =
   List.map (fun lp -> lp, None, Some Lib.Export) libs
   (* Last coordinate: *)
-  (*   None       : just require            *)
-  (*   Some false : import but don't export *)
-  (*   Some true  : import and export       *)
+  (*   None            : just require            *)
+  (*   Some Lib.Import : import but don't export *)
+  (*   Some Lib.Export : import and export       *)
 
 let coqpath_of_bundle ?(implicit=false) bundle =
   List.map (fun pkg ->
