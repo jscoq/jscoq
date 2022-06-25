@@ -7,6 +7,7 @@
  (deps
   (package coq-core)
   (package coq-stdlib)
+  coq-js/jscoq_worker.bc.js  ; needed for symbol generation
   Makefile)
  (action
   (progn
