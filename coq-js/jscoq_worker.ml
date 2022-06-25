@@ -113,13 +113,6 @@ let setup_pseudo_fs () =
   (* '/lib' is the target for Put commands *)
   Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None)
 
-let put_pseudo_file ~name ~buf =
-  let str = Typed_array.String.of_arrayBuffer buf in
-  try
-    Sys_js.create_file ~name ~content:str
-  with _e ->
-    Sys_js.update_file ~name ~content:str
-
 let setup_std_printers () =
   Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, Pp.str @@ "stdout: " ^ msg)));
   Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, Pp.str @@ "stderr: " ^ msg)));

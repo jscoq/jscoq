@@ -90,10 +90,6 @@ let build_bundle (pkg, deps, p_mod) =
 let seq_eprint s =
   Seq.iter (fun el -> eprintf "@ %s" el) s
 
-let seq_join sep s =
-  let l = Seq.fold_left (fun l el -> el :: l) [] s in
-  String.concat sep l
-
 let seq_is_empty seq = match seq () with
   | Seq.Nil -> true
   | Seq.Cons (_,_) -> false
