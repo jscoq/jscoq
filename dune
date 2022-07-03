@@ -17,14 +17,17 @@
    (run make libs-symb))))
 
 (rule
- (alias node_modules)
+ (targets (dir node_modules))
  (deps
+   (sandbox always)
    package.json
    package-lock.json)
  (action
   (progn
-   (run chmod +w package-lock.json)
-   (run npm install))))
+   (run npm install --no-save)
+   ; Otherwise Dune says `Error: Rule produced a file with unrecognised kind "S_LNK"`
+   ; https://github.com/ocaml/dune/issues/5945
+   (run find node_modules -type l -exec rm {} ";"))))
 
 (alias
  (name jscoq)
@@ -36,7 +39,7 @@
    (source_tree examples)
    index.html
    coq-pkgs
-   (alias node_modules)
+   node_modules
    coq-js/jscoq_worker.bc.js
    dist
    jscoq.install))
@@ -50,9 +53,11 @@
   (source_tree ui-js)
   webpack.config.js
   tsconfig.json
-  (alias node_modules))
+  node_modules)
  (action
-  (run npm run build)))
+  (progn
+   (run npm i)   ; sorry, have to run this again because of the symlinks I erased before *facepalm*
+   (run npm run build))))
 
 ; Just the worker
 (alias
