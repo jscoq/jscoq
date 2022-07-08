@@ -16,8 +16,8 @@ const
   }),
   ts = {
     test: /\.tsx?$/,
-    use: 'ts-loader',
-    exclude: /node_modules/,
+    loader: 'ts-loader',
+    options: { allowTsInNodeModules: true }
   },
   css = {
     test: /\.css$/i,
@@ -116,8 +116,21 @@ module.exports = (env, argv) => [
     library: 'addonCollab',
     libraryTarget: 'umd'
   },
+  resolve: {
+    ...resolve,
+    fallback: {
+      "fs": false,
+      "constants": require.resolve("constants-browserify"),
+      "path": require.resolve("path-browserify"),
+      "util": require.resolve("util/"),
+      "assert": require.resolve("assert/")
+    }
+  },
   module: {
-    rules: [css, imgs]
-  }
+    rules: [ts, css, imgs, vuesfc],
+    unknownContextCritical: false  /* for `randombytes` */
+  },
+  plugins: [new webpack.ProvidePlugin({process: 'process/browser.js',
+                                       Buffer: ['buffer', 'Buffer']})]
 }
 ];

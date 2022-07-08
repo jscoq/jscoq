@@ -479,6 +479,7 @@ class CoqManager {
     async openCollab(documentKey) {
         await this._load('dist/addon/collab.browser.js');
         this.collab = addonCollab.Hastebin.attach(this, documentKey);
+        this.collab.p2p = addonCollab.CollabP2P.attach(this);
     }
 
     async _load(...hrefs) {
@@ -1333,6 +1334,11 @@ class CoqManager {
     async actionShare() {
         if (!this.collab) await this.openCollab();
         this.collab.save();
+    }
+
+    async actionP2P() {
+        if (!this.collab) await this.openCollab();
+        this.collab.p2p.open('jscoq', 'demo-1');
     }
 
     /**
