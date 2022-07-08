@@ -1,13 +1,12 @@
 import { EventEmitter } from 'events';
-import { Extension, StateField, StateEffect, EditorSelection,
-         SelectionRange } from '@codemirror/state';
+import { Extension, StateField, StateEffect, EditorSelection } from '@codemirror/state';
 import { EditorView, lineNumbers, keymap, highlightActiveLine,
          highlightActiveLineGutter, WidgetType, ViewPlugin,
          DecorationSet, Decoration } from '@codemirror/view';
 import { syntaxHighlighting, defaultHighlightStyle,
          syntaxTree } from '@codemirror/language';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { coqLanguage } from './mode/coq-lang';
+import { coqLanguageSupport } from './mode/coq-lang';
 
 
 const changeGeneration = StateField.define<number>({
@@ -53,7 +52,7 @@ const markField = StateField.define<DecorationSet>({
         return marks;
     },
     provide: f => EditorView.decorations.from(f)
-})
+});
 
 
 function setup(): Extension[] { return [
@@ -61,7 +60,7 @@ function setup(): Extension[] { return [
     keymap.of(defaultKeymap), keymap.of([indentWithTab]),
     lineNumbers(), highlightActiveLine(), highlightActiveLineGutter(),
     syntaxHighlighting(defaultHighlightStyle, {fallback: true}),
-    coqLanguage,
+    coqLanguageSupport(),
     changeGeneration, events, markField
 ]; }
 

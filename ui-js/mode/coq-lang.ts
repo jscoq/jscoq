@@ -1,7 +1,8 @@
 import { parser } from './coq-mode.grammar.js';
-import { LRLanguage, LanguageSupport, 
+import { LRLanguage, LanguageSupport,
          foldNodeProp, foldInside, indentNodeProp } from "@codemirror/language";
 import { styleTags, tags as t } from '@lezer/highlight'
+import { companyCoq } from '../addon/company-coq'; /** @oops */
 
 
 let parserWithMetadata = parser.configure({
@@ -10,7 +11,7 @@ let parserWithMetadata = parser.configure({
       Identifier: t.variableName,
       Keyword: t.keyword,
       Vernac: t.atom,
-      Tactic: t.keyword,
+      Tactic: t.literal,
       Admitter: t.atom,
       Terminator: t.keyword,
       Operator: t.operatorKeyword,
@@ -39,5 +40,5 @@ export const coqLanguage = LRLanguage.define({
 
 
 export function coqLanguageSupport() {
-  return new LanguageSupport(coqLanguage, [])
+  return new LanguageSupport(coqLanguage, [companyCoq])
 }

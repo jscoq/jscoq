@@ -4,7 +4,7 @@
 
 @top Document { Sentence* }
 
-@skip { space }
+@skip { Space }
 
 Sentence {
   element* endOfSentence | Bullet
@@ -14,7 +14,7 @@ Comment {
   commentStart (commentFragment|Comment)* commentEnd
 }
 
-element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic 
+element { Identifier | Keyword | Vernac | Tactic | Terminator | Admitter
           | String | Operator | Comment | anythingElse }
 
 @external tokens bullet from "./coq-tokens" { Bullet }
@@ -32,7 +32,7 @@ element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic
   commentStart { "(*" }
   commentEnd  { "*)" }
 
-  space { $[ \t\n\r]+ }
+  Space { $[ \t\n\r]+ }
 
   anythingElse { "(" | ")" | ![(). \t\n\r"] }
 
@@ -40,7 +40,11 @@ element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic
 }
 
 @external tokens endOfSentence from "./coq-tokens" { endOfSentence }
-@external specialize { Identifier } specializeIdent from "./coq-tokens"
-    { Keyword, Vernac, Tactic, Terminator, Admitter }
+@external specialize { Identifier } specializeTactic from "./coq-tokens"
+    { Tactic, Terminator, Admitter }
+@external extend { Identifier } specializeKeyword from "./coq-tokens"
+    { Keyword, Vernac }
+
+@context sentenceContext from "./coq-tokens"
 
 @detectDelim

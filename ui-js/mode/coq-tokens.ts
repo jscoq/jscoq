@@ -1,4 +1,4 @@
-import { ExternalTokenizer } from '@lezer/lr';
+import { ExternalTokenizer, ContextTracker } from '@lezer/lr';
 import * as terms from './coq-mode.grammar.terms';
 
 const DOT = '.'.codePointAt(0),
@@ -34,9 +34,34 @@ export const commentFragment = new ExternalTokenizer((stream, stack) => {
     if (adv) stream.acceptToken(terms.commentFragment);
 });
 
-export function specializeIdent(tok: string) {
+export function specializeKeyword(tok: string) {
     return kwdict.get(tok) ?? -1;
 }
+export function specializeTactic(tok: string, stack: any) {
+    /* recognize tactics at statement head */
+    /* @todo also after `;`, `|` */
+    if (stack.context?.headPos === stack.pos)
+        return tacdict.get(tok) ?? -1;
+    else
+        return -1;
+}
+
+/* Sorry, this should have been done by the Lezer grammar, but I could
+ * not for the love of me figure out how. */
+export const sentenceContext = new ContextTracker({
+    start: {headPos: 0},
+    shift(ctx, term, stack, input) {
+        if (term === terms.endOfSentence ||
+            ctx.headPos === input.pos && term === terms.Space)
+            return {headPos: stack.pos};
+        else return ctx;
+    },
+    reduce(ctx, term, stack, input) {
+        if (ctx.headPos === input.pos && term === terms.Comment)
+            return {headPos: stack.pos};
+        else return ctx;
+    }
+})
 
 
 const vernacular = [
@@ -71,7 +96,7 @@ const vernacular = [
     'as',
     'at',
     'cofix', 'crush',
-    'else', 'end',
+    'else', 'end', 'exists',
     'False', 'fix', 'for', 'forall', 'fun',
     'if', 'in', 'is',
     'let',
@@ -130,11 +155,12 @@ const vernacular = [
   ];
 
   const kwdict = new Map([].concat(
-    vernacular.map(k => [k, terms.Vernac]),
-    tactics.map(k => [k, terms.Tactic]),
-    gallina.map(k => [k, terms.Keyword]),
-    terminators.map(k => [k, terms.Terminator]), 
-    admitters.map(k => [k, terms.Admitter])));
+        vernacular.map(k => [k, terms.Vernac]),
+        gallina.map(k => [k, terms.Keyword]))),
+    tacdict = new Map([].concat(
+        tactics.map(k => [k, terms.Tactic]),
+        terminators.map(k => [k, terms.Terminator]), 
+        admitters.map(k => [k, terms.Admitter])));
 
 
   export { vernacular, gallina, tactics, terminators, admitters }
