@@ -17,6 +17,7 @@ Comment {
 element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic 
           | String | Operator | Comment | anythingElse }
 
+@external tokens bullet from "./coq-tokens" { Bullet }
 @external tokens commentFragment from "./coq-tokens" { commentFragment }
 
 @tokens {
@@ -33,13 +34,9 @@ element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic
 
   space { $[ \t\n\r]+ }
 
-  Bullet { $[-+*{}]+ }
-
-  @precedence { Operator, Bullet }
-
   anythingElse { "(" | ")" | ![(). \t\n\r"] }
 
-  @precedence { commentStart, Identifier, Operator, Bullet, anythingElse }
+  @precedence { commentStart, Identifier, Operator, anythingElse }
 }
 
 @external tokens endOfSentence from "./coq-tokens" { endOfSentence }

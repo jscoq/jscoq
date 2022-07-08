@@ -24,8 +24,11 @@ const events = StateField.define<EventEmitter>({
     }
 });
 
-const addMark = StateEffect.define<{from: number, to: number, class: string, id: {}}>()
-const clearMark = StateEffect.define<{id: {}}>()
+const addMark = StateEffect.define<{
+        from: number, to: number, class: string,
+        obj: {}, attrs?: {[name: string]: string}
+    }>();
+const clearMark = StateEffect.define<{obj: {}}>();
 
 const markField = StateField.define<DecorationSet>({
     create() {
@@ -35,14 +38,15 @@ const markField = StateField.define<DecorationSet>({
         marks = marks.map(tr.changes)
         for (let e of tr.effects) {
             if (e.is(addMark)) {
-                let spec = Decoration.mark({class: e.value.class, id: e.value.id});
+                let spec = Decoration.mark({class: e.value.class,
+                            obj: e.value.obj, attributes: e.value.attrs});
                 marks = marks.update({
                     add: [spec.range(e.value.from, e.value.to)],
                 })
             }
             else if (e.is(clearMark)) {
                 marks = marks.update({
-                    filter: (from, to, value) => value.spec.id !== e.value.id
+                    filter: (from, to, value) => value.spec.obj !== e.value.obj
                 })
             }
         }

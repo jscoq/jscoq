@@ -157,7 +157,8 @@ class CmCoqProvider {
     getNext(prev, until) {
 
         var pos = prev ? this.editor.posToOffset(prev.end) : 0,
-            sc = this.editor.syntaxTree().cursorAt(pos, -1);
+            sc = this.editor.syntaxTree().cursorAt(pos, -1),
+            until = until ? this.editor.posToOffset(until) : undefined;
 
         while (sc.next()) {
             if (sc.name === 'Sentence' && sc.node.from >= pos) break;
@@ -165,7 +166,7 @@ class CmCoqProvider {
 
         if (sc?.node && sc.name === 'Sentence') {
             let {from, to} = sc.node;
-            if (until && from >= until) return null;
+            if (until !== undefined && from >= until) return null;
             return new CmSentence(this.editor.offsetToPos(from), this.editor.offsetToPos(to),
                 this.editor.state.sliceDoc(from, to),
                 {is_comment: false /* @todo */, is_hidden: this.isHidden()});
@@ -200,27 +201,31 @@ class CmCoqProvider {
         */
     }
 
-    // Gets sentence at point;
+    /**
+     * Gets sentence at current cursor location
+     */
     getAtPoint() {
-        return;
+        let pos = this.editor.getCursorOffset(),
+            iter = this.editor.state.field(cm6.markField).iter(pos);
 
-        var doc   = this.editor.getDoc();
-        var marks = doc.findMarksAt(doc.getCursor());
-
-        for (let mark of marks) {
-            if (mark.stm) return mark.stm;
-        }
+        if (iter.value && iter.from <= pos)
+            return iter.value.spec.id;
+        else
+            return undefined;
     }
 
-    // Mark a sentence with {clear, processing, error, ok}
-    mark(stm, mark_type, loc_focus) {
+    /** 
+     * Mark a sentence with status ∈ {clear, processing, error, ok}.
+     * Optionally underline a subset of it with a squiggly error indicator.
+     */
+    mark(stm, status, loc_focus) {
         let effects = [];
         if (stm.mark) {
-            effects.push(cm6.clearMark.of({id: stm.mark}));
+            effects.push(cm6.clearMark.of({obj: stm}));
             stm.mark = undefined;
         }
 
-        switch (mark_type) {
+        switch (status) {
         case "clear":
             break;
         case "processing":
@@ -284,7 +289,8 @@ class CmCoqProvider {
             from: this.editor.posToOffset(stm.start),
             to: this.editor.posToOffset(stm.end),
             class: className,
-            id: stm.mark
+            obj: stm,
+            attrs: stm.coq_sid ? {coq_sid: stm.coq_sid} : undefined
         });
 
         //this._markWidgetsAsWell(start, end, mark);

@@ -3,6 +3,7 @@ import * as terms from './coq-mode.grammar.terms';
 
 const DOT = '.'.codePointAt(0),
       [LPAREN, ASTK, RPAREN] = ['(', '*', ')'].map(s => s.codePointAt(0)),
+      BULLETS = ['-', '+', '*', '{' ,'}'].map(s => s.codePointAt(0)),
       WS = [' ', '\t', '\r', '\n'].map(s => s.codePointAt(0)),
       WS_OR_EOF = [...WS, -1];
 
@@ -10,6 +11,14 @@ export const endOfSentence = new ExternalTokenizer((stream, stack) => {
     if (stream.peek(0) == DOT && WS_OR_EOF.includes(stream.peek(1))) {
         stream.advance(1);
         stream.acceptToken(terms.endOfSentence);
+    }
+});
+
+export const bullet = new ExternalTokenizer((stream, stack) => {
+    if (BULLETS.includes(stream.next)) {
+        let sym = stream.next;
+        while (stream.advance(1) == sym);
+        stream.acceptToken(terms.Bullet);
     }
 });
 
