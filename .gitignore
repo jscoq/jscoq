@@ -20,6 +20,10 @@ node_modules
 # - npm packages
 /*.tgz
 
+# Lezer output
+*.grammar.js
+*.terms.js
+
 # Links for in-place serving
 coq-pkgs
 /coq-js/jscoq_worker.bc.js

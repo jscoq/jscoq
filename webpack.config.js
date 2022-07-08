@@ -76,6 +76,24 @@ module.exports = (env, argv) => [
   node: false
 },
 /**
+ * CodeMirror 6
+ */
+{
+  name: 'editor-base',
+  entry: './ui-js/editor-base.ts',
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {
+    filename: 'cm6-editor-base.js',
+    path: path.join(__dirname, 'dist'),
+    library: 'cm6',
+    libraryTarget: 'umd'
+  }
+},
+/**
  * Multi-file Project UI
  */
 {

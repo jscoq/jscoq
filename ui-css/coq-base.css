@@ -70,9 +70,13 @@ a, a:link, a:visited, a:active {
 
 /* CodeMirror */
 
-.jscoq.CodeMirror {
+.jscoq > .cm-editor {
   font-size: var(--base-font-size);
   height: 100%;  /* auto-size to fit content */
+  line-height: initial;
+  background: #eee;
+}
+.jscoq .cm-scroller {
   line-height: initial;
 }
 

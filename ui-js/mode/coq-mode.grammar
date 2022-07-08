@@ -1,0 +1,49 @@
+/* build with:
+ * npx @lezer/generator ui-js/mode/coq-mode.grammar -o ui-js/mode/coq-mode.grammar.js
+ */
+
+@top Document { Sentence* }
+
+@skip { space }
+
+Sentence {
+  element* endOfSentence | Bullet
+}
+
+Comment {
+  commentStart (commentFragment|Comment)* commentEnd
+}
+
+element { Identifier | Keyword | Terminator | Admitter | Vernac | Tactic 
+          | String | Operator | Comment | anythingElse }
+
+@external tokens commentFragment from "./coq-tokens" { commentFragment }
+
+@tokens {
+  Identifier { $[a-zA-Z_0-9]+ }
+
+  String { '"' (!["\\] | "\\" _)* '"' }
+
+  Operator { "="+">" | ":=" | "<:" | "<<:" | ":>" | ("-"+">") | $[<>]"-"+">"? |
+             "\\/" | "/\\" | ">=" | "<""="+ | "<>" | "++" | "::" | "||" | "&&" | ".."
+  }
+
+  commentStart { "(*" }
+  commentEnd  { "*)" }
+
+  space { $[ \t\n\r]+ }
+
+  Bullet { $[-+*{}]+ }
+
+  @precedence { Operator, Bullet }
+
+  anythingElse { "(" | ")" | ![(). \t\n\r"] }
+
+  @precedence { commentStart, Identifier, Operator, Bullet, anythingElse }
+}
+
+@external tokens endOfSentence from "./coq-tokens" { endOfSentence }
+@external specialize { Identifier } specializeIdent from "./coq-tokens"
+    { Keyword, Vernac, Tactic, Terminator, Admitter }
+
+@detectDelim

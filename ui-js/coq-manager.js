@@ -89,7 +89,7 @@ class ProviderContainer {
                 this.snippets.push(cm);
 
                 // Track focus XXX (make generic)
-                cm.editor.on('focus', ev => { this.currentFocus = cm; });
+                cm.onFocus = () => { this.currentFocus = cm; };
 
                 // Track invalidate
                 cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };

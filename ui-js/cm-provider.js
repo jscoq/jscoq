@@ -55,14 +55,18 @@ class CmCoqProvider {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
 
-        if (replace) this.editor.addKeyMap('jscoq-snippet');
+        this.editor.contentDOM.addEventListener('focus', () => this.onFocus());
+
+        //if (replace) this.editor.addKeyMap('jscoq-snippet');
 
         this.filename = element.getAttribute('data-filename');
         this.autosave_interval = 20000 /*ms*/;
 
         if (this.filename) { this.openLocal(); this.startAutoSave(); }
+        return;
 
         // Event handlers (to be overridden by ProviderContainer)
+        this.onFocus = () => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
@@ -103,12 +107,20 @@ class CmCoqProvider {
 
     createEditor(element, opts, replace) {
         var text = replace && $(element).text(),
-            editor = new CodeMirror(element, opts);
+            doc = this.createDoc(''),
+            div = document.createElement('div'),
+            editor = new cm6.EditorViewWithBenefits({parent: div, state: doc});
+        div.classList.add('jscoq', 'cm-container');
         if (replace) {
             editor.setValue(Deprettify.cleanup(text));
-            element.replaceWith(editor.getWrapperElement());
+            element.replaceWith(div);
         }
+        else element.append(div);
         return editor;
+    }
+
+    createDoc(text) {
+        return cm6.EditorState.create({doc: text, extensions: cm6.setup()});
     }
 
     configure(options) {
@@ -128,21 +140,41 @@ class CmCoqProvider {
     }
 
     focus() {
+        this.editor.focus();
+        /*
         var dialog_input = this.editor.getWrapperElement()
             .querySelector('.CodeMirror-dialog');
         // If a dialog is open, editor.focus() will close it,
         // leading to poor UX.
-        if (!dialog_input) this.editor.focus();
+        if (!dialog_input) this.editor.focus();*/
     }
 
     isHidden() {
-        return $(this.editor.getWrapperElement()).is(':hidden');
+        return $(this.editor.contentDOM).is(':hidden');
     }
 
     // If prev == null then get the first.
     getNext(prev, until) {
 
-        var doc = this.editor.getDoc(),
+        var pos = prev ? this.editor.posToOffset(prev.end) : 0,
+            sc = this.editor.syntaxTree().cursorAt(pos, -1);
+
+        while (sc.next()) {
+            if (sc.name === 'Sentence' && sc.node.from >= pos) break;
+        }
+
+        if (sc?.node && sc.name === 'Sentence') {
+            let {from, to} = sc.node;
+            if (until && from >= until) return null;
+            return new CmSentence(this.editor.offsetToPos(from), this.editor.offsetToPos(to),
+                this.editor.state.sliceDoc(from, to),
+                {is_comment: false /* @todo */, is_hidden: this.isHidden()});
+        }
+        else
+            return null;
+
+        /**
+        var doc = this.editor.getState(),
             start = prev ? prev.end : {line : 0, ch : 0};
 
         if (until && this.onlySpacesBetween(start, until))
@@ -153,7 +185,7 @@ class CmCoqProvider {
         var state = 0, upto;
         dfa: for (let cur of this.iterTokens(start)) {
             switch (state) {
-            case 0: state = cur.type === 'comment' ? 2 : 1; /* fallthrough */
+            case 0: state = cur.type === 'comment' ? 2 : 1; /* fallthrough *
             case 1: upto = cur; if (delim.includes(cur.type)) break dfa; break;
             case 2: if (cur.type !== 'comment') break dfa; upto = cur; break;
             }
@@ -165,10 +197,12 @@ class CmCoqProvider {
 
         return new CmSentence(start, end, doc.getRange(start, end),
             {is_comment: state == 2, is_hidden: this.isHidden()});
+        */
     }
 
     // Gets sentence at point;
     getAtPoint() {
+        return;
 
         var doc   = this.editor.getDoc();
         var marks = doc.findMarksAt(doc.getCursor());
@@ -180,37 +214,35 @@ class CmCoqProvider {
 
     // Mark a sentence with {clear, processing, error, ok}
     mark(stm, mark_type, loc_focus) {
-
+        let effects = [];
         if (stm.mark) {
-            let b = stm.mark.find();
-            if (!b) return;  /* mark has been deleted altogether; fail silently */
-            stm.start = b.from; stm.end = b.to;
-            stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
-            stm.mark = null;
+            effects.push(cm6.clearMark.of({id: stm.mark}));
+            stm.mark = undefined;
         }
 
         switch (mark_type) {
         case "clear":
-            // XXX: Check this is the right place.
-            // doc.setCursor(stm.start);
             break;
         case "processing":
-            this.markWithClass(stm, 'coq-eval-pending');
+            effects.push(this.markWithClass(stm, 'coq-eval-pending'));
             break;
         case "error":
-            this.markWithClass(stm, 'coq-eval-failed');
+            effects.push(this.markWithClass(stm, 'coq-eval-failed'));
+            /* @todo
             if (loc_focus) {
                 let foc = this.squiggle(stm, loc_focus, 'coq-squiggle');
                 if (foc) this.editor.setCursor(foc.find().to);
             }
-            else {
+            else */ {
                 this.editor.setCursor(stm.end);
             }
             break;
         case "ok":
-            this.markWithClass(stm, 'coq-eval-ok');
+            effects.push(this.markWithClass(stm, 'coq-eval-ok'));
             break;
         }
+
+        this.editor.dispatch({effects});
     }
 
     highlight(stm, flag) {
@@ -246,17 +278,16 @@ class CmCoqProvider {
     }
 
     markWithClass(stm, className) {
-        var doc = this.editor.getDoc(),
-            {start, end} = stm;
+        stm.mark = {className};
 
-        var mark = 
-            doc.markText(start, end, {className: className,
-                attributes: {'data-coq-sid': stm.coq_sid}});
+        return cm6.addMark.of({
+            from: this.editor.posToOffset(stm.start),
+            to: this.editor.posToOffset(stm.end),
+            class: className,
+            id: stm.mark
+        });
 
-        this._markWidgetsAsWell(start, end, mark);
-
-        mark.stm = stm;
-        stm.mark = mark;
+        //this._markWidgetsAsWell(start, end, mark);
     }
 
     markSubordinate(stm, pos, className) {
@@ -349,7 +380,7 @@ class CmCoqProvider {
     }
 
     cursorToEnd(stm) {
-        this.editor.scrollTo(0);  // try to get back to the leftmost part
+        this.editor.scrollTo({left: 0});  // try to get back to the leftmost part
         this.editor.setCursor(stm.end);
     }
 
@@ -393,11 +424,13 @@ class CmCoqProvider {
     }
 
     invalidateAll() {
+        /*
         var doc   = this.editor.getDoc();
         var marks = doc.getAllMarks();
         for (let mark of marks) {
             if (mark.stm) this.onInvalidate(mark.stm);
         }
+        */
     }
 
     _markFromElement(dom) {
@@ -502,7 +535,7 @@ class CmCoqProvider {
 
         this.invalidateAll();
 
-        this.editor.swapDoc(new CodeMirror.Doc(text, this.editor.getMode()));
+        this.editor.setState(this.createDoc(text));
         this.filename = filename;
         this.dirty = dirty;
         if (filename) this.startAutoSave();
@@ -542,9 +575,12 @@ class CmCoqProvider {
 
     startAutoSave() {
         if (!this.autosave) {
+            /** @todo handle with generation instead */
+            /*
             this.editor.on('change', () => { this.dirty = true; });
             this.autosave = setInterval(() => { if (this.dirty) this.saveLocal(); },
                 this.autosave_interval);
+            */
             window.addEventListener('beforeunload', 
                 () => { clearInterval(this.autosave);
                         if (this.dirty) this.saveLocal(); });
