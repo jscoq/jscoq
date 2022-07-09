@@ -118,6 +118,10 @@ class CmCoqProvider {
         CodeMirror.CompanyCoq.configure(this.editor, options);
     }
 
+    getText() {
+        return this.editor.getValue();
+    }
+
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
         this.editor.on('change', ev => {

@@ -8,11 +8,13 @@ import './collab.css';
 class CollabP2P {
     client: DocumentClient
     ui: CollabP2PUI
-    provider: {editor: Editor, openLocal: (filename: string) => Promise<any>}
+    provider: {
+        editor: Editor, filename: string,
+        getText: () => string,
+        openLocal: (filename: string) => Promise<any>
+    }
     syncpad: SyncPad
     uri: {channel: string, docId: string}
-
-    shown = false
 
     constructor() {
         this.client = new DocumentClient();
@@ -24,19 +26,52 @@ class CollabP2P {
         return this;
     }
 
-    async open(channel: string, docId: string) {
+    async join() {
+        await this.client.join(this.uri.channel);
+        this.syncpad = new SyncPad(this.provider.editor,
+            this.client.sync.path(this.uri.docId, 'syncpad'));
+    }
+
+    get localFilename() {
+        return `p2p:${this.uri.channel}⋮${this.uri.docId}`;
+    }
+
+    async save() {
+        this.ui.show();
+        this.uri = {channel: 'jscoq/demo-1', docId: 'root'};
+        let text = this.provider.getText();
+        await this.join();
+        this.syncpad.new(text);
+        this.provider.filename = this.localFilename;
+        console.log(this.uri, this.localFilename);
+    }
+
+    async open(channel: string, docId?: string) {
         this.ui.show();
         this.ui.waitingStart();
-        this.uri = {channel, docId};
-        await this.provider.openLocal(`p2p:${channel}⋮${docId}`);
-        await this.client.join(channel);
-        this.syncpad = new SyncPad(this.provider.editor, this.client.sync.path(docId, 'syncpad'));
+        this.uri = docId ? {channel, docId} : this.parseUri(channel);
+        await this.provider.openLocal(this.localFilename);
+        await this.join();
         this.syncpad.ready.then(() => this.ui.waitingEnd());
         this.ui.update();
     }
 
-    static attach(coq: any) {
-        return new CollabP2P().withCoqManager(coq);
+    parseUri(spec: string) {
+        let mo = spec.match(/^(.*?)⋮(.*)$/);
+        return mo ? {channel: mo[1], docId: mo[2]}
+                  : {channel: spec, docId: 'root'};
+    }
+
+    close() {
+        this.uri = undefined;
+        this.syncpad?.destroy();
+        this.ui.hide();
+    }
+
+    static attach(coq: any, openUri?: string) {
+        let p2p = new CollabP2P().withCoqManager(coq);
+        if (openUri) p2p.open(openUri);
+        return p2p;
     }
 }
 
@@ -70,6 +105,11 @@ class CollabP2PUI {
             document.body.append(this.$el[0]);
             this.shown = true;
         }
+    }
+
+    hide() {
+        this.$el.remove();
+        this.shown = false;
     }
 
     get status() {
