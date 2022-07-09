@@ -108,7 +108,7 @@ module.exports = (env, argv) => [
  */
 {
   name: 'collab',
-  entry: './ui-js/addon/collab.js',
+  entry: './ui-js/addon/collab/index.ts',
   ...basics(argv),
   output: {
     filename: 'collab.browser.js',

@@ -1,7 +1,5 @@
-import './public-path';
 import { haste, HasteUI } from '@corwin.amber/hastebin/client';
 import '@corwin.amber/hastebin/client/application.css';
-export { CollabP2P } from './collab-p2p';
 
 /**
  * Hastebin collaboration client
@@ -10,7 +8,7 @@ class Hastebin {
     constructor() {
         this.haste = new haste('jsCoq', {baseURL: 'https://hbin.herokuapp.com'});
         this.haste.ui = new HasteUIAdapter(this.haste.config);
-        this.haste.embed();
+        this.shown = false;
         this.haste.newDocument();
     }
 
@@ -27,11 +25,20 @@ class Hastebin {
         return this;
     }
 
+    show() {
+        if (!this.shown) {
+            this.haste.embed();
+            this.shown = true;
+        }
+    }
+
     load(key) {
+        this.show();
         this.haste.loadDocument(key);
     }
 
     save() {
+        this.show();
         return new Promise(resolve => this.haste.lockDocument(resolve));
     }
 
