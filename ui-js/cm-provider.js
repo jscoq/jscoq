@@ -586,7 +586,8 @@ class CmCoqProvider {
     saveLocalDialog() {
         var span = this._makeFileDialog("Save file: "),
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
-            share = $('<span>').addClass('dialog-share').text('Share:'),
+            share = $('<span>').addClass('dialog-share')
+                    .append($('<img>').attr('src', JsCoq.base_path + 'ui-images/share.svg')),
             a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
             a3 = this._makeDialogLink('P2P', () => this.shareP2P())
 

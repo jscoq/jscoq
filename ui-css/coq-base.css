@@ -95,10 +95,15 @@ a, a:link, a:visited, a:active {
 }
 
 .jscoq.CodeMirror .CodeMirror-dialog span.dialog-share {
-  font-family: sans-serif;
-  padding: 0 1em;
-  margin-left: 1em;
+  display: inline-block;
+  padding: 0 1em 0 0;
+  margin-left: 2em;
   border: 1px solid #aaa;
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog span.dialog-share > img {
+  vertical-align: middle;
+  width: 20px;
 }
 
 .jscoq.CodeMirror .CodeMirror-dialog a.dialog-link {
