@@ -589,7 +589,8 @@ class CmCoqProvider {
             share = $('<span>').addClass('dialog-share')
                     .append($('<img>').attr('src', JsCoq.base_path + 'ui-images/share.svg')),
             a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
-            a3 = this._makeDialogLink('P2P', () => this.shareP2P())
+            a3 = betaOnly(() =>
+                 this._makeDialogLink('P2P', () => this.shareP2P()));
 
         span.append(a1, share.append(a2, a3));
 
@@ -668,6 +669,11 @@ CodeMirror.keyMap['jscoq-snippet'] = {
     //'Cmd-Up': false,   /** @todo this does not work? */
     //'Cmd-Down': false
 };
+
+function betaOnly(thing) {
+    return JsCoq.globalConfig().features.includes('beta')
+             ? thing() : undefined;
+}
 
 /**
  * Workaround to prevent CodeMirror from consuming PageUp/PageDn.
