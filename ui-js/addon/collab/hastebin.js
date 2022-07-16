@@ -1,12 +1,17 @@
 import { haste, HasteUI } from '@corwin.amber/hastebin/client';
 import '@corwin.amber/hastebin/client/application.css';
 
+
+const CONFIG = {
+    baseURL: 'https://hbin.herokuapp.com'
+};
+
 /**
  * Hastebin collaboration client
  */
 class Hastebin {
     constructor() {
-        this.haste = new haste('jsCoq', {baseURL: 'https://hbin.herokuapp.com'});
+        this.haste = new haste('jsCoq', CONFIG);
         this.haste.ui = new HasteUIAdapter(this.haste.config);
         this.shown = false;
         this.haste.newDocument();

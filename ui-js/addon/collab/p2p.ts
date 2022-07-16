@@ -26,24 +26,28 @@ class CollabP2P {
         return this;
     }
 
-    async join() {
-        await this.client.join(this.uri.channel);
+    join(){
+        return this.client.join(this.uri.channel);
+    }
+
+    async setup(opts?: any) {
+        await this.join();
         this.syncpad = new SyncPad(this.provider.editor,
-            this.client.sync.path(this.uri.docId, 'syncpad'));
+            this.client.sync.path(this.uri.docId, 'syncpad'), opts);
     }
 
     get localFilename() {
-        return `p2p:${this.uri.channel}⋮${this.uri.docId}`;
+        return `p2p:${this.stringifyUri(this.uri)}`;
     }
 
     async save() {
         this.ui.show();
         this.uri = {channel: 'jscoq/demo-1', docId: 'root'};
         let text = this.provider.getText();
-        await this.join();
+        await this.setup({pin: true});
         this.syncpad.new(text);
         this.provider.filename = this.localFilename;
-        console.log(this.uri, this.localFilename);
+        this.ui.enterDocument(this.stringifyUri(this.uri));
     }
 
     async open(channel: string, docId?: string) {
@@ -51,7 +55,7 @@ class CollabP2P {
         this.ui.waitingStart();
         this.uri = docId ? {channel, docId} : this.parseUri(channel);
         await this.provider.openLocal(this.localFilename);
-        await this.join();
+        await this.setup();
         this.syncpad.ready.then(() => this.ui.waitingEnd());
         this.ui.update();
     }
@@ -60,6 +64,11 @@ class CollabP2P {
         let mo = spec.match(/^(.*?)⋮(.*)$/);
         return mo ? {channel: mo[1], docId: mo[2]}
                   : {channel: spec, docId: 'root'};
+    }
+
+    stringifyUri(uri: {channel: string, docId: string}) {
+        return uri.docId === 'root' ? uri.channel
+                    : `${uri.channel}⋮${uri.docId}`;
     }
 
     close() {
@@ -90,7 +99,8 @@ class CollabP2PUI {
         this.p2p = owner;
         let _ = this.$refs = new Refs();
         this.$el = h('div.collab-p2p-ui',
-            _.button = h('button'), _.status = h('span'),
+            _.button = h('button').on('click', () => this.buttonAction()),
+            _.status = h('span'),
             _.peers = h('ul.list-of-peers'));
 
         this.$refs = _;
@@ -112,6 +122,10 @@ class CollabP2PUI {
         this.shown = false;
     }
 
+    enterDocument(key: string) {
+        window.history.pushState(null, document.title, this.mkURL(key));
+    }
+
     get status() {
         return this.p2p.client.activeChannels.size > 0 ? 'connected' : 'disconnected';
     }
@@ -127,8 +141,21 @@ class CollabP2PUI {
         _.peers.empty().append(this.peers.map(pid => h('li').text(pid)));
     }
 
+    buttonAction() {
+        if (this.status === 'disconnected') this.p2p.join();
+        else this.p2p.client.close();
+    }
+
     newDoc() {
         this.p2p.syncpad.new();
+    }
+
+    mkURL(key: string) {
+        var u = new URL(window.location.href),
+            q = new URLSearchParams(u.search);
+        q.set('p2p', key);
+        u.search = q.toString().replace(/=($|&)/g, '');
+        return u;
     }
 
     openDialog(content: HTMLElement) {

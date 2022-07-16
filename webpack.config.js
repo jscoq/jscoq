@@ -116,6 +116,10 @@ module.exports = (env, argv) => [
     library: 'addonCollab',
     libraryTarget: 'umd'
   },
+  externals: {
+    '@codemirror/state': '{}',  /* cm6; not used */
+    '@codemirror/view': '{}'
+  },
   resolve: {
     ...resolve,
     fallback: {
