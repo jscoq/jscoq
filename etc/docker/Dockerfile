@@ -1,4 +1,4 @@
-ARG BRANCH=v8.15
+ARG BRANCH=v8.16
 
 ARG WORDSIZE=32
 ARG SWITCH=jscoq+${WORDSIZE}bit
@@ -83,6 +83,7 @@ RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --f
 RUN eval $(opam env) && make coq && make jscoq
 
 # - dist tarballs
+RUN rm -rf _build/${SWITCH}/node_modules
 RUN eval $(opam env) && make dist-tarball && make dist-npm \
         && mkdir dist && mv _build/dist/*.tgz dist
 

@@ -2,7 +2,7 @@
 
 WHO = jscoq
 
-BRANCH = v8.15
+BRANCH = v8.16
 
 export JSCOQ_REPO = https://github.com/$(WHO)/jscoq.git
 export JSCOQ_BRANCH = $(BRANCH)
