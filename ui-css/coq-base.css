@@ -94,6 +94,13 @@ a, a:link, a:visited, a:active {
   padding: .75em;
 }
 
+.jscoq.CodeMirror .CodeMirror-dialog span.dialog-share {
+  font-family: sans-serif;
+  padding: 0 1em;
+  margin-left: 1em;
+  border: 1px solid #aaa;
+}
+
 .jscoq.CodeMirror .CodeMirror-dialog a.dialog-link {
   cursor: pointer;
   text-decoration: underline;

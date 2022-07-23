@@ -582,9 +582,11 @@ class CmCoqProvider {
     saveLocalDialog() {
         var span = this._makeFileDialog("Save file: "),
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
-            a2 = this._makeDialogLink('Share', () => this.saveShare());
+            share = $('<span>').addClass('dialog-share').text('Share:'),
+            a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
+            a3 = this._makeDialogLink('P2P', () => this.shareP2P())
 
-        span.append(a1, a2);
+        span.append(a1, share.append(a2, a3));
 
         this.editor.openDialog(span[0], sel => this.saveLocal(sel), 
                                {value: this.filename});
@@ -597,8 +599,12 @@ class CmCoqProvider {
         a[0].click();
     }
 
-    saveShare() {
-        this.onAction({type: 'share'});
+    shareHastebin() {
+        this.onAction({type: 'share-hastebin'});
+    }
+
+    shareP2P() {
+        this.onAction({type: 'share-p2p'});
     }
 
     _makeFileDialog(text) {

@@ -23,14 +23,15 @@
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
     "proper-lockfile": "^4.1.2",
-    "ronin-p2p": "file:../Web.P2P.Dat/ronin-p2p-0.1.0.tgz",
+    "ronin-p2p": "^0.1.0",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6"
   },
   "devDependencies": {
-    "@corwin.amber/hastebin": "^0.1.1",
+    "@corwin.amber/hastebin": "^0.1.2",
     "@types/codemirror": "^5.60.5",
     "@types/find": "^0.2.1",
+    "@types/jquery": "^3.5.14",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^13.11.1",
     "assert": "^2.0.0",
