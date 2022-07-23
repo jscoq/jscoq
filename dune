@@ -56,7 +56,7 @@
   node_modules)
  (action
   (progn
-   (run npm i)   ; sorry, have to run this again because of the symlinks I erased before *facepalm*
+   (run npm install --no-save) ; sorry, have to run this again because of the symlinks I erased before *facepalm*
    (run npm run build))))
 
 ; Just the worker

@@ -44,3 +44,22 @@ index ae31adb..faa1c1d 100644
  
  (include_subdirs qualified)
  
+diff --git a/user-contrib/Ltac2/dune b/user-contrib/Ltac2/dune
+index 785cdfe..a5adfa6 100644
+--- a/user-contrib/Ltac2/dune
++++ b/user-contrib/Ltac2/dune
+@@ -3,4 +3,13 @@
+  (package coq-stdlib)
+  (synopsis "Ltac2 tactic language")
+  (flags -w -deprecated-native-compiler-option)
+- (libraries coq-core.plugins.ltac2))
++ (libraries  ; yes?
++   coq-core.plugins.ltac
++   coq-core.plugins.tauto
++
++   coq-core.plugins.cc
++   coq-core.plugins.firstorder
++
++   coq-core.plugins.number_string_notation
++
++   coq-core.plugins.ltac2))
