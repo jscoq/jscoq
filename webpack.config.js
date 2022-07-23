@@ -117,8 +117,7 @@ module.exports = (env, argv) => [
     libraryTarget: 'umd'
   },
   externals: {
-    '@codemirror/state': '{}',  /* cm6; not used */
-    '@codemirror/view': '{}'
+    './codemirror6-adapter.js': '{}' /* cm6 (from firepad); not used */
   },
   resolve: {
     ...resolve,
@@ -134,6 +133,16 @@ module.exports = (env, argv) => [
     rules: [ts, css, imgs, vuesfc],
     unknownContextCritical: false  /* for `randombytes` */
   },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        roninVendor: {
+          /* assume all async-import'ed modules are Ronin; there are too many to list */
+          name: 'ronin-p2p'
+        }
+      }
+    }
+  },  
   plugins: [new webpack.ProvidePlugin({process: 'process/browser.js',
                                        Buffer: ['buffer', 'Buffer']})]
 }

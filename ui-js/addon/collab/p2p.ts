@@ -1,7 +1,6 @@
 import $ from 'jquery'
 import type { Editor } from 'codemirror';
-import { DocumentClient } from 'ronin-p2p/src/net/client-docs';
-import { SyncPad } from 'ronin-p2p/src/addons/syncpad';
+import { DocumentClient, SyncPad } from './p2p-chunk';
 import './collab.css';
 
 
@@ -17,7 +16,7 @@ class CollabP2P {
     uri: {channel: string, docId: string}
 
     constructor() {
-        this.client = new DocumentClient();
+        this.client = undefined; // loaded lazily
         this.ui = new CollabP2PUI(this);
     }
 
@@ -26,12 +25,25 @@ class CollabP2P {
         return this;
     }
 
-    join(){
+    /**
+     * Load libraries and create client.
+     */
+    async init() {
+        if (!this.client) {
+            let { DocumentClient } = await import(/* webpackChunkName: "p2p" */ './p2p-chunk');
+            this.client = new DocumentClient();
+            this.ui.loaded();
+        }
+    }
+
+    join() {
         return this.client.join(this.uri.channel);
     }
 
     async setup(opts?: any) {
+        await this.init();
         await this.join();
+        let { SyncPad } = await import('./p2p-chunk');
         this.syncpad = new SyncPad(this.provider.editor,
             this.client.sync.path(this.uri.docId, 'syncpad'), opts);
     }
@@ -105,9 +117,6 @@ class CollabP2PUI {
 
         this.$refs = _;
         this.update();
-        this.p2p.client.activeChannels.observe(() => this.update());
-        this.p2p.client.on('peer:ready', () => this.update());
-        this.p2p.client.on('peer:leave', () => this.update());
     }
 
     show() {
@@ -122,15 +131,24 @@ class CollabP2PUI {
         this.shown = false;
     }
 
+    loaded() {
+        this.p2p.client.activeChannels.observe(() => this.update());
+        this.p2p.client.on('peer:ready', () => this.update());
+        this.p2p.client.on('peer:leave', () => this.update());
+        this.update();
+    }
+
     enterDocument(key: string) {
         window.history.pushState(null, document.title, this.mkURL(key));
     }
 
     get status() {
+        if (!this.p2p.client) return 'loading';
         return this.p2p.client.activeChannels.size > 0 ? 'connected' : 'disconnected';
     }
 
     get peers(): string[] {
+        if (!this.p2p.client) return [];
         return this.p2p.client.getPeers().map(p => p.id);
     }
 
