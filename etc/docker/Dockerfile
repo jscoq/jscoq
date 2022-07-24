@@ -171,9 +171,11 @@ RUN if [ ${WORDSIZE} = 32 ] ; then \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY gosu-entrypoint.sh /root/gosu-entrypoint.sh
+COPY sdk-findlib.conf /opt/jscoq/findlib.conf
 ENTRYPOINT ["/root/gosu-entrypoint.sh"]
 
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
+ENV OCAMLFIND_CONF /opt/jscoq/findlib.conf
 
 # ----------------------------------------------------------
 #
