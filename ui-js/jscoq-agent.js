@@ -1,7 +1,7 @@
 /**
  * Injects jsCoq into an existing page.
- * This script has to be at the end of the body so that it runs after
- * the page DOM has loaded.
+ * This script is adapted from the Software Foundations jsCoq build.
+ * So, it may require some tweaking depending on your development and styles.
  */
 
 function jsCoqInject() {
