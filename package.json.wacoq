@@ -6,9 +6,7 @@
     "wacoqdoc": "ui-js/jscoqdoc.js"
   },
   "dependencies": {
-    "@corwin.amber/hastebin": "^0.1.1",
     "array-equal": "^1.0.0",
-    "bootstrap": "^3.4.1",
     "child-process-promise": "^2.2.1",
     "codemirror": "^5.61.0",
     "commander": "^5.0.0",
@@ -23,18 +21,22 @@
     "mkdirp": "^1.0.4",
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
+    "proper-lockfile": "^4.1.2",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
     "wacoq-bin": "0.16.0"
   },
   "devDependencies": {
+    "@corwin.amber/hastebin": "^0.1.1",
     "@types/find": "^0.2.1",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^13.11.1",
     "assert": "^2.0.0",
+    "bootstrap": "^5.1.3",
     "css-loader": "^5.2.4",
     "file-loader": "^6.0.0",
-    "mocha": "^9.0.3",
+    "katex": "^0.15.3",
+    "mocha": "^9.1.3",
     "process": "^0.11.10",
     "sass": "^1.26.3",
     "sass-loader": "^8.0.2",
@@ -52,6 +54,8 @@
     "ui-css",
     "ui-images",
     "ui-external",
+    "coq-js/*.bc.js",
+    "coq-pkgs",
     "examples",
     "dist",
     "index.html"
