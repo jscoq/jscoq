@@ -1,0 +1,2 @@
+
+Inductive Coo := kuku | riku.

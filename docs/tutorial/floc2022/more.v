@@ -27,7 +27,7 @@ Fixpoint nonzeros (l : natlist) :=
   end.
 
 (**
- Jus to show you that it works:
+ Just to show you that it works:
  *)
 
 Check nonzeros.
@@ -65,3 +65,13 @@ Proof.
 Qed.
 
 Check nonzeros_app.
+
+(** #<hr/># 
+ For the next part, we will require some _library support_.
+ *)
+
+(** #<script>jscoq_opts.all_pkgs['.'] = ['floc'];</script># *)
+
+From FLoC Require Import CooLib.
+
+Print Coo.
