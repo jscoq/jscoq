@@ -137,6 +137,16 @@ var loadJsCoq, JsCoq;
             JsCoq.backend = jscoq_opts.backend || JsCoq.backend;
 
             return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
+        },
+
+        globalConfig(v) {
+            const defaults = {features: []},
+                  ls = localStorage['jscoq:config'];
+            try { var cfg = ls && JSON.parse(ls); }
+            catch (e) { console.warn('(in local config)', ls, e); }
+            if (v)
+                localStorage['jscoq:config'] = JSON.stringify({...cfg, ...v})
+            else return {...defaults, ...cfg};
         }
     };
 

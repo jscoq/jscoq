@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 30 30" width="30px" height="30px"
+   xmlns="http://www.w3.org/2000/svg">
+  <circle cx="23" cy="7" r="4" style="fill:black"/>
+  <circle cx="7" cy="15" r="4" style="fill:black"/>
+  <circle cx="23" cy="23" r="4" style="fill:black" />
+  <path style="stroke:black;stroke-width:1.9"
+     d="M 20.060034,8.5361846 9.6032077,13.657895" />
+  <path style="stroke:black;stroke-width:1.9"
+     d="M 20.150391,21.519634 9.6935651,16.397924" />
+</svg>

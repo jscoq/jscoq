@@ -118,6 +118,10 @@ class CmCoqProvider {
         CodeMirror.CompanyCoq.configure(this.editor, options);
     }
 
+    getText() {
+        return this.editor.getValue();
+    }
+
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
         this.editor.on('change', ev => {
@@ -582,9 +586,13 @@ class CmCoqProvider {
     saveLocalDialog() {
         var span = this._makeFileDialog("Save file: "),
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
-            a2 = this._makeDialogLink('Share', () => this.saveShare());
+            share = $('<span>').addClass('dialog-share')
+                    .append($('<img>').attr('src', JsCoq.base_path + 'ui-images/share.svg')),
+            a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
+            a3 = betaOnly(() =>
+                 this._makeDialogLink('P2P', () => this.shareP2P()));
 
-        span.append(a1, a2);
+        span.append(a1, share.append(a2, a3));
 
         this.editor.openDialog(span[0], sel => this.saveLocal(sel), 
                                {value: this.filename});
@@ -597,8 +605,12 @@ class CmCoqProvider {
         a[0].click();
     }
 
-    saveShare() {
-        this.onAction({type: 'share'});
+    shareHastebin() {
+        this.onAction({type: 'share-hastebin'});
+    }
+
+    shareP2P() {
+        this.onAction({type: 'share-p2p'});
     }
 
     _makeFileDialog(text) {
@@ -657,6 +669,11 @@ CodeMirror.keyMap['jscoq-snippet'] = {
     //'Cmd-Up': false,   /** @todo this does not work? */
     //'Cmd-Down': false
 };
+
+function betaOnly(thing) {
+    return JsCoq.globalConfig().features.includes('beta')
+             ? thing() : undefined;
+}
 
 /**
  * Workaround to prevent CodeMirror from consuming PageUp/PageDn.

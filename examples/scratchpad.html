@@ -47,7 +47,8 @@
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
       if (sp.has('project')) coq.openProject(sp.get('project'));
-      if (sp.has('share')) coq.openCollab(sp.get('share'));
+      if (sp.has('share'))   coq.openCollab({hastebin: sp.get('share')});
+      if (sp.has('p2p'))     coq.openCollab({p2p: sp.get('p2p')});
     });
 
     window.addEventListener('beforeunload', () => {

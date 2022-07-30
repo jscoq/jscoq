@@ -16,8 +16,8 @@ const
   }),
   ts = {
     test: /\.tsx?$/,
-    use: 'ts-loader',
-    exclude: /node_modules/,
+    loader: 'ts-loader',
+    options: { allowTsInNodeModules: true }
   },
   css = {
     test: /\.css$/i,
@@ -108,7 +108,7 @@ module.exports = (env, argv) => [
  */
 {
   name: 'collab',
-  entry: './ui-js/addon/collab.js',
+  entry: './ui-js/addon/collab/index.ts',
   ...basics(argv),
   output: {
     filename: 'collab.browser.js',
@@ -116,8 +116,34 @@ module.exports = (env, argv) => [
     library: 'addonCollab',
     libraryTarget: 'umd'
   },
+  externals: {
+    './codemirror6-adapter.js': '{}' /* cm6 (from firepad); not used */
+  },
+  resolve: {
+    ...resolve,
+    fallback: {
+      "fs": false,
+      "constants": require.resolve("constants-browserify"),
+      "path": require.resolve("path-browserify"),
+      "util": require.resolve("util/"),
+      "assert": require.resolve("assert/")
+    }
+  },
   module: {
-    rules: [css, imgs]
-  }
+    rules: [ts, css, imgs, vuesfc],
+    unknownContextCritical: false  /* for `randombytes` */
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        roninVendor: {
+          /* assume all async-import'ed modules are Ronin; there are too many to list */
+          name: 'ronin-p2p'
+        }
+      }
+    }
+  },  
+  plugins: [new webpack.ProvidePlugin({process: 'process/browser.js',
+                                       Buffer: ['buffer', 'Buffer']})]
 }
 ];
