@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@jscoq/mathcomp": "^0.15.1",
     "jscoq": "^0.15.1"
   }
 }

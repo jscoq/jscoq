@@ -1,6 +1,7 @@
 package-lock.json
 welcome.html
 more.html
+more-pkgs.html
 
 *.vo
 *.vos

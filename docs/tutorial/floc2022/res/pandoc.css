@@ -44,11 +44,15 @@ p {
   margin: 1em 0;
 }
 a {
-  color: #1a1a1a;
+  color: #1a1a9a;
 }
 a:visited {
-  color: #1a1a1a;
+  color: #1a1a9a;
 }
+body a:link {
+  text-decoration: underline;
+}
+
 img {
   max-width: 100%;
 }
@@ -79,10 +83,13 @@ code {
   font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
   font-size: 85%;
   margin: 0;
+  background: #eee;
+  outline: 1px solid #eee;
 }
 pre {
   margin: 1em 0;
   overflow: auto;
+  background: #eee;
 }
 pre code {
   padding: 0;

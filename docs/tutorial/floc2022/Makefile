@@ -3,7 +3,7 @@ MARKDOWN = python -m markdown -x extra
 JSCOQ_URL = node_modules/jscoq
 
 default: welcome.html
-all-html: welcome.html more.html
+all-html: welcome.html more.html more-pkgs.html
 all: all-html floc.coq-pkg
 
 %.html: %.md res/header.in.html res/footer.in.html
@@ -27,5 +27,5 @@ floc.coq-pkg: theories/CooLib.vo
 	npx jscoq --package floc --rootdir theories --top FLoC
 
 clean:
-	rm -f welcome.html more.html floc.json floc.coq-pkg
+	rm -f welcome.html more.html more-pkgs.html floc.json floc.coq-pkg
 	rm -f $(addprefix theories/, *.vo *.vok *.vos *.glob *.aux)
