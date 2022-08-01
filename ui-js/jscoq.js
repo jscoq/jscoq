@@ -59,8 +59,10 @@ class CoqWorker {
     }
 
     async newWorkerWithProgress(url) {
-        var blob = await prefetchResource(url, pc => this.load_progress(pc));
-        return new Worker(URL.createObjectURL(blob));
+        await prefetchResource(url, pc => this.load_progress(pc));
+        // have to use `url` again so that the worker has correct base URI;
+        // should be cached at this point though.
+        return new Worker(url);
     }
 
     attachWorker(worker) {
