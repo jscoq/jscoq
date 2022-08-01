@@ -105,12 +105,12 @@ End sqrt2_decrease.
 
 (**
    The proof proceeds by well-founded induction on q.
-   We apply the induction hypothesis with the numbers <<3 * q - 2 * q>>
+   We apply the induction hypothesis with the numbers <<3 * q - 2 * p>>
    and <<3 * p - 4 * q>>. This leaves two key proof goals:
    - <<3 * q - 2 * p <> 0>>, which we prove using arithmetic and the
-     [comparison2] lemma above
+     [comparison2] lemma above.
    - <<(3 * p - 4 * q) * (3 * p - 4 * q) = 2 * ((3 * q - 2 * p) * (3 * q - 2 * p))>>,
-     which we prove using the [new_equality] lemma above
+     which we prove using the [new_equality] lemma above.
  *)
 Theorem sqrt2_not_rational :
   forall p q : nat, q <> 0 -> ¬ p ^ 2 = 2 * (q ^ 2).
