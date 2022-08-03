@@ -40,12 +40,13 @@ abstract class Batch {
     }
 
     async init() {
-        await this.do(['Init', {}]);
+        await this.do(['Init', {lib_path: this.loadpath}]);
     }
 
     docOpts(mod: SearchPathElement, outfn: string) {
-        return { top_name: outfn, mode: ['Vo'], 
-                 lib_init: PRELUDE, lib_path: this.loadpath };
+        /* @todo why does `mode: ['Vo']` end up producing an incorrect module name? */
+        return { top_name: mod.logical.join('.'), // mode: ['Vo'],
+                 lib_init: PRELUDE };
     }
 
     async install(mod: SearchPathElement, volume: FSInterface, root: string, outfn: string, compiledfn: string, content?: Uint8Array) {
@@ -141,6 +142,7 @@ class CompileTask extends EventEmitter {
             let [, [, outfn_, vo]] = await this.batch.do(
                 ['Put',     infn, volume.fs.readFileSync(physical)],
                 ['NewDoc',  this.batch.docOpts(mod, outfn)],
+                ['ReassureLoadPath', this.batch.loadpath],
                 ['Load',    infn],         msg => msg[0] == 'Loaded',
                 ['Compile', outfn],        msg => msg[0] == 'Compiled');
 
@@ -152,6 +154,7 @@ class CompileTask extends EventEmitter {
             this.emit('progress', [{filename: physical, status: 'compiled'}]);
         }
         catch (e) {
+            console.error(e);
             this.emit('report', e, mod);
             this.emit('progress', [{filename: physical, status: 'error'}]);
             if (!opts.keepGoing) throw e;

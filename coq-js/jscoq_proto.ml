@@ -120,7 +120,7 @@ type jscoq_cmd =
 
   | InterruptSetup of opaque
 
-  | ReassureLoadPath of (string list * string list) list
+  | ReassureLoadPath of lib_path
   | Load    of string
   | Compile of string
   [@@deriving yojson]
