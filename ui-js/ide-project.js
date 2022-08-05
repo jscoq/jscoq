@@ -42,10 +42,10 @@ class ProjectPanel {
     open(project) {
         this.project = project;
         this.view.status = {};
-        this.view.$refs.file_list.populate(
-            [...project.modulesByExt('.v')].map(mod => mod.physical));
-        this.view.$refs.file_list.collapseAll();
-        requestAnimationFrame(() => this.view.$refs.file_list.collapseAll());
+        let fv = this.view.$refs.file_list;
+        fv.populate([...project.modulesByExt('.v')].map(mod => mod.physical));
+        fv.collapseAll();
+        requestAnimationFrame(() => { fv.collapseAll(); fv.expandAll(1); });
 
         if (this.editor_provider) this._associateStore();
     }

@@ -38,17 +38,20 @@
     };
 
     /* Global reference */
-    var coq, last_filename = localStorage['scratchpad.last_filename'];
+    var coq, last_filename = localStorage['scratchpad.last_filename'],
+        set_filename = fn => document.getElementById('ide-wrapper')
+                                     .setAttribute('data-filename', fn);
 
-    if (last_filename)
-      document.getElementById('ide-wrapper')
-              .setAttribute('data-filename', last_filename);
+
+    if (sp.has('code')) set_filename('');
+    else if (last_filename) set_filename(last_filename);
 
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
-      if (sp.has('project')) coq.openProject(sp.get('project'));
-      if (sp.has('share'))   coq.openCollab({hastebin: sp.get('share')});
-      if (sp.has('p2p'))     coq.openCollab({p2p: sp.get('p2p')});
+      if (sp.has('project'))     coq.openProject(sp.get('project'));
+      if (sp.has('share'))       coq.openCollab({hastebin: sp.get('share')});
+      if (sp.has('p2p'))         coq.openCollab({p2p: sp.get('p2p')});
+      if (sp.has('code'))        coq.provider.load(sp.get('code'), sp.get('fn') || 'playground');
     });
 
     window.addEventListener('beforeunload', () => {

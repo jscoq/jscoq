@@ -232,15 +232,15 @@ class ProviderContainer {
         stm.sp.cursorToEnd(stm);
     }
 
-    focus() {
+    _delegate(op) {
         var sp = this.currentFocus || this.snippets[0];
-        if (sp) sp.focus();
+        if (sp) op(sp);
     }
 
-    openFile(file) {
-        var sp = this.currentFocus || this.snippets[0];
-        if (sp) sp.openFile(file);
-    }
+    focus()                      { this._delegate(sp => sp.focus()); }
+    load(text, filename, dirty)  { this._delegate(sp => sp.load(text, filename, dirty)); }
+    openFile(file)               { this._delegate(sp => sp.openFile(file)); }
+    openLocal(filename)          { this._delegate(sp => sp.openLocal(filename)); }
 
 }
 
