@@ -1,3 +1,4 @@
+///@ts-check
 /**
  * Injects jsCoq into an existing page.
  * This script is adapted from the Software Foundations jsCoq build.

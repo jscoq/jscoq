@@ -1,19 +1,32 @@
+// @ts-check
 "use strict";
 
 import { CmCoqProvider, Deprettify } from './cm-provider.js';
 
-/***********************************************************************/
-/* A Provider Container aggregates several containers, the main deal   */
-/* here is keeping track of focus, as the focused container can be     */
-/* different from the "active" one                                     */
-/***********************************************************************/
+/**
+ * A Provider Container aggregates several containers, the main deal
+ * here is keeping track of focus, as the focused container can be
+ * different from the "active" one
+ *
+ * @class ProviderContainer
+ */
 export class ProviderContainer {
 
+    /**
+     * Creates an instance of ProviderContainer.
+     * 
+     * @param {string} elementRefs
+     * @param {object} options
+     * @memberof ProviderContainer
+     */
     constructor(elementRefs, options) {
 
         this.options = options ? options : {};
 
-        // Code snippets.
+        /**
+         * @name ProviderContainer#snippets
+         * @type CmCoqProvider[]
+         */
         this.snippets = [];
 
         // Event handlers (to be overridden by CoqManager)
@@ -81,6 +94,13 @@ export class ProviderContainer {
         })();
     }
 
+    /**
+     * Find elements in the page
+     *
+     * @param {*} elementRefs
+     * @return {HTMLElement}
+     * @memberof ProviderContainer
+     */
     findElements(elementRefs) {
         var elements = [];
         for (let e of elementRefs) {
@@ -210,5 +230,3 @@ export class ProviderContainer {
     openLocal(filename)          { this._delegate(sp => sp.openLocal(filename)); }
 
 }
-
-

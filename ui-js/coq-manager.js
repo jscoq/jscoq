@@ -1,3 +1,5 @@
+//@ts-check
+
 // The CoqManager class.
 // Copyright (C) 2015-2017 Mines ParisTech/ARMINES
 //
@@ -21,12 +23,22 @@ import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
-/***********************************************************************/
-/* CoqManager coordinates the coq code objects, the panel, and the coq */
-/* js object.                                                          */
-/***********************************************************************/
+/**
+ * Coq Document Manager, client-side
+ *
+ * CoqManager coordinates the coq code objects, the panel, and the Coq
+ * worker.
+ *
+ * @class CoqManager
+ */
 export class CoqManager {
 
+    /**
+     * Creates an instance of CoqManager.
+     * @param {string} elems
+     * @param {object} options
+     * @memberof CoqManager
+     */
     constructor(elems, options) {
 
         options = options ? options : {};
@@ -93,6 +105,10 @@ export class CoqManager {
         $(document).on('keydown keyup', evt => this.modifierKeyHandler(evt));
 
         // This is a sid-based index of processed statements.
+        /**
+         * @typedef {{text: string, coq_sid: number, flags: object, sp: CmCoqProvider, phase: object}} ManagerSentence
+         * @type {{fresh_id: number, sentences: ManagerSentence[], stm_id: ManagerSentence[], goals: string[]}}
+         */
         this.doc = {
             fresh_id:           2,
             sentences:         [],
@@ -101,10 +117,11 @@ export class CoqManager {
         };
 
         // Initial sentence. (It's a hack.)
-        let  dummyProvider = { mark : function() {},
-                               getNext: function() { return null; },
-                               focus: function() { return null; },
-                               cursorToEnd: function() { return null; }
+        /** @type {CmCoqProvider} */
+        let dummyProvider = { mark : function() {},
+                              getNext: function() { return null; },
+                              focus: function() { return null; },
+                              cursorToEnd: function() { return null; }
                              };
         this.doc.stm_id[1] = { text: "dummy sentence", coq_sid: 1, flags: {},
                                sp: dummyProvider, phase: Phases.PROCESSED };
@@ -356,6 +373,7 @@ export class CoqManager {
 
     /**
      * Called when the first state is ready.
+     * @param {number} sid
      */
     coqReady(sid) {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
@@ -365,6 +383,9 @@ export class CoqManager {
         this.when_ready.resolve();
     }
 
+    /**
+     * @param {number} nsid
+     */
     feedProcessed(nsid) {
 
         if(this.options.debug)
@@ -402,6 +423,12 @@ export class CoqManager {
         this.work();
     }
 
+    /**
+     * @param {number} sid
+     * @param {string} lvl
+     * @param {any} loc
+     * @param {any} msg
+     */
     feedMessage(sid, lvl, loc, msg) {
 
         var fmsg = this.pprint.msg2DOM(msg);
@@ -429,6 +456,10 @@ export class CoqManager {
     }
 
     // Coq Message processing.
+    /**
+     * @param {number} nsid
+     * @param {any} loc
+     */
     coqAdded(nsid,loc) {
 
         if(this.options.debug)
@@ -640,6 +671,9 @@ export class CoqManager {
                      .map(([k, v]) => [k.split(/\s+/), makeValue(v)]);
     }
 
+    /**
+     * @param {boolean} update_focus
+     */
     goPrev(update_focus) {
 
         // There may be cases where there is more than one sentence with
@@ -662,6 +696,10 @@ export class CoqManager {
     }
 
     // Return if we had success.
+    /**
+     * @param {boolean} update_focus
+     * @param {{ sp: CmCoqProvider; pos: any; } | undefined} [until]
+     */
     goNext(update_focus, until) {
 
         this.clearErrors();
@@ -1158,7 +1196,6 @@ export class CoqManager {
         return false;
     }
 }
-
 
 // enum
 const Phases = {

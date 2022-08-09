@@ -1,3 +1,4 @@
+//@ts-check
 "use strict";
 import { $ } from '../dist/lib.js';
 
@@ -43,7 +44,7 @@ export class FormatPrettyPrint {
     /**
      * Formats a pretty-printed element to be displayed in an HTML document.
      * @param {array} pp a serialized Pp element
-     * @param {topBox} string wrap with a box ('vertical' / 'horizontal')
+     * @param {string} [topBox] wrap with a box ('vertical' / 'horizontal')
      */
     pp2DOM(pp, topBox) {
         if (!Array.isArray(pp)) {

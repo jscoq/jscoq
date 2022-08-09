@@ -12,8 +12,6 @@ import * as sdk from './build/sdk/toolkit';
 
 import { HeadlessCLI } from '../ui-js/coq-cli';  // oops
 
-
-
 class CLI {
 
     opts: any

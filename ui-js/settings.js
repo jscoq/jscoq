@@ -1,6 +1,12 @@
+//@ts-check
 "use strict";
 import { $ } from '../dist/lib.js';
 
+/**
+ * Settings Panel UI element
+ *
+ * @class SettingsPanel
+ */
 export class SettingsPanel {
     html() {
         return `
