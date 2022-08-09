@@ -1,3 +1,4 @@
+//@ts-check
 // The CoqLayoutClassic class.
 // Copyright (C) 2015-2017 Mines ParisTech/ARMINES
 //
@@ -17,6 +18,8 @@ import { SettingsPanel } from './settings.js';
  * Classical layout: a right panel containing a toolbar with buttons at the 
  * top, and a main area divided vertically into three collapsible panes.
  * Also shows a power button that hides or shows the panel.
+ *
+ * @class CoqLayoutClassic
  */
 export class CoqLayoutClassic {
 
@@ -97,7 +100,8 @@ export class CoqLayoutClassic {
         this.options = options;
 
         // Our reference to the IDE, goal display & query buffer.
-        this.ide   = document.getElementById(options.wrapper_id);
+        /** @type {HTMLElement} */
+        this.ide = document.getElementById(options.wrapper_id);
         this.ide.classList.add('jscoq-ide', `layout-${options.layout || 'flex'}`);
 
         this.panel = document.createElement('div');
@@ -108,10 +112,15 @@ export class CoqLayoutClassic {
         this.ide.appendChild(this.panel);
 
         // UI setup.
+        /** @type {HTMLElement} */
         this.proof    = this.panel.querySelector('#goal-text');
+        /** @type {HTMLElement} */
         this.query    = this.panel.querySelector('#query-panel');
+        /** @type {HTMLElement} */
         this.packages = this.panel.querySelector('#packages-panel');
+        /** @type {HTMLElement} */
         this.buttons  = this.panel.querySelector('#buttons');
+        /** @type {HTMLElement} */
         this.menubtn  = this.panel.querySelector('.app-menu-button');
         this.settings = new SettingsPanel();
 

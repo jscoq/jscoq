@@ -1,3 +1,4 @@
+//@ts-check
 import './public-path.js';
 
 import assert from 'assert';

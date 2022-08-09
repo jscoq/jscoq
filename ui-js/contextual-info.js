@@ -1,9 +1,10 @@
+//@ts-check
 "use strict";
 import { $ } from '../dist/lib.js';
 
-class CoqContextualInfo {
+export class CoqContextualInfo {
     /**
-     * @param {jQuery} container <div> element to show info in
+     * @param {JQuery<HTMLElement>} container <div> element to show info in
      * @param {CoqWorker} coq jsCoq worker for querying types and definitions
      * @param {FormatPrettyPrint} pprint formatter for Pp data
      * @param {CompanyCoq} company_coq (optional) further beautification
@@ -264,8 +265,17 @@ class CoqContextualInfo {
     }
 }
 
+/**
+ * Coq Identifier
+ *
+ * @class CoqIdentifier
+ */
+export class CoqIdentifier {
 
-class CoqIdentifier {
+    /**
+     * @param {Array<string>} prefix
+     * @param {string} label
+     */
     constructor(prefix, label) {
         this.prefix = prefix;
         this.label = label;
@@ -298,7 +308,7 @@ class CoqIdentifier {
 
     /**
      * Constructs an identifier from a `Libnames.full_path`.
-     * @param {array} fp serialized form of `full_path`.
+     * @param {{dirpath: string[], basename: string[]}} fp serialized form of `full_path`.
      */
     static ofFullPath(fp) {
         /**/ console.assert(fp.dirpath[0] === 'DirPath') /**/
@@ -311,7 +321,7 @@ class CoqIdentifier {
      * Constructs an identifier from a `qualified_name`. This type comes from
      * the worker protocol, and may contain a dirpath as well as a module path.
      * @see inspect.ml
-     * @param {array} qn serialized form of `qualified_name` (from SearchResults).
+     * @param {{prefix : { dp: string[] }, basename: string[]}} qn serialized form of `qualified_name` (from SearchResults).
      */
     static ofQualifiedName(qn) {
         /**/ console.assert(qn.prefix.dp[0] === 'DirPath') /**/
@@ -321,6 +331,9 @@ class CoqIdentifier {
             this._idToString(qn.basename));
     }
 
+    /**
+     * @param {string[]} id
+     */
     static _idToString(id) {
         /**/ console.assert(id[0] === 'Id') /**/
         return id[1];
@@ -339,8 +352,4 @@ class CoqIdentifier {
         d.tags = this.tags;
         return d;
     }
-
 }
-
-
-export { CoqContextualInfo, CoqIdentifier }
