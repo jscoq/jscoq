@@ -9,54 +9,47 @@
 (* Coq Interface to be used by JavaScript Ocaml code. Parts based in
    the coq source code.
 
-   Copyright (C) 2016-2017 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+   Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+   Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris.
+   Copyright (C) 2019-2022 Shachar Itzhaky, Tehcnion, Haifa.
 *)
 
-(* Init options for coq *)
-type async_flags = {
-  enable_async : string option;
-  async_full   : bool;
-  deep_edits   : bool;
+(* Should be json *)
+type diagnostic = Lsp.Base.Diagnostic.t
+
+type coq_opts =
+  { notification_cb : diagnostic -> unit
+  (** callback to handle notifications *)
+  ; debug        : bool
+  (** Enable debug mode *)
 }
 
 type require_lib = (string * string option * Lib.export_flag option)
-type top_mode = Interactive | Vo
 
-type coq_opts = {
-  (* callback to handle async feedback *)
-  fb_handler : Feedback.feedback -> unit;
-  (* Async flags *)
-  aopts        : async_flags;
-  (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
-  opt_values   : (string list * Goptions.option_value) list;
-  (* Enable debug mode *)
-  debug        : bool;
-  (* Initial LoadPath *)
-  vo_path      : Loadpath.vo_path list;
-}
-
-type doc_opts = {
-  (* Libs to require on startup *)
-  require_libs : require_lib list;
-  (* name of the top-level module *)
-  top_name     : string;
-  (* document mode: interactive or batch *)
-  mode         : top_mode;
-}
-
-type in_mode = Proof | General (* pun intended *)
+type doc_opts =
+  { uri : string
+  (** name of the top-level module *)
+  ; require_libs : require_lib list
+  (** Libs to require on startup *)
+  ; opt_values : (string list * Goptions.option_value) list
+  (** Initial values for Coq options *)
+  ; vo_path : Loadpath.vo_path list
+  (** Initial LoadPath *)
+  }
 
 (** [init opts] Initialize the Coq engine *)
 val coq_init : coq_opts -> unit
-val new_doc : doc_opts -> Stm.doc * Stateid.t
+
+(** [new_doc] Initialize a new Coq document *)
+val new_doc : doc_opts -> text:string -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
+
+(** [check_doc] check a doc, with possibly updated contents *)
+val check_doc
+  : doc:Controller.Coq_doc.t
+  -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
 
 (** [version] returns miscellaneous version information *)
 val version : string * string * int32
-
-val mode_of_stm : doc:Stm.doc -> Stateid.t -> in_mode
-val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
-
-val compile_vo : doc:Stm.doc -> string -> string
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit

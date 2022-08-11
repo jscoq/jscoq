@@ -13,129 +13,110 @@
 (* Status: Very Experimental                                            *)
 (************************************************************************)
 
-(* Init options for coq *)
-type async_flags = {
-  enable_async : string option;
-  async_full   : bool;
-  deep_edits   : bool;
+type diagnostic = Lsp.Base.Diagnostic.t
+
+type coq_opts =
+  { notification_cb : diagnostic -> unit
+  (** callback to handle notifications *)
+  ; debug        : bool
+  (** Enable debug mode *)
 }
 
 type require_lib = (string * string option * Lib.export_flag option)
-type top_mode = Interactive | Vo
 
-type coq_opts = {
-  (* callback to handle async feedback *)
-  fb_handler : Feedback.feedback -> unit;
-  (* Async flags *)
-  aopts        : async_flags;
-  (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
-  opt_values   : (string list * Goptions.option_value) list;
-  (* Enable debug mode *)
-  debug        : bool;
-  (* Initial LoadPath *)
-  vo_path      : Loadpath.vo_path list;
-}
-
-type doc_opts = {
-  (* Libs to require on startup *)
-  require_libs : require_lib list;
-  (* name of the top-level module *)
-  top_name     : string;
-  (* document mode: interactive or batch *)
-  mode         : top_mode;
-}
-
-type in_mode = Proof | General (* pun intended *)
+type doc_opts =
+  { uri : string
+  (** name of the top-level module *)
+  ; require_libs : require_lib list
+  (** Libs to require on startup *)
+  ; opt_values : (string list * Goptions.option_value) list
+  (** Initial values for Coq options *)
+  ; vo_path      : Loadpath.vo_path list
+  (** Initial LoadPath *)
+  }
 
 type 'a seq = 'a Seq.t
 
-let feedback_id = ref None
-
-let set_options opt_values =
+let _set_options opt_values =
   let open Goptions in
   let new_val v _old = v in
   List.iter
     (fun (opt, value) -> set_option_value new_val opt value)
     opt_values
 
-let default_warning_flags = "-notation-overridden"
+let _default_warning_flags = "-notation-overridden"
+
+let root_state = ref (Controller.Coq_state.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
+let fb_queue = ref []
 
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
-let coq_init opts =
+(* module LIO = Lsp.Io
+ * module LSP = Lsp.Base *)
 
-  if opts.debug then CDebug.set_debug_all true;
+let coq_init opts =
 
   (**************************************************************************)
   (* Feedback setup                                                         *)
   (**************************************************************************)
 
-  (* Initialize logging. *)
-  Option.iter Feedback.del_feeder !feedback_id;
-  feedback_id := Some (Feedback.add_feeder opts.fb_handler);
+  (* LSP.std_protocol := std; *)
 
-  (* Core Coq initialization *)
-  Lib.init();
+  (* XXX : set debug system for stderr *)
+  let debug = opts.debug in
 
-  Global.set_impredicative_set false;
+  let fb_handler (Feedback.{ contents; _ }) =
+    (* Format.fprintf lp_fmt "%s@\n%!" "fb received"; *)
+    match contents with
+    | Message (_lvl, _loc, msg) -> fb_queue := msg :: !fb_queue
+    | _ -> ()
+  in
+
+  (* jsCoq-specific flags *)
   Global.set_VM false;
   Global.set_native_compiler false;
-  Flags.set_native_compiler false;
-  CWarnings.set_flags default_warning_flags;
-  set_options opts.opt_values;
+
+  (* This asserts false if called XD *)
+  (* Flags.set_native_compiler false; *)
+
+  (* CWarnings.set_flags default_warning_flags; *)
+  (* set_options opts.opt_values; *)
 
   (* Initialize paths *)
   (* List.iter Mltop.add_ml_dir opts.ml_path; *)
-  List.iter Loadpath.add_vo_path opts.vo_path;
+  (* List.iter Loadpath.add_vo_path opts.vo_path; *)
 
-  (**************************************************************************)
-  (* Start the STM!!                                                        *)
-  (**************************************************************************)
-  Stm.init_core ()
+  (* Init Coq *)
+  root_state := Controller.Coq_init.(coq_init { fb_handler; ml_load = None; debug });
+  ()
 
-let new_doc opts =
-  let doc_type = match opts.mode with
-    | Interactive -> let dp = Libnames.dirpath_of_string opts.top_name in
-                     Stm.Interactive (Coqargs.TopLogical dp)
-    | Vo ->          Stm.VoDoc opts.top_name
-  in
-  let ndoc = { Stm.doc_type
-             ; injections = List.map (fun x -> Coqargs.RequireInjection x) opts.require_libs
-             (* ; ml_load_path = []
-              * ; vo_load_path = opts.vo_path *)
-             ; stm_options = Stm.AsyncOpts.default_opts
-             } in
-  let ndoc, nsid = Stm.new_doc ndoc in
-  ndoc, nsid
+let rec md_map_lines coq l =
+  match l with
+  | [] -> []
+  | l :: ls ->
+    if String.equal "```" l then
+      "" :: md_map_lines (not coq) ls
+    else
+      (if coq then l else "") :: md_map_lines coq ls
 
-let mode_of_stm ~doc sid =
-  match Stm.state_of_id ~doc sid with
-  | Valid (Some { lemmas = Some _; _ }) -> Proof
-  | _ -> General
+let markdown_process text =
+  let lines = String.split_on_char '\n' text in
+  let lines = md_map_lines false lines in
+  String.concat "\n" lines
 
-let context_of_st m = match m with
-  | Stm.Valid (Some { Vernacstate.lemmas = Some lemma ; _ } ) ->
-    Vernacstate.LemmaStack.with_top lemma
-      ~f:(fun pstate -> Declare.Proof.get_current_context pstate)
-  | _ ->
-    let env = Global.env () in Evd.from_env env, env
+let new_doc opts ~text =
+  let text = markdown_process text in
+  let state = !root_state, opts.vo_path, [], 0 in
+  let uri = opts.uri in
+  let fmt = Format.formatter_of_out_channel stdout in
+  let doc = Controller.Coq_doc.create ~state ~uri ~version:1 ~contents:text in
+  Controller.Coq_doc.check fmt doc fb_queue
 
-let context_of_stm ~doc sid =
-  let st = Stm.state_of_id ~doc sid in
-  context_of_st st
-
-(* Compilation *)
-
-let compile_vo ~doc vo_out_fn =
-  ignore(Stm.join ~doc);
-  let dirp = Lib.library_dp () in
-  (* freeze and un-freeze to to allow "snapshot" compilation *)
-  (*  (normally, save_library_to closes the lib)             *)
-  let frz = Vernacstate.freeze_interp_state ~marshallable:false in
-  Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp vo_out_fn;
-  Vernacstate.unfreeze_interp_state frz;
-  vo_out_fn
+let check_doc ~doc =
+  let doc = { doc with Controller.Coq_doc.contents = markdown_process doc.Controller.Coq_doc.contents } in
+  let fmt = Format.formatter_of_out_channel stdout in
+  Controller.Coq_doc.check fmt doc fb_queue
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

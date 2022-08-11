@@ -139,9 +139,13 @@ let setup_top () =
 
   coq_vm_trap ()
 
+(* This is already taken care by the LSP layer *)
 let jscoq_protect f =
   try f ()
-  with | exn -> post_answer @@ Jscoq_interp.coq_exn_info exn
+  with
+  | exn ->
+    let exn = Exninfo.capture exn |> CErrors.iprint in
+    post_answer @@ (Log (Feedback.Error, Pp.(str "Exn happened, this should never happen: " ++ exn)))
 
 let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   let open Js.Unsafe in
@@ -156,7 +160,7 @@ let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   Js.Optdef.get o (fun () -> jscoq_cmd_of_yojson @@ obj_to_json cobj)
 
 (* Message from the main thread *)
-let on_msg doc msg =
+let on_msg _doc msg =
 
   let log_cmd cmd =
     let str = match cmd with
@@ -169,7 +173,7 @@ let on_msg doc msg =
   | Result.Ok cmd  ->
     jscoq_protect (fun () ->
         log_cmd cmd;
-        Jscoq_interp.jscoq_execute doc cmd)
+        Jscoq_interp.jscoq_execute cmd)
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 

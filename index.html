@@ -61,181 +61,29 @@
   <div id="document">
   <div>
     <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
-    <p>
-      <span class="jscoq-name">jsCoq</span> is an interactive,
-      web-based environment for the Coq Theorem prover, and is a collaborative
-      development effort. See the <a href="#team">list of contributors</a>
-      below.
-    </p>
-    <p>
-      <span class="jscoq-name">jsCoq</span> is open source. If you find any problem
-      that you wish to report or want to add your own contribution,
-      you are extremely welcome! We await your feedback at
-      <a href="https://github.com/jscoq/jscoq">GitHub</a>
-      and <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq">Zulip</a>.
-    </p>
-
-    <h4>A First Example: <code>rev</code> <code>∘</code> <code>rev = id</code></h4>
-    <p>
-      The following is a simple proof that <code>rev</code>, the standard list
-      reversal function as commonly defined in ML and other languages of the
-      family, is an involution.
-    </p>
-    <p>
-      Use <span class="has-kbd"><kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd></span> to step through the proof,
-      and observe the proof state on the right panel.
-    </p>
-    <textarea class="snippet">
+    <textarea id="coqCode" class="snippet">
+```
 From Coq Require Import List.
-Import ListNotations.</textarea>
-    <p class="interim">
-      We are going to need a simpler auxiliary lemma, one that connects
-      <code>rev</code>, <code>::</code> (the list constructor, also known
-      as <code>cons</code>), and <code>snoc</code> (the dual of
-      <code>cons</code>, a function that appends an element at the end of
-      a list).
-      This is because the latter two participate in the definition of
-      the former, <code>rev</code>.
-    </p>
+Import ListNotations.
 
-    <textarea class="snippet">Lemma rev_snoc_cons A :
-  forall (x : A) (l : list A), rev (l ++ [x]) = x :: rev l.</textarea>
-    <p class="interim">
-      This proposition is proven by way of the standard induction on
-      the structure of the list <code>l</code>.
-    </p>
-    <textarea class="snippet">Proof.
+Lemma rev_snoc_cons A :
+  forall (x : A) (l : list A), rev (l ++ [x]) = x :: rev l.
+Proof.
   induction l.
   - reflexivity.
   - simpl. rewrite IHl. simpl. reflexivity.
-Qed.</textarea>
+Qed.
 
-    <p class="interim">
-      Now we prove the central equality with a similar induction.
-    </p>
-    <textarea class="snippet">Theorem rev_rev A : forall (l : list A), rev (rev l) = l.
+Theorem rev_rev A : forall (l : list A), rev (rev l) = l.
 Proof.
   induction l.
   - reflexivity.
   - simpl. rewrite rev_snoc_cons. rewrite IHl.
     reflexivity.
-Qed.</textarea>
-
-    <p class="interim">
-      Finally, we apply functional extensionality to produce the equality
-      as it was written in the title.
-    </p>
-    <p class="interim">
-      There is only one syntactic difference, which is that, in Coq, we
-      need to pass an explicit value to the implicit (generic) type
-      parameter <code>A</code> of <code>rev</code>.
-    </p>
-    <textarea class="snippet">From Coq.Program Require Import Basics.
-From Coq Require Import FunctionalExtensionality.
-Open Scope program_scope.
-
-Theorem rev_invol A : rev (A:=A) ∘ rev (A:=A) = id.
-Proof.
-  apply functional_extensionality.
-  intro x.
-  unfold compose, id. rewrite rev_rev.
-  reflexivity.
-Qed.</textarea>
-
-    <hr/> <!-- end of proof -->
-
-    <h4>Quick start</h4>
-    <p>
-      Use the <a href="examples/scratchpad.html">scratchpad <span class="scratchpad-small"></span></a>
-      for a fresh page to write your proofs on.
-      <span class="jscoq-name">jsCoq</span> provides basic UI for running
-      and inspecting proofs, similar to IDEs such as <a href="https://coq.inria.fr/refman/practical-tools/coqide.html">CoqIDE</a>,
-      <a href="https://proofgeneral.github.io/">Proof General</a>,
-      and <a href="https://github.com/coq-community/vscoq">VSCoq</a>.
-    </p>
-
-    <h5>Actions</h5>
-    <table class="doc-actions">
-      <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
-      <tr>
-        <td><img src="frontend/classic/images/power-button-512-black.png" height="20px"></td>
-        <td class="has-kbd"><kbd>F8</kbd></td>
-        <td>Toggles the goal panel.</td>
-      </tr>
-      <tr>
-        <td><img src="frontend/classic/images/down.png" height="15px"><img src="frontend/classic/images/up.png" height="15px"></td>
-        <td class="has-kbd">
-          <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
-          <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
-        </td>
-        <td>Move through the proof.</td>
-      </tr>
-      <tr>
-        <td><img src="frontend/classic/images/to-cursor.png" height="20px"></td>
-        <td class="has-kbd">
-          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
-          (⌘ on Mac)
-        </td>
-        <td>Run (or go back) to the current point.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td class="has-kbd">
-          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="frontend/classic/images/pointer.svg">
-        </td>
-        <td>Hover executed statements to peek at the proof state after each step.</td>
-      </tr>
-    </table>
-    <h5>Creating your own proof scripts</h5>
-    <p>
-      The <a href="examples/scratchpad.html">scratchpad</a> offers simple, local
-      storage functionality. It also allows you to share your development with
-      other users in a manner that is similar to Pastebin.
-    </p>
-    <h5>There's more</h5>
-    <p>
-      See the <a href="https://github.com/jscoq/jscoq/tree/v8.16/docs">official docs</a>
-      on GitHub for more details on using, building, embedding, and integrating
-      <span class="jscoq-name">jsCoq</span> in your developments.
-    </p>
-
-    <p>
-      <span class="jscoq-name">jsCoq</span> comes with a variety of addon packages,
-      including Coq's standard library and the
-      <a href="https://math-comp.github.io">mathematical components</a>
-      library.
-      Feel free to experiment, and let us know if you have any suggestions
-      and/or when you have done something cool with <span class="jscoq-name">jsCoq</span>.
-      😎
-    </p>
-    <p>
-    <i>¡Salut!</i>
-  </p>
+Qed.
+```
+</textarea>
   </div> <!-- /#panel body -->
-  <div id="team">
-    <a name="team"></a>
-      <p><i>The dev team</i></p>
-    <ul>
-      <li>
-        <a href="https://www.irif.fr/~gallego/">Emilio Jesús Gallego Arias</a>
-        (<a href="https://www.inria.fr">Inria</a>,
-         <a href="https://u-paris.fr">Université de Paris</a>,
-         <a href="https://www.irif.fr">IRIF</a>)
-      </li>
-      <li>
-        <a href="https://www.cs.technion.ac.il/~shachari/">Shachar Itzhaky</a>
-        (<a href="https://cs.technion.ac.il">Technion</a>)
-      </li>
-    </ul>
-    <p><i>Contributors</i></p>
-    <ul>
-      <li>
-        Benoît Pin
-        (<a href="https://www.cri.ensmp.fr/">CRI</a>,
-         <a href="http://www.mines-paristech.eu">MINES ParisTech</a>)
-      </li>
-    </ul>
-  </div>
   </div> <!-- /#document -->
   </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
@@ -249,12 +97,14 @@ Qed.</textarea>
     if (!localStorage['scratchpad.last_filename'])
         setTimeout(() => document.body.classList.add('welcome'), 1500);
 
-    var jscoq_ids  = ['.snippet'];
+    var jscoq_ids  = ['coqCode'];
     var jscoq_opts = {
         backend:   sp.get('backend'),
         implicit_libs: false,
         focus: false,
+        debug: true,
         editor: { mode: { 'company-coq': true } },
+        init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
         all_pkgs: ['coq', 'mathcomp', 'equations', 'elpi',
                    'quickchick', 'software-foundations',
                    'hahn', 'paco', 'snu-sflib',

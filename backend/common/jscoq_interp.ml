@@ -65,8 +65,7 @@ let post_lib_event le =
 let post_answer ans =
   jscoq_answer_to_yojson ans |> !Callbacks.cb.post_message
 
-let post_feedback fb =
-  Feedback (Jscoq_util.fb_opt fb) |> post_answer
+let post_notification fb = Notification [fb] |> post_answer
 
 (** Coq stuff **)
 
@@ -92,9 +91,6 @@ let process_lib_event (msg : LibManager.lib_event) : unit =
   update_loadpath msg;
   post_lib_event msg
 
-let mk_feedback ~span_id ?(route=0) contents =
-  Feedback {doc_id = 0; span_id; route; contents}
-
 let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
 (* set_opts  : general Coq initialization options *)
@@ -102,119 +98,50 @@ let exec_init (set_opts : jscoq_options) =
 
   let opts = (opts := set_opts; set_opts) in
 
-  !Callbacks.cb.pre_init ();
+  (* Moved, but still need to improve *)
+  (* !Callbacks.cb.pre_init (); *)
 
   Icoq.coq_init ({
-      fb_handler   = post_feedback;
-      aopts        = { enable_async = None;
-                       async_full   = false;
-                       deep_edits   = false;
-                     };
-      opt_values   = opts.coq_options;
+      notification_cb = post_notification;
+      (* opt_values   = opts.coq_options; *)
       debug        = opts.debug.stm;
-      vo_path      = mk_vo_path opts.lib_path;
-    })
+    });
+
+  (* This is technically wrong, as coq_init needs to enable the serlib
+     instrumentation, but that requires a findlib-enabled loader. *)
+  !Callbacks.cb.pre_init ()
 
 (* opts  : document initialization options *)
-let create_doc (opts : doc_options) =
-  Icoq.new_doc ({
-      top_name      = opts.top_name;
-      mode          = opts.mode;
-      require_libs  = Jslib.require_libs opts.lib_init;
-    })
+let create_doc (doc_opts : doc_options) =
+  let opts =
+    { Icoq.uri = "file:///browser.v"
+    ; opt_values = []
+    ; vo_path = mk_vo_path !opts.lib_path
+    ; require_libs  = Jslib.require_libs doc_opts.lib_init;
+    }
+  in
+  Icoq.new_doc opts
 
-(* I refuse to comment on this part of Coq code... *)
-let exec_getopt opt =
-  let open Goptions in
-  let tbl = get_tables () in
-  (OptionMap.find opt tbl).opt_value
-
-let coq_exn_info exn =
-  let (e, info) = Exninfo.capture exn in
-  let pp_exn    = Jscoq_util.pp_opt @@ CErrors.iprint (e, info) in
-  let msg = Format.asprintf "@[%a@]" Pp.pp_with pp_exn in
-  CoqExn { loc = Loc.get_loc info; sid = Stateid.get info; msg; pp = pp_exn }
-
-(** Used by the Add command *)
-let requires ast =
-  match ast with
-  | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs); _ } ->
-    let prefix_str = match prefix with
-    | Some ref -> Jslib.module_name_of_qualid ref
-    | _ -> [] in
-    let module_refs_str =
-      (* XXX *)
-      let module_refs = List.map fst module_refs in
-      List.map (fun modref -> Jslib.module_name_of_qualid modref) module_refs
-    in
-    Some ((prefix_str, module_refs_str))
-  | _ -> None
-  [@@warning "-4"]
-
-(** Goal printing *)
-let pp_of_goals =
-  let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
-  Serapi.Serapi_goals.get_goals_gen ppx
-
-(** main Query handler *)
-let exec_query doc ~span_id ~route query =
-  let span_id = if span_id = Stateid.dummy then Jscoq_doc.tip !doc else span_id in
-  match query with
-  | Goals ->
-    let doc = fst !doc in
-    let goal_pp = pp_of_goals ~doc span_id in
-    [GoalInfo (span_id, goal_pp)]
-  | Mode ->
-    let doc = fst !doc in
-    let in_mode = Icoq.mode_of_stm ~doc span_id in
-    [ModeInfo (span_id, in_mode)]
-  | Vernac command ->
-    begin try
-      Jscoq_doc.query ~doc:!doc ~at:span_id ~route command;
-      [mk_feedback ~span_id ~route Complete]
-    with exn ->
-      let CoqExn { loc; pp; _ } = coq_exn_info exn [@@warning "-8"] in
-      [ mk_feedback ~span_id ~route (Message(Error, loc, pp ))
-      ; mk_feedback ~span_id ~route Incomplete
-      ]
-    end
-  | Inspect q ->
-    let _, env = Icoq.context_of_stm ~doc:(fst !doc) span_id in
-    let results = Code_info.symbols_for env q in
-    [SearchResults (route, results)]
+let doc = ref (Obj.magic 0)
 
 (** main interpreter *)
 let jscoq_execute =
-  let out_fn = post_answer in fun doc -> function
-  | Add(ontop,newid,stm,resolved) ->
-    if ontop = Jscoq_doc.tip !doc then begin
-      try
-        let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
-        let requires = if resolved then None else requires ast.CAst.v in
-        match requires with
-        | Some ((prefix, module_names)) ->
-          out_fn @@ Pending (newid, prefix, module_names)
-        | _ ->
-          let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
-          doc := ndoc; out_fn @@ Added (newid,loc)
-      with exn ->
-        let CoqExn { loc; pp; _ } as exn_info = coq_exn_info exn [@@warning "-8"] in
-        out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, pp));
-        out_fn @@ Cancelled [newid];
-        out_fn @@ exn_info
-    end
-    else out_fn @@ Cancelled [newid]
+  let out_fn = post_answer in function
 
-  | Cancel sid        ->
-    let can_st, ndoc = Jscoq_doc.cancel ~doc:!doc sid in
-    doc := ndoc; out_fn @@ Cancelled can_st
+  | Init opts ->
+    exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
-  | Exec sid          ->
-    let ndoc = Jscoq_doc.observe ~doc:!doc sid in
-    doc := ndoc
+  | NewDoc (opts, text) ->
+    let ndoc, _st, diags = create_doc opts text in
+    doc := ndoc;
+    out_fn @@ Ready ();
+    out_fn (Notification diags)
 
-  | Query (sid, rid, query) ->
-    exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
+  | Update contents ->
+    let ndoc = { !doc with contents } in
+    let ndoc, _state, diags = Icoq.check_doc ~doc:ndoc in
+    doc := ndoc;
+    out_fn (Notification diags)
 
   | Register file_path  ->
     !Callbacks.cb.register_cma ~file_path
@@ -224,32 +151,9 @@ let jscoq_execute =
     if Jslib.is_bytecode filename
     then !Callbacks.cb.register_cma ~file_path:filename
 
-  | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
-
-  | Ast sid ->
-    let ast = Stm.get_ast ~doc:(fst !doc) sid in
-    out_fn @@ Ast ast
-
-  | Init opts -> exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
-
-  | NewDoc opts ->
-    let ndoc, iid = create_doc opts in
-    doc := Jscoq_doc.create ndoc;
-    out_fn @@ Ready iid
-
   | LoadPkg(base, pkg)  ->
     !Callbacks.cb.load_pkg ~base_path:base ~pkg ~cb:process_lib_event
   | InfoPkg(base, pkgs) ->
     !Callbacks.cb.info_pkg ~base_path:base ~pkgs ~cb:process_lib_event
 
   | InterruptSetup shmem -> !Callbacks.cb.interrupt_setup shmem
-
-  | ReassureLoadPath load_path ->
-    doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
-    List.iter Loadpath.add_vo_path (mk_vo_path load_path)
-  | Load filename ->
-    doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
-    out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)
-  | Compile filename ->
-    let vo_out_fn = Icoq.compile_vo ~doc:(fst !doc) filename in
-    !Callbacks.cb.post_file "Compiled" filename (!Callbacks.cb.read_file vo_out_fn)

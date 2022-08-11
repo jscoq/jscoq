@@ -32,9 +32,5 @@ end
 
 (** Main execution point *)
 val jscoq_execute
-    : Jscoq_doc.ser_doc ref
-    -> Jscoq_proto.Proto.jscoq_cmd
-    -> unit
-
-(** utility *)
-val coq_exn_info : exn -> Jscoq_proto.Proto.jscoq_answer
+  : Jscoq_proto.Proto.jscoq_cmd
+  -> unit

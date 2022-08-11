@@ -39,6 +39,21 @@ type 'a ser_goals =
 
 module Proto = struct
 
+module Point = struct
+
+  type t = [%import: Lsp.Base.Point.t]
+  [@@deriving yojson]
+
+end
+
+module Range = struct
+  type t = [%import: Lsp.Base.Range.t]
+  [@@deriving yojson]
+end
+type diagnostic =
+  [%import: Lsp.Base.Diagnostic.t]
+  [@@deriving yojson]
+
 type coq_options = (string list * Goptions.option_value) list [@@deriving yojson]
 type lib_path = (string list * string list) list [@@deriving yojson]
 type debug_config =
@@ -55,29 +70,11 @@ type jscoq_options =
   }
   [@@deriving yojson]
 
-type top_mode =
-  [%import: Icoq.top_mode]
-  [@@deriving yojson]
-
 type doc_options =
   { top_name: string             [@default "JsCoq"]
   ; lib_init: string list        [@default ["Coq.Init.Prelude"]]
-  ; mode: top_mode               [@default Interactive]
   }
   [@@deriving yojson]
-
-type in_mode = Icoq.in_mode
-let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
-
-module Qualified_object_prefix = struct
-  type t = [%import: Code_info.Qualified_object_prefix.t]
-  [@@deriving yojson]
-end
-
-module Qualified_name = struct
-  type t = [%import: Code_info.Qualified_name.t]
-  [@@deriving yojson]
-end
 
 type search_query =
   [%import: Code_info.Query.t]
@@ -96,68 +93,24 @@ let opaque_of_yojson _x = Result.Error "opaque value"
 
 (* Main RPC calls *)
 type jscoq_cmd =
+  | Init    of jscoq_options
+  | NewDoc  of doc_options * string
+  | Update  of string
+
   | InfoPkg of string * string list
   | LoadPkg of string * string
-
-  | Init    of jscoq_options
-  | NewDoc  of doc_options
-
-  (*           ontop       new         sentence                *)
-  | Add     of Stateid.t * Stateid.t * string * bool
-  | Cancel  of Stateid.t
-  | Exec    of Stateid.t
-
-  | Query   of Stateid.t * Feedback.route_id * query
-  | Ast     of Stateid.t
 
   (*            filename content *)
   | Register of string
   | Put      of string * string
-
-  (* XXX: Not well founded... *)
-  | GetOpt  of string list
-
   | InterruptSetup of opaque
-
-  | ReassureLoadPath of lib_path
-  | Load    of string
-  | Compile of string
   [@@deriving yojson]
 
 type jscoq_answer =
   | CoqInfo   of string
-
-  | Ready     of Stateid.t
-
-  (* Merely Informative now *)
-  | Added     of Stateid.t * Loc.t option
-
-  (* Requires pkg(s)         prefix        module names    *)
-  | Pending   of Stateid.t * string list * string list list
-
-  (* Main feedback *)
-  | Cancelled of Stateid.t list
-
-  (* Query responses *)
-  | ModeInfo  of Stateid.t * in_mode
-  | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
-
-  | Ast       of Vernacexpr.vernac_control option
-  | CoqOpt    of string list * Goptions.option_value
+  | Ready     of unit
+  | Notification of diagnostic list
   | Log       of Feedback.level * Pp.t
-  | Feedback  of Feedback.feedback
-
-  | SearchResults of Feedback.route_id * Qualified_name.t Seq.t
-
-  | Loaded    of string * Stateid.t
-  | Compiled  of string
-
-  (* Low-level *)
-  | CoqExn    of { loc : Loc.t option
-                 ; sid : (Stateid.t * Stateid.t) option
-                 ; msg : string
-                 ; pp : Pp.t
-                 }
   | JsonExn   of string
   [@@deriving to_yojson]
 end

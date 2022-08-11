@@ -179,14 +179,15 @@ export class CoqWorker {
     /**
      * Send Init Command to Coq
      *
-     * @param {object} coq_opts
-     * @param {object} doc_opts
-     * @memberof CoqWorker
      */
-    init(coq_opts, doc_opts) {
+    init(coq_opts, doc_opts, text) {
         this.sendCommand(["Init", coq_opts]);
         if (doc_opts)
-            this.sendCommand(["NewDoc", doc_opts]);
+            this.sendCommand(["NewDoc", doc_opts, text]);
+    }
+
+    update(text) {
+        this.sendCommand(["Update", text]);
     }
 
     getInfo() {

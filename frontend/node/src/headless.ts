@@ -124,7 +124,7 @@ class HeadlessCoqManager {
                 lib_init: this.options.prelude ? ["Coq.Init.Prelude"] : []
             };
 
-        this.coq.init(init_opts, doc_opts);
+        this.coq.init(init_opts, doc_opts, " ");
     }
 
     getPackagePath(pkg: string) {

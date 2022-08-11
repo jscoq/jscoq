@@ -6,21 +6,16 @@ external emit : string -> unit = "wacoq_emit" (* implemented in `core.ts` *)
 
 let deserialize (json : string) =
   [%of_yojson: jscoq_cmd] @@ Yojson.Safe.from_string json
-  
+
 let serialize (answers : jscoq_answer list) =
   Yojson.Safe.to_string @@ `List (List.map [%to_yojson: jscoq_answer] answers)
-  
-let doc = ref (Obj.magic 0)
 
 let handleRequest json_str =
   let resp =
-    try
-      let cmd = deserialize json_str                     in
-      match cmd with
-        | Result.Error e -> [JsonExn e]
-        | Result.Ok cmd -> jscoq_execute doc cmd; []
-    with exn ->
-      [coq_exn_info exn]
+    let cmd = deserialize json_str                     in
+    match cmd with
+    | Result.Error e -> [JsonExn e]
+    | Result.Ok cmd -> jscoq_execute cmd; []
   in
   serialize resp
 
@@ -30,7 +25,6 @@ let handleRequestsFromStdin () =
       emit @@ handleRequest @@ Stdlib.read_line ()
     done
   with End_of_file -> ()
-
 
 let wasm_cb =
   Jscoq_interp.Callbacks.
@@ -46,7 +40,7 @@ let wasm_cb =
     ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> failwith "handled in JS")
     ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> failwith "handled in JS")
     }
-  
+
 let () =
   Jscoq_interp.Callbacks.set wasm_cb;
   try
