@@ -11,7 +11,7 @@ import { CmCoqProvider, Deprettify } from './cm-provider.js';
 export class ProviderContainer {
     options : any;
     snippets : CmCoqProvider[];
-    onChange : (cm, change ) => void;
+    onChangeAny : (cm, change ) => void;
     onInvalidate : (evt : any ) => void;
     onMouseEnter : (stm, evt : any ) => void;
     onMouseLeave : (stm, evt : any ) => void;
@@ -96,7 +96,7 @@ export class ProviderContainer {
                 cm.onTipOut   = (cm)            => { this.onTipOut(cm); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
-
+                cm.onChange = (cm, evt) => { this.onChangeAny(cm,evt); };
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
                     if (idx > 0) this.renumber(idx - 1);

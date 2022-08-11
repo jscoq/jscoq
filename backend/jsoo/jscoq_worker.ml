@@ -111,7 +111,8 @@ let setup_pseudo_fs () =
   Sys_js.unmount ~path:"/static";
   Sys_js.mount ~path:"/static/" (fun ~prefix:_ ~path -> Jslibmng.coq_vo_req path);
   (* '/lib' is the target for Put commands *)
-  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None)
+  Sys_js.mount ~path:"/lib/" (fun ~prefix:_ ~path:_ -> None);
+  Sys_js.create_file ~name:"/lib/findlib.conf" ~content:"path=\"/lib/ocaml\""
 
 let setup_std_printers () =
   Sys_js.set_channel_flusher stdout (fun msg -> post_answer (Log (Notice, Pp.str @@ "stdout: " ^ msg)));
@@ -120,28 +121,25 @@ let setup_std_printers () =
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
-let setup_top () =
-  (* Custom toplevel is used for bytecode-to-js dynlink  *)
-  let load_cma = fun cma -> Jslibmng.coq_cma_link ~file_path:cma in
-  let load_plugin pg =
-    match Mltop.PluginSpec.repr pg with
-    | None, _pkg -> ()             (* Findlib; not implemented *)
-    | Some cma, _ -> load_cma cma  (* Legacy loading method *)    in
+(* Custom toplevel is used for bytecode-to-js dynlink  *)
+let load_module = fun cma ->
+  Format.eprintf "load_cma: %s@\n%!" cma;
+  Jslibmng.coq_cma_link ~file_path:cma
 
-  let open Mltop in
-  set_top
-    { load_plugin = load_plugin
-    ; load_module = load_cma
-    (* We ignore all the other operations for now. *)
-    ; add_dir  = (fun _ -> ())
-    ; ml_loop  = (fun _ -> ());
-    };
+let load_plugin pg =
+  let legacy, pkg = Mltop.PluginSpec.repr pg in
+  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
+  match Mltop.PluginSpec.repr pg with
+  | None, _pkg -> ()             (* Findlib; not implemented *)
+  | Some cma, _ -> load_module cma  (* Legacy loading method *)
 
-  coq_vm_trap ()
-
+(* This is already taken care by the LSP layer *)
 let jscoq_protect f =
   try f ()
-  with | exn -> post_answer @@ Jscoq_interp.coq_exn_info exn
+  with
+  | exn ->
+    let exn = Exninfo.capture exn |> CErrors.iprint in
+    post_answer @@ (Log (Feedback.Error, Pp.(str "Exn happened, this should never happen: " ++ exn)))
 
 let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   let open Js.Unsafe in
@@ -156,7 +154,9 @@ let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   Js.Optdef.get o (fun () -> jscoq_cmd_of_yojson @@ obj_to_json cobj)
 
 (* Message from the main thread *)
-let on_msg doc msg =
+let event_queue = ref []
+
+let on_msg _doc msg =
 
   let log_cmd cmd =
     let str = match cmd with
@@ -167,9 +167,8 @@ let on_msg doc msg =
 
   match jscoq_cmd_of_obj msg with
   | Result.Ok cmd  ->
-    jscoq_protect (fun () ->
-        log_cmd cmd;
-        Jscoq_interp.jscoq_execute doc cmd)
+    log_cmd cmd;
+    event_queue := !event_queue @ [cmd]
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 
@@ -179,7 +178,8 @@ let write_file ~name ~content =
 
 let jsoo_cb =
   Jscoq_interp.Callbacks.
-    { pre_init = setup_top
+    { load_module
+    ; load_plugin
     ; post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
     ; post_file = post_file
     ; interrupt_setup = interrupt_setup
@@ -198,6 +198,32 @@ let setup_interp () =
   Jscoq_interp.Callbacks.set jsoo_cb;
   ()
 
+let setTimeout cb d = Dom_html.setTimeout cb d
+
+(* The way we do interrupt this doesn't take effect. *)
+let rec filter_queue (cmd, rest) queue =
+  match queue with
+  | [] -> cmd, rest
+  | (Jscoq_proto.Proto.Update _ as cmd') :: rest' ->
+    (* XXX: Cancel the events in rest that we have discarded *)
+    Format.eprintf "discarding %d events@\n%!" (List.length rest + 1);
+    filter_queue (cmd', []) rest'
+  | cmd' :: rest' ->
+    filter_queue (cmd, rest @ [cmd']) rest'
+
+let rec process_queue () =
+  match !event_queue with
+  | [] ->
+    ignore(setTimeout process_queue 0.1)
+  | cmd :: rest ->
+    Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);
+    let cmd, rest = filter_queue (cmd, []) rest in
+    event_queue := rest;
+    jscoq_protect (fun () ->
+        Jscoq_interp.jscoq_execute cmd);
+    (* Give a chance to receive pending messages *)
+    ignore(setTimeout process_queue 0.1)
+
 (* This code is executed on Worker initialization *)
 let _ =
 
@@ -208,6 +234,7 @@ let _ =
   setup_std_printers ();
 
   setup_interp ();
+  coq_vm_trap ();
 
   let doc = ref (Obj.magic 0) in
   let on_msg = on_msg doc  in
@@ -215,6 +242,10 @@ let _ =
   if is_worker then
     Worker.set_onmessage on_msg
   else
-    Js.export "jsCoq" jsCoq;
-    jsCoq##.postMessage := Js.wrap_callback on_msg ;
-    jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
+    begin
+      Js.export "jsCoq" jsCoq;
+      jsCoq##.postMessage := Js.wrap_callback on_msg ;
+      jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
+    end;
+  ignore(setTimeout process_queue 0.1);
+  ()

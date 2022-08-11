@@ -89,6 +89,9 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
+jscoq-static: force
+	$(DUNE) build @jscoq-static $(DUNE_FLAGS)
+
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 

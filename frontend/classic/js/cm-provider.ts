@@ -185,7 +185,7 @@ export class CmCoqProvider {
         this.onAction = (action) => {};
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
-
+        this.editor.on('change', (cm, evt) => this.onChange(cm, evt));
         this.editor.on('cursorActivity', (/** @type {{ operation: (arg0: () => void) => any; }} */ cm) => 
             cm.operation(() => this._adjustWidgetsInSelection()));
 

@@ -1,14 +1,56 @@
+/* jsCoq
+ *
+ * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
+ * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
+ */
+
 export type backend = 'js' | 'wa';
 
-import { Future, PromiseFeedbackRoute } from './future';
+// Needs to be in sync with jscoq_proto.ml, maybe some day automatically
+export interface Point {
+    line : number,
+    character : number,
+    offset : number
+}
 
+export interface Range {
+    start: Point
+    end: Point
+}
+
+export interface Diagnostic {
+    range: Range
+    severity: number
+    message: string
+    extra?: any[]
+}
+
+export interface CoqInitOptions {
+  implicit_libs?: boolean,
+  coq_options?: [string[], any[]][],
+  debug?: boolean,
+  lib_path?: [string[], string[]][],
+  lib_init?: string[]
+}
+
+export interface DocumentParams {
+  uri: string,
+  version: number,
+  raw: string
+}
+
+export interface info {
+    evar: number
+    name?: any // Id.t option
+}
 type Block_type = 
     ['Pp_hbox']
   | ['Pp_vbox', number]
   | ['Pp_hvbox', number]
   | ['Pp_hovbox', number];
 
-  export type Pp =
+export type Pp =
     ['Pp_empty']
   | ['Pp_string', string]
   | ['Pp_glue', Pp[]]
@@ -17,6 +59,28 @@ type Block_type =
   | ['Pp_print_break', number, number]
   | ['Pp_force_newline']
   | ['Pp_comment', string[]];
+
+export interface Hyp {
+    names : string[],
+    def?: Pp,
+    ty: Pp
+}
+
+export interface Goal {
+    info: info
+    ty: Pp
+    hyps: Hyp[]
+}
+
+export interface Goals {
+    goals: Goal[]
+    stack: [Goal[],Goal[]][]
+    bullet?: Pp
+    shelf: Goal[]
+    given_up: Goal[]
+}
+
+import { Future, PromiseFeedbackRoute } from './future';
 
 /**
  * Main Coq Worker Class
@@ -179,14 +243,17 @@ export class CoqWorker {
     /**
      * Send Init Command to Coq
      *
-     * @param {object} coq_opts
-     * @param {object} doc_opts
-     * @memberof CoqWorker
      */
-    init(coq_opts, doc_opts) {
-        this.sendCommand(["Init", coq_opts]);
-        if (doc_opts)
-            this.sendCommand(["NewDoc", doc_opts]);
+    init(opts : CoqInitOptions) {
+        this.sendCommand(["Init", opts]);
+    }
+    
+    newDoc(docp : DocumentParams) {
+        this.sendCommand(["NewDoc", docp])
+    }
+    
+    update(docp : DocumentParams) {
+        this.sendCommand(["Update", docp]);
     }
 
     getInfo() {

@@ -4,14 +4,13 @@
 // CodeMirror implementation
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
-import { ICoqEditor } from './coq-editor';
 import { CoqManager } from './coq-manager';
 
 interface CM5Options {
     mode?: { "company-coq": boolean }
 }
 
-export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
+export class CoqCodeMirror5 extends ProviderContainer {
     manager : CoqManager;
 
     constructor(eIds: (string|HTMLElement)[], options : any, manager : CoqManager) {
@@ -36,7 +35,7 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
     // To be overriden by the manager
     getValue() {
-        return this.snippets.map(part => part.getValue()).join('\n');
+        return this.snippets.map(part => part.editor.getValue()).join('\n');
     }
 
     clearMarks() {
@@ -62,6 +61,8 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         // Adjust the mark for the line offset
         diag.range.start.line -= ln;
         diag.range.end.line -= ln;
-        in_part.mark(diag);
+        let start = { line: diag.range.start.line, ch: diag.range.start.character };
+        let end = { line: diag.range.end.line, ch: diag.range.end.character };
+        in_part.mark( { start, end }, "error");
     }
 }

@@ -13,6 +13,9 @@
 
 /**
   * @typedef { import("../../../backend").Goals } Goals
+  * @typedef { import("../../../backend").Diagnostic } Diagnostic
+  * @typedef { import("../../../backend").DocumentParams } DocumentParams
+  * @typedef { import("../../../backend").CoqInitOptions } CoqInitOptions
   */
 
 // Backend imports
@@ -26,7 +29,7 @@ import { FormatPrettyPrint } from '../../format-pprint/js';
 // Common imports
 import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
 
-// UI imports
+// UI Frontend imports
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider';
@@ -34,8 +37,14 @@ import { ProviderContainer } from './cm-provider-container';
 import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
+import { CoqCodeMirror5 } from './coq-editor-cm5';
+
+
 /**
- * Coq Document Manager, client-side
+ * Coq Document Manager, client-side.
+ *
+ * CoqManager coordinates the coq code objects, the panel, and the coq
+ * js object.
  *
  * CoqManager coordinates the coq code objects, the panel, and the Coq
  * worker.
@@ -83,6 +92,8 @@ export class CoqManager {
             // 'plugin-utils', 'extlib', 'mirrorcore']
         };
 
+        this.uri = "file:///src/browser.mv";
+        this.version = 0;
         this.options = copyOptions(options, this.options);
 
         if (Array.isArray(this.options.all_pkgs)) {
@@ -90,7 +101,11 @@ export class CoqManager {
         }
 
         // Setup the Coq statement provider.
-        this.provider = this._setupProvider(elems);
+        this.editor = new CoqCodeMirror5(elems, this.options, this);
+        this.editor.onChange = raw => {
+            this.version++;
+            this.coq.update( { uri: this.uri, version: this.version, raw });
+        };
 
         /** @type {PackageManager} */
         this.packages = null;
@@ -160,6 +175,48 @@ export class CoqManager {
         if (this.options.show)
             requestAnimationFrame(() => this.layout.show());
     }
+
+    _setupEditor(elems) {
+
+        var provider = new ProviderContainer(elems, this.options);
+
+        provider.onInvalidate = stm => {
+            this.clearErrors();
+            if (stm.coq_sid) {
+                this.coq.cancel(stm.coq_sid);
+            }
+        };
+
+        provider.onMouseEnter = (stm, ev) => {
+            if (stm.coq_sid && ev.ctrlKey) {
+                if (this.doc.goals[stm.coq_sid] !== undefined)
+                    this.updateGoals(this.doc.goals[stm.coq_sid]);
+                else
+                    this.coq.goals(stm.coq_sid);  // XXX: async
+            }
+            else {
+                this.updateGoals(this.doc.goals[this.lastAdded().coq_sid]);
+            }
+        };
+
+        provider.onMouseLeave = (stm, ev) => {
+            this.updateGoals(this.doc.goals[this.lastAdded().coq_sid]);
+        };
+
+        provider.onTipHover = (entries, zoom) => {
+            var fullnames = new Set(entries.filter(e => e.kind === 'lemma')
+                .map(entry => [...entry.prefix, entry.label].join('.')));
+            if (fullnames.size > 0) {
+                this.contextual_info.showChecks([...fullnames], /*opaque=*/true);
+            }
+        };
+        provider.onTipOut = () => { if (this.contextual_info) this.contextual_info.hide(); };
+
+        provider.onAction = (action) => this.editorActionHandler(action);
+
+        return provider;
+    }
+
 
     // Provider setup
     _setupProvider(elems) {
@@ -330,7 +387,7 @@ export class CoqManager {
             this.coq.load_progress = (pc, ev) =>
                 this.layout.splash(`Loading worker... ${progressFmt(pc, ev)}`, undefined, 'wait');
 
-            this.provider.wait_for = this.when_ready;
+            // this.provider.wait_for = this.when_ready;
 
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
@@ -410,6 +467,10 @@ export class CoqManager {
         this.doc.fresh_id = sid + 1;
         this.enable();
         this.when_ready.resolve();
+
+        // Create the first document
+        let dp = { uri: this.uri, version: this.version, raw: this.editor.getValue() };
+        this.coq.newDoc(dp)
     }
 
     /**
@@ -485,6 +546,20 @@ export class CoqManager {
     }
 
     // Coq Message processing.
+    coqNotification(diags, version) {
+        this.editor.clearMarks();
+
+        if (this.version > version) {
+            console.log("Discarding obsolete diagnostics :/ :/");
+            return;
+        }
+        for (let d of diags) {
+            if (d.severity < 4) {
+                this.editor.markDiagnostic(d);
+            }
+        }
+    }
+
     /**
      * @param {number} nsid
      * @param {any} loc
@@ -663,23 +738,22 @@ export class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
+        /**
+         * @type { CoqInitOptions } init_opts
+         */
         let init_opts = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: {coq: true, stm: true},
-                lib_path: this.getLoadPath()
-            },
-            doc_opts = {
+                debug: true,
+                lib_path: this.getLoadPath(),
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
 
         for (let pkg of this.options.init_import || []) {
-            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
+            init_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
         }
 
-        this.coq.init(init_opts, doc_opts);
-        // Almost done!
-        // Now we just wait for the `Ready` event.
+        this.coq.init(init_opts);
     }
 
     /**

@@ -16,9 +16,9 @@
      %{dep:dist-cli}/cli.cjs
      %{dep:etc/pkg-metadata/coq-pkgs.json}
      --rootdir %{env:COQBUILDDIR_REL=????}
-     --nostdlib)
+     --nostdlib))))
    ; building symbols using Make because Dune has no pattern rules T.T
-   (run make libs-symb))))
+   ; (run make libs-symb))))
 
 (rule
  (targets (dir node_modules))
@@ -28,6 +28,17 @@
    package-lock.json)
  (action
   (run npm install --no-progress --no-save)))
+
+(alias
+ (name jscoq-static)
+ (deps
+   (source_tree ui-js)
+   (source_tree ui-css)
+   (source_tree ui-images)
+   (source_tree ui-external)
+   (source_tree examples)
+  index.html
+  jscoq.install))
 
 (alias
  (name jscoq)
