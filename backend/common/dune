@@ -6,7 +6,8 @@
  (libraries
    yojson ppx_deriving_yojson.runtime
    coq-core.stm coq-core.toplevel
-   coq-serapi.serlib coq-serapi.serapi_v8_14))
+   coq-serapi.serlib coq-serapi.serapi_v8_14
+   coq-lsp.controller))
 
 (rule
  (target jscoq_version.ml)
