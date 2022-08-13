@@ -1,5 +1,6 @@
+"use strict";
 
-class SettingsPanel {
+export class SettingsPanel {
     html() {
         return `
         <div class="settings-panel" tabindex="0">
