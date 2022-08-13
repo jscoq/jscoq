@@ -10,6 +10,8 @@
 
 "use strict";
 
+import { CoqManager } from './coq-manager.js';
+
 var loadJsCoq, JsCoqLoader;
 
 (function() {
@@ -79,8 +81,7 @@ var loadJsCoq, JsCoqLoader;
                      base_path + 'ui-js/format-pprint',
                      base_path + 'ui-js/settings',
                      base_path + 'ui-js/coq-packages',
-                     base_path + 'ui-js/coq-layout-classic',
-                     base_path + 'ui-js/coq-manager']
+                     base_path + 'ui-js/coq-layout-classic']
         };
 
         for (let fn of files.css) loadCss(fn)
@@ -141,6 +142,7 @@ var loadJsCoq, JsCoqLoader;
             JsCoq = this._config(opts);
             JsCoq.is_npm = is_npm;
             return new CoqManager(jscoq_ids, jscoq_opts)
+
         }
     };
 
