@@ -125,47 +125,10 @@ let requires ast =
   | _ -> None
   [@@warning "-4"]
 
-(* -- Used by Query command --*)
-
-(* (Goals) *)
-
+(** Goal printing *)
 let pp_of_goals =
   let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
   Serapi.Serapi_goals.get_goals_gen ppx
-
-(* (Inspect) *)
-
-let string_contains s1 s2 =  (* from Rosetta Code *)
-  let len1 = String.length s1
-  and len2 = String.length s2 in
-  if len1 < len2 then false else
-    let rec aux i =
-      (i >= 0) && ((String.sub s1 i len2 = s2) || aux (pred i))
-    in
-    aux (len1 - len2)
-
-let rec seq_append s1 s2 =  (* use batteries?? *)
-  match s1 () with
-  | Seq.Nil -> s2
-  | Seq.Cons (x, xs) -> fun () -> Seq.Cons (x, seq_append xs s2)
-
-let is_within qn prefix =
-  let {Icoq.prefix = {dp}} = qn in
-  Libnames.is_dirpath_prefix_of prefix dp
-
-let symbols_for (q : search_query) env =
-    match q with
-    | Locals       -> Icoq.inspect_locals  ~env ()
-    | CurrentFile  -> seq_append (Icoq.inspect_library ~env ())
-                                 (Icoq.inspect_locals  ~env ())
-    | _            -> Icoq.inspect_globals ~env ()
-    [@@warning "-4"]
-
-let filter_by (q : search_query) =
-  match q with
-  | All | CurrentFile | Locals -> (fun _ -> true)
-  | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
-  | Keyword s -> (fun nm -> string_contains (Icoq.string_of_qualified_name nm) s)
 
 (** main Query handler *)
 let exec_query doc ~span_id ~route query =
@@ -191,31 +154,31 @@ let exec_query doc ~span_id ~route query =
     end
   | Inspect q ->
     let _, env = Icoq.context_of_stm ~doc:(fst !doc) span_id in
-    let symbols = symbols_for q env in
-    let results = Seq.filter (filter_by q) symbols in
+    let symbols = Code_info.symbols_for env q in
+    let results = Seq.filter (Code_info.filter_by q) symbols in
     [SearchResults (route, results)]
 
 (** main interpreter *)
 let jscoq_execute =
   let out_fn = post_answer in fun doc -> function
   | Add(ontop,newid,stm,resolved) ->
-      if ontop = Jscoq_doc.tip !doc then begin
-        try
-          let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
-          let requires = if resolved then None else requires ast.CAst.v in
-          match requires with
-          | Some ((prefix, module_names)) ->
-            out_fn @@ Pending (newid, prefix, module_names)
-          | _ ->
-            let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
-            doc := ndoc; out_fn @@ Added (newid,loc)
-        with exn ->
-          let CoqExn { loc; pp; _ } as exn_info = coq_exn_info exn [@@warning "-8"] in
-          out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, pp));
-          out_fn @@ Cancelled [newid];
-          out_fn @@ exn_info
-      end
-      else out_fn @@ Cancelled [newid]
+    if ontop = Jscoq_doc.tip !doc then begin
+      try
+        let ast = Jscoq_doc.parse ~doc:!doc ~ontop stm in
+        let requires = if resolved then None else requires ast.CAst.v in
+        match requires with
+        | Some ((prefix, module_names)) ->
+          out_fn @@ Pending (newid, prefix, module_names)
+        | _ ->
+          let loc,_tip_info,ndoc = Jscoq_doc.add ~doc:!doc ~ontop ~newid stm in
+          doc := ndoc; out_fn @@ Added (newid,loc)
+      with exn ->
+        let CoqExn { loc; pp; _ } as exn_info = coq_exn_info exn [@@warning "-8"] in
+        out_fn @@ mk_feedback ~span_id:newid (Message(Error, loc, pp));
+        out_fn @@ Cancelled [newid];
+        out_fn @@ exn_info
+    end
+    else out_fn @@ Cancelled [newid]
 
   | Cancel sid        ->
     let can_st, ndoc = Jscoq_doc.cancel ~doc:!doc sid in
@@ -231,12 +194,13 @@ let jscoq_execute =
   | Register file_path  ->
     Jslibmng.register_cma ~file_path
 
-  | Put (filename, content) -> begin
+  | Put (filename, content) ->
+    begin
       try         Sys_js.create_file ~name:filename ~content
       with _e ->  Sys_js.update_file ~name:filename ~content
     end;
-    if Jslibmng.is_bytecode filename then
-      Jslibmng.register_cma ~file_path:filename
+    if Jslibmng.is_bytecode filename
+    then Jslibmng.register_cma ~file_path:filename
 
   | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
 

@@ -69,19 +69,18 @@ type doc_options =
 type in_mode = Icoq.in_mode
 let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
 
-type qualified_object_prefix =
-  [%import: Icoq.qualified_object_prefix]
+module Qualified_object_prefix = struct
+  type t = [%import: Code_info.Qualified_object_prefix.t]
   [@@deriving yojson]
-type qualified_name =
-  [%import: Icoq.qualified_name]
+end
+
+module Qualified_name = struct
+  type t = [%import: Code_info.Qualified_name.t]
   [@@deriving yojson]
+end
 
 type search_query =
-  | All
-  | CurrentFile
-  | ModulePrefix of Serlib.Ser_names.DirPath.t
-  | Keyword of string
-  | Locals
+  [%import: Code_info.Query.t]
   [@@deriving yojson]
 
 type query =
@@ -148,7 +147,7 @@ type jscoq_answer =
   | Log       of Feedback.level * Pp.t
   | Feedback  of Feedback.feedback
 
-  | SearchResults of Feedback.route_id * qualified_name Seq.t
+  | SearchResults of Feedback.route_id * Qualified_name.t Seq.t
 
   | Loaded    of string * Stateid.t
   | Compiled  of string
