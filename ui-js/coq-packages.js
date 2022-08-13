@@ -1,6 +1,6 @@
 "use strict";
 
-class PackageManager {
+export class PackageManager {
 
     /**
      * Creates the packages UI and loading manager.

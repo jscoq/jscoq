@@ -7,6 +7,7 @@
 // require them to be able to list parts and implement marks.
 //
 
+import { PackageManager } from './coq-packages.js';
 import { CmCoqProvider } from './cm-provider.js';
 
 "use strict";

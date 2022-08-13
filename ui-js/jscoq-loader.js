@@ -79,7 +79,6 @@ var loadJsCoq, JsCoqLoader;
                      base_path + 'ui-js/addon/company-coq',
                      base_path + 'ui-js/format-pprint',
                      base_path + 'ui-js/settings',
-                     base_path + 'ui-js/coq-packages',
                      base_path + 'ui-js/coq-layout-classic']
         };
 
