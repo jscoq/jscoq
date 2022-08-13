@@ -10,6 +10,7 @@
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider.js';
+import { FormatPrettyPrint } from './format-pprint.js';
 
 "use strict";
 
