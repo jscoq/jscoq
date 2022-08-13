@@ -1,3 +1,5 @@
+// import { CodeMirror } from '../node_modules/codemirror/src/edit/main.js';
+
 "use strict";
 
 class CmSentence {
@@ -17,7 +19,7 @@ class CmSentence {
 }
 
 // A CodeMirror-based Provider of coq statements.
-class CmCoqProvider {
+export class CmCoqProvider {
 
     constructor(element, options, replace) {
 

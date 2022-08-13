@@ -77,7 +77,6 @@ var loadJsCoq, JsCoqLoader;
                      base_path + 'ui-js/jscoq',
                      base_path + 'ui-js/mode/coq-mode',
                      base_path + 'ui-js/addon/company-coq',
-                     base_path + 'ui-js/cm-provider',
                      base_path + 'ui-js/format-pprint',
                      base_path + 'ui-js/settings',
                      base_path + 'ui-js/coq-packages',

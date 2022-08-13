@@ -7,7 +7,8 @@
 // require them to be able to list parts and implement marks.
 //
 
-// XXX: use RequireJS or something like that.
+import { CmCoqProvider } from './cm-provider.js';
+
 "use strict";
 
 // Extra stuff:
