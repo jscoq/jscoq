@@ -10,13 +10,10 @@
 
 "use strict";
 
-var loadJsCoq, JsCoq;
+var loadJsCoq, JsCoqLoader;
 
 (function() {
 
-    if (typeof module !== 'undefined')
-        module = undefined;  /* for Electron */
-    
     var loadCss = function(fn) {
         var link   = document.createElement("link");
         link.href  = fn + '.css';
@@ -34,9 +31,8 @@ var loadJsCoq, JsCoq;
             document.head.appendChild(script);
         });
     };
-    
-    var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
-        document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined;
+
+    var scriptDir = import.meta.url.replace(/[^/]*$/, '');
 
     // In order for jsCoq to work we need to load:
     // - Codemirror CSS [core + themes]
@@ -47,15 +43,13 @@ var loadJsCoq, JsCoq;
     // - localForage
     // - jsCoq = cm-provider + coq-packages + coq-manager
 
-    loadJsCoq = async function(base_path, node_modules_path) {
+    loadJsCoq = async function(base_path, node_modules_path, is_npm) {
 
-        base_path = (base_path || JsCoq.base_path).replace(/([^/])$/, '$1/');
-        JsCoq.base_path = base_path;
+        base_path = base_path.replace(/([^/])$/, '$1/');
 
         node_modules_path = (node_modules_path ||
-                             base_path + (JsCoq.is_npm ? "../" : "node_modules/"))
+                             base_path + (is_npm ? "../" : "node_modules/"))
                             .replace(/([^/])$/, '$1/')
-        JsCoq.node_modules_path = node_modules_path;
 
         var files = {
             'css':  [node_modules_path + 'codemirror/lib/codemirror',
@@ -89,68 +83,70 @@ var loadJsCoq, JsCoq;
                      base_path + 'ui-js/coq-manager']
         };
 
-        for (let fn of files.css)  loadCss(fn)
-        for (let fn of files.js)   await loadJs(fn);
+        for (let fn of files.css) loadCss(fn)
+        for (let fn of files.js) await loadJs(fn);
     };
 
-    JsCoq = {
-        backend: 'js',  /* 'js' or 'wa' */
+    JsCoqLoader = {
 
-        base_path: scriptDir ? `${scriptDir}../` : "./",
-        node_modules_path: '',
         loaded: undefined,
 
-        is_npm: false,  /* indicates that jsCoq was installed via `npm install` */
-
-        load(...args) {
-            let opts = this._getopt(...args),
-                {base_path, node_modules_path} = opts;
-            return this._load(base_path, node_modules_path).then(() => opts);
-        },
-
-        _load(base_path, node_modules_path) {
+        _load(base_path, node_modules_path, is_npm) {
             return this.loaded ||
-                (this.loaded = loadJsCoq(base_path, node_modules_path));
-        },
-
-        async start(...args) {
-            let opts = this._getopt(...args),
-                {base_path, node_modules_path, jscoq_ids, jscoq_opts} = opts;
-            await this._load(base_path, node_modules_path);
-            return new CoqManager(jscoq_ids, jscoq_opts)
+                (this.loaded = loadJsCoq(base_path, node_modules_path, is_npm));
         },
 
         _getopt(...args) {
             var base_path = undefined, node_modules_path = undefined,
                 jscoq_ids = ['ide-wrapper'], jscoq_opts = {};
-            
+
+            // (maybe) set base path
             if (typeof args[0] === 'string') base_path = args.shift();
+            base_path = base_path || jscoq_opts.base_path || scriptDir ? `${scriptDir}../` : "./";
+
+            // (maybe) set node path
             if (typeof args[0] === 'string') node_modules_path = args.shift();
+
+            // ids and options
             if (Array.isArray(args[0])) jscoq_ids = args.shift();
             if (args[0]) jscoq_opts = args.shift();
 
-            if (args.length > 0) console.warn('too many arguments to JsCoq.start()');
+            if (args.length > 0) console.warn('too many arguments to JsCoqLoader.start()');
 
-            // Umm.
-            base_path = base_path || jscoq_opts.base_path || JsCoq.base_path;
-            jscoq_opts.base_path = jscoq_opts.base_path || base_path;
-            JsCoq.backend = jscoq_opts.backend || JsCoq.backend;
+            var backend = jscoq_opts.backend || 'js';
 
-            return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
+            return {base_path, node_modules_path, jscoq_ids, jscoq_opts, backend}
         },
 
-        globalConfig(v) {
-            const defaults = {features: []},
-                  ls = localStorage['jscoq:config'];
-            try { var cfg = ls && JSON.parse(ls); }
-            catch (e) { console.warn('(in local config)', ls, e); }
-            if (v)
-                localStorage['jscoq:config'] = JSON.stringify({...cfg, ...v})
-            else return {...defaults, ...cfg};
+        _config(opts) {
+            opts.globalConfig = function(v) {
+                    const defaults = {features: []},
+                          ls = localStorage['jscoq:config'];
+                    try { var cfg = ls && JSON.parse(ls); }
+                    catch (e) { console.warn('(in local config)', ls, e); }
+                    if (v)
+                        localStorage['jscoq:config'] = JSON.stringify({...cfg, ...v})
+                    else return {...defaults, ...cfg};
+            };
+
+            return opts;
+        },
+
+        async start(...args) {
+
+            var is_npm = false;
+            let opts = this._getopt(...args),
+                {base_path, node_modules_path, jscoq_ids, jscoq_opts, backend} = opts;
+            await this._load(base_path, node_modules_path, is_npm);
+            JsCoq = this._config(opts);
+            JsCoq.is_npm = is_npm;
+            return new CoqManager(jscoq_ids, jscoq_opts)
         }
     };
 
 })();
+
+export { JsCoqLoader };
 
 // Local Variables:
 // js-indent-level: 4

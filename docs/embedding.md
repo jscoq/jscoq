@@ -73,7 +73,7 @@ function jsCoqLoad() {
         }
     }
 
-    JsCoq.start(jscoq_opts.base_path, './node_modules', jscoq_ids, jscoq_opts)
+    JsCoqLoader.start(jscoq_opts.base_path, './node_modules', jscoq_ids, jscoq_opts)
         .then(coq => {
             window.coq = coq;
             window.addEventListener('beforeunload', () => { localStorage.jsCoqShow = coq.layout.isVisible(); });
@@ -122,8 +122,9 @@ add jsCoq to webpage with Coq code is:
 
 ```javascript
   <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    JsCoq.start($path, $list_of_ids, {$options});
+  <script type="module">
+    import { JsCoqLoader } from './ui-js/jscoq-loader.js';
+    JsCoqLoader.start($path, $list_of_ids, {$options});
   </script>
 ```
 

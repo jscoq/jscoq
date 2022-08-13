@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
     <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
     <link rel="stylesheet" type="text/css" href="ui-css/kbd.css">
-    <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
+    <script src="ui-js/jscoq-loader.js" type="module"></script>
   </head>
 
 <body class="jscoq-main">
@@ -246,7 +246,10 @@ Qed.</textarea>
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script type="text/javascript">
+  <script type="module">
+
+    import { JsCoqLoader } from './ui-js/jscoq-loader.js';
+
     if (!localStorage['scratchpad.last_filename'])
       setTimeout(() => document.body.classList.add('welcome'), 1500);
 
@@ -265,7 +268,7 @@ Qed.</textarea>
     /* Global reference */
     var coq;
 
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+    JsCoqLoader.start(jscoq_ids, jscoq_opts).then(res => {
       coq = res;
       coq.loadSymbolsFrom('./examples/examples.symb.json');
     });

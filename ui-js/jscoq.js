@@ -1,5 +1,7 @@
 "use strict";
 
+var JsCoq;
+
 class CoqWorker {
 
     constructor(scriptPath, worker) {
