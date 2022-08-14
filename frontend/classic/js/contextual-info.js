@@ -107,48 +107,6 @@ export class CoqContextualInfo {
         this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
     }
 
-    async showQuery(command, title) {
-        this.is_visible = true;
-        var msg = await this._query(command, title);
-        if (msg && this.is_visible)
-            this.show(msg.pp);
-    }
-
-    async showQueries(queryArgs /* [command, title][] */) {
-        this.is_visible = true;
-        var msgs = (await Promise.all(queryArgs.map(
-            ([command, title]) => this._query(command, title))))
-            .filter(x => x);
-
-        // If there are more than 2 n/a, summarize them (to prevent a long useless list)
-        var na = msgs.filter(x => x.status === 'na');
-        if (msgs.some(x => x.status === 'ok') && na.length > 2) {
-            msgs = msgs.filter(x => x.status !== 'na')
-                .concat([{
-                    pp: this.formatText('...', `(+ ${na.length} unavailable symbols)`),
-                    status: 'na'
-                }]);
-        }
-        // sort messages by tag length (shortest match first)
-        // penalize n/a results so that they appear last
-        msgs = this._sortBy(msgs,
-                            x => (x.pp.attr('tag') || '').length +
-                                 (x.status === 'na' ? 1000 : 0));
-        if (msgs.length > 0 && this.is_visible)
-            this.show(msgs.map(({pp}) => pp));
-    }
-
-    async _query(command, title) {
-        try {
-            var result = await this.coq.queryPromise(0, ['Vernac', command]);
-            return {pp: this.formatMessages(result), status: 'ok'}
-        }
-        catch (err) {
-            if (title)
-                return {pp: this.formatText(title, "(not available)"), status: 'na'};
-        }
-    }
-
     show(html) {
         this.content.html(html);
         this.el.show();

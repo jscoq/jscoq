@@ -91,8 +91,6 @@ export class CoqWorker {
         this.config.path = scriptPath || this.config.path;
 
         this.observers = [this];
-        this.routes = new Map([[0,this.observers]]);
-        this.sids = [, new Future()];
 
         this.load_progress = (ratio, ev) => {};
 
@@ -190,83 +188,6 @@ export class CoqWorker {
         this.sendCommand(["Update", text]);
     }
 
-    getInfo() {
-        this.sendCommand(["GetInfo"]);
-    }
-
-    /**
-     * @param {any} ontop_sid
-     * @param {string | number} new_sid
-     * @param {any} stm_text
-     * @param {boolean} resolve
-     */
-    add(ontop_sid, new_sid, stm_text, resolve = false) {
-        this.sids[new_sid] = new Future();
-        this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve]);
-    }
-
-    /**
-     * @param {any} ontop_sid
-     * @param {any} new_sid
-     * @param {any} stm_text
-     */
-    resolve(ontop_sid, new_sid, stm_text) {
-        this.add(ontop_sid, new_sid, stm_text, true);
-    }
-
-    /**
-     * @param {any} sid
-     */
-    exec(sid) {
-        this.sendCommand(["Exec", sid]);
-    }
-
-    /**
-     * @param {number} sid
-     */
-    cancel(sid) {
-        for (let i in this.sids)
-            if (+i >= sid && this.sids[i]) { this.sids[i]?.reject(); delete this.sids[i]; }
-        this.sendCommand(["Cancel", sid]);
-    }
-
-    /**
-     * @param {any} sid
-     */
-    goals(sid) {
-        this.sendCommand(["Query", sid, 0, ["Goals"]]);
-    }
-
-    /**
-     * @param {number} sid
-     * @param {any} rid
-     * @param {any[]} query
-     */
-    query(sid, rid, query) {
-        if (typeof query == 'undefined') { query = rid; rid = undefined; }
-        if (typeof rid == 'undefined')
-            rid = this._gen_rid = (this._gen_rid || 0) + 1;
-        this.sendCommand(["Query", sid, rid, query]);
-        return rid;
-    }
-
-    inspect(sid, rid, search_query) {
-        if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
-        return this.query(sid, rid, ['Inspect', search_query])
-    }
-
-    /**
-     * @param {string | string[]} option_name
-     */
-    getOpt(option_name) {
-        if (typeof option_name === 'string')
-            option_name = option_name.split(/\s+/);
-        this.sendCommand(["GetOpt", option_name]);
-    }
-
-    /**
-     * @param {{base_path: string, pkg: string} | string} url
-     */
     loadPkg(url) {
         switch (this.config.backend) {
         case 'js':
@@ -358,7 +279,6 @@ export class CoqWorker {
     }
 
     async restart() {
-        this.sids = [, new Future()];
 
         this.end();  // kill!
 
@@ -371,51 +291,6 @@ export class CoqWorker {
             this.worker.terminate();
             this.worker = undefined;
         }
-    }
-
-    // Promise-based APIs
-
-    /**
-     * @param {string | number} sid
-     */
-    execPromise(sid) {
-        this.exec(sid);
-
-        if (!this.sids[sid]) {
-            console.warn(`exec'd sid=${sid} that was not added (or was cancelled)`);
-            this.sids[sid] = new Future();
-        }
-        return this.sids[sid].promise;
-    }
-
-    /**
-     * @param {any} sid
-     * @param {any} rid
-     * @param {any} query
-     */
-    queryPromise(sid, rid, query) {
-        return this._wrapWithPromise(
-            rid = this.query(sid, rid, query));
-    }
-
-    /**
-     * @param {any} sid
-     * @param {any} rid
-     * @param {any} search_query
-     */
-    inspectPromise(sid, rid, search_query?) {
-        return this._wrapWithPromise(
-            this.inspect(sid, rid, search_query));
-    }
-
-    /**
-     * @param {string | number} rid
-     */
-    _wrapWithPromise(rid) {
-        let pfr = new PromiseFeedbackRoute();
-        this.routes.set(rid, [pfr]);
-        pfr.atexit = () => { this.routes.delete(rid); };
-        return pfr.promise;
     }
 
     join(child) {
@@ -459,64 +334,6 @@ export class CoqWorker {
     coqBoot() {
         if (this._boot)
             this._boot.resolve(null);
-    }
-
-    /**
-     * @param {{ contents: string | any[]; route: number; span_id: any; }} fb_msg
-     * @param {any} in_mode
-     */
-    coqFeedback(fb_msg, in_mode) {
-
-        var feed_tag = fb_msg.contents[0];
-        var feed_route = fb_msg.route || 0;
-        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1), in_mode];
-        var handled = false;
-
-        if(this.config.debug)
-            console.log('Coq Feedback message', fb_msg.span_id, fb_msg.contents);
-
-        // We call the corresponding method feed$feed_tag(sid, msg[1]..msg[n])
-        const routes = this.routes.get(feed_route) || [];
-        for (let o of routes) {
-            let handler = o['feed'+feed_tag];
-            if (handler) {
-                handler.apply(o, feed_args);
-                handled = true;
-            }
-        }
-
-        if (!handled && this.config.warn) {
-            console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
-        }
-    }
-
-    /**
-     * @param {string | number} rid
-     * @param {any} bunch
-     */
-    coqSearchResults(rid, bunch) {
-
-        var handled = false;
-
-        for (let o of this.routes.get(rid) || []) {
-            var handler = o['feedSearchResults'];
-            if (handler) {
-                handler.call(o, bunch);
-                handled = true;
-            }
-        }
-
-        if (!handled && this.config.warn) {
-            console.warn(`SearchResults not handled (route ${rid})`);
-        }
-    }
-
-    /**
-     * @param {string | number} sid
-     */
-    feedProcessed(sid) {
-        var fut = this.sids[sid];
-        if (fut) { fut.resolve(null); }
     }
 }
 

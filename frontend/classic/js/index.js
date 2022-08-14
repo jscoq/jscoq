@@ -7,7 +7,7 @@ import { CoqManager } from './coq-manager.js';
 // Exports
 export { CoqWorker } from '../../../backend';
 export { PackageManager } from './coq-packages.js';
-export { CmCoqProvider, Deprettify } from './cm-provider.js';
+export { Deprettify } from './deprettify.js';
 
 const scriptDir = import.meta.url.replace(/[^/]*$/, '');
 
