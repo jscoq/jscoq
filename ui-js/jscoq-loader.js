@@ -98,7 +98,6 @@ var loadJsCoq, JsCoqLoader;
 
             // (maybe) set base path
             if (typeof args[0] === 'string') base_path = args.shift();
-            base_path = base_path || jscoq_opts.base_path || scriptDir ? `${scriptDir}../` : "./";
 
             // (maybe) set node path
             if (typeof args[0] === 'string') node_modules_path = args.shift();
@@ -109,6 +108,9 @@ var loadJsCoq, JsCoqLoader;
 
             if (args.length > 0) console.warn('too many arguments to JsCoqLoader.start()');
 
+            // Set base path from options if not done
+            base_path = base_path || jscoq_opts.base_path || (scriptDir ? `${scriptDir}../` : "./");
+            node_modules_path = node_modules_path || jscoq_opts.node_modules_path;
             var backend = jscoq_opts.backend || 'js';
 
             return {base_path, node_modules_path, jscoq_ids, jscoq_opts, backend}

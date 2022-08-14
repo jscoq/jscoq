@@ -9,7 +9,6 @@
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../ui-css/landing-page.css">
-    <script src="../ui-js/jscoq-loader.js"></script>
   </head>
 
 <body class="jscoq-main">
@@ -140,7 +139,9 @@ Qed.</textarea>
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script type="text/javascript">
+  <script type="module">
+
+    import { JsCoqLoader } from '../ui-js/jscoq-loader.js';
 
     var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {
@@ -149,10 +150,7 @@ Qed.</textarea>
         all_pkgs:  ['coq', 'mathcomp']
     };
 
-    /* Global reference */
-    var coq;
-
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => coq = res);
+    JsCoqLoader.start(jscoq_ids, jscoq_opts).then(res => window.coq = res);
   </script>
 </body>
 </html>

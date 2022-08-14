@@ -12,7 +12,6 @@
     <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
     <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
     <link rel="stylesheet" type="text/css" href="ui-css/kbd.css">
-    <script src="ui-js/jscoq-loader.js" type="module"></script>
   </head>
 
 <body class="jscoq-main">
@@ -265,12 +264,10 @@ Qed.</textarea>
                     './examples': ['examples']}
     };
 
-    /* Global reference */
-    var coq;
-
     JsCoqLoader.start(jscoq_ids, jscoq_opts).then(res => {
-      coq = res;
-      coq.loadSymbolsFrom('./examples/examples.symb.json');
+        /* Global reference */
+        window.coq = res;
+        window.coq.loadSymbolsFrom('./examples/examples.symb.json');
     });
   </script>
 </body>
