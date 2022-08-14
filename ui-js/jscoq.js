@@ -436,9 +436,6 @@ function prefetchResource(url, progress=()=>{}) {
     });
 }
 
-// if (typeof document !== 'undefined' && document.currentScript)
-// XXX
-console.log(import.meta);
 CoqWorker.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:

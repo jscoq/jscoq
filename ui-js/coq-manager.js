@@ -77,6 +77,8 @@ class ProviderContainer {
             }
         }
 
+        CmCoqProvider._set_keymap();
+
         // Create sub-providers.
         //   Do this asynchronously to avoid locking the page when there is
         //   a large number of snippets.
