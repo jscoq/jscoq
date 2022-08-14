@@ -1,5 +1,6 @@
 import { Future } from "../../../backend/future.js";
-import { CmCoqProvider, Deprettify } from './cm-provider.js';
+import { CmCoqProvider } from './cm-provider.js';
+import { Deprettify } from "./deprettify.js";
 
 /**
  * A Provider Container aggregates several containers, the main deal
@@ -47,7 +48,7 @@ export class ProviderContainer {
         this.onTipOut = () => {};
         this.onAction = (action) => {};
         this.wait_for = null;
-        
+
         class WhileScrolling {
             handler : () => void;
             active : boolean;
