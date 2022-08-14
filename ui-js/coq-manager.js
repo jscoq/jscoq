@@ -13,7 +13,7 @@ import { Future, CoqWorker } from './jscoq.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { ProviderContainer } from './cm-provider-container.js';
-import { CoqContextualInfo } from './coq-ctxinfo.js';
+import { CoqIdentifier, CoqContextualInfo } from './coq-ctxinfo.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 
 // Extra stuff:

@@ -1,6 +1,6 @@
-import { CoqWorker } from './jscoq.js';
-
 "use strict";
+
+import { CoqWorker } from './jscoq.js';
 
 export class PackageManager {
 
@@ -654,12 +654,7 @@ class CoqPkgArchive {
 
 }
 
-
-if (typeof document !== 'undefined' && document.currentScript)
-    PackageManager.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
-
-if (typeof module !== 'undefined')
-    module.exports = {CoqPkgArchive}
+PackageManager.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4

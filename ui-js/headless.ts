@@ -8,15 +8,13 @@ import glob from 'glob';
 
 
 import { CoqWorker, Future } from './jscoq';
-import { CoqIdentifier } from './coq-manager';
+import { CoqIdentifier } from './coq-ctxinfo';
 import { FormatPrettyPrint } from './format-pprint';
 
 import { FSInterface, fsif_native } from '../coq-jslib/build/fsif';
 import { CoqProject } from '../coq-jslib/build/project';
 
-
 (<any>global).JsCoq = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
-
 
 class HeadlessCoqWorker extends CoqWorker {
     when_created: Promise<any>
@@ -102,7 +100,7 @@ class HeadlessCoqManager {
 
         this.project.searchPath.addRecursive(
             {physical: `${this.packages.dir}`, logical: ''});
-        
+
         for (let mod of this.project.modulesByExt('.cma')) {
             this.coq.register(mod.physical);
         }
@@ -201,7 +199,7 @@ class HeadlessCoqManager {
 
     performInspect(inspect) {
         var out_fn = inspect.filename || 'inspect.symb',
-            query_filter = inspect.modules ? 
+            query_filter = inspect.modules ?
                 (id => inspect.modules.some(m => this._identifierWithin(id, m)))
               : (id => true);
         this.coq.inspectPromise(0, ["All"]).then(results => {
@@ -222,7 +220,7 @@ class HeadlessCoqManager {
         this.goNext() || process.nextTick(() => this.eof());
     }
 
-    coqLog([lvl], msg) { 
+    coqLog([lvl], msg) {
         if (lvl != 'Debug' || this.options.log_debug)
             console.log(`[${lvl}] ${this.pprint.pp2Text(msg)}`);
     }
@@ -281,16 +279,16 @@ class HeadlessCoqManager {
 
     feedAddedAxiom() { }
 
-    feedMessage(sid, [lvl], loc, msg) { 
+    feedMessage(sid, [lvl], loc, msg) {
         console.log('-'.repeat(60));
-        console.log(`[${lvl}] ${this.pprint.pp2Text(msg).replace('\n', '\n         ')}`); 
+        console.log(`[${lvl}] ${this.pprint.pp2Text(msg).replace('\n', '\n         ')}`);
         console.log('-'.repeat(60) + this._format_loc(loc));
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
         var searchPath = ['.', '..', '../..', '../../..']
                          .map(rel => path.join(__dirname, rel));
-        
+
         for (let path_el of searchPath) {
             for (let dirpat of ['.', '_build/jscoq+*']) {
                 for (let rel of glob.sync(dirpat, {cwd: path_el})) {
@@ -314,9 +312,9 @@ class HeadlessCoqManager {
     }
 
     _format_loc(loc) {
-        return loc ? 
+        return loc ?
             (loc.fname && loc.fname[0] === 'InFile' ?
-                `\n\t(at ${loc.fname[1]}:${loc.line_nb})` : 
+                `\n\t(at ${loc.fname[1]}:${loc.line_nb})` :
                 `\n${JSON.stringify(loc)}`) : '';
     }
 
@@ -384,7 +382,7 @@ class PackageDirectory extends EventEmitter {
                 this.emit('message', {data: ['LibProgress', {uri, done: true}]});
             }
             catch (e) {
-                this.emit('message', {data: ['LibError', uri, '' + e]});                
+                this.emit('message', {data: ['LibError', uri, '' + e]});
             }
         }
         this.emit('message', {data: ['LoadedPkg', loaded]});
@@ -392,7 +390,7 @@ class PackageDirectory extends EventEmitter {
 
     async unzip(uri: string) {
         /** @todo `typeof fetch` is not a good way to detect env */
-        var data = /*typeof fetch !== 'undefined' ? 
+        var data = /*typeof fetch !== 'undefined' ?
             await (await fetch(uri)).arrayBuffer() :*/ fs.readFileSync(uri);
         await unzip(data, {to: {directory: this.dir}});
         /** @oops not reentrant (`coq-pkg.json` is overwritten every time) */
@@ -412,7 +410,7 @@ class PackageDirectory extends EventEmitter {
 
     /**
      * Copy native plugin libraries (`.cmxs`; only for native mode).
-     * @param binDir 
+     * @param binDir
      */
     appropriatePlugins(binDir: string) {
         var fromDir = path.join(binDir, 'coqlib', 'plugins');
@@ -423,7 +421,7 @@ class PackageDirectory extends EventEmitter {
                     this.ln_sf(filename,
                         path.join(this.dir, path.basename(filename)));
                 }
-                catch (e) { 
+                catch (e) {
                     this.emit('message', {data: ['LibError', '<native>', '' + e]});
                 }
             })

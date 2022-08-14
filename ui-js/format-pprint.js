@@ -183,7 +183,7 @@ export class FormatPrettyPrint {
                 state.breakMode = 'vertical';
             }
             break;
-        
+
         case "Pp_empty":
             ret = "";
             break;
@@ -269,7 +269,7 @@ export class FormatPrettyPrint {
                 state.breakMode = 'vertical';
             }
             break;
-        
+
         case "Pp_empty":
             ret = "";
             break;
@@ -287,7 +287,7 @@ export class FormatPrettyPrint {
 
     /**
      * Formats the current proof state.
-     * @param {object} goals a record of proof goals 
+     * @param {object} goals a record of proof goals
      *                       ({goals, stack, shelf, given_up})
      */
     goals2DOM(goals) {
@@ -307,7 +307,7 @@ export class FormatPrettyPrint {
                     : (on_shelf ? "All the remaining goals are on the shelf."
                         : "No more goals."),
                 bullet_notice = goals.bullet ? [this.pp2DOM(goals.bullet)] : [],
-                given_up_notice = given_up ? 
+                given_up_notice = given_up ?
                     [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [],
                 notices = bullet_notice.concat(given_up_notice);
 
@@ -362,7 +362,7 @@ export class FormatPrettyPrint {
     }
 
     flatLength(l) {
-        return Array.isArray(l) 
+        return Array.isArray(l)
             ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
             : 1;
     }
@@ -435,7 +435,7 @@ export class FormatPrettyPrint {
     /**
      * Auxiliary method that wraps a node with an element, but excludes
      * leading and trailing spaces. These are attached outside the wrapper.
-     * 
+     *
      * So _wrapTrimmed(" ab", <span>) becomes " "<span>"ab"</span>.
      */
     _wrapTrimmed(jdom, wrapper_jdom) {
@@ -456,18 +456,13 @@ export class FormatPrettyPrint {
         }
 
         return $([lead && document.createTextNode(lead),
-                  wrapper_jdom.append(jdom)[0], 
+                  wrapper_jdom.append(jdom)[0],
                   trail && document.createTextNode(trail)].filter(x => x));
     }
 
 }
 
-
 const BLOCK_LIKE = ['block', 'inline-block', 'inline-flex', 'inline-table', 'inline-grid'];
-
-
-if (typeof module !== 'undefined')
-    module.exports = {FormatPrettyPrint}
 
 // Local Variables:
 // js-indent-level: 4

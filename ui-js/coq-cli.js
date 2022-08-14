@@ -1,7 +1,6 @@
 import { HeadlessCoqManager } from './headless';
 
-
-class HeadlessCLI {
+export class HeadlessCLI {
 
     constructor() { this.rc = 0; }
 
@@ -71,6 +70,3 @@ class HeadlessCLI {
     }
 
 }
-
-
-export { HeadlessCLI }
