@@ -1,3 +1,5 @@
+import { CoqWorker } from './jscoq.js';
+
 "use strict";
 
 export class PackageManager {

@@ -7,6 +7,7 @@
 // require them to be able to list parts and implement marks.
 //
 
+import { Future, CoqWorker } from './jscoq.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider.js';

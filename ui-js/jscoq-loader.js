@@ -76,7 +76,7 @@ var loadJsCoq, JsCoqLoader;
                      base_path + 'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',
                      base_path + 'ui-js/mode/coq-mode',
                      base_path + 'ui-js/addon/company-coq',
-                     base_path + 'ui-js/jscoq']
+                     base_path + 'ui-js/jscoqvar']
         };
 
         for (let fn of files.css) loadCss(fn)

@@ -1,19 +1,6 @@
 "use strict";
 
-var copyOptions = function(obj, target) {
-    if (typeof obj !== 'object' || obj instanceof Array) return obj;
-    if (typeof target !== 'object' || target instanceof Array) target = {};
-    for (var prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-            target[prop] = copyOptions(obj[prop], target[prop]);
-        }
-    }
-    return target;
-}
-
-var JsCoq;
-
-class CoqWorker {
+export class CoqWorker {
 
     constructor(scriptPath, worker) {
         this.options = {
@@ -361,7 +348,7 @@ class CoqWorker {
 }
 
 
-class Future {
+export class Future {
     constructor() {
         this.promise = new Promise((resolve, reject) => {
             this._resolve = resolve;
@@ -449,11 +436,10 @@ function prefetchResource(url, progress=()=>{}) {
     });
 }
 
-if (typeof document !== 'undefined' && document.currentScript)
-    CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
-
-if (typeof module !== 'undefined')
-    module.exports = {CoqWorker, CoqSubprocessAdapter, Future, PromiseFeedbackRoute}
+// if (typeof document !== 'undefined' && document.currentScript)
+// XXX
+console.log(import.meta);
+CoqWorker.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4
