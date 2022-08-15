@@ -28,4 +28,4 @@ floc.coq-pkg: theories/CooLib.vo
 
 clean:
 	rm -f welcome.html more.html more-pkgs.html floc.json floc.coq-pkg
-	rm -f $(addprefix theories/, *.vo *.vok *.vos *.glob *.aux)
+	rm -f $(addprefix theories/, *.vo *.vok *.vos *.glob .*.aux)
