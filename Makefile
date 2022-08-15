@@ -35,8 +35,8 @@ DUNE = $(OPAMENV) && dune
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the Coq sources and developments are.
-ADDONS_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
-COQSRC := $(ADDONS_PATH)/coq/
+VENDOR_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
+COQSRC := $(VENDOR_PATH)/coq/
 
 # Directories where Dune builds and installs Coq
 COQBUILDDIR_REL := _vendor+$(COQ_VERSION)$(VARIANT)/coq
@@ -58,7 +58,6 @@ export BUILD_CONTEXT
 export COQDIR
 export COQBUILDDIR
 export COQBUILDDIR_REL
-export ADDONS_PATH
 export COQPKGS_ROOT
 
 ifdef DEBUG
