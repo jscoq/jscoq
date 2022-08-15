@@ -47,6 +47,11 @@ type debug_config =
   }
   [@@deriving yojson]
 
+type print_style =
+  | Pp
+  | Layout
+  [@@deriving yojson]
+
 type jscoq_options =
   { implicit_libs: bool          [@default true]
   ; coq_options: coq_options     [@default []]  (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_options *)
@@ -85,7 +90,7 @@ type search_query =
 
 type query =
   | Mode
-  | Goals
+  | Goals of print_style
   | Vernac of string
   | Inspect of search_query
   [@@deriving yojson]
@@ -140,7 +145,7 @@ type jscoq_answer =
 
   (* Query responses *)
   | ModeInfo  of Stateid.t * in_mode
-  | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
+  | GoalInfo  of Stateid.t * string reified_goal ser_goals option
 
   | Ast       of Vernacexpr.vernac_control option
   | CoqOpt    of string list * Goptions.option_value

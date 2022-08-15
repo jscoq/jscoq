@@ -113,7 +113,9 @@ class CoqWorker {
     }
 
     goals(sid) {
-        this.sendCommand(["Query", sid, 0, ["Goals"]]);
+        // XXX: Layout vs Pp goal style should be selectable
+        let print_style = ["Layout"];
+        this.sendCommand(["Query", sid, 0, ["Goals", print_style]]);
     }
 
     query(sid, rid, query) {

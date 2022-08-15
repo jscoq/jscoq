@@ -20,9 +20,12 @@ depends: [
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.8.0"            }
   "lwt_ppx"             { >= "2.0.1"            }
-  # We should just rely on OPAM's serlib but this is still early
+  # coq-serapi: We should just rely on OPAM's serlib but this is still early
   "sexplib"             { >= "v0.14.0"          }
   "ppx_sexp_conv"       { >= "v0.14.1" & < "v0.15" }
+  # coq-layout-engine:
+  "tyxml"               { >= "4.5.0"            }
+  "js_of_ocaml-tyxml"   { >= "3.8.0"            }
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
   # "coq"                 { >= "8.13.0" & < "8.14" }

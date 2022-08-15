@@ -1,5 +1,5 @@
 .PHONY: all clean force
-.PHONY: jscoq jscoq_worker links links-clean
+.PHONY: jscoq check jscoq_worker links links-clean
 .PHONY: dist dist-upload dist-release serve
 
 -include ./config.inc
@@ -74,6 +74,7 @@ all:
 	@echo ""
 	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
 	@echo "     wacoq: build waCoq [JavaScript, frontend only; depends on wacoq-bin]"
+	@echo "     check: type-check OCaml code"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
@@ -84,6 +85,9 @@ all:
 
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
+
+check: force
+	dune build --only-packages=coq-core,jscoq,coq-serapi @check $(DUNE_FLAGS)
 
 jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)

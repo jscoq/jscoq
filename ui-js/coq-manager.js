@@ -748,16 +748,24 @@ class CoqManager {
         if (goals) {
             this.coqModeInfo(sid, 'Proof');
 
-            var hgoals = this.pprint.goals2DOM(goals);
+            // See what happens
+            console.log(goals.goals[0].ty);
 
-            // Preprocess pretty-printed output
-            if (this.company_coq) {
-                this.contextual_info.pinIdentifiers(hgoals);
-                this.company_coq.markup.applyToDOM(hgoals[0]);
+            this.layout.update_goals(goals.goals[0].ty);
+
+            // Old pp mode
+            if (false) {
+                var hgoals = this.pprint.goals2DOM(goals);
+
+                // Preprocess pretty-printed output
+                if (this.company_coq) {
+                    this.contextual_info.pinIdentifiers(hgoals);
+                    this.company_coq.markup.applyToDOM(hgoals[0]);
+                }
+
+                this.doc.goals[sid] = hgoals;
+                this.updateGoals(hgoals);
             }
-
-            this.doc.goals[sid] = hgoals;
-            this.updateGoals(hgoals);
         }
     }
 

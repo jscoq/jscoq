@@ -126,18 +126,53 @@ let requires ast =
   [@@warning "-4"]
 
 (** Goal printing *)
-let pp_of_goals =
+let _pp_of_goals =
   let ppx env sigma x = Jscoq_util.pp_opt (Printer.pr_ltype_env env sigma x) in
+  Serapi.Serapi_goals.get_goals_gen ppx
+
+let set_flag flag value f =
+  let v = !flag in
+  flag := value;
+  try
+    let res = f () in
+    flag := v;
+    res
+  with exn ->
+    flag := v;
+    raise exn
+
+let layout_term env sigma t =
+  (* Coq stores goals in kernel-format, we need to recover the AST
+     back before calling the layout engine; this is called
+     "externalization" in Coq jargon *)
+  let t = Constrextern.extern_type env sigma (EConstr.of_constr t) in
+  let html = Tprinter.(Term.layout env sigma t |> BoxModel.Render.to_html) in
+  Format.asprintf "@[%a@]" (Tyxml.Html.pp_elt ()) html
+
+let layout_term env sigma t =
+  set_flag
+    (* Notations = no *)
+    (* Constrextern.print_no_symbol true *)
+    (* Notations = yes *)
+    Constrextern.print_no_symbol false
+    (fun () ->
+       layout_term env sigma t)
+
+let html_of_goals =
+  let ppx env sigma x = layout_term env sigma x in
   Serapi.Serapi_goals.get_goals_gen ppx
 
 (** main Query handler *)
 let exec_query doc ~span_id ~route query =
   let span_id = if span_id = Stateid.dummy then Jscoq_doc.tip !doc else span_id in
   match query with
-  | Goals ->
+  | Goals _ ->
     let doc = fst !doc in
-    let goal_pp = pp_of_goals ~doc span_id in
-    [GoalInfo (span_id, goal_pp)]
+    (* XXX: Implement the switch for goal format? => needs update on the query answer *)
+    (* old pp based *)
+    (* let goal_pp = pp_of_goals ~doc span_id in *)
+    let goal_html = html_of_goals ~doc span_id in
+    [GoalInfo (span_id, goal_html)]
   | Mode ->
     let doc = fst !doc in
     let in_mode = Icoq.mode_of_stm ~doc span_id in
