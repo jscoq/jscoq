@@ -1,3 +1,10 @@
+/* jsCoq
+ *
+ * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
+ * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
+ */
+
 // Backend imports
 import { ArrayFuncs } from '../../common/etc.js';
 import { CoqWorker, backend } from '../../../backend';

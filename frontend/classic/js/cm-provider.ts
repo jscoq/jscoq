@@ -166,7 +166,7 @@ export class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
-        
+
         // Index of this particular provider
         this.idx = idx;
 
@@ -178,6 +178,7 @@ export class CmCoqProvider {
         if (this.filename) { this.openLocal(this.filename); this.startAutoSave(); }
 
         // Event handlers (to be overridden by ProviderContainer)
+        this.onChange = (text) => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};

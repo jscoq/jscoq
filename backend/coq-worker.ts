@@ -40,11 +40,7 @@ export interface DocumentParams {
   raw: string
 }
 
-export interface info {
-    evar: number
-    name?: any // Id.t option
-}
-type Block_type = 
+type Block_type =
     ['Pp_hbox']
   | ['Pp_vbox', number]
   | ['Pp_hvbox', number]
@@ -64,6 +60,11 @@ export interface Hyp {
     names : string[],
     def?: Pp,
     ty: Pp
+}
+
+export interface info {
+    evar: number
+    name?: any // Id.t option
 }
 
 export interface Goal {

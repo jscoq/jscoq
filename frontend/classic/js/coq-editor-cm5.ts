@@ -5,12 +5,13 @@
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
 import { CoqManager } from './coq-manager';
+import { ICoqEditor } from './coq-editor';
 
 interface CM5Options {
     mode?: { "company-coq": boolean }
 }
 
-export class CoqCodeMirror5 extends ProviderContainer {
+export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     manager : CoqManager;
 
     constructor(eIds: (string|HTMLElement)[], options : any, manager : CoqManager) {

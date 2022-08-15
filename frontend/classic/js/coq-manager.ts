@@ -17,11 +17,13 @@ import { FormatPrettyPrint } from '../../format-pprint/js';
 import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
 
 // UI Frontend imports
-import { PackageManager } from './coq-packages.js';
-import { CoqLayoutClassic } from './coq-layout-classic.js';
-import { CoqContextualInfo } from './contextual-info.js';
+import { PackageManager } from './coq-packages';
+import { CoqLayoutClassic } from './coq-layout-classic';
+// import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
+import { ICoqEditor } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
+import { CoqProseMirror } from './coq-editor-pm';
 
 /**
  * Coq Document Manager, client-side.
@@ -36,7 +38,7 @@ export class CoqManager {
     options : any;
     coq : CoqWorker;
     diagsSource : EventTarget;
-    editor : any;
+    editor : ICoqEditor;
     uri : string;
     version : number;
     layout : CoqLayoutClassic;
@@ -64,6 +66,8 @@ export class CoqManager {
 
         // Default options
         this.options = {
+            frontend: 'cm5',
+            content_type: 'markdown',
             prelaunch:  false,
             prelude:    true,
             debug:      true,
@@ -93,8 +97,10 @@ export class CoqManager {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
-        // Setup the Coq statement provider.
-        this.editor = new CoqCodeMirror5(elems, this.options, this);
+        // Setup the Coq editor.
+        const eIdx = { 'pm' : CoqProseMirror, 'cm5': CoqCodeMirror5 };
+        var CoqEditor = eIdx[this.options.frontend];
+        this.editor = new CoqEditor(elems, this.options, this);
         this.editor.onChange = raw => {
             this.version++;
             this.coq.update( { uri: this.uri, version: this.version, raw });
@@ -119,7 +125,7 @@ export class CoqManager {
             if (this.coq) this.layout.onToggle = () => {};
         };
 
-        this._setupSettings();
+        // this._setupSettings();
         this._setupDragDrop();
 
         // Setup pretty printer for feedback and goals
@@ -326,11 +332,14 @@ export class CoqManager {
     // Coq document diagnostics.
     coqNotification(diags, version) {
         this.editor.clearMarks();
+        
+        console.log("Diags received: " + diags.length.toString());
 
         if (this.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
+       
         for (let d of diags) {
             if (d.severity < 4) {
                 this.editor.markDiagnostic(d);
