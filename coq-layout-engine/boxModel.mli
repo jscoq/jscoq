@@ -57,6 +57,9 @@ type t =
            }
   (** Application box  *)
 
+  | Cast of t * t
+  (** Cast box *)
+
   | Abs of { kind : abs_kind; binderl : t Binder.t list; v : t }
   (** Abstraction  *)
 

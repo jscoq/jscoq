@@ -56,6 +56,9 @@ type t =
            }
   (** Application box  *)
 
+  | Cast of t * t
+  (** Cast box *)
+
   | Abs of { kind : abs_kind; binderl : t Binder.t list; v : t }
   (** Abstraction  *)
 
@@ -110,6 +113,9 @@ let rec to_html (b : t) : _ H.elt =
            [span "absolute" [H.txt a]]) [] absolute) @
       Option.cata (fun typ ->
           [span "type" [to_html typ]]) [] typ
+
+  | Cast (_c,t) ->
+    span "cast" @@ [to_html t]
 
   | Sort e ->
     span "sort" @@ List.map H.txt e

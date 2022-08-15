@@ -242,7 +242,7 @@ and layout t =
   | CCast (e, cast_kind, cast) ->
     let p_c = ly_cast_kind cast_kind in
     let p_e = layout e in
-    xxx "cast"
+    Cast (p_c,p_e)
 
   (* | CNotation of notation_with_optional_scope option * notation * constr_notation_substitution *)
   | CNotation (oscope, ntn, ntn_subst) ->
