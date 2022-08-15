@@ -123,7 +123,7 @@ let string_contains s1 s2 =  (* from Rosetta Code *)
     in
     aux (len1 - len2)
 
-let symbols_for env (q : Query.t) =
+let all_symbols_for env (q : Query.t) =
   match q with
   | Locals       ->
     inspect_locals ~env ()
@@ -140,9 +140,11 @@ let is_within qn prefix =
 
 let filter_by (q : Query.t) =
   match q with
-  | All | CurrentFile | Locals -> (fun _ -> true)
-  | ModulePrefix prefix -> (fun nm -> is_within nm prefix)
+  | All | CurrentFile | Locals ->
+    (fun _ -> true)
+  | ModulePrefix prefix ->
+    (fun nm -> is_within nm prefix)
   | Keyword s ->
-    (fun nm ->
-       string_contains (Qualified_name.to_string nm) s)
+    (fun nm -> string_contains (Qualified_name.to_string nm) s)
 
+let symbols_for env q = all_symbols_for env q |> Seq.filter (filter_by q)

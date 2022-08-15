@@ -31,6 +31,3 @@ end
 
 (* XXX: Document *)
 val symbols_for : Environ.env -> Query.t -> Qualified_name.t Seq.t
-
-(* XXX: Document *)
-val filter_by : Query.t -> Qualified_name.t -> bool

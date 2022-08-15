@@ -154,8 +154,7 @@ let exec_query doc ~span_id ~route query =
     end
   | Inspect q ->
     let _, env = Icoq.context_of_stm ~doc:(fst !doc) span_id in
-    let symbols = Code_info.symbols_for env q in
-    let results = Seq.filter (Code_info.filter_by q) symbols in
+    let results = Code_info.symbols_for env q in
     [SearchResults (route, results)]
 
 (** main interpreter *)
