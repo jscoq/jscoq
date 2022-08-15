@@ -31,102 +31,7 @@ import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
-// CodeMirror
-import CodeMirror from 'codemirror';
-import 'codemirror/addon/hint/show-hint.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/keymap/emacs.js';
-import 'codemirror/addon/selection/mark-selection.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/dialog/dialog.js';
-
-// CM medias
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/blackboard.css';
-import 'codemirror/theme/darcula.css';
-import 'codemirror/addon/hint/show-hint.css';
-import 'codemirror/addon/dialog/dialog.css';
-
-import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
-import './mode/coq-mode.js';
-
-class CoqCodeMirror {
-
-    // element e
-    constructor(e) {
-
-        var cmOpts =
-            { mode : { name : "coq",
-                       version: 4,
-                       singleLineStringErrors : false
-                     },
-              lineNumbers       : true,
-              indentUnit        : 2,
-              tabSize           : 2,
-              indentWithTabs    : false,
-              matchBrackets     : true,
-              styleSelectedText : true,
-              dragDrop          : false, /* handled by CoqManager */
-              keyMap            : "jscoq",
-              className         : "jscoq"
-            };
-
-        e = document.getElementById(e);
-
-        if (e.tagName !== 'TEXTAREA') {
-            console.log('Error, element must be a textarea');
-        }
-
-        this._set_keymap();
-        this.editor = CodeMirror.fromTextArea(e, cmOpts);
-        this.editor.on('change', (cm, evt) => this.onCMChange(cm, evt) );
-        e.style.height = 'auto';
-    }
-
-    // To be overriden by the manager
-    onCMChange(cm, evt) {
-        return;
-    }
-
-    getValue() {
-        return this.editor.getValue();
-    }
-
-    clearMarks() {
-        for (let m of this.editor.getAllMarks()) {
-            m.clear();
-        }
-    }
-
-    markDiagnostic(d) {
-
-        var from = { line: d.range.start.line, ch: d.range.start.character };
-        var to = { line: d.range._end.line, ch: d.range._end.character };
-
-        var doc = this.editor.getDoc();
-        var mclass = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
-
-        doc.markText(from, to, {className: mclass});
-    }
-
-    _set_keymap() {
-
-        CodeMirror.keyMap['jscoq'] = {
-            'Tab': 'indentMore',
-            'Shift-Tab': 'indentLess',
-            'Ctrl-Space': 'autocomplete',
-            fallthrough: ["default"]
-        };
-
-        CodeMirror.keyMap['jscoq-snippet'] = {
-            PageUp: false,
-            PageDown: false,
-            //'Cmd-Up': false,   /** @todo this does not work? */
-            //'Cmd-Down': false
-        };
-    }
-
-}
+import { CoqCodeMirror, CoqProseMirror } from './coq-editor.js';
 
 /**
  * Coq Document Manager, client-side.
@@ -156,6 +61,7 @@ export class CoqManager {
         // Default options
         this.options = {
             prelaunch:  false,
+            prosemirror: true,
             prelude:    true,
             debug:      true,
             show:       true,
@@ -183,16 +89,14 @@ export class CoqManager {
         }
 
         // Setup the Coq editor.
-        var pm = false;
-
-        if (pm) {
+        if (this.options.prosemirror) {
             this.editor = new CoqProseMirror(elems[0]);
-            this.editor.onCMChange = evt => {
-                this.coq.update(this.editor.getValue());
+            this.editor.onChange = newText => {
+                this.coq.update(newText);
             }
         } else {
             this.editor = new CoqCodeMirror(elems[0]);
-            this.editor.onCMChange = evt => {
+            this.editor.onChange = evt => {
                 this.coq.update(this.editor.getValue());
             }
         };
@@ -421,6 +325,7 @@ export class CoqManager {
     coqNotification(diags) {
         this.editor.clearMarks();
 
+        console.log("Diags received: " + diags.length.toString());
         for (let d of diags) {
             // d_str = JSON.stringify(d);
             // this.layout.log("Diag", 'Info');
