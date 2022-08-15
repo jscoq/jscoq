@@ -1,3 +1,4 @@
+"use strict";
 /************************************************************************/
 /* company-coq addon to coq-mode, a CodeMirror mode for the Coq Proof   */
 /*   Assistant.                                                         */
@@ -13,16 +14,7 @@
 /*    of yet).                                                          */
 /************************************************************************/
 
-
-(function(mod) {
-    if (typeof exports == "object" && typeof module == "object") // CommonJS
-        mod(require("codemirror"));
-    else if (typeof define == "function" && define.amd) // AMD
-        define(["codemirror"], mod);
-    else // Plain browser env
-        mod(CodeMirror);
-})(function(CodeMirror) {
-"use strict";
+import { CodeMirror } from '../../dist/lib.js'
 
 var Pos = CodeMirror.Pos;
 
@@ -625,7 +617,6 @@ class CompanyCoq {
         CompanyCoq.kinds = vocab_kinds;
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         ObserveIdentifier.instance.vocab = vocab;
-        CodeMirror.CompanyCoq = CompanyCoq;
 
         CodeMirror.defineInitHook(cm =>
             CompanyCoq.configure(cm, cm.options));
@@ -655,5 +646,4 @@ class CompanyCoq {
 /* Register addon */
 CompanyCoq.init();
 
-
-});
+export { CompanyCoq }

@@ -9,38 +9,17 @@
 
 "use strict";
 
+import { JsCoq } from './index.js';
+import { copyOptions } from './etc.js';
 import { Future, CoqWorker } from './jscoq.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { ProviderContainer } from './cm-provider-container.js';
-import { CoqIdentifier, CoqContextualInfo } from './coq-ctxinfo.js';
+import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
+import { CompanyCoq }  from './addon/company-coq.js';
+import { isMac } from './etc.js';
 
-// Extra stuff:
-
-Array.prototype.last     = function() { return this[this.length-1]; };
-Array.prototype.flatten  = function() { return [].concat.apply([], this); };
-Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; )
-                                                    if (p(r = this[--i])) return r; }
-Array.prototype.equals   = function(other) { return arreq_deep(this, other); }
-Object.defineProperty(Array.prototype, "last",     {enumerable: false});
-Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
-Object.defineProperty(Array.prototype, "findLast", {enumerable: false});
-Object.defineProperty(Array.prototype, "equals",   {enumerable: false});
-
-function arreq_deep(arr1, arr2) {  /* adapted from 'array-equal' */
-    var length = arr1.length
-    if (!arr2 || length !== arr2.length) return false
-    for (var i = 0; i < length; i++) {
-        let e1 = arr1[i], e2 = arr2[i];
-        if (!(Array.isArray(e1) && Array.isArray(e2) ? arreq_deep(e1, e2) : e1 === e2))
-            return false
-    }
-    return true
-}
-
-if (typeof navigator !== 'undefined')
-    navigator.isMac = /Mac/.test(navigator.platform);
 
 /***********************************************************************/
 /* CoqManager coordinates the coq code objects, the panel, and the coq */
@@ -104,7 +83,7 @@ export class CoqManager {
 
         // Setup company-coq
         if (this.options.editor.mode && this.options.editor.mode['company-coq'])
-            this.company_coq = new CodeMirror.CompanyCoq();
+            this.company_coq = new CompanyCoq();
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -195,7 +174,7 @@ export class CoqManager {
         this.layout.settings.model.company.observe(enable => {
             this.provider.configure({mode: {'company-coq': enable}});
             this.company_coq = this.contextual_info.company_coq =
-                enable ? new CodeMirror.CompanyCoq() : undefined;
+                enable ? new CompanyCoq() : undefined;
         });
     }
 
@@ -238,7 +217,7 @@ export class CoqManager {
      */
     loadSymbolsFrom(url, scope="globals") {
         $.get({url, dataType: 'json'}).done(data => {
-            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
+            CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -248,7 +227,7 @@ export class CoqManager {
     updateLocalSymbols() {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
-            CodeMirror.CompanyCoq.loadSymbols(
+            CompanyCoq.loadSymbols(
                 { lemmas: bunch.map(fp => CoqIdentifier.ofQualifiedName(fp)) },
                 'locals', /*replace_existing=*/true)
         });
@@ -307,7 +286,7 @@ export class CoqManager {
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${JsCoqGlobal.node_modules_path}@${JsCoqGlobal.backend}coq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${JsCoq.node_modules_path}@${JsCoq.backend}coq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(this.layout.packages,
@@ -324,7 +303,7 @@ export class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            if (JsCoqGlobal.backend !== 'wa') {
+            if (JsCoq.backend !== 'wa') {
                 await this.coq.when_created;
                 this.coqBoot();  // only the WA backend emits `Boot` events
             }
@@ -963,7 +942,7 @@ export class CoqManager {
     }
 
     keyTooltips() {
-        return navigator.isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
+        return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
             {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter'}
     }
 
@@ -974,7 +953,7 @@ export class CoqManager {
     keyHandler(e) {
 
         // Poor-man's keymap
-        let key = ((navigator.isMac ? e.metaKey : e.ctrlKey) ? '^' : '') +
+        let key = ((isMac ? e.metaKey : e.ctrlKey) ? '^' : '') +
                   (e.altKey ? '_' : '') + (e.shiftKey ? '+' : '') + e.code;
 
         // Navigation keybindings
@@ -991,7 +970,7 @@ export class CoqManager {
             'F8': toggle,
             'Escape': interrupt
         };
-        if (!navigator.isMac) {
+        if (!isMac) {
             Object.assign(nav_bindings, {
                 '_KeyN': goNext,
                 '_KeyP': goPrev

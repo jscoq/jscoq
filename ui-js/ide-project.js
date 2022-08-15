@@ -3,6 +3,7 @@ import './public-path.js';
 import assert from 'assert';
 import Vue from 'vue';
 
+// import { JsCoq } from './index.js';  // @todo later; right now it will duplicate it :/
 import { BatchWorker, CompileTask } from '../coq-jslib/build/batch.ts';
 import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project.ts';
 import '../ui-css/project.css';
@@ -238,7 +239,7 @@ class ProjectPanel {
         return new CompileTask({
                 'js': () => new JsCoqBatchWorker(coqw, pkgr),
                 'wa': () => new WacoqBatchWorker(coqw, pkgr)
-            }[JsCoqGlobal.backend](), this.project, {buildDir});
+            }[JsCoq.backend](), this.project, {buildDir});
     }
 
     feedMessage(sid, lvl, loc, msg) {

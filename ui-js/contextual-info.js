@@ -1,6 +1,6 @@
 "use strict";
 
-export class CoqContextualInfo {
+class CoqContextualInfo {
     /**
      * @param {jQuery} container <div> element to show info in
      * @param {CoqWorker} coq jsCoq worker for querying types and definitions
@@ -263,7 +263,8 @@ export class CoqContextualInfo {
     }
 }
 
-export class CoqIdentifier {
+
+class CoqIdentifier {
     constructor(prefix, label) {
         this.prefix = prefix;
         this.label = label;
@@ -340,3 +341,5 @@ export class CoqIdentifier {
 
 }
 
+
+export { CoqContextualInfo, CoqIdentifier }

@@ -1,4 +1,6 @@
 "use strict";
+import { JsCoq } from './index.js';
+
 
 export class CoqWorker {
 
@@ -29,9 +31,9 @@ export class CoqWorker {
      * from which this script is loaded.
      */
     static defaultScriptPath() {
-        var nmPath = JsCoqGlobal.is_npm ? '../..' : '../node_modules';
+        var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
         return new URL({'js': "../coq-js/jscoq_worker.bc.cjs",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.cjs`}[JsCoqGlobal.backend],
+                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[JsCoq.backend],
                        this.scriptUrl).href;
     }
 
@@ -52,7 +54,7 @@ export class CoqWorker {
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
 
-        if (JsCoqGlobal.backend == 'wa') {
+        if (JsCoq.backend == 'wa') {
             this._boot = new Future();
             return this._boot.promise;
         }
@@ -75,7 +77,7 @@ export class CoqWorker {
         if(this.options.debug) {
             console.log("Posting: ", msg);
         }
-        if (JsCoqGlobal.backend === 'wa') msg = JSON.stringify(msg);
+        if (JsCoq.backend === 'wa') msg = JSON.stringify(msg);
         this.worker.postMessage(msg);
     }
 
@@ -136,7 +138,7 @@ export class CoqWorker {
     }
 
     loadPkg(url) {
-        switch (JsCoqGlobal.backend) {
+        switch (JsCoq.backend) {
         case 'js':
             this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
             break;
@@ -151,7 +153,7 @@ export class CoqWorker {
     }
 
     refreshLoadPath(load_path) {
-        switch (JsCoqGlobal.backend) {
+        switch (JsCoq.backend) {
         case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
         case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
         }

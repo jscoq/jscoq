@@ -1,3 +1,5 @@
+// @deprecated
+
 // The jsCoq loader
 // (c) 2015-2016 Mines ParisTech/ARMINES
 //
@@ -64,13 +66,7 @@ var loadJsCoq, JsCoq;
                      base_path + 'ui-css/coq-light',
                      base_path + 'ui-css/coq-dark',
                      base_path + 'ui-css/settings'],
-            'js':   [node_modules_path + 'codemirror/lib/codemirror',
-                     node_modules_path + 'codemirror/keymap/emacs',
-                     node_modules_path + 'codemirror/addon/selection/mark-selection',
-                     node_modules_path + 'codemirror/addon/edit/matchbrackets',
-                     node_modules_path + 'codemirror/addon/hint/show-hint',
-                     node_modules_path + 'codemirror/addon/dialog/dialog',
-                     node_modules_path + 'jquery/dist/jquery.min',
+            'js':   [node_modules_path + 'jquery/dist/jquery.min',
                      node_modules_path + 'jszip/dist/jszip.min',
                      node_modules_path + 'localforage/dist/localforage.min',
                      base_path + 'ui-external/CodeMirror-TeX-input/addon/hint/tex-input-hint',

@@ -6,27 +6,14 @@ import unzip from 'fflate-unzip';
 import * as find from 'find';
 import glob from 'glob';
 
-
 import { CoqWorker, Future } from './jscoq';
-import { CoqIdentifier } from './coq-ctxinfo';
+import { CoqIdentifier } from './contextual-info';
 import { FormatPrettyPrint } from './format-pprint';
+import { arreq_deep } from '../ui-js/etc';
 
 import { FSInterface, fsif_native } from '../coq-jslib/build/fsif';
 import { CoqProject } from '../coq-jslib/build/project';
 
-(<any>global).JsCoqGlobal = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
-
-// Pain in the ass
-function arreq_deep(arr1, arr2) {  /* adapted from 'array-equal' */
-    var length = arr1.length;
-    if (!arr2 || length !== arr2.length) return false;
-    for (var i = 0; i < length; i++) {
-        let e1 = arr1[i], e2 = arr2[i];
-        if (!(Array.isArray(e1) && Array.isArray(e2) ? arreq_deep(e1, e2) : e1 === e2))
-            return false;
-    }
-    return true;
-};
 
 class HeadlessCoqWorker extends CoqWorker {
     when_created: Promise<any>

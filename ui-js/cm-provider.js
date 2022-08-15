@@ -3,6 +3,11 @@
 
 "use strict";
 
+import { CodeMirror } from '../dist/lib.js';
+import './mode/coq-mode.js';
+import { copyOptions } from './etc.js';
+
+
 class CmSentence {
 
     constructor(start, end, text, flags) {
@@ -590,7 +595,7 @@ export class CmCoqProvider {
         var span = this._makeFileDialog("Save file: "),
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
             share = $('<span>').addClass('dialog-share')
-                    .append($('<img>').attr('src', JsCoqGlobal.base_path + 'ui-images/share.svg')),
+                    .append($('<img>').attr('src', JsCoq.base_path + 'ui-images/share.svg')),
             a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
             a3 = betaOnly(() =>
                  this._makeDialogLink('P2P', () => this.shareP2P()));
@@ -677,7 +682,7 @@ export class CmCoqProvider {
 }
 
 function betaOnly(thing) {
-    return JsCoqGlobal.globalConfig().features.includes('beta')
+    return JsCoq.globalConfig().features.includes('beta')
              ? thing() : undefined;
 }
 

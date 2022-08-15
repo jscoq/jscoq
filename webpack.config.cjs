@@ -45,6 +45,8 @@ const
       this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0755));
     }
   ],
+  // resources that only make sense in browser context
+  browserOnly = /\/codemirror\/|(\/dist\/lib.js$)|(coq-mode.js$)|(company-coq.js$)/,
   resolve = {
     extensions: [ '.tsx', '.ts', '.js' ]
   },
@@ -65,15 +67,35 @@ module.exports = (env, argv) => [
   module: {
     rules: [ts]
   },
-  externals: {  /* do not bundle the worker */
-    '../coq-js/jscoq_worker.bc.cjs': 'commonjs2 ../coq-js/jscoq_worker.bc.cjs',
-    'wacoq-bin/dist/subproc': 'undefined',
-    'cross-spawn': 'commonjs2 cross-spawn'
-  },
+  externals: [
+    {  /* do not bundle the worker */
+      '../coq-js/jscoq_worker.bc.cjs': 'commonjs2 ../coq-js/jscoq_worker.bc.cjs',
+      'wacoq-bin/dist/subproc': 'undefined',
+      'cross-spawn': 'commonjs2 cross-spawn'
+    },
+    /* filter out browser-only modules */
+    ({context, request}, callback) => {
+      if (request.match(browserOnly)) callback(null, '{}')
+      else callback();
+    }
+  ],
   resolve,
   output: output('dist', 'cli.cjs'),
   plugins: cliPlugins('dist/cli.cjs'),
   node: false
+},
+/**
+ * Package libs for browser modules.
+ */
+{
+  name: 'lib',
+  entry: './ui-js/lib.js',
+  ...basics(argv),
+  resolve,
+  output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
 },
 /**
  * Multi-file Project UI

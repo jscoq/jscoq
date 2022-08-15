@@ -20,8 +20,8 @@
     <!-- Editor and panel are created here by CoqManager -->
   </div>
 
-  <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
-  <script type="text/javascript">
+  <script type="module">
+    import { JsCoq } from "../ui-js/index.js";
 
     var sp = new URLSearchParams(location.search),
         panel_theme = sp.has('dark') ? 'dark' : sp.get('theme') || 'light',
