@@ -2,11 +2,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <title>Some Exercises on the Mathematics of the DFT</title>
 
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="dft.css" type="text/css" media="screen">
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
-    <title>Some Exercises on the Mathematics of the DFT</title>
+    <!-- Bootstrap Core JavaScript -->
+
+    <!-- Mathjax.js -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+          tex2jax: {
+              inlineMath: [['$','$'], ['\\(','\\)']]
+          }
+      });
+    </script>
+    <script src="../node_modules/mathjax/es5/tex-svg-full.js"></script>
+
+    <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="dft.css" type="text/css" media="screen">
   </head>
   <body class="jscoq-main">
     <div id="ide-wrapper" class="toggled container-fluid">
@@ -35,15 +50,7 @@
           can remain to the source in our theorem proving system.
         </p>
       </div> <!-- panel-heading -->
-      <textarea id="dsp-sig-h1" >
-(* Parts taken from classfun.v:                                         *)
-(* (c) Copyright Microsoft Corporation and Inria.                       *)
-(* You may distribute this file under the terms of the CeCILL-B license *)
-
-(* Copyright (c) 2015, CRI, MINES ParisTech, PSL Research University    *)
-(* All rights reserved.                                                 *)
-(* You may distribute this file under the terms of the CeCILL-B license *)
-
+      <textarea id="dsp-sig-h1" style="display: none">
 From mathcomp
 Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq div choice.
 From mathcomp
@@ -74,10 +81,6 @@ Variable R : comRingType.
           </div> <!-- panel-heading -->
           <div class="coq-script panel-body">
             <textarea id="dsp-sig-def" >
-(*******************************************************)
-(* An exploration of basic DFT theory using MathComp.  *)
-(*******************************************************)
-
 (* We represent signals as n x 1 matrices *)
 Notation S := 'cV[R]_N.
 
@@ -165,7 +168,7 @@ Qed.</textarea>
         $$ \dft_k x = \sum_{m=0}^{N-1} x_m \omega^{km} $$
       </div> <!-- panel-heading -->
       <div class="coq-script panel-body">
-        <textarea id="dsp-dft-h1" >
+        <textarea id="dsp-dft-h1" style="display: none">
 End Signals.
 (* DFT properties for the sum form *)
 Section DftSum.
@@ -246,28 +249,26 @@ by apply/eq_bigr => j _; rewrite shiftsE mulrA.
 Qed.
 End DftSum.
       </textarea>
-      <h3>That's all for this demo my friends!</h3>
+      <i>That's all for this demo my friends!</i>
+
+      <hr/>
+      <div style="font-size: 80%">
+      <p>
+      Parts taken from classfun.v:                                        <br/> 
+      (c) Copyright Microsoft Corporation and Inria.                      <br/> 
+      You may distribute this file under the terms of the CeCILL-B license
+      </p>
+      <p>
+      Copyright (c) 2015, CRI, MINES ParisTech, PSL Research University    <br/>
+      All rights reserved.                                                 <br/>
+You may distribute this file under the terms of the CeCILL-B license
+      </p>
+      </div>
       </div>
     </div> <!-- /#document -->
     </div> <!-- /#code-wrapper  -->
     </div> <!-- /#ide-wrapper -->
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="../node_modules/dist/jquery.min.js"></script>
-    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-
-    <!-- Mathjax.js -->
-    <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({
-          tex2jax: {
-              inlineMath: [['$','$'], ['\\(','\\)']]
-          }
-      });
-    </script>
-    <script type="text/javascript" src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-
     <!-- JsCoq -->
-    <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
 
     <script type="text/javascript">
 
@@ -276,54 +277,8 @@ End DftSum.
                     'dsp-sig-def', 'dsp-sig-shift', 'dsp-sig-conv', 'dsp-sig-conv-proof',
                     'dsp-dft-h1', 'dsp-dft-def', 'dsp-dft-shift', 'dsp-dft-conv'];
 
-     loadJsCoq('../').then( () => {
-         coq = new CoqManager ( dft_ids,
-                                { base_path: '../', init_pkgs: ['init', 'dsp'],
-                                  all_pkgs: ['init', 'mathcomp', 'dsp']
-                                } );
-     });
-
-     $('#dsp-sig-h1').next().hide();
-     $('#dsp-dft-h1').next().hide();
-
-     /* Parent and child elements */
-     var l_elem = ['#conv-e1', '#conv-e2', '#conv-e3'];
-     var step = 0;
-
-     function goNext () {
-         if (step < l_elem.length) {
-             $(l_elem[step]).addClass('p-active');
-         }
-         if (step) {
-             $(l_elem[step-1]).removeClass('p-active');
-         }
-         step++;
-     }
-
-     function goPrev () {
-         step--;
-         if (step < l_elem.length) {
-             $(l_elem[step]).removeClass('p-active');
-         }
-         if (step) {
-             $(l_elem[step-1]).addClass('p-active');
-         }
-     }
-
-     /* Let's use Ctrl-Alt-N/Ctrl-Alt-P */
-     $(document).keydown(evt => {
-         if (!evt.altKey || !evt.ctrlKey) return true;
-         // console.log("key alt-code: " + evt.keyCode);
-         switch (evt.keyCode) {
-             case 78:
-                 goNext();
-                 break;
-             case 80:
-                 goPrev();
-                 break;
-             default:
-                 console.log("Uncapture ctrl-alt command: " + evt.keyCode);
-         }
+     JsCoq.start(dft_ids, {
+         all_pkgs: ['coq', 'mathcomp', 'dsp']  /* @todo dsp plugin is currently missing */
      });
     </script>
   </body>
