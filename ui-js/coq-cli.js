@@ -1,4 +1,4 @@
-import { HeadlessCoqManager } from './headless';
+import { HeadlessCoqManager } from './headless.ts';
 
 export class HeadlessCLI {
 

@@ -66,13 +66,13 @@ module.exports = (env, argv) => [
     rules: [ts]
   },
   externals: {  /* do not bundle the worker */
-    '../coq-js/jscoq_worker.bc.js': 'commonjs2 ../coq-js/jscoq_worker.bc.js',
+    '../coq-js/jscoq_worker.bc.cjs': 'commonjs2 ../coq-js/jscoq_worker.bc.cjs',
     'wacoq-bin/dist/subproc': 'undefined',
     'cross-spawn': 'commonjs2 cross-spawn'
   },
   resolve,
-  output: output('dist', 'cli.js'),
-  plugins: cliPlugins('dist/cli.js'),
+  output: output('dist', 'cli.cjs'),
+  plugins: cliPlugins('dist/cli.cjs'),
   node: false
 },
 /**
@@ -99,7 +99,7 @@ module.exports = (env, argv) => [
     ...resolve,
     fallback: { "stream": require.resolve("stream-browserify") }
   },
-  plugins: [new VueLoaderPlugin(), 
+  plugins: [new VueLoaderPlugin(),
             new webpack.ProvidePlugin({process: 'process/browser'})]
 },
 /**
@@ -142,7 +142,7 @@ module.exports = (env, argv) => [
         }
       }
     }
-  },  
+  },
   plugins: [new webpack.ProvidePlugin({process: 'process/browser.js',
                                        Buffer: ['buffer', 'Buffer']})]
 }

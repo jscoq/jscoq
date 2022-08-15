@@ -30,8 +30,8 @@ export class CoqWorker {
      */
     static defaultScriptPath() {
         var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
-        return new URL({'js': "../coq-js/jscoq_worker.bc.js",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[JsCoq.backend],
+        return new URL({'js': "../coq-js/jscoq_worker.bc.cjs",
+                        'wa':`${nmPath}/wacoq-bin/dist/worker.cjs`}[JsCoq.backend],
                        this.scriptUrl).href;
     }
 

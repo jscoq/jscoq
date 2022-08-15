@@ -16,6 +16,18 @@ import { CoqProject } from '../coq-jslib/build/project';
 
 (<any>global).JsCoq = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
 
+// Pain in the ass
+function arreq_deep(arr1, arr2) {  /* adapted from 'array-equal' */
+    var length = arr1.length;
+    if (!arr2 || length !== arr2.length) return false;
+    for (var i = 0; i < length; i++) {
+        let e1 = arr1[i], e2 = arr2[i];
+        if (!(Array.isArray(e1) && Array.isArray(e2) ? arreq_deep(e1, e2) : e1 === e2))
+            return false;
+    }
+    return true;
+};
+
 class HeadlessCoqWorker extends CoqWorker {
     when_created: Promise<any>
     worker: any
@@ -37,7 +49,7 @@ class HeadlessCoqWorker extends CoqWorker {
 
     static instance() {
         global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
-        var jscoq = require('../coq-js/jscoq_worker.bc.js').jsCoq;
+        var jscoq = require('../coq-js/jscoq_worker.bc.cjs').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
             jscoq.onmessage = handler;
@@ -308,7 +320,7 @@ class HeadlessCoqManager {
 
     _identifierWithin(id, modpath) {
         var prefix = (typeof modpath === 'string') ? modpath.split('.') : modpath;
-        return id.prefix.slice(0, prefix.length).equals(prefix);
+        return arreq_deep(id.prefix.slice(0, prefix.length),prefix);
     }
 
     _format_loc(loc) {
@@ -352,9 +364,7 @@ class QueueCoqProvider {
         c.queue = this.queue.slice();
         return c;
     }
-
 }
-
 
 class PackageDirectory extends EventEmitter {
     dir: string
@@ -442,6 +452,5 @@ type PackageManifest = {
         vo_files: [string, null][]
     }[]
 }
-
 
 export { HeadlessCoqWorker, HeadlessCoqManager, PackageDirectory }

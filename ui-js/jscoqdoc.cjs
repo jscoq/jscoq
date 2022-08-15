@@ -4,7 +4,6 @@ const fs = require('fs'),
       path = require('path'),
       chld = require('child-process-promise');
 
-
 const JSCOQ_URL = process.env['JSCOQ_URL'] || '.',
       SCRIPTS = ["ui-js/jscoq-loader.js", "ui-js/jscoq-agent.js"],
       STYLES = ["ui-css/jscoqdoc.css"];

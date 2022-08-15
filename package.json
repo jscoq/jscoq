@@ -1,10 +1,12 @@
 {
   "name": "jscoq",
   "version": "0.16.0",
+  "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
+  "main": "ui-js/jscoq-loader.js",
   "bin": {
-    "jscoq": "./dist/cli.js",
-    "jscoqdoc": "ui-js/jscoqdoc.js"
+    "jscoq": "./dist/cli.cjs",
+    "jscoqdoc": "ui-js/jscoqdoc.cjs"
   },
   "dependencies": {
     "array-equal": "^1.0.0",
@@ -76,12 +78,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ejgallego/jscoq.git"
+    "url": "git+https://github.com/jscoq/jscoq.git"
   },
   "author": "ejgallego",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/ejgallego/jscoq/issues"
+    "url": "https://github.com/jscoq/jscoq/issues"
   },
   "homepage": "https://jscoq.github.io"
 }

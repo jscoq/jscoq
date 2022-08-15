@@ -263,7 +263,7 @@ export class CoqContextualInfo {
     }
 }
 
-class CoqIdentifier {
+export class CoqIdentifier {
     constructor(prefix, label) {
         this.prefix = prefix;
         this.label = label;

@@ -25,6 +25,10 @@
  (libraries num zarith_stubs_js jscoqlib))
 
 (rule
+ (target jscoq_worker.bc.cjs)
+ (action (copy jscoq_worker.bc.js jscoq_worker.bc.cjs)))
+
+(rule
  (target jscoq_version.ml)
  (deps ../package.json)
  (action (with-stdout-to %{target}
