@@ -141,7 +141,7 @@ Qed.</textarea>
 
   <script type="module">
 
-    import { JsCoqLoader } from '../ui-js/jscoq-loader.js';
+    import { JsCoq } from '../ui-js/jscoq-loader.js';
 
     var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {
@@ -150,7 +150,7 @@ Qed.</textarea>
         all_pkgs:  ['coq', 'mathcomp']
     };
 
-    JsCoqLoader.start(jscoq_ids, jscoq_opts).then(res => window.coq = res);
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => window.coq = res);
   </script>
 </body>
 </html>

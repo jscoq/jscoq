@@ -28,7 +28,7 @@ Inductive and_they_run := too(*!*).
   <!-- jsCoq configuration part -->
   <script type="module">
 
-    import { JsCoqLoader } from './ui-js/jscoq-loader.js';
+    import { JsCoq } from './ui-js/jscoq-loader.js';
 
     var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {
@@ -39,6 +39,6 @@ Inductive and_they_run := too(*!*).
         all_pkgs:      ['coq']
     };
 
-    JsCoqLoader.start(jscoq_ids, jscoq_opts);
+    JsCoq.start(jscoq_ids, jscoq_opts);
   </script>
 </body>

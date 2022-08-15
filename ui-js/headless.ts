@@ -14,7 +14,7 @@ import { FormatPrettyPrint } from './format-pprint';
 import { FSInterface, fsif_native } from '../coq-jslib/build/fsif';
 import { CoqProject } from '../coq-jslib/build/project';
 
-(<any>global).JsCoq = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
+(<any>global).JsCoqGlobal = {backend: 'js'};  /** @oops this is usually defined in `jscoq-loader.js` */
 
 // Pain in the ass
 function arreq_deep(arr1, arr2) {  /* adapted from 'array-equal' */

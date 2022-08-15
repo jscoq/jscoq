@@ -307,7 +307,7 @@ export class CoqManager {
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${JsCoq.node_modules_path}@${JsCoq.backend}coq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${JsCoqGlobal.node_modules_path}@${JsCoqGlobal.backend}coq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(this.layout.packages,
@@ -324,7 +324,7 @@ export class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            if (JsCoq.backend !== 'wa') {
+            if (JsCoqGlobal.backend !== 'wa') {
                 await this.coq.when_created;
                 this.coqBoot();  // only the WA backend emits `Boot` events
             }

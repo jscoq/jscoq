@@ -238,7 +238,7 @@ class ProjectPanel {
         return new CompileTask({
                 'js': () => new JsCoqBatchWorker(coqw, pkgr),
                 'wa': () => new WacoqBatchWorker(coqw, pkgr)
-            }[JsCoq.backend](), this.project, {buildDir});
+            }[JsCoqGlobal.backend](), this.project, {buildDir});
     }
 
     feedMessage(sid, lvl, loc, msg) {

@@ -12,7 +12,7 @@
 
 import { CoqManager } from './coq-manager.js';
 
-var loadJsCoq, JsCoqLoader;
+var loadJsCoq, JsCoq;
 
 (function() {
 
@@ -83,7 +83,7 @@ var loadJsCoq, JsCoqLoader;
         for (let fn of files.js) await loadJs(fn);
     };
 
-    JsCoqLoader = {
+    JsCoq = {
 
         loaded: undefined,
 
@@ -106,7 +106,7 @@ var loadJsCoq, JsCoqLoader;
             if (Array.isArray(args[0])) jscoq_ids = args.shift();
             if (args[0]) jscoq_opts = args.shift();
 
-            if (args.length > 0) console.warn('too many arguments to JsCoqLoader.start()');
+            if (args.length > 0) console.warn('too many arguments to JsCoq.start()');
 
             // Set base path from options if not done
             base_path = base_path || jscoq_opts.base_path || (scriptDir ? `${scriptDir}../` : "./");
@@ -136,8 +136,8 @@ var loadJsCoq, JsCoqLoader;
             let opts = this._getopt(...args),
                 {base_path, node_modules_path, jscoq_ids, jscoq_opts, backend} = opts;
             await this._load(base_path, node_modules_path, is_npm);
-            JsCoq = this._config(opts);
-            JsCoq.is_npm = is_npm;
+            JsCoqGlobal = this._config(opts);
+            JsCoqGlobal.is_npm = is_npm;
             return new CoqManager(jscoq_ids, jscoq_opts)
 
         }
@@ -145,7 +145,7 @@ var loadJsCoq, JsCoqLoader;
 
 })();
 
-export { JsCoqLoader };
+export { JsCoq };
 
 // Local Variables:
 // js-indent-level: 4

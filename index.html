@@ -247,7 +247,7 @@ Qed.</textarea>
 
   <script type="module">
 
-    import { JsCoqLoader } from './ui-js/jscoq-loader.js';
+    import { JsCoq } from './ui-js/jscoq-loader.js';
 
     if (!localStorage['scratchpad.last_filename'])
       setTimeout(() => document.body.classList.add('welcome'), 1500);
@@ -264,7 +264,7 @@ Qed.</textarea>
                     './examples': ['examples']}
     };
 
-    JsCoqLoader.start(jscoq_ids, jscoq_opts).then(res => {
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
         /* Global reference */
         window.coq = res;
         window.coq.loadSymbolsFrom('./examples/examples.symb.json');

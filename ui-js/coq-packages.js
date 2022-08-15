@@ -54,7 +54,7 @@ export class PackageManager {
         return {
             'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
             'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath()).href
-        }[JsCoq.backend];
+        }[JsCoqGlobal.backend];
     }
 
     populate() {
@@ -201,7 +201,7 @@ export class PackageManager {
     }
 
     getLoadPath() {
-        switch (JsCoq.backend) {
+        switch (JsCoqGlobal.backend) {
         case 'js':
             return this.loaded_pkgs.map( pkg_name => {
                 let pkg = this.getPackage(pkg_name),
@@ -377,7 +377,7 @@ export class PackageManager {
     }
 
     loadArchive(pkg) {
-        switch (JsCoq.backend) {
+        switch (JsCoqGlobal.backend) {
         case 'js':
             return pkg.archive.unpack(this.coq)
                               .then(() => this.coqLibLoaded(pkg.name));
@@ -455,7 +455,7 @@ class PackageIndex {
     }
 
     add(pkgInfo) {
-        if (JsCoq.backend === 'js')
+        if (JsCoqGlobal.backend === 'js')
             pkgInfo.modules = this._listModules(pkgInfo);
 
         for (let mod in pkgInfo.modules || {})

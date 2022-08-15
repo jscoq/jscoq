@@ -9,4 +9,4 @@ var copyOptions = function(obj, target) {
     return target;
 }
 
-var JsCoq;
+var JsCoqGlobal;
