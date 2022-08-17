@@ -1,7 +1,10 @@
 "use strict";
 
+import { JSZip, $ } from '../dist/lib.js';
+
 import { JsCoq } from './index.js';
 import { CoqWorker } from './jscoq.js';
+
 
 export class PackageManager {
 

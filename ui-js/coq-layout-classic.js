@@ -4,6 +4,7 @@
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
+import { $ } from '../dist/lib.js';
 import { SettingsPanel } from './settings.js';
 
 "use strict";

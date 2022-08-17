@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { CodeMirror } from '../dist/lib.js';
+import { CodeMirror, localforage, $ } from '../dist/lib.js';
 import './mode/coq-mode.js';
 import { copyOptions } from './etc.js';
 

@@ -1,4 +1,5 @@
 "use strict";
+import { $ } from '../dist/lib.js';
 
 export class SettingsPanel {
     html() {

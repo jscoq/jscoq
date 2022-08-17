@@ -9,6 +9,8 @@
 
 "use strict";
 
+import { $ } from '../dist/lib.js';
+
 import { JsCoq } from './index.js';
 import { copyOptions } from './etc.js';
 import { Future, CoqWorker } from './jscoq.js';

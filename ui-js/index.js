@@ -94,16 +94,11 @@ async function loadJsCoq(base_path, node_modules_path) {
                  base_path + 'ui-css/coq-base',
                  base_path + 'ui-css/coq-light',
                  base_path + 'ui-css/coq-dark',
-                 base_path + 'ui-css/settings'],
-        'js':   [node_modules_path + 'jquery/dist/jquery.min',
-                 node_modules_path + 'jszip/dist/jszip.min',
-                 node_modules_path + 'localforage/dist/localforage.min',
-                 ]
+                 base_path + 'ui-css/settings']
     };
 
     for (let fn of files.css) loadCss(fn)
-    for (let fn of files.js) await loadJs(fn);
-    // We don't need to load modules anymore, they follow from the imports!
+    // We don't need to load JS modules anymore, they follow from the imports!
 };
 
 
