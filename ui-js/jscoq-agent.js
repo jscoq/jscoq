@@ -3,6 +3,7 @@
  * This script is adapted from the Software Foundations jsCoq build.
  * So, it may require some tweaking depending on your development and styles.
  */
+import { JsCoq } from './index.js';
 
 function jsCoqInject() {
     b = document.body;

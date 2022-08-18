@@ -3,8 +3,6 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <title>jsCoq NPM package</title>
-
-    <script src="./ui-js/jscoq-loader.js" type="module"></script>
   </head>
 
 <body class="jscoq-main">
@@ -28,7 +26,7 @@ Inductive and_they_run := too(*!*).
   <!-- jsCoq configuration part -->
   <script type="module">
 
-    import { JsCoq } from './ui-js/jscoq-loader.js';
+    import { JsCoq } from './ui-js/index.js';
 
     var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {

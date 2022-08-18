@@ -3,10 +3,6 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <title>Using jsCoq with NPM (a template)</title>
-
-    <!-- important: this will not work from *within* the jsCoq package dir; -->
-    <!-- this template is meant to be copied to your project dir and edited -->
-    <script src="node_modules/jscoq/ui-js/jscoq-loader.js"></script>
   </head>
 
 <body class="jscoq-main">
@@ -25,7 +21,10 @@ From GroupTheory Require Import g1.
   </div>
 
   <!-- jsCoq configuration part -->
-  <script type="text/javascript">
+  <script type="module">
+    /* important: this will not work from *within* the jsCoq package dir; */
+    /* this template is meant to be copied to your project dir and edited */
+    import { JsCoq } from 'node_modules/jscoq/ui-js/index.js';
 
     var jscoq_ids  = ['coq-code'];
     var jscoq_opts = {

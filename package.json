@@ -3,7 +3,7 @@
   "version": "0.16.0",
   "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
-  "main": "ui-js/jscoq-loader.js",
+  "main": "ui-js/index.js",
   "bin": {
     "jscoq": "./dist/cli.cjs",
     "jscoqdoc": "ui-js/jscoqdoc.cjs"
