@@ -20,7 +20,7 @@ import { ProviderContainer } from './cm-provider-container.js';
 import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-import { isMac } from './etc.js';
+import { isMac, arreq_deep } from './etc.js';
 
 
 /***********************************************************************/

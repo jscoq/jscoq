@@ -64,17 +64,18 @@
     "ui-css",
     "ui-images",
     "ui-external",
-    "coq-js/*.bc.js",
+    "coq-js/*.bc.cjs",
     "coq-pkgs",
     "examples",
     "dist",
+    "jscoq.js",
     "index.html"
   ],
   "scripts": {
     "build": "webpack --mode production",
     "build:dev": "webpack",
     "watch": "webpack -w",
-    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/' ui-js/jscoq-loader.js"
+    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/' ui-js/index.js"
   },
   "repository": {
     "type": "git",
