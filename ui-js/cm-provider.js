@@ -25,7 +25,7 @@ class CmSentence {
 }
 
 // A CodeMirror-based Provider of coq statements.
-export class CmCoqProvider {
+class CmCoqProvider {
 
     constructor(element, options, replace) {
 
@@ -753,6 +753,9 @@ Deprettify.REPLACES = [  /* Safari does not support static members? */
     [/⊢/g, '|-'],   [/\n☐/g, ''],
     [/∃/g, 'exists']  /* because it is also a tactic... */
 ];
+
+
+export { CmCoqProvider, CmSentence, Deprettify }
 
 // Local Variables:
 // js-indent-level: 4

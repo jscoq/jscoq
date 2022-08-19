@@ -1,6 +1,6 @@
 "use strict";
 
-import { CmCoqProvider } from './cm-provider.js';
+import { CmCoqProvider, Deprettify } from './cm-provider.js';
 
 /***********************************************************************/
 /* A Provider Container aggregates several containers, the main deal   */

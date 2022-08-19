@@ -3,10 +3,10 @@
  * This script is adapted from the Software Foundations jsCoq build.
  * So, it may require some tweaking depending on your development and styles.
  */
-import { JsCoq } from './index.js';
+import { JsCoq, Deprettify } from './index.js';
 
 function jsCoqInject() {
-    b = document.body;
+    var b = document.body;
     b.setAttribute('id', 'ide-wrapper');
     b.classList.add('toggled');
     b.classList.add(isTerse() ? 'terse' : 'full');

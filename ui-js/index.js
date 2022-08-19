@@ -1,6 +1,7 @@
 "use strict"
 
 import { CoqManager } from './coq-manager.js';
+export { Deprettify } from './cm-provider.js';
 
 const scriptDir = import.meta.url.replace(/[^/]*$/, '');
 
@@ -99,6 +100,7 @@ async function loadJsCoq(base_path, node_modules_path) {
 
     for (let fn of files.css) loadCss(fn)
     // We don't need to load JS modules anymore, they follow from the imports!
+    await whenReady();
 };
 
 
@@ -121,5 +123,13 @@ var loadJs = function(fn) {
     });
 };
 
+/* Some boilerplate (for some reason `$(document).ready(..)` is not quite that) */
+function whenReady() {
+    return (document.readyState === 'complete') ? Promise.resolve()
+        : new Promise(r =>
+            document.addEventListener('readystatechange', () =>
+                document.readyState === 'complete' && r()));
+}
 
-export { JsCoq }
+
+export { JsCoq, CoqManager }

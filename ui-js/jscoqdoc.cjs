@@ -44,7 +44,7 @@ function url(fn) {
 }
 
 function mkScript(fn) {
-    return `<script src="${url(fn)}"></script>`;
+    return `<script src="${url(fn)}" type="module"></script>`;
 }
 function mkStyle(fn) {
     return `<link href="${url(fn)}" rel="stylesheet" type="text/css" />`;

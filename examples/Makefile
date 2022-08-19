@@ -8,7 +8,7 @@ WORD_SIZE ?= 32
 
 CONTEXT = jscoq+$(WORD_SIZE)bit
 COQC = ../_build/install/$(CONTEXT)/bin/coqc
-JSCOQ_CLI = ../_build/$(CONTEXT)/dist/cli.js
+JSCOQ_CLI = ../_build/$(CONTEXT)/dist/cli.cjs
 
 all: examples.coq-pkg examples.symb.json sqrt_2.html nahas_tutorial.html
 
@@ -28,7 +28,7 @@ _build/%.vo: _build/%.v
 sqrt_2!JSCOQDOC_FLAGS = --template sqrt_2.template.html
 
 %.html: _build/%.v _build/%.vo
-	JSCOQ_URL=.. ../ui-js/jscoqdoc.js $($*!JSCOQDOC_FLAGS) \
+	JSCOQ_URL=.. ../ui-js/jscoqdoc.cjs $($*!JSCOQDOC_FLAGS) \
 	  --no-index --no-lib-name --parse-comments $<
 	@rm coqdoc.css  # urghh
 
