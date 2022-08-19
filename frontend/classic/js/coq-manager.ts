@@ -19,11 +19,16 @@ import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
 // UI Frontend imports
 import { PackageManager } from './coq-packages';
 import { CoqLayoutClassic } from './coq-layout-classic';
-// import { CoqContextualInfo } from './contextual-info.js';
-import { CompanyCoq }  from './addon/company-coq.js';
+
+// Editors
 import { ICoqEditor } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
+import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
+
+// Addons
+// import { CoqContextualInfo } from './contextual-info.js';
+import { CompanyCoq }  from './addon/company-coq.js';
 
 /**
  * Coq Document Manager, client-side.
@@ -206,7 +211,8 @@ export class CoqManager {
      */
     loadSymbolsFrom(url, scope="globals") {
         $.get({url, dataType: 'json'}).done(data => {
-            CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
+            return;
+            // CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -330,16 +336,17 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    coqNotification(diags, version) {
+    coqNotification(diags : Diagnostic[], version : number) {
+
         this.editor.clearMarks();
-        
+
         console.log("Diags received: " + diags.length.toString());
 
         if (this.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
-       
+
         for (let d of diags) {
             if (d.severity < 4) {
                 this.editor.markDiagnostic(d);

@@ -9,6 +9,7 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
+import { editorAppend } from './coq-editor';
 
 export class CoqProseMirror {
     view : EditorView;
@@ -16,19 +17,7 @@ export class CoqProseMirror {
     // eId must be a textarea
     constructor(eIds : string []) {
 
-        var area = document.getElementById(eIds[0]) as HTMLTextAreaElement;
-
-        area.style.display = 'none';
-
-        // Create container for editor
-        const container = document.createElement('div');
-        container.classList = area.classList;
-
-        if (area.nextSibling) {
-            area.parentElement.insertBefore(container, area.nextSibling);
-        } else {
-            area.parentElement.appendChild(container);
-        }
+        let { container, area } = editorAppend(eIds[0]);
 
         var doc = defaultMarkdownParser.parse(area.value);
 

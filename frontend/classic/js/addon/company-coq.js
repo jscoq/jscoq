@@ -17,6 +17,7 @@
 import CodeMirror from 'codemirror';
 import $ from 'jquery';
 
+// XXX Port to CM 6
 var Pos = CodeMirror.Pos;
 
 /**
@@ -30,7 +31,7 @@ class Markup {
         this.reserved = {tokens: [], types: ['comment']};
         this.className = 'markup';
     }
-    
+
     attach(cm) {
         this.cm = cm;
         this.work = new WorkQueue(cm);

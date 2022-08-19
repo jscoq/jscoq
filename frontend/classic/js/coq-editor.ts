@@ -1,3 +1,6 @@
+//@ts-check
+"use strict";
+
 /* jsCoq
  *
  * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
@@ -15,6 +18,26 @@ export interface ICoqEditor {
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
+}
+
+// Takes a textArea and will create an empty div to attach an editor
+// to.
+export function editorAppend(eId) : { container, area: HTMLTextAreaElement} {
+
+    var area = document.getElementById(eId) as HTMLTextAreaElement;
+
+    area.style.display = 'none';
+
+    // Create container for editor
+    const container = document.createElement('div');
+    container.classList = area.classList;
+
+    if (area.nextSibling) {
+        area.parentElement.insertBefore(container, area.nextSibling);
+    } else {
+        area.parentElement.appendChild(container);
+    }
+    return { container, area };
 }
 
 // Local Variables:
