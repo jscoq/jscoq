@@ -7,7 +7,7 @@ import { CoqWorker } from '../../../backend';
 // frontend import
 import $ from 'jquery';
 import { FormatPrettyPrint } from '../../format-pprint/js';
-import { CompanyCoq } from './addon/company-coq.js';
+// import { CompanyCoq } from './addon/company-coq.js';
 
 export class CoqContextualInfo {
     /**

@@ -91,14 +91,16 @@ let coq_init opts =
   root_state := Controller.Coq_init.(coq_init { fb_handler; ml_load = None; debug });
   ()
 
+let gen l = String.make (String.length l) ' '
+
 let rec md_map_lines coq l =
   match l with
   | [] -> []
   | l :: ls ->
     if String.equal "```" l then
-      "" :: md_map_lines (not coq) ls
+      gen l :: md_map_lines (not coq) ls
     else
-      (if coq then l else "") :: md_map_lines coq ls
+      (if coq then l else gen l) :: md_map_lines coq ls
 
 let markdown_process text =
   let lines = String.split_on_char '\n' text in

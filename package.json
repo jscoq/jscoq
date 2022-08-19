@@ -21,7 +21,7 @@
     "array-equal": "^1.0.0",
     "browser-or-node": "^2.0.0",
     "child-process-promise": "^2.2.1",
-    "codemirror": "^5.61.0",
+    "codemirror": "^6.0.1",
     "commander": "^5.0.0",
     "fflate-unzip": "^0.7.0",
     "find": "^0.3.0",
@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
-    "@types/codemirror": "^5.60.5",
     "@types/find": "^0.2.1",
     "@types/glob": "^8.0.1",
     "@types/jquery": "^3.5.14",

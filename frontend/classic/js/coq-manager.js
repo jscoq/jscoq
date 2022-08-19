@@ -29,7 +29,9 @@ import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js'
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CoqContextualInfo } from './contextual-info.js';
-import { CompanyCoq }  from './addon/company-coq.js';
+
+// XXX Port to CM 6.x
+// import { CompanyCoq }  from './addon/company-coq.js';
 
 import { CoqCodeMirror, CoqProseMirror } from './coq-editor.js';
 
@@ -61,7 +63,7 @@ export class CoqManager {
         // Default options
         this.options = {
             prelaunch:  false,
-            prosemirror: true,
+            prosemirror: false,
             prelude:    true,
             debug:      true,
             show:       true,
@@ -201,7 +203,8 @@ export class CoqManager {
      */
     loadSymbolsFrom(url, scope="globals") {
         $.get({url, dataType: 'json'}).done(data => {
-            CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
+            return;
+            // CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)

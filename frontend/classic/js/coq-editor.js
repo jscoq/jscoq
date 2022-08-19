@@ -23,6 +23,26 @@ class ICoqEditor {
     markDiagnostic(diag) { }
 }
 
+// Takes a textArea and will create an empty div to attach an editor
+// to.
+function editorAppend(eId) {
+
+    var area = document.getElementById(eId);
+
+    area.style.display = 'none';
+
+    // Create container for editor
+    const container = document.createElement('div');
+    container.classList = area.classList;
+
+    if (area.nextSibling) {
+        area.parentElement.insertBefore(container, area.nextSibling);
+    } else {
+        area.parentElement.appendChild(container);
+    }
+    return { container, area };
+}
+
 // Prosemirror implementation
 import { EditorView } from 'prosemirror-view';
 import { EditorState } from 'prosemirror-state';
@@ -39,28 +59,16 @@ export class CoqProseMirror {
     // eId must be a textarea
     constructor(eId) {
 
-        var area = document.getElementById(eId);
+        let { container, area } = editorAppend(eId);
 
-        area.style.display = 'none';
+        var doc = PM.defaultMarkdownParser.parse(area.value);
+        var obj_ref = this;
 
-        // Create container for editor
-        const container = document.createElement('div');
-        container.classList = area.classList;
-
-        if (area.nextSibling) {
-            area.parentElement.insertBefore(container, area.nextSibling);
-        } else {
-            area.parentElement.appendChild(container);
-        }
-
-        var doc = defaultMarkdownParser.parse(area.value);
-
-        var editor = this;
         this.view =
-            new EditorView(container, {
-                state: EditorState.create({
+            new PM.EditorView(container, {
+                state: PM.EditorState.create({
                     doc: doc,
-                    plugins: exampleSetup({schema})
+                    plugins: PM.exampleSetup({schema: PM.schema})
                 }),
                 // We update the text area
                 dispatchTransaction(tr) {
@@ -68,9 +76,9 @@ export class CoqProseMirror {
                     this.updateState(state);
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
-                        var newText = defaultMarkdownSerializer.serialize(tr.doc);
+                        var newText = PM.defaultMarkdownSerializer.serialize(tr.doc);
                         area.value = newText;
-                        editor.onChange(newText);
+                        obj_ref.onChange(newText);
                     }
                 },
             });
@@ -79,7 +87,7 @@ export class CoqProseMirror {
     }
 
     getValue() {
-        return defaultMarkdownSerializer.serialize(this.view.state.doc)
+        return PM.defaultMarkdownSerializer.serialize(this.view.state.doc)
     }
 
     onChange(newText) {
@@ -110,29 +118,47 @@ export class CoqProseMirror {
 }
 
 // CodeMirror implementation
-// CodeMirror
-import CodeMirror from 'codemirror';
-import 'codemirror/addon/hint/show-hint.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/keymap/emacs.js';
-import 'codemirror/addon/selection/mark-selection.js';
-import 'codemirror/addon/edit/matchbrackets.js';
-import 'codemirror/addon/dialog/dialog.js';
+import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
+import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 
-// CM medias
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/blackboard.css';
-import 'codemirror/theme/darcula.css';
-import 'codemirror/addon/hint/show-hint.css';
-import 'codemirror/addon/dialog/dialog.css';
+// import './mode/coq-mode.js';
 
-import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
-import './mode/coq-mode.js';
+const clearDiag = CM.StateEffect.define({});
+
+const addDiag = CM.StateEffect.define(
+    { map: ({from, to}, change) => ({from: change.mapPos(from), to: change.mapPos(to)}) });
+
+const diagField = CM.StateField.define({
+
+  create() {
+      return CM.RangeSet.empty;
+  },
+
+  update(diags, tr) {
+
+      diags = diags.map(tr.changes);
+
+      for (let e of tr.effects) {
+          if (e.is(addDiag)) {
+              diags = diags.update({
+                  add: [e.value.d.range(e.value.from, e.value.to)]
+              })
+          } else if (e.is(clearDiag)) {
+              diags = CM.RangeSet.empty;
+          }
+      };
+
+      return diags;
+  },
+  provide: f => CM.EditorView.decorations.from(f)
+})
+>>>>>>> c6d9877 ([codemirror] Very basic CM 6.x port)
 
 export class CoqCodeMirror {
 
+
     // element e
-    constructor(e) {
+    constructor(eId) {
 
         var cmOpts =
             { mode : { name : "coq",
@@ -150,16 +176,32 @@ export class CoqCodeMirror {
               className         : "jscoq"
             };
 
-        e = document.getElementById(e);
+        let { container, area } = editorAppend(eId);
 
-        if (e.tagName !== 'TEXTAREA') {
-            console.log('Error, element must be a textarea');
-        }
+        var obj_ref = this;
 
-        this._set_keymap();
-        this.editor = CodeMirror.fromTextArea(e, cmOpts);
-        this.editor.on('change', (cm, evt) => this.onChange(cm, evt) );
-        e.style.height = 'auto';
+        // this._set_keymap();
+
+        var extensions =
+            [ diagField,
+              CM.lineNumbers(),
+              CM.EditorView.updateListener.of(v => {
+                  if (v.docChanged) {
+                      // Document changed
+                      var newText = v.state.doc.toString();
+                      area.value = newText;
+                      obj_ref.onChange(newText);
+                  }})
+            ];
+
+        var state = CM.EditorState.create( { doc: area.value, extensions } );
+
+        this.view = new CM.EditorView(
+            { state,
+              parent: container,
+              extensions
+            });
+
     }
 
     // To be overriden by the manager
@@ -168,24 +210,37 @@ export class CoqCodeMirror {
     }
 
     getValue() {
-        return this.editor.getValue();
+        return this.view.state.doc.toString();
     }
 
     clearMarks() {
-        for (let m of this.editor.getAllMarks()) {
-            m.clear();
-        }
+        var tr = { effects: clearDiag.of({}) };
+        this.view.dispatch(tr);
+    }
+
+    buildDecSet() {
+        return this.decorationSet;
     }
 
     markDiagnostic(d) {
 
+        var from = d.range.start_pos, to = d.range.end_pos;
+
+        var mclass = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
+        const diagMark = CM.Decoration.mark( { class: mclass } );
+
+        var tr = { effects: addDiag.of({ from, to, d : diagMark }) };
+        this.view.dispatch(tr);
+
+        // Debug code.
         var from = { line: d.range.start.line, ch: d.range.start.character };
         var to = { line: d.range._end.line, ch: d.range._end.character };
 
-        var doc = this.editor.getDoc();
-        var mclass = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
+        console.log(`mark from (${from.line},${from.ch}) to (${to.line},${to.ch}) class: ${mclass}`);
 
-        doc.markText(from, to, {className: mclass});
+        // var d = new Decoration(from, to);
+        // var doc = this.editor.getDoc();
+        // doc.markText(from, to, {className: mclass});
     }
 
     _set_keymap() {
