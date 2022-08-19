@@ -66,3 +66,4 @@
     coq-js/jscoq_worker.bc.js))
 
 (dirs (:standard _vendor+* \ dist node_modules))
+(vendored_dirs vendor)
