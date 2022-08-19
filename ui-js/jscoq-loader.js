@@ -21,7 +21,7 @@ var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
 
 
 console.warn(`Loading jsCoq in compatibility mode; switching to ES modules is recommended:\n  ` +
-    `Use \`<script type="module">import { JsCoq } from './${basePath.replace('../', '')}jscoq.js'\` instead of \`<script src="...">\`.`)
+    `Use \`<script type="module">import { JsCoq } from './${basePath}jscoq.js'\` instead of \`<script src="...">\`.`)
     
 
 var JsCoq = {

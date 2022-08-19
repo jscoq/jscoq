@@ -246,7 +246,6 @@ Qed.</textarea>
   </div> <!-- /#ide-wrapper -->
 
   <script type="module">
-
     import { JsCoq } from './jscoq.js';
 
     if (!localStorage['scratchpad.last_filename'])
@@ -257,17 +256,15 @@ Qed.</textarea>
         implicit_libs: false,
         focus: false,
         editor: { mode: { 'company-coq': true } },
-        all_pkgs:  {'+': ['coq', 'mathcomp', 'equations', 'elpi',
-                          'quickchick', 'software-foundations',
-                          'hahn', 'paco', 'snu-sflib',
-                          'fcsl-pcm', 'htt', 'pnp', 'stdpp', 'iris'],
-                    './examples': ['examples']}
+        all_pkgs: ['coq', 'mathcomp', 'equations', 'elpi',
+                   'quickchick', 'software-foundations',
+                   'hahn', 'paco', 'snu-sflib',
+                   'fcsl-pcm', 'htt', 'pnp', 'stdpp', 'iris']
     };
 
     JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
         /* Global reference */
         window.coq = res;
-        window.coq.loadSymbolsFrom('./examples/examples.symb.json');
     });
   </script>
 </body>
