@@ -66,10 +66,9 @@ launching a Coq worker and embedding Coq functionality in
 your particular application, blog, or webpage. The basic pattern to
 add jsCoq to webpage with Coq code is:
 
-```javascript
-  <script src="$path/ui-js/jscoq-loader.js" type="text/javascript"></script>
+```html
   <script type="module">
-    import { JsCoq } from './ui-js/jscoq-loader.js';
+    import { JsCoq } from './node_modules/jscoq/jscoq.js';  /* path to installed package */
     JsCoq.start($path, $list_of_ids, {$options});
   </script>
 ```

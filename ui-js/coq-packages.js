@@ -3,7 +3,7 @@
 import { JSZip, $ } from '../dist/lib.js';
 
 import { JsCoq } from './index.js';
-import { CoqWorker } from './jscoq.js';
+import { CoqWorker } from './jscoq-worker-interface.js';
 
 
 export class PackageManager {

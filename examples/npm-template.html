@@ -6,7 +6,7 @@
 
     <!-- important: this will not work from *within* the jsCoq package dir; -->
     <!-- this template is meant to be copied to your project dir and edited -->
-    <script src="node_modules/jscoq/ui-js/jscoq-loader.js"></script>
+
   </head>
 
 <body class="jscoq-main">
@@ -25,18 +25,18 @@
   </div>
 
   <!-- jsCoq configuration part -->
-  <script type="text/javascript">
+  <script type="module">
+    import { JsCoq } from './node_modeuls/jscoq/jscoq.js';
 
     var jscoq_ids  = ['coq-code'];
     var jscoq_opts = {
         prelude:       true,
         implicit_libs: true,
-        base_path:     './node_modules/jscoq/',
         editor:        { mode: { 'company-coq': true }, keyMap: 'default' },
         init_pkgs:     ['init'],
         all_pkgs:      ['coq']
     };
 
-    JsCoq.start(jscoq_opts.base_path, './node_modules', jscoq_ids, jscoq_opts);
+    JsCoq.start(jscoq_ids, jscoq_opts);
   </script>
 </body>
