@@ -4,9 +4,8 @@ const fs = require('fs'),
       path = require('path'),
       chld = require('child-process-promise');
 
-
 const JSCOQ_URL = process.env['JSCOQ_URL'] || '.',
-      SCRIPTS = ["ui-js/jscoq-loader.js", "ui-js/jscoq-agent.js"],
+      SCRIPTS = ["ui-js/jscoq-agent.js"],
       STYLES = ["ui-css/jscoqdoc.css"];
 
 const DEFAULT_TEMPLATE =`
@@ -45,7 +44,7 @@ function url(fn) {
 }
 
 function mkScript(fn) {
-    return `<script src="${url(fn)}"></script>`;
+    return `<script src="${url(fn)}" type="module"></script>`;
 }
 function mkStyle(fn) {
     return `<link href="${url(fn)}" rel="stylesheet" type="text/css" />`;

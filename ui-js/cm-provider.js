@@ -1,4 +1,12 @@
+// Not possible to do this well with CM 5?
+// import { CodeMirror } from '../node_modules/codemirror/src/edit/main.js';
+
 "use strict";
+
+import { CodeMirror, localforage, $ } from '../dist/lib.js';
+import './mode/coq-mode.js';
+import { copyOptions } from './etc.js';
+
 
 class CmSentence {
 
@@ -41,7 +49,7 @@ class CmCoqProvider {
 
         if (options)
             copyOptions(options, cmOpts);
-        
+
         var makeHidden = $(element).is(':hidden') ||
             /* corner case: a div with a single hidden child is considered hidden */
             element.children.length == 1 && $(element.children[0]).is(':hidden');
@@ -654,21 +662,24 @@ class CmCoqProvider {
             }
         }
     }
+
+    static _set_keymap() {
+
+        CodeMirror.keyMap['jscoq'] = {
+            'Tab': 'indentMore',
+            'Shift-Tab': 'indentLess',
+            'Ctrl-Space': 'autocomplete',
+            fallthrough: ["default"]
+        };
+
+        CodeMirror.keyMap['jscoq-snippet'] = {
+            PageUp: false,
+            PageDown: false,
+            //'Cmd-Up': false,   /** @todo this does not work? */
+            //'Cmd-Down': false
+        };
+    }
 }
-
-CodeMirror.keyMap['jscoq'] = {
-    'Tab': 'indentMore',
-    'Shift-Tab': 'indentLess',
-    'Ctrl-Space': 'autocomplete',
-    fallthrough: ["default"]
-};
-
-CodeMirror.keyMap['jscoq-snippet'] = {
-    PageUp: false,
-    PageDown: false,
-    //'Cmd-Up': false,   /** @todo this does not work? */
-    //'Cmd-Down': false
-};
 
 function betaOnly(thing) {
     return JsCoq.globalConfig().features.includes('beta')
@@ -742,6 +753,9 @@ Deprettify.REPLACES = [  /* Safari does not support static members? */
     [/⊢/g, '|-'],   [/\n☐/g, ''],
     [/∃/g, 'exists']  /* because it is also a tactic... */
 ];
+
+
+export { CmCoqProvider, CmSentence, Deprettify }
 
 // Local Variables:
 // js-indent-level: 4

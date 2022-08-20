@@ -1,5 +1,7 @@
+"use strict";
+import { $ } from '../dist/lib.js';
 
-class SettingsPanel {
+export class SettingsPanel {
     html() {
         return `
         <div class="settings-panel" tabindex="0">

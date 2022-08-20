@@ -85,6 +85,9 @@ all:
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
+coq-pkgs: force
+	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
+
 jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)
 
@@ -94,14 +97,14 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.js coq-js/jscoq_worker.bc.js
+	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.cjs coq-js/jscoq_worker.bc.cjs
 
 links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.bc.js
+	rm -f coq-pkgs coq-js/jscoq_worker.bc.cjs
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
-	node --max-old-space-size=2048 ./dist/cli.js run --require-pkg $* --inspect $@
+	node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 
@@ -146,8 +149,8 @@ distclean: clean
 ########################################################################
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	coq-js/jscoq_worker.bc.js coq-pkgs \
-	ui-js ui-css ui-images ui-external dist examples}
+	coq-js/jscoq_worker.bc.cjs coq-pkgs \
+	jscoq.js ui-js ui-css ui-images ui-external dist examples}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -184,7 +187,7 @@ dist-npm:
 	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
 
 WACOQ_NPMOBJ = README.md \
-	ui-js ui-css ui-images ui-external examples dist
+	jscoq.js ui-js ui-css ui-images ui-external examples dist
 # ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
 
 dist-npm-wacoq:

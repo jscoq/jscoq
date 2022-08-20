@@ -48,7 +48,7 @@ Look at this [nifty demo](../examples/sdk-demo/) if you want to quickly experime
 
 It is useful to understand the steps that `jscoq sdk` takes when running your build. The process is not airtight so you may have to troubleshoot a little.
 
- 1. Creates a temporary directory `/tmp/jscoq-sdk/hijack`, with links to jsCoq's `cli.js` named `coqc`, `coqdep`, `coqtop`, and adds this directory at the front of the `PATH` environment variable. Now every invocation of these programs will go through jsCoq.
+ 1. Creates a temporary directory `/tmp/jscoq-sdk/hijack`, with links to jsCoq's `cli.cjs` named `coqc`, `coqdep`, `coqtop`, and adds this directory at the front of the `PATH` environment variable. Now every invocation of these programs will go through jsCoq.
  2. Executes the build command in the modified environment.
  3. As soon as `coqc` (or any other command) is invoked, the CLI locates `node_modules/jscoq` in your project directory.
  4. Creates a temporary directory `/tmp/jscoq-sdk/coqlib` and *unpacks* the Coq standard library files from `.coq-pkg` files that are shipped with jsCoq.

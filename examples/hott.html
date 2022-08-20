@@ -203,15 +203,17 @@ Definition equiv_loopS1_int : (base = base) <~> Int
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script src="ui-js/jscoq-loader.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    var coq;
+  <script type="module">
+    import { JsCoq } from '../jscoq.js';
 
-    loadJsCoq('./').then( () => {
-        coq = new CoqManager (['hott-1', 'hott-2', 'hott-3', 'hott-4', 'hott-5'],
-                              { init_pkgs: ['hott-init', 'hott'],
-                                all_pkgs:  ['hott-init', 'hott']
-                              });
+    var jscoq_ids = ['hott-1', 'hott-2', 'hott-3', 'hott-4', 'hott-5'],
+        jscoq_opts = {
+          init_pkgs: ['hott-init', 'hott'],
+          all_pkgs:  ['hott-init', 'hott']
+        }
+
+    JsCoq.start(jscoq_ids, jscoq_opts).then(coq => {
+        window.coq = coq;
     });
   </script>
 </body>

@@ -19,8 +19,6 @@
     </script>
     <script src="../node_modules/mathjax/es5/tex-svg-full.js"></script>
 
-    <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
-
     <link rel="stylesheet" href="dft.css" type="text/css" media="screen">
   </head>
   <body class="jscoq-main">
@@ -270,7 +268,8 @@ You may distribute this file under the terms of the CeCILL-B license
     </div> <!-- /#ide-wrapper -->
     <!-- JsCoq -->
 
-    <script type="text/javascript">
+    <script type="module">
+     import { JsCoq } from '../jscoq.js';
 
      var coq;
      var dft_ids = ['dsp-sig-h1',

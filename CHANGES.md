@@ -1,8 +1,9 @@
-# jsCoq 0.16.0 "Plugin or not plugin"
--------------------------------------
+# jsCoq 0.16.0 "To plugin or not to plugin"
+-------------------------------------------
 
  - Update to Coq 8.16.0 (@corwin-of-amber, @ejgallego)
- - Now Coq loads plugins with using findlib
+ - Now Coq loads plugins using findlib, but we don't yet support that
+ - Port the JS codebase to ES modules (@ejgallego , #276)
 
 # jsCoq 0.15.1 "Go For Your Toad, or Similar"
 ---------------------------------------

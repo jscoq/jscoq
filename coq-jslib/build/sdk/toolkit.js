@@ -2,13 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import child_process from 'child_process';
-import { existsExec, cat, cas, ln_sf, dirstamp } from './shutil';
-import * as sdk from './setup';
-
+import { existsExec, cat, cas, ln_sf, dirstamp } from './shutil.ts';
+import * as sdk from './setup.ts';
 
 const ME = 'jscoq',
       SDK_FLAGS = (process.env['JSCOQ'] || '').split(',').filter(x => x);
-
 
 class Phase {
 
@@ -26,7 +24,7 @@ class Phase {
         }
         throw new Error(`${progname}: not found`);
     }
-    
+
     _exec(prog, args, stdio='inherit') {
         if (SDK_FLAGS.includes('verbose')) {
             log(`[${ME}-sdk]  ${prog} ${args.join(' ')}`);

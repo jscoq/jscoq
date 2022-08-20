@@ -1,6 +1,12 @@
 "use strict";
 
-class PackageManager {
+import { JSZip, $ } from '../dist/lib.js';
+
+import { JsCoq } from './index.js';
+import { CoqWorker } from './jscoq-worker-interface.js';
+
+
+export class PackageManager {
 
     /**
      * Creates the packages UI and loading manager.
@@ -652,12 +658,7 @@ class CoqPkgArchive {
 
 }
 
-
-if (typeof document !== 'undefined' && document.currentScript)
-    PackageManager.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
-
-if (typeof module !== 'undefined')
-    module.exports = {CoqPkgArchive}
+PackageManager.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4

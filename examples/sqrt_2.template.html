@@ -12,7 +12,6 @@
     <link rel="stylesheet" type="text/css" href="../ui-css/landing-page.css">
     <link rel="stylesheet" type="text/css" href="../ui-css/kbd.css">
     <link rel="stylesheet" type="text/css" href="../ui-css/jscoqdoc.css">
-    <script src="../ui-js/jscoq-loader.js" type="text/javascript"></script>
   </head>
 
 <body class="jscoq-main">
@@ -106,7 +105,10 @@ Qed.</textarea>
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
-  <script type="text/javascript">
+  <script type="module">
+
+    import { JsCoq } from '../ui-js/index.js';
+
     if (!localStorage['scratchpad.last_filename'])
       setTimeout(() => document.body.classList.add('welcome'), 1500);
 
@@ -123,16 +125,13 @@ Qed.</textarea>
                     '.': ['examples']}
     };
 
-    /* Global reference */
-    var coq;
-
     for (let div of document.querySelectorAll('.code')) {
         if (div.textContent.match(/^\s*$/)) div.remove();
     }
 
     JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
-      coq = res;
-      coq.loadSymbolsFrom('./examples.symb.json');
+      window.coq = res;
+      window.coq.loadSymbolsFrom('./examples.symb.json');
     });
   </script>
 </body>

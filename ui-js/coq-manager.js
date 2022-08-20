@@ -7,261 +7,27 @@
 // require them to be able to list parts and implement marks.
 //
 
-// XXX: use RequireJS or something like that.
 "use strict";
 
-// Extra stuff:
+import { $ } from '../dist/lib.js';
 
-Array.prototype.last     = function() { return this[this.length-1]; };
-Array.prototype.flatten  = function() { return [].concat.apply([], this); };
-Array.prototype.findLast = function(p) { var r; for (let i = this.length; i > 0; )
-                                                    if (p(r = this[--i])) return r; }
-Array.prototype.equals   = function(other) { return arreq_deep(this, other); }
-Object.defineProperty(Array.prototype, "last",     {enumerable: false});
-Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
-Object.defineProperty(Array.prototype, "findLast", {enumerable: false});
-Object.defineProperty(Array.prototype, "equals",   {enumerable: false});
+import { JsCoq } from './index.js';
+import { copyOptions } from './etc.js';
+import { Future, CoqWorker } from './jscoq-worker-interface.js';
+import { PackageManager } from './coq-packages.js';
+import { CoqLayoutClassic } from './coq-layout-classic.js';
+import { ProviderContainer } from './cm-provider-container.js';
+import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
+import { FormatPrettyPrint } from './format-pprint.js';
+import { CompanyCoq }  from './addon/company-coq.js';
+import { isMac, arreq_deep } from './etc.js';
 
-function arreq_deep(arr1, arr2) {  /* adapted from 'array-equal' */
-    var length = arr1.length
-    if (!arr2 || length !== arr2.length) return false
-    for (var i = 0; i < length; i++) {
-        let e1 = arr1[i], e2 = arr2[i];
-        if (!(Array.isArray(e1) && Array.isArray(e2) ? arreq_deep(e1, e2) : e1 === e2))
-            return false
-    }
-    return true
-}
-
-if (typeof navigator !== 'undefined')
-    navigator.isMac = /Mac/.test(navigator.platform);
-
-
-/***********************************************************************/
-/* A Provider Container aggregates several containers, the main deal   */
-/* here is keeping track of focus, as the focused container can be     */
-/* different from the "active" one                                     */
-/***********************************************************************/
-class ProviderContainer {
-
-    constructor(elementRefs, options) {
-
-        this.options = options ? options : {};
-
-        // Code snippets.
-        this.snippets = [];
-
-        // Event handlers (to be overridden by CoqManager)
-        this.onInvalidate = (mark) => {};
-        this.onMouseEnter = (stm, ev) => {};
-        this.onMouseLeave = (stm, ev) => {};
-        this.onTipHover = (entries, zoom) => {};
-        this.onTipOut = () => {};
-
-        class WhileScrolling {
-            constructor() {
-                this.handler = () => { 
-                    this.active = true;
-                    if (this.to) clearTimeout(this.to);
-                    this.to = setTimeout(() => this.active = false, 200);
-                };
-                window.addEventListener('scroll', this.handler, {capture: true});
-            }
-            destroy() {
-                window.removeEventListener('scroll', this.handler);
-            }
-        }
-
-        // Create sub-providers.
-        //   Do this asynchronously to avoid locking the page when there is
-        //   a large number of snippets.
-        (async () => {
-            var i = 0, scroll = new WhileScrolling();
-
-            for (let [idx, element] of this.findElements(elementRefs).entries()) {
-
-                if (this.options.replace)
-                    element = Deprettify.trim(element);
-
-                // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
-                cm.idx = idx;
-                this.snippets.push(cm);
-
-                // Track focus XXX (make generic)
-                cm.editor.on('focus', ev => { this.currentFocus = cm; });
-
-                // Track invalidate
-                cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };
-                cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
-                cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
-
-                cm.onTipHover = (entries, zoom) => { this.onTipHover(entries, zoom); };
-                cm.onTipOut   = ()              => { this.onTipOut(); }
-
-                cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
-
-                // Running line numbers
-                if (this.options.line_numbers === 'continue') {
-                    if (idx > 0) this.renumber(idx - 1);
-                    cm.onResize = () => { this.renumber(idx); }
-                }
-
-                if (scroll.active || (++i) % 5 == 0) await this.yield();
-            }
-
-            scroll.destroy();
-        })();
-    }
-
-    findElements(elementRefs) {
-        var elements = [];
-        for (let e of elementRefs) {
-            var els = (typeof e === 'string') ? 
-                [document.getElementById(e), ...document.querySelectorAll(e)] : e;
-            els = els.filter(x => x);
-            if (els.length === 0) {
-                console.warn(`[jsCoq] element(s) not found: '${e}'`);
-            }
-            elements.push(...els);
-        }
-        return elements;
-    }
-
-    /**
-     * Readjust line numbering flowing from one editor to the next.
-     * @param {number} startIndex index where renumbering should start
-     */
-    async renumber(startIndex) {
-        let snippet = this.snippets[startIndex],
-            line = snippet.editor.getOption('firstLineNumber') + snippet.lineCount;
-
-        for (let index = startIndex + 1; index < this.snippets.length; index++) {
-            let snippet = this.snippets[index];
-            snippet.editor.setOption('firstLineNumber', line);
-            line += snippet.lineCount;
-        }
-    }
-
-    yield() {
-        if (this.wait_for && !this.wait_for.isDone()) return this.wait_for.promise;
-        return new Promise(resolve => setTimeout(resolve, 0));
-    }
-
-    configure(options) {
-        for (let snippet of this.snippets)
-            snippet.configure(options);
-    }
-
-    // Get the next candidate and mark it.
-    getNext(prev, until) {
-
-        // If we have no previous element start with the first
-        // snippet, else continue with the current one.
-        var spr = prev ? prev.sp : this.snippets[0];
-
-        if (until && this.snippets.indexOf(spr) > this.snippets.indexOf(until.sp))
-            return null;
-
-        var next = spr.getNext(prev, (until && until.sp === spr) ? until.pos : null);
-
-        // We got a snippet!
-        if (next) {
-            next.sp = spr;
-            return next;
-        } else if (until && until.sp === spr) {
-            return null;
-        } else {
-            // Try the next snippet.
-            var idx = this.snippets.indexOf(spr);
-            while (idx < this.snippets.length - 1) {
-                spr  = this.snippets[idx+1];
-                next = spr.getNext(null);
-                if (next) {
-                    next.sp = spr;
-                    return next;
-                } else {
-                    idx = this.snippets.indexOf(spr);
-                }
-            } // while
-            // No next snippet :( !
-            return null;
-        }
-    }
-
-    mark(stm, mark, loc_focus) {
-        stm.sp.mark(stm, mark, loc_focus);
-    }
-
-    highlight(stm, flag) {
-        stm.sp.highlight(stm, flag);
-    }
-
-    retract() {
-        for (let sp of this.snippets) sp.retract();
-    }
-
-    // Focus and movement-related operations.
-
-    // Get the point of the current focused element.
-    getAtPoint() {
-        return this.currentFocus.getAtPoint();
-    }
-
-    // Indicates if stm is after the point.
-    // XXX: Improve
-    afterPoint(stm) {
-
-        var idx_point = this.snippets.indexOf(this.currentFocus);
-        var idx_cur   = this.snippets.indexOf(stm.sp);
-
-        return (idx_point < idx_cur);
-
-    }
-
-    getCursor() {
-        return {sp: this.currentFocus,
-                pos: this.currentFocus.getCursor()}
-    }
-
-    cursorToStart(stm) {
-        stm.sp.cursorToStart(stm);
-    }
-
-    cursorToEnd(stm) {
-        stm.sp.cursorToEnd(stm);
-    }
-
-    _delegate(op) {
-        var sp = this.currentFocus || this.snippets[0];
-        if (sp) op(sp);
-    }
-
-    focus()                      { this._delegate(sp => sp.focus()); }
-    load(text, filename, dirty)  { this._delegate(sp => sp.load(text, filename, dirty)); }
-    openFile(file)               { this._delegate(sp => sp.openFile(file)); }
-    openLocal(filename)          { this._delegate(sp => sp.openLocal(filename)); }
-
-}
 
 /***********************************************************************/
 /* CoqManager coordinates the coq code objects, the panel, and the coq */
 /* js object.                                                          */
-/*                                                                     */
 /***********************************************************************/
-
-var copyOptions = function(obj, target) {
-    if (typeof obj !== 'object' || obj instanceof Array) return obj;
-    if (typeof target !== 'object' || target instanceof Array) target = {};
-    for (var prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-            target[prop] = copyOptions(obj[prop], target[prop]);
-        }
-    }
-    return target;
-}
-
-class CoqManager {
+export class CoqManager {
 
     constructor(elems, options) {
 
@@ -319,7 +85,7 @@ class CoqManager {
 
         // Setup company-coq
         if (this.options.editor.mode && this.options.editor.mode['company-coq'])
-            this.company_coq = new CodeMirror.CompanyCoq();
+            this.company_coq = new CompanyCoq();
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -410,7 +176,7 @@ class CoqManager {
         this.layout.settings.model.company.observe(enable => {
             this.provider.configure({mode: {'company-coq': enable}});
             this.company_coq = this.contextual_info.company_coq =
-                enable ? new CodeMirror.CompanyCoq() : undefined;
+                enable ? new CompanyCoq() : undefined;
         });
     }
 
@@ -431,7 +197,7 @@ class CoqManager {
                     src.push({entry, file});
             }
             // Turn to source files
-            let project = () => this.project || 
+            let project = () => this.project ||
                                 this.openProject().then(() => this.project);
             if (src.length > 0) {
                 if (src.length > 1 || src[0].entry && src[0].entry.isDirectory)
@@ -453,7 +219,7 @@ class CoqManager {
      */
     loadSymbolsFrom(url, scope="globals") {
         $.get({url, dataType: 'json'}).done(data => {
-            CodeMirror.CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
+            CompanyCoq.loadSymbols(data, scope, /*replace_existing=*/false);
         })
         .fail((_, status, msg) => {
             console.warn(`Symbol resource unavailable: ${url} (${status}, ${msg})`)
@@ -463,7 +229,7 @@ class CoqManager {
     updateLocalSymbols() {
         this.coq.inspectPromise(0, ["CurrentFile"])
         .then(bunch => {
-            CodeMirror.CompanyCoq.loadSymbols(
+            CompanyCoq.loadSymbols(
                 { lemmas: bunch.map(fp => CoqIdentifier.ofQualifiedName(fp)) },
                 'locals', /*replace_existing=*/true)
         });
@@ -487,7 +253,7 @@ class CoqManager {
     async _load(...hrefs) {
         for (let href of hrefs) {
             var uri = this.options.base_path + href,
-                el = href.endsWith('.css') ? 
+                el = href.endsWith('.css') ?
                     $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
                   : $('<script>').attr({type: 'text/javascript', src: uri});
             document.head.appendChild(el[0]); // jQuery messes with load event
@@ -497,7 +263,7 @@ class CoqManager {
 
     getLoadPath() {
         if (this.options.subproc) return [this.coq.worker.packages.dir];
-        else return [this.packages, this.project].map(p => 
+        else return [this.packages, this.project].map(p =>
                         p ? p.getLoadPath() : []).flatten();
     }
 
@@ -514,7 +280,7 @@ class CoqManager {
             this.coq.observers.push(this);
 
             // @todo load progress with an egg
-            this.coq.load_progress = pc => 
+            this.coq.load_progress = pc =>
                 this.layout.splash(`Loading worker... ${Math.round(pc * 100)}%`, undefined, 'wait');
 
             this.provider.wait_for = this.when_ready;
@@ -527,7 +293,7 @@ class CoqManager {
 
             this.packages = new PackageManager(this.layout.packages,
                 this.options.all_pkgs, pkg_path_aliases, this.coq);
-            
+
             this.packages.expand();
             this.packages.populate();
 
@@ -640,7 +406,7 @@ class CoqManager {
             console.log('Message', sid, lvl, fmsg);
 
         // Filter duplicate errors generated by Stm/Jscoq_worker
-        if (lvl === 'Error' && this.error.some(stm => stm.coq_sid === sid && 
+        if (lvl === 'Error' && this.error.some(stm => stm.coq_sid === sid &&
                                     stm.feedback.some(x => arreq_deep(x.msg, msg))))
             return;
 
@@ -816,7 +582,7 @@ class CoqManager {
         var pkgs = this.options.init_pkgs;
 
         this.layout.splash(info,
-            pkgs.length == 0 ? undefined : 
+            pkgs.length == 0 ? undefined :
               "Loading libraries. Please wait.\n"
             + "(If you are having trouble, try cleaning your browser's cache.)");
     }
@@ -883,7 +649,7 @@ class CoqManager {
 
         var cancel_stm = this.nextAdded(back_to_stm.coq_sid);
         this.cancel(cancel_stm);
-        
+
         if(update_focus) this.focus(back_to_stm);
 
         return true;
@@ -1062,7 +828,7 @@ class CoqManager {
     nextAdded(after=0) {
         return this.doc.sentences.find(stm => stm.coq_sid > after);
     }
-    
+
     /**
      * Removes all the sentences from stm to the end of the document.
      * If stm as an error sentence, leave the sentence itself (so that the
@@ -1085,7 +851,7 @@ class CoqManager {
             // Do not clear the mark, to keep the error indicator.
             stm_index++;
         }
-        
+
         for (let follow of this.doc.sentences.slice(stm_index)) {
             this.cancelled(follow);
         }
@@ -1178,7 +944,7 @@ class CoqManager {
     }
 
     keyTooltips() {
-        return navigator.isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
+        return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
             {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter'}
     }
 
@@ -1189,7 +955,7 @@ class CoqManager {
     keyHandler(e) {
 
         // Poor-man's keymap
-        let key = ((navigator.isMac ? e.metaKey : e.ctrlKey) ? '^' : '') + 
+        let key = ((isMac ? e.metaKey : e.ctrlKey) ? '^' : '') +
                   (e.altKey ? '_' : '') + (e.shiftKey ? '+' : '') + e.code;
 
         // Navigation keybindings
@@ -1206,7 +972,7 @@ class CoqManager {
             'F8': toggle,
             'Escape': interrupt
         };
-        if (!navigator.isMac) {
+        if (!isMac) {
             Object.assign(nav_bindings, {
                 '_KeyN': goNext,
                 '_KeyP': goPrev
@@ -1346,13 +1112,13 @@ class CoqManager {
 
     /**
      * Process special comments that are used as directives to jsCoq itself.
-     * 
+     *
      * E.g.
      *   Comments "pkgs: space-delimited list of packages".
-     * 
+     *
      * Loads packages using the package manager and only then continues to
      * process the document.
-     * 
+     *
      * @param {string} text sentence text
      */
     process_special(text) {
@@ -1371,9 +1137,9 @@ class CoqManager {
 
                 this.packages.expand();
                 this.disable();
-    
+
                 return this.packages.loadDeps(pkgs).then(pkgs => {
-                    this.packages.collapse(); 
+                    this.packages.collapse();
                     this.enable();
                     console.warn(pkgs);
                 });
@@ -1403,356 +1169,11 @@ const PKG_ALIASES = {
 };
 
 const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
-    'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick', 
+    'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick',
     'software-foundations',
     'hahn', 'paco', 'snu-sflib',
     'fcsl-pcm', 'htt', 'pnp', 'coqoban', 'stdpp', 'iris'
 ];
-
-
-class CoqContextualInfo {
-    /**
-     * @param {jQuery} container <div> element to show info in
-     * @param {CoqWorker} coq jsCoq worker for querying types and definitions
-     * @param {FormatPrettyPrint} pprint formatter for Pp data
-     * @param {CompanyCoq} company_coq (optional) further beautification
-     */
-    constructor(container, coq, pprint, company_coq) {
-        this.container = container;
-        this.coq = coq;
-        this.pprint = pprint;
-        this.company_coq = company_coq;
-        this.el = $('<div>').addClass('contextual-info').hide();
-        this.content = $('<div>').addClass('content').appendTo(this.el);
-        this.shadow = $('<div>').addClass(['scroll-shadow', 'scroll-shadow--bottom']).appendTo(this.el);
-
-        this.is_visible = false;
-        this.is_sticky = false;
-        this.focus = null;
-        this.minimal_exposure = Promise.resolve();
-
-        this.MINIMAL_EXPOSURE_DURATION = 150; // ms
-
-        this.container.append(this.el);
-
-        // Set up mouse events
-        var r = String.raw,
-            sel = r`.constr\.reference, .constr\.variable, .constr\.type, .constr\.notation`;
-
-        this.contextual_sel = sel;
-
-        container.on('mouseenter', sel,  evt => this.onMouseEnter(evt));
-        container.on('mousedown',  sel,  evt => this.onMouseDown(evt, true));
-        container.on('mouseleave', sel,  evt => this.onMouseLeave(evt));
-        container.on('mouseleave',       evt => this.onMouseLeave(evt));
-        container.on('mousedown',        evt => this.hideReq());
-
-        this.el.on('mouseenter',         evt => this.hideCancel());
-        this.el.on('mousedown',          evt => { this.hideReq(); evt.stopPropagation(); });
-        this.el.on('mouseover mouseout', evt => { evt.stopPropagation(); });
-
-        // Need to bypass jQuery to set the passive flag for scroll event
-        this.content[0].addEventListener('scroll', () => this.adjustScrollShadow(),
-                                         {passive: true});
-
-        this._keyHandler = this.keyHandler.bind(this);
-        this._key_bound = false;
-    }
-
-    onMouseEnter(evt) { if (!this.is_sticky) this.showFor(evt.target, evt.altKey); }
-    onMouseLeave(evt) { if (!this.is_sticky) this.hideReq(); }
-
-    onMouseDown(evt)  {
-        this.showFor(evt.target, evt.altKey);
-        this.stick(evt.target);
-        this.is_sticky = true;
-        evt.stopPropagation();
-    }
-
-    showFor(dom, alt) {
-        var jdom = $(dom), name = jdom.attr('data-name') || jdom.text();
-        if (jdom.hasClass('constr.variable') ||
-            jdom.hasClass('constr.type') || jdom.hasClass('constr.reference')) {
-            if (alt) this.showPrint(name);
-            else     this.showCheck(name, /*opaque*/false, /*silent_fail*/true);
-        }
-        else if (jdom.hasClass('constr.notation')) {
-            this.showLocate(name);
-        }
-    }
-
-    showCheck(name, opaque=false, silent_fail=false) {
-        this.focus = {identifier: name, info: 'Check', opaque};
-        this.showQuery(`Check ${name}.`, silent_fail ? null : this.formatName(name));
-    }
-
-    showChecks(names, opaque=false, silent_fail=false) {
-        this.focus = {identifier: names[0], info: 'Check', opaque};  /** @todo */
-        this.showQueries(names.map(name => 
-            [`Check ${name}.`, silent_fail ? null : this.formatName(name)]));
-    }
-
-    showAbouts(names, opaque=false, silent_fail=false) {
-        this.focus = {identifier: names[0], info: 'About', opaque};  /** @todo */
-        this.showQueries(names.map(name => 
-            [`About ${name}.`, silent_fail ? null : this.formatName(name)]));
-    }
-
-    showPrint(name) {
-        this.focus = {identifier: name, info: 'Print'};
-        this.showQuery(`Print ${name}.`, this.formatName(name));
-    }
-
-    showLocate(symbol) {
-        this.focus = {symbol: symbol, info: 'Locate'};
-        this.showQuery(`Locate "${symbol}".`, `"${symbol}"`);
-    }
-
-    async showQuery(command, title) {
-        this.is_visible = true;
-        var msg = await this._query(command, title);
-        if (msg && this.is_visible)
-            this.show(msg.pp);
-    }
-
-    async showQueries(queryArgs /* [command, title][] */) {
-        this.is_visible = true;
-        var msgs = (await Promise.all(queryArgs.map(
-            ([command, title]) => this._query(command, title))))
-            .filter(x => x);
-
-        // If there are more than 2 n/a, summarize them (to prevent a long useless list)
-        var na = msgs.filter(x => x.status === 'na');
-        if (msgs.some(x => x.status === 'ok') && na.length > 2) {
-            msgs = msgs.filter(x => x.status !== 'na')
-                .concat([{
-                    pp: this.formatText('...', `(+ ${na.length} unavailable symbols)`),
-                    status: 'na'
-                }]);
-        }
-        // sort messages by tag length (shortest match first)
-        // penalize n/a results so that they appear last
-        msgs = this._sortBy(msgs,
-                            x => (x.pp.attr('tag') || '').length +
-                                 (x.status === 'na' ? 1000 : 0));
-        if (msgs.length > 0 && this.is_visible)
-            this.show(msgs.map(({pp}) => pp));
-    }
-
-    async _query(command, title) {
-        try {
-            var result = await this.coq.queryPromise(0, ['Vernac', command]);
-            return {pp: this.formatMessages(result), status: 'ok'}
-        }
-        catch (err) {
-            if (title)
-                return {pp: this.formatText(title, "(not available)"), status: 'na'};
-        }
-    }
-
-    show(html) {
-        this.content.html(html);
-        this.el.show();
-        this.is_visible = true;
-        this.minimal_exposure = this.elapse(this.MINIMAL_EXPOSURE_DURATION);
-        if (!this._key_bound) {
-            this._key_bound = true;
-            $(document).on('keydown keyup', this._keyHandler);
-        }
-        requestAnimationFrame(() => this.adjustScrollShadow());
-    }
-
-    hide() {
-        this.unstick();
-        this.el.hide();
-        this.is_visible = false;
-        this.is_sticky = false;
-        $(document).off('keydown keyup', this._keyHandler);
-        this._key_bound = false;
-    }
-
-    hideReq() {
-        this.request_hide = true;
-        this.minimal_exposure.then(() => { if (this.request_hide) this.hide() });
-    }
-
-    hideCancel() {
-        this.request_hide = false;
-    }
-
-    stick(dom) {
-        this.unstick();
-        $(dom).addClass('contextual-focus');        
-    }
-
-    unstick() {
-        this.container.find('.contextual-focus').removeClass('contextual-focus');        
-    }
-
-    /**
-     * Provides a visual cue that there's more content to be had by scrolling.
-     */
-    adjustScrollShadow() {
-        var amount = this.content[0].scrollHeight - this.content[0].offsetHeight,
-            at = this.content[0].scrollTop;
-        this.shadow.css({opacity: Math.max(0, Math.min(100, amount - at)) / 100});
-    }
-
-    /**
-     * Stores current identifier names, esp. before
-     * prettifying text with company-coq.
-     */
-    pinIdentifiers(jdom) {
-        if (!jdom) jdom = this.container;
-        for (let el of jdom.find(this.contextual_sel)) {
-            $(el).attr('data-name', $(el).text());
-        }
-    }
-
-    keyHandler(evt) {
-        var name = this.focus && this.focus.identifier;
-        if (name && !this.focus.opaque) {
-            if (evt.altKey) this.showPrint(name);
-            else            this.showCheck(name);
-        }
-    }
-
-    formatMessages(msgs) {
-        var ppmsgs = msgs.map(feedback => this.pprint.msg2DOM(feedback.msg)),
-            frag = $(document.createDocumentFragment());
-
-        for (let e of ppmsgs) {
-            frag.append($('<div>').append(e));
-        }
-
-        if (this.company_coq) {
-            this.company_coq.markup.applyToDOM(frag[0]);
-        }
-
-        if (msgs[0] && msgs[0].msg)
-            frag.attr('tag', this.getFirstLine(msgs[0].msg));
-
-        return frag;
-    }
-
-    formatName(name) {
-        var comps = name.split('.'),
-            span = $('<span>');
-        for (let path_el of comps.slice(0, comps.length - 1)) {
-            span.append($('<span>').addClass('constr.path').text(path_el));
-            span.append(document.createTextNode('.'));
-        }
-        span.append($('<span>').addClass('constr.reference').text(comps.last()));
-        return span;
-    }
-
-    formatText(title, msg) {
-        return $('<div>')
-            .append(typeof title === 'string' ? $('<span>').text(title) : title)
-            .append($('<br/>'))
-            .append($('<span>').addClass('message').text("  " + msg));
-    }
-
-    getFirstLine(msg) {
-        var txt = this.pprint.pp2Text(msg);
-        return txt.match(/^[^\n]*/)[0];
-    }
-
-    elapse(duration) {
-        return new Promise((resolve, reject) =>
-            setTimeout(resolve, duration));
-    }
-
-    _sortBy(arr, f) {
-        let cmp = (x, y) => { /* note: this routine puts falsey values at the end */
-            let fx = f(x), fy = f(y);
-            return (fx && (!fy || fx < fy)) ? -1
-                 : (fy && (!fx || fy < fx)) ? 1 : 0;
-        };
-        return arr.sort(cmp);
-    }
-}
-
-
-class CoqIdentifier {
-    constructor(prefix, label) {
-        this.prefix = prefix;
-        this.label = label;
-    }
-
-    toString() { return [...this.prefix, this.label].join('.'); }
-
-    equals(other) {
-        return other instanceof CoqIdentifier &&
-            this.prefix.equals(other.prefix) && this.label === other.label;
-    }
-
-    /**
-     * Constructs an identifier from a Coq `Names.KerName.t`.
-     * @param {array} param0 serialized form of `KerName`.
-     */
-    static ofKerName([kername, modpath, label]) {
-        /**/ console.assert(kername === 'KerName') /**/
-        var modsuff = [];
-        while (modpath[0] == 'MPdot') {
-            modsuff.push(modpath[2]);
-            modpath = modpath[1];
-        }
-        /**/ console.assert(modpath[0] === 'MPfile'); /**/
-        /**/ console.assert(modpath[1][0] === 'DirPath'); /**/
-        return new CoqIdentifier(
-            modpath[1][1].slice().reverse().map(this._idToString).concat(modsuff),
-            this._idToString(label));
-    }
-
-    /**
-     * Constructs an identifier from a `Libnames.full_path`.
-     * @param {array} fp serialized form of `full_path`.
-     */
-    static ofFullPath(fp) {
-        /**/ console.assert(fp.dirpath[0] === 'DirPath') /**/
-        return new CoqIdentifier(
-            fp.dirpath[1].slice().reverse().map(this._idToString),
-            this._idToString(fp.basename));
-    }
-
-    /**
-     * Constructs an identifier from a `qualified_name`. This type comes from
-     * the worker protocol, and may contain a dirpath as well as a module path.
-     * @see inspect.ml
-     * @param {array} qn serialized form of `qualified_name` (from SearchResults).
-     */
-    static ofQualifiedName(qn) {
-        /**/ console.assert(qn.prefix.dp[0] === 'DirPath') /**/
-        return new CoqIdentifier(
-            qn.prefix.dp[1].slice().reverse()
-                .concat(qn.prefix.mod_ids).map(this._idToString),
-            this._idToString(qn.basename));
-    }
-
-    static _idToString(id) {
-        /**/ console.assert(id[0] === 'Id') /**/
-        return id[1];
-    }
-
-    dequalify(dirpaths) {
-        for (let prefix of dirpaths) {
-            if (this.prefix.slice(0, prefix.length).equals(prefix))
-                return this.ltrunc(prefix.length)
-        }
-        return this;
-    }
-
-    ltrunc(n) {
-        var d = new CoqIdentifier(this.prefix.slice(n), this.label);
-        d.tags = this.tags;
-        return d;
-    }
-  
-}
-
-if (typeof module !== 'undefined')
-    module.exports = {CoqManager, CoqIdentifier}
 
 // Local Variables:
 // js-indent-level: 4

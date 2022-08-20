@@ -2,6 +2,8 @@
   "name": "wacoq",
   "version": "0.16.0",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
+  "type": "module",
+  "main": "ui-js/index.js",
   "bin": {
     "wacoqdoc": "ui-js/jscoqdoc.js"
   },
@@ -23,27 +25,34 @@
     "path": "^0.12.7",
     "proper-lockfile": "^4.1.2",
     "vue": "^2.6.12",
-    "vue-context-menu": "^2.0.6",
-    "wacoq-bin": "0.16.0"
+    "vue-context-menu": "^2.0.6"
   },
   "devDependencies": {
-    "@corwin.amber/hastebin": "^0.1.1",
+    "@corwin.amber/hastebin": "^0.1.2",
+    "@types/codemirror": "^5.60.5",
     "@types/find": "^0.2.1",
+    "@types/jquery": "^3.5.14",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^13.11.1",
     "assert": "^2.0.0",
     "bootstrap": "^5.1.3",
+    "buffer": "^6.0.3",
+    "constants-browserify": "^1.0.0",
     "css-loader": "^5.2.4",
     "file-loader": "^6.0.0",
     "katex": "^0.15.3",
+    "mathjax": "^3.2.2",
     "mocha": "^9.1.3",
+    "path-browserify": "^1.0.1",
     "process": "^0.11.10",
+    "ronin-p2p": "^0.1.0",
     "sass": "^1.26.3",
     "sass-loader": "^8.0.2",
     "stream-browserify": "^3.0.0",
     "style-loader": "^1.1.3",
-    "ts-loader": "^9.2.5",
-    "typescript": "^4.3.5",
+    "ts-loader": "^9.3.1",
+    "typescript": "^4.7.4",
+    "util": "^0.12.4",
     "vue-loader": "^15.9.8",
     "vue-template-compiler": "^2.6.12",
     "webpack": "^5.49.0",
@@ -54,26 +63,25 @@
     "ui-css",
     "ui-images",
     "ui-external",
-    "coq-js/*.bc.js",
-    "coq-pkgs",
     "examples",
     "dist",
+    "jscoq.js",
     "index.html"
   ],
   "scripts": {
     "build": "webpack --mode production",
     "build:dev": "webpack",
     "watch": "webpack -w",
-    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/;s/\\(backend:\\) .*/\\1 '\\'wa\\',/ ui-js/jscoq-loader.js"
+    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/;s/\\(backend:\\) .*/\\1 '\\'wa\\',/ ui-js/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ejgallego/jscoq.git"
+    "url": "git+https://github.com/jscoq/jscoq.git"
   },
   "author": "ejgallego",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/ejgallego/jscoq/issues"
+    "url": "https://github.com/jscoq/jscoq/issues"
   },
   "homepage": "https://jscoq.github.io"
 }

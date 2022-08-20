@@ -4,6 +4,9 @@
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
+import { $ } from '../dist/lib.js';
+import { SettingsPanel } from './settings.js';
+
 "use strict";
 
 /***********************************************************************/
@@ -15,7 +18,7 @@
  * top, and a main area divided vertically into three collapsible panes.
  * Also shows a power button that hides or shows the panel.
  */
-class CoqLayoutClassic {
+export class CoqLayoutClassic {
 
     html(params) {
         var {base_path, backend, kb} = params;

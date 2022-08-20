@@ -1,6 +1,8 @@
 "use strict";
+import { JsCoq } from './index.js';
 
-class CoqWorker {
+
+export class CoqWorker {
 
     constructor(scriptPath, worker) {
         this.options = {
@@ -30,7 +32,7 @@ class CoqWorker {
      */
     static defaultScriptPath() {
         var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
-        return new URL({'js': "../coq-js/jscoq_worker.bc.js",
+        return new URL({'js': "../coq-js/jscoq_worker.bc.cjs",
                         'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[JsCoq.backend],
                        this.scriptUrl).href;
     }
@@ -348,7 +350,7 @@ class CoqWorker {
 }
 
 
-class Future {
+export class Future {
     constructor() {
         this.promise = new Promise((resolve, reject) => {
             this._resolve = resolve;
@@ -436,11 +438,7 @@ function prefetchResource(url, progress=()=>{}) {
     });
 }
 
-if (typeof document !== 'undefined' && document.currentScript)
-    CoqWorker.scriptUrl = new URL(document.currentScript.attributes.src.value, window.location);
-
-if (typeof module !== 'undefined')
-    module.exports = {CoqWorker, CoqSubprocessAdapter, Future, PromiseFeedbackRoute}
+CoqWorker.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4

@@ -7,11 +7,11 @@
  (deps
   (package coq-core)
   (package coq-stdlib)
-  coq-js/jscoq_worker.bc.js  ; needed for symbol generation
+  coq-js/jscoq_worker.bc.cjs  ; needed for symbol generation
   Makefile)
  (action
   (progn
-   (run node %{dep:dist}/cli.js %{dep:coq-jslib/metadata/coq-pkgs.json}
+   (run node %{dep:dist}/cli.cjs %{dep:coq-jslib/metadata/coq-pkgs.json}
              --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib)
    ; building symbols using Make because Dune has no pattern rules T.T
    (run make libs-symb))))
@@ -37,33 +37,36 @@
    (source_tree ui-images)
    (source_tree ui-external)
    (source_tree examples)
+   jscoq.js
    index.html
    coq-pkgs
    node_modules
-   coq-js/jscoq_worker.bc.js
+   coq-js/jscoq_worker.bc.cjs
    dist
    jscoq.install))
 
 ; JavaScript build (Webpack)
-; cli.js, ide-project.browser.js, collab.browser.js
+; cli.cjs, ide-project.browser.js, collab.browser.js
 (rule
  (target dist)
  (deps
   (source_tree coq-jslib)
   (source_tree ui-js)
-  webpack.config.js
+  webpack.config.cjs
   tsconfig.json
   node_modules)
  (action
   (progn
    (run npm install --no-save) ; sorry, have to run this again because of the symlinks I erased before *facepalm*
    (run npm run build))))
+   ; XXX: setup this to add :dev when the debug env var is set
+   ; (run npm run build:dev))))
 
 ; Just the worker
 (alias
   (name jscoq_worker)
   (deps
-    coq-js/jscoq_worker.bc.js))
+    coq-js/jscoq_worker.bc.cjs))
 
 (dirs (:standard _vendor+* \ dist node_modules))
 (vendored_dirs vendor)

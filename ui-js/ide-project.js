@@ -1,20 +1,19 @@
-import './public-path';
+import './public-path.js';
 
 import assert from 'assert';
 import Vue from 'vue';
 
-import { BatchWorker, CompileTask } from '../coq-jslib/build/batch';
-import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project';
+// import { JsCoq } from './index.js';  // @todo later; right now it will duplicate it :/
+import { BatchWorker, CompileTask } from '../coq-jslib/build/batch.ts';
+import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project.ts';
 import '../ui-css/project.css';
-
-
 
 class ProjectPanel {
 
     constructor() {
         this.view = new (Vue.component('project-panel-default-layout'))();
         this.view.$mount();
-        
+
         this.view.$watch('status', v => this._update(v), {deep: true});
         this.view.$on('action', ev => this.onAction(ev));
         this.view.$on('new', () => this.clear());
@@ -32,7 +31,7 @@ class ProjectPanel {
         this.package_index = undefined;
         this.config = new ProjectPanelConfig();
     }
-   
+
     get $el() { return this.view.$el; }
 
     clear() {
@@ -216,11 +215,11 @@ class ProjectPanel {
         else {
             this.buildDeploy()
             .catch(e => { if (e[0] != 'CoqExn') throw e; });
-        }      
+        }
     }
 
     getLoadPath() {
-        return this.out ? 
+        return this.out ?
             this.out.searchPath.path.map(pel => [pel.logical, ['/lib']]) : [];
     }
 
@@ -253,7 +252,7 @@ class ProjectPanel {
         {pkg} = await this.out.toPackage(fn, ['.v', '.vo', '.cma']);
         await this._download(pkg.zip, fn);
     }
-    
+
     async downloadSources() {
         var fn = `${this.project.name || 'project'}.zip`,
             zip = await this.project.toZip(undefined, ['.v', '.vo', '.cma']);
@@ -288,7 +287,7 @@ class ProjectPanel {
             async getItem(filename) { return volume.readFileSync(filename, 'utf-8'); },
             async setItem(filename, content) { volume.writeFileSync(filename, content); },
             async keys() { return []; /** @todo */ }
-        };        
+        };
     }
 
     onAction(ev) {
@@ -336,7 +335,7 @@ class ProjectPanel {
         vol.fs.writeFileSync('/simple/One.v', 'Check 1.\nFrom simple Require Import Two.');
         vol.fs.writeFileSync('/simple/Two.v', 'From Coq Require Import List.\n\nDefinition two_of π := π + π.\n');
         vol.fs.writeFileSync('/simple/Three.v', 'From simple Require Import One Two.');
-    
+
         return new CoqProject('sample', vol).fromDirectory('/');
     }
 
@@ -447,7 +446,7 @@ class JsCoqBatchWorker extends BatchWorker {
     }
 
     docOpts(mod, outfn) {
-        this.loadpath.push([mod.logical.slice(0, -1), ['/lib']]);    
+        this.loadpath.push([mod.logical.slice(0, -1), ['/lib']]);
         return super.docOpts(mod, outfn);
     }
 
@@ -457,9 +456,7 @@ class JsCoqBatchWorker extends BatchWorker {
     }
 }
 
-
-import { fsif_native } from '../coq-jslib/build/fsif';
-
+import { fsif_native } from '../coq-jslib/build/fsif.ts';
 
 class WacoqBatchWorker extends BatchWorker {
     constructor(coqw, pkgr) {
@@ -486,7 +483,7 @@ class WacoqBatchWorker extends BatchWorker {
     }
 
     docOpts(mod, outfn) {
-        return { top_name: outfn, mode: ['Vo'], 
+        return { top_name: outfn, mode: ['Vo'],
                  lib_init: ["Coq.Init.Prelude"], lib_path: this.loadpath };
     }
 
@@ -555,9 +552,9 @@ class BuildReport {
     /**
      * Translates a character index to a {line, ch} location indicator.
      * @param {Uint8Array} source_bytes document being referenced
-     * @param {integer} pos character offset from beginning of string 
+     * @param {integer} pos character offset from beginning of string
      *   (zero-based)
-     * @return {object} a {line, ch} object with (zero-based) line and 
+     * @return {object} a {line, ch} object with (zero-based) line and
      *   character location
      */
     static posToLineCh(source_bytes, pos) {
@@ -565,7 +562,7 @@ class BuildReport {
         do {
             var eol = source_bytes.indexOf(EOL, offset);
             if (eol === -1 || eol >= pos) break;
-            line++; 
+            line++;
             ch -= (eol - offset + 1);
             offset = eol + 1;
         } while (true);
@@ -594,9 +591,7 @@ class BuildReport {
                 }
             }
         }
-    }    
+    }
 }
-
-
 
 export { ProjectPanel, CoqProject }

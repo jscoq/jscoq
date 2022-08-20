@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>jsCoq – Use Coq in Your Browser</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
+    <link rel="icon" href="../ui-images/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="../ui-css/landing-page.css">
+
+    <script src="../ui-js/jscoq-loader.js"></script>
+  </head>
+
+<body class="jscoq-main">
+  <div id="ide-wrapper" class="toggled">
+  <div id="code-wrapper">
+  <div id="document-wrapper">
+  <div id="document">
+  <div>
+    <p>
+      This is a simple test page for backward-compat of jsCoq 0.16 with earlier
+      versions that did not use ES modules.
+    </p>
+
+    <textarea class="snippet">
+From Coq Require Import List.
+Import ListNotations.</textarea>
+    <p class="interim">
+      We are going to need a simpler auxiliary lemma, one that connects
+      <code>rev</code>, <code>::</code> (the list constructor, also known
+      as <code>cons</code>), and <code>snoc</code> (the dual of
+      <code>cons</code>, a function that appends an element at the end of
+      a list).
+      This is because the latter two participate in the definition of
+      the former, <code>rev</code>.
+    </p>
+
+    <textarea class="snippet">Lemma rev_snoc_cons A :
+  forall (x : A) (l : list A), rev (l ++ [x]) = x :: rev l.</textarea>
+    <p class="interim">
+      This proposition is proven by way of the standard induction on
+      the structure of the list <code>l</code>.
+    </p>
+    <textarea class="snippet">Proof.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite IHl. simpl. reflexivity.
+Qed.</textarea>
+
+    <p class="interim">
+      Now we prove the central equality with a similar induction.
+    </p>
+    <textarea class="snippet">Theorem rev_rev A : forall (l : list A), rev (rev l) = l.
+Proof.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite rev_snoc_cons. rewrite IHl.
+    reflexivity.
+Qed.</textarea>
+
+    <p class="interim">
+      Finally, we apply functional extensionality to produce the equality
+      as it was written in the title.
+    </p>
+    <p class="interim">
+      There is only one syntactic difference, which is that, in Coq, we
+      need to pass an explicit value to the implicit (generic) type
+      parameter <code>A</code> of <code>rev</code>.
+    </p>
+    <textarea class="snippet">From Coq.Program Require Import Basics.
+From Coq Require Import FunctionalExtensionality.
+Open Scope program_scope.
+
+Theorem rev_invol A : rev (A:=A) ∘ rev (A:=A) = id.
+Proof.
+  apply functional_extensionality.
+  intro x.
+  unfold compose, id. rewrite rev_rev.
+  reflexivity.
+Qed.</textarea>
+
+  </div> <!-- /#document -->
+  </div> <!-- /#document-wrapper -->
+  </div> <!-- /#code-wrapper -->
+  </div> <!-- /#ide-wrapper -->
+
+  <script>
+    if (!localStorage['scratchpad.last_filename'])
+      setTimeout(() => document.body.classList.add('welcome'), 1500);
+
+    var jscoq_ids  = ['.snippet'];
+    var jscoq_opts = {
+        implicit_libs: false,
+        focus: false,
+        editor: { mode: { 'company-coq': true } },
+        all_pkgs: ['coq']
+    };
+
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+        window.coq = res;
+    });
+  </script>
+</body>
+</html>
