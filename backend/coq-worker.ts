@@ -1,7 +1,6 @@
-//@ts-check
-"use strict";
+type backend = 'js' | 'wa';
 
-import { Future, PromiseFeedbackRoute } from './future.js';
+import { Future, PromiseFeedbackRoute } from './future';
 
 /**
  * Main Coq Worker Class
@@ -11,6 +10,21 @@ import { Future, PromiseFeedbackRoute } from './future.js';
  * @property {Function} CoqWorker#defaultScriptPath
  */
 export class CoqWorker {
+    options: any;
+    backend: backend;
+    is_npm: boolean;
+    observers: any[];
+    routes: any[];
+    sids: Future<void>[];
+    load_progress: Function;
+    when_created: Promise<void>;
+    _boot : Future<void>;
+    _worker_script: string;
+    worker: Worker;
+    _handler: (msg : any) => void;
+    _gen_rid : number;
+    intvec: Int32Array;
+    base_path : string | URL;
 
     /**
      * Creates an instance of CoqWorker.
@@ -21,13 +35,14 @@ export class CoqWorker {
      * @memberof CoqWorker
      * @constructor
      */
-    constructor(scriptPath, worker, backend='js', is_npm=false) {
+    constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend, is_npm : boolean) {
         this.options = {
             debug: false,
             warn: true
         };
-        this.backend = backend;
-        this.is_npm = is_npm;
+        this.base_path = base_path;
+        this.backend = backend || 'js';
+        this.is_npm = is_npm || false;
 
         /** @type {object[]} observers are duck-typed */
         this.observers = [this];
@@ -44,20 +59,20 @@ export class CoqWorker {
         else {
             this.when_created =
                 this.createWorker(scriptPath ||
-                                  CoqWorker.defaultScriptPath(backend, is_npm));
+                                  CoqWorker.defaultScriptPath(base_path, backend, is_npm));
         }
     }
 
     /**
      * Default location for worker script -- computed relative to the URL
      * from which this script is loaded.
-     * 
+     *
      */
-    static defaultScriptPath(backend, is_npm) {
-        var nmPath = is_npm ? '../..' : '../node_modules';
-        return new URL({'js': "../backend/jsoo/jscoq_worker.bc.cjs",
+    static defaultScriptPath(base_path, backend, is_npm) {
+        var nmPath = is_npm ? '..' : 'node_modules';
+        return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
                         'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
-                       this.scriptUrl).href;
+                      base_path).href;
     }
 
     /**
@@ -73,14 +88,14 @@ export class CoqWorker {
      * Creates the worker object
      *
      * @param {string} script_path
-     * @return {Promise<any>} resolves when worker is up and running 
+     * @return {Promise<Worker>}
      * @async
      * @memberof CoqWorker
      */
     async createWorker(script_path) {
         this._worker_script = script_path;
 
-        this.attachWorker(await 
+        this.attachWorker(await
             this.newWorkerWithProgress(this._worker_script));
 
         if (typeof window !== 'undefined')
@@ -97,6 +112,7 @@ export class CoqWorker {
      */
     async newWorkerWithProgress(url) {
         await prefetchResource(url, (pc, ev) => this.load_progress(pc, ev));
+        // await prefetchResource(url, pc => this.load_progress(pc));
         // have to use `url` again so that the worker has correct base URI;
         // should be cached at this point though.
         return new Worker(url);
@@ -107,7 +123,7 @@ export class CoqWorker {
      */
     attachWorker(worker) {
         this.worker = worker;
-        this.worker.addEventListener('message', 
+        this.worker.addEventListener('message',
             this._handler = (/** @type {any} */ evt) => this.coq_handler(evt));
     }
 
@@ -283,10 +299,10 @@ export class CoqWorker {
      * @param {Buffer} buffer
      */
     arrayBufferOfBuffer(buffer) {
-        return (buffer.byteOffset === 0 && 
+        return (buffer.byteOffset === 0 &&
                 buffer.byteLength === buffer.buffer.byteLength) ?
             buffer.buffer :
-            buffer.buffer.slice(buffer.byteOffset, 
+            buffer.buffer.slice(buffer.byteOffset,
                                 buffer.byteOffset + buffer.byteLength);
     }
 
@@ -380,9 +396,9 @@ export class CoqWorker {
         return pfr.promise;
     }
 
-    spawn() {
+    spawn(base_path) {
         this.worker.removeEventListener('message', this._handler);
-        return new CoqWorker(null, this.worker, this.backend, this.is_npm);
+        return new CoqWorker(base_path, null, this.worker, this.backend, this.is_npm);
     }
 
     /**
@@ -428,7 +444,7 @@ export class CoqWorker {
 
     coqBoot() {
         if (this._boot)
-            this._boot.resolve();
+            this._boot.resolve(null);
     }
 
     /**
@@ -485,7 +501,7 @@ export class CoqWorker {
      */
     feedProcessed(sid) {
         var fut = this.sids[sid];
-        if (fut) { fut.resolve(); }
+        if (fut) { fut.resolve(null); }
     }
 }
 
@@ -494,29 +510,23 @@ export class CoqWorker {
  * available in waCoq through the `subproc` module.
  */
 export class CoqSubprocessAdapter extends CoqWorker {
-    constructor(backend, is_npm) {
-        // @ts-ignore
+    constructor(base_path, backend, is_npm) {
+        /* Emilio: the require here fails, this is a fixme!
         const subproc = require('wacoq-bin/dist/subproc'),
               icoq = new subproc.IcoqSubprocess();
-        super(null, icoq, backend, is_npm);
+        super(base_path, null, icoq, backend, is_npm);
         window.addEventListener('beforeunload', () => icoq.end());
+        */
+       super(base_path, null, null, backend, is_npm);
     }
 
-    /**
-     * @param {any[]} a
-     */
-    coq_handler(...a) {
-        // @ts-ignore
-        setTimeout(() => super.coq_handler(...a), 0); // force window context
+    coq_handler(evt) {
+        setTimeout(() => super.coq_handler(evt), 0); // force window context
     }
 }
 
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
-/**
- * @param {string | URL} url
- * @param {(ratio: number, ev: ProgressEvent) => void} progress
- */
-function prefetchResource(url, progress = ()=>{}) {
+function prefetchResource(url, progress = (pc :number,ev:ProgressEvent)=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "blob";
@@ -535,8 +545,6 @@ function prefetchResource(url, progress = ()=>{}) {
         xhr.send();
     });
 }
-
-CoqWorker.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4

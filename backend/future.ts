@@ -1,6 +1,11 @@
-//@ts-check
+export class Future<A> {
 
-export class Future {
+    promise: Promise<A>;
+    _resolve: (value : A | PromiseLike<A>) => void;
+    _reject: (reason? : any) => void;
+    _done: boolean;
+    _success: boolean;
+
     constructor() {
         this.promise = new Promise((resolve, reject) => {
             this._resolve = resolve;
@@ -11,7 +16,7 @@ export class Future {
     }
 
     resolve(val) { if (!this._done) { this._done = this._success = true; this._resolve(val); } }
-    reject(err) { if (!this._done) { this._done = true; this._reject(err); } }
+    reject(err?) { if (!this._done) { this._done = true; this._reject(err); } }
 
     then(cont)      { return this.promise.then(cont); }
 
@@ -20,7 +25,14 @@ export class Future {
     isFailed()      { return this._done && !this._success; }
 }
 
-export class PromiseFeedbackRoute extends Future {
+type RouteMessage = { sid: number; lvl: string; loc: any; msg: string }
+
+export class PromiseFeedbackRoute<A> extends Future<A> {
+    atexit: (_ : void) => void;
+    messages: RouteMessage[];
+    _got_processed: boolean;
+    _done: boolean;
+
     constructor() {
         super();
         this.atexit = () => {};

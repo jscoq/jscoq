@@ -1,8 +1,11 @@
 //@ts-check
 "use strict"
 
+// Backend
+export { CoqWorker } from '../../../dist/backend.js';
+
+// Frontend
 import { CoqManager } from './coq-manager.js';
-export { CoqWorker } from '../../../backend/coq-worker.js';
 export { PackageManager } from './coq-packages.js';
 export { FormatPrettyPrint } from './format-pprint.js';
 export { CmCoqProvider, Deprettify } from './cm-provider.js';

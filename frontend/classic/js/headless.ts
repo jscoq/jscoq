@@ -7,8 +7,8 @@ import * as find from 'find';
 import glob from 'glob';
 
 // Backend imports
-import { Future } from '../../../backend/future.js';
-import { CoqWorker } from '../../../backend/coq-worker.js';
+import { Future } from '../../../backend/future';
+import { CoqWorker } from '../../../backend/coq-worker';
 
 // Frontend imports, this seems common to the frontends
 import { CoqIdentifier } from './contextual-info';
@@ -28,7 +28,8 @@ class HeadlessCoqWorker extends CoqWorker {
     options: any
 
     constructor() {
-        super(null, HeadlessCoqWorker.instance(), /* backend */ 'js', /* is_npm */ false);
+        var backend : 'js' = 'js', is_npm = false, base_path = './';
+        super(base_path, null, HeadlessCoqWorker.instance(), backend, is_npm);
         this.when_created.then(() => {
             this.worker.onmessage = this._handler = evt => {
                 process.nextTick(() => this.coq_handler({data: evt}));
@@ -61,7 +62,7 @@ class HeadlessCoqManager {
     options: any
 
     doc: any[]
-    when_done: Future
+    when_done: Future<void>
 
     constructor(worker=undefined, volume=fsif_native) {
         this.coq = worker || new HeadlessCoqWorker();
@@ -163,7 +164,7 @@ class HeadlessCoqManager {
             this.coq.sendCommand(['Compile', output]);
         }
         else
-            this.when_done.resolve();
+            this.when_done.resolve(null);
     }
 
     require(module_name: string, import_=false) {
@@ -262,7 +263,7 @@ class HeadlessCoqManager {
         if (!this.when_done.isFailed()) {
             this.coq.put(filename, buf);
             console.log(` > ${filename}`);
-            this.when_done.resolve();
+            this.when_done.resolve(null);
         }
     }
 

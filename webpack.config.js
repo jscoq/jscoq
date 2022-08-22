@@ -111,6 +111,22 @@ export default (env, argv) => [
   }
 },
 /**
+ * Package backend for wider-comsumption.
+ */
+{
+  name: 'backend',
+  entry: './backend/index.ts',
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {...output('dist', 'backend.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
+},
+/**
  * Multi-file Project UI
  */
 {

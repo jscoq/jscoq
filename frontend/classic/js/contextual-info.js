@@ -2,7 +2,7 @@
 "use strict";
 
 // backend import
-import { CoqWorker } from '../../../backend/coq-worker.js';
+import { CoqWorker } from '../../../dist/backend.js';
 
 // frontend import
 import { $ } from '../../../dist/lib.js';

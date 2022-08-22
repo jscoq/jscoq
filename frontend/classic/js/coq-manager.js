@@ -12,8 +12,7 @@
 "use strict";
 
 // Backend imports
-import { Future } from '../../../backend/future.js';
-import { CoqWorker, CoqSubprocessAdapter } from '../../../backend/coq-worker.js'
+import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../dist/backend.js';
 
 // UI imports
 import { $ } from '../../../dist/lib.js';
@@ -48,6 +47,8 @@ export class CoqManager {
 
         options = options ? options : {};
 
+        var pkg_path = PackageManager.defaultPkgPath(options.base_path || './', options.backend || 'js');
+
         // Default options
         this.options = {
             prelaunch:  false,
@@ -61,7 +62,7 @@ export class CoqManager {
             base_path:   "./",
             node_modules_path: "./node_modules/",
             backend: "js",
-            pkg_path:    PackageManager.defaultPkgPath(options.backend || 'js', options.is_npm),
+            pkg_path,
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['coq'].concat(PKG_AFFILIATES),
@@ -86,7 +87,7 @@ export class CoqManager {
 
         /** @type {PackageManager} */
         this.packages = null;
-        
+
         /** @type {CoqContextualInfo} */
         this.contextual_info = null;
 
@@ -307,8 +308,8 @@ export class CoqManager {
         try {
             // Setup the Coq worker.
             this.coq = this.options.subproc
-                ? new CoqSubprocessAdapter(this.options.backend, this.options.is_npm)
-                : new CoqWorker(null, null, this.options.backend, this.options.is_npm);
+                ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend, this.options.is_npm)
+                : new CoqWorker(this.options.base_path, null, null, this.options.backend, this.options.is_npm);
             this.coq.options = this.options;
             this.coq.observers.push(this);
 

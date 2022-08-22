@@ -3,8 +3,7 @@
 
 // Backend imports
 import { ArrayFuncs } from './etc.js';
-import { Future } from '../../../backend/future.js';
-import { CoqWorker } from '../../../backend/coq-worker.js';
+import { Future, CoqWorker } from '../../../dist/backend.js';
 
 // Frontend imports (not so clear for the package manager
 import { JSZip, $ } from '../../../dist/lib.js';
@@ -69,10 +68,10 @@ export class PackageManager {
      * @return {*}
      * @memberof PackageManager
      */
-    static defaultPkgPath(backend, is_npm) {
+    static defaultPkgPath(base_path, backend) {
         return {
-            'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
-            'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath(backend, is_npm)).href
+            'js': new URL('../coq-pkgs/', base_path).href,
+            'wa': new URL('../bin/coq/', base_path).href
         }[backend];
     }
 
@@ -680,8 +679,6 @@ class CoqPkgArchive {
     }
 
 }
-
-PackageManager.scriptUrl = new URL(import.meta.url);
 
 // Local Variables:
 // js-indent-level: 4
