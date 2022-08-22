@@ -2,7 +2,7 @@
 "use strict";
 
 // Backend imports
-import { ArrayFuncs } from './etc.js';
+import { ArrayFuncs } from '../../common/etc.js';
 import { Future, CoqWorker } from '../../../dist/backend.js';
 
 // Frontend imports (not so clear for the package manager

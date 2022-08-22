@@ -9,13 +9,21 @@ import glob from 'glob';
 // Backend imports
 import { Future } from '../../../backend/future';
 import { CoqWorker } from '../../../backend/coq-worker';
+import { CoqIdentifier } from '../../../backend/coq-identifier';
 
 // Frontend imports, this seems common to the frontends
-import { CoqIdentifier } from './contextual-info';
-import { FormatPrettyPrint } from './format-pprint';
-import { arreq_deep } from './etc.js';
+import { arreq_deep } from '../../common/etc.js';
+
+// Frontend imports, specific to the layout but we should refactor
+import { FormatPrettyPrint } from '../../classic/js/format-pprint';
 
 // Where to put this?
+//
+// EJGA: indeed this needs refactoring. I think that the right place
+// for both modules is in the backend/ directory, at least the
+// CoqProject type is defined canonically by Coq in the OCaml side, so
+// while we can allow different implementations, we should make sure
+// the interfaces for both are the same.
 import { FSInterface, fsif_native } from '../../../coq-jslib/build/fsif';
 import { CoqProject } from '../../../coq-jslib/build/project';
 
@@ -448,3 +456,7 @@ type PackageManifest = {
 }
 
 export { HeadlessCoqWorker, HeadlessCoqManager, PackageDirectory }
+
+// Local Variables:
+// js-indent-level: 4
+// End:

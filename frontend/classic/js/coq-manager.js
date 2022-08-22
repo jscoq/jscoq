@@ -13,17 +13,20 @@
 
 // Backend imports
 import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../dist/backend.js';
+import { CoqIdentifier } from '../../../backend/coq-identifier.js';
 
 // UI imports
 import { $ } from '../../../dist/lib.js';
 
-import { copyOptions, isMac, ArrayFuncs, arreq_deep } from './etc.js';
+// Common imports
+import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
 
+// UI imports
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider.js';
 import { ProviderContainer } from './cm-provider-container.js';
-import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
+import { CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 

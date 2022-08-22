@@ -2,7 +2,7 @@
 "use strict";
 
 // Misc imports
-import { copyOptions } from './etc.js';
+import { copyOptions } from '../../common/etc.js';
 import { JsCoq } from './index.js';
 
 // CM imports

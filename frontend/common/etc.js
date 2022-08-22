@@ -53,5 +53,4 @@ function copyOptions(obj, target) {
 const isMac = typeof navigator === 'undefined' ? false
     : /\bMac\b/.test(navigator.userAgent);
 
-
 export { ArrayFuncs, arreq_deep, copyOptions, isMac }

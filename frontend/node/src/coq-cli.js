@@ -1,6 +1,8 @@
 //@ts-check
 import { HeadlessCoqManager } from './headless.ts';
 
+var debugTime = false;
+
 export class HeadlessCLI {
 
     constructor() { this.rc = 0; }
@@ -48,10 +50,16 @@ export class HeadlessCLI {
                 coq.options.inspect.modules = opts.requires.slice();
         }
 
+        if (debugTime) { console.time('coq start'); }
+
         await coq.start();
+
+        if (debugTime) { console.timeEnd('coq start'); }
 
         // `--require-pkg`s can only be handled after package manifests
         // have been loaded
+        if (debugTime) { console.time('package import + commands'); }
+
         for (let pkg of opts.require_pkgs) {
             for (let mod of coq.packages.listModules(pkg)) {
                 coq.require(mod);
@@ -64,9 +72,14 @@ export class HeadlessCLI {
 
         try {
             await coq.when_done.promise;
+            if (debugTime) { console.timeEnd('package import + commands'); }
         }
         catch (e) { console.log("Aborted."); return 1; }
 
         return 0;
     }
 }
+
+// Local Variables:
+// js-indent-level: 4
+// End:
