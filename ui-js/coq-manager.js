@@ -15,9 +15,10 @@ import { $ } from '../dist/lib.js';
 
 import { Future } from './future.js';
 import { copyOptions, isMac, arreq_deep } from './etc.js';
-import { CoqWorker } from './jscoq-worker-interface.js';
+import { CoqWorker, CoqSubprocessAdapter } from './jscoq-worker-interface.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
+import { CmCoqProvider } from './cm-provider.js';
 import { ProviderContainer } from './cm-provider-container.js';
 import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
@@ -35,7 +36,7 @@ export class CoqManager {
 
     /**
      * Creates an instance of CoqManager.
-     * @param {string} elems
+     * @param {string[]} elems
      * @param {object} options
      * @memberof CoqManager
      */
@@ -78,6 +79,15 @@ export class CoqManager {
 
         // Setup the Coq statement provider.
         this.provider = this._setupProvider(elems);
+
+        /** @type {PackageManager} */
+        this.packages = null;
+        
+        /** @type {CoqContextualInfo} */
+        this.contextual_info = null;
+
+        /** @type {CoqWorker} */
+        this.coq = null;
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});

@@ -1,3 +1,5 @@
+//@ts-check
+
 /**
  * Legacy backward-compat with 0.15.x and older versions that did not
  * user ES modules.
@@ -16,9 +18,8 @@ var loadModuleCompat = function(fn) {
 
 var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
         document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined,
-    basePath = scriptDir ? `${scriptDir}../` : "./";
+    basePath = scriptDir ? `${scriptDir}../` : "./",
     loading = loadModuleCompat(basePath + 'ui-js/index.js');
-
 
 console.warn(`Loading jsCoq in compatibility mode; switching to ES modules is recommended:\n  ` +
     `Use \`<script type="module">import { JsCoq } from './${basePath}jscoq.js'\` instead of \`<script src="...">\`.`)

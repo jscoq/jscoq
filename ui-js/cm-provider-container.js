@@ -35,7 +35,9 @@ export class ProviderContainer {
         this.onMouseLeave = (stm, ev) => {};
         this.onTipHover = (entries, zoom) => {};
         this.onTipOut = () => {};
-
+        this.onAction = (action) => {};
+        this.wait_for = null;
+        
         class WhileScrolling {
             constructor() {
                 this.handler = () => {
@@ -64,8 +66,8 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace);
-                cm.idx = idx;
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx);
+
                 this.snippets.push(cm);
 
                 // Track focus XXX (make generic)
@@ -98,7 +100,7 @@ export class ProviderContainer {
      * Find elements in the page
      *
      * @param {*} elementRefs
-     * @return {HTMLElement}
+     * @return {HTMLElement[]}
      * @memberof ProviderContainer
      */
     findElements(elementRefs) {

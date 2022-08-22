@@ -484,12 +484,13 @@ export class CoqWorker {
     }
 }
 
-class CoqSubprocessAdapter extends CoqWorker {
+export class CoqSubprocessAdapter extends CoqWorker {
     constructor(backend, is_npm) {
         const subproc = require('wacoq-bin/dist/subproc');
         super(null, new subproc.IcoqSubprocess(), backend, is_npm);
         window.addEventListener('beforeunload', () => this.worker.end());
     }
+
     /**
      * @param {any[]} a
      */

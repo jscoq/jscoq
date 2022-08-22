@@ -1,6 +1,9 @@
 //@ts-check
 "use strict";
 import { $ } from '../dist/lib.js';
+import { CoqWorker } from './jscoq-worker-interface.js';
+import { FormatPrettyPrint } from './format-pprint.js';
+import { CompanyCoq } from './addon/company-coq.js';
 
 export class CoqContextualInfo {
     /**
