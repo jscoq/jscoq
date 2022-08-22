@@ -1,10 +1,7 @@
 "use strict";
 
 import { JSZip, $ } from '../dist/lib.js';
-
-import { JsCoq } from './index.js';
 import { CoqWorker } from './jscoq-worker-interface.js';
-
 
 export class PackageManager {
 
@@ -19,7 +16,9 @@ export class PackageManager {
      * @param {CoqWorker} coq reference to the Coq worker instance to send
      *   load requests to
      */
-    constructor(panel_dom, packages, pkg_path_aliases, coq) {
+    constructor(panel_dom, packages, pkg_path_aliases, coq, backend) {
+
+        this.backend = backend;
         this.panel         = panel_dom;
         this.bundles       = {};
         this.loaded_pkgs   = [];
@@ -54,15 +53,15 @@ export class PackageManager {
         }
     }
 
-    static defaultPkgPath() {
+    static defaultPkgPath(backend) {
         return {
             'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
             'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath()).href
-        }[JsCoq.backend];
+        }[backend];
     }
 
     populate() {
-        this.index = new PackageIndex();
+        this.index = new PackageIndex(this.backend);
 
         return Promise.all(this.packages.map(async pkg => {
             var manifest = await pkg.fetchInfo();
@@ -205,7 +204,7 @@ export class PackageManager {
     }
 
     getLoadPath() {
-        switch (JsCoq.backend) {
+        switch (this.backend) {
         case 'js':
             return this.loaded_pkgs.map( pkg_name => {
                 let pkg = this.getPackage(pkg_name),
@@ -381,7 +380,7 @@ export class PackageManager {
     }
 
     loadArchive(pkg) {
-        switch (JsCoq.backend) {
+        switch (this.backend) {
         case 'js':
             return pkg.archive.unpack(this.coq)
                               .then(() => this.coqLibLoaded(pkg.name));
@@ -453,13 +452,14 @@ export class PackageManager {
  */
 class PackageIndex {
 
-    constructor() {
+    constructor(backend) {
+        this.backend = backend;
         this.moduleIndex = new Map();
         this.intrinsicPrefix = "Coq";
     }
 
     add(pkgInfo) {
-        if (JsCoq.backend === 'js')
+        if (this.backend === 'js')
             pkgInfo.modules = this._listModules(pkgInfo);
 
         for (let mod in pkgInfo.modules || {})
