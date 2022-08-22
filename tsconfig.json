@@ -6,6 +6,8 @@
     "outDir": "dist",
     "lib": ["esnext", "dom", "dom.iterable"],
     "esModuleInterop": true,
+    // "sourceMap": true,
+    // "declaration": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,

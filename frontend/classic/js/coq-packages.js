@@ -334,7 +334,7 @@ export class PackageManager {
     }
 
     _absoluteURL(url) {
-        return new URL(url, this.coq._worker_script).toString();
+        return new URL(url, this.coq.config.path).toString();
     }
 
     coqLibProgress(evt) {

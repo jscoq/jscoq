@@ -5,41 +5,70 @@ import { Future, PromiseFeedbackRoute } from './future';
 /**
  * Main Coq Worker Class
  *
- * @class CoqWorker
- * @property {Worker} worker
- * @property {Function} CoqWorker#defaultScriptPath
  */
-export class CoqWorker {
-    options: any;
+type CoqEventObserver = Object
+
+export class CoqWorkerConfig {
+
+    path: URL;
     backend: backend;
-    is_npm: boolean;
-    observers: any[];
-    routes: any[];
-    sids: Future<void>[];
-    load_progress: (ratio: number, ev: ProgressEvent) => void;
-    when_created: Promise<void>;
-    _boot : Future<void>;
-    _worker_script: string;
-    worker: Worker;
-    _handler: (msg : any) => void;
-    _gen_rid : number;
-    intvec: Int32Array;
-    base_path : string | URL;
+    debug: boolean;
+    warn: boolean;
+
+    // TODO: add smart constructor?
+    constructor(base_path, is_npm, backend) {
+        this.path = CoqWorkerConfig.determineWorkerPath(base_path, is_npm, backend);
+        this.backend = backend;
+        this.debug = false;
+        this.warn = true;
+    }
 
     /**
-     * Creates an instance of CoqWorker.
+     * Default location for worker script -- computed relative to the URL
+     * from which this script is loaded.
      */
+    static determineWorkerPath(base_path, is_npm, backend) : URL {
+        var nmPath = is_npm ? '..' : 'node_modules';
+        return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
+                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
+                      base_path);
+    }
+}
+
+// XXX: not sure we want to allow subclassing of the worker method,
+// use case is pretty small to actually expose the internals here.
+export class CoqWorker {
+
+    config: CoqWorkerConfig;
+
+    // No reason to access the worker
+    protected worker: Worker;
+
+    intvec: Int32Array;
+
+    private load_progress: (ratio: number, ev: ProgressEvent) => void;
+
+    // Misc
+    private _boot : Future<void>;
+    protected when_created: Promise<void>;
+    protected _handler: (msg : any) => void;
+
+    // Needs work to move to a standard typed registration mechanism
+    // The protected here is not respected by the {package,coq}-manager(s)
+    protected observers: CoqEventObserver[];
+
+    // Private stuff to handle our implementation of requests
+    private routes: Map<number,CoqEventObserver[]>;
+    private sids: Future<void>[];
+    private _gen_rid : number;
+
     constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend, is_npm : boolean) {
-        this.options = {
-            debug: false,
-            warn: true
-        };
-        this.base_path = base_path;
-        this.backend = backend || 'js';
-        this.is_npm = is_npm || false;
+
+        this.config = new CoqWorkerConfig(base_path, is_npm, backend);
+        this.config.path = scriptPath || this.config.path;
 
         this.observers = [this];
-        this.routes = [this.observers];
+        this.routes = new Map([[0,this.observers]]);
         this.sids = [, new Future()];
 
         this.load_progress = (ratio, ev) => {};
@@ -49,22 +78,8 @@ export class CoqWorker {
             this.when_created = Promise.resolve();
         }
         else {
-            this.when_created =
-                this.createWorker(scriptPath ||
-                                  CoqWorker.defaultScriptPath(base_path, backend, is_npm));
+            this.when_created = this.createWorker(this.config.path);
         }
-    }
-
-    /**
-     * Default location for worker script -- computed relative to the URL
-     * from which this script is loaded.
-     *
-     */
-    static defaultScriptPath(base_path, backend, is_npm) {
-        var nmPath = is_npm ? '..' : 'node_modules';
-        return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
-                      base_path).href;
     }
 
     /**
@@ -85,15 +100,14 @@ export class CoqWorker {
      * @memberof CoqWorker
      */
     async createWorker(script_path) {
-        this._worker_script = script_path;
 
         this.attachWorker(await
-            this.newWorkerWithProgress(this._worker_script));
+            this.newWorkerWithProgress(this.config.path));
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
 
-        if (this.backend == 'wa') {
+        if (this.config.backend == 'wa') {
             this._boot = new Future();
             return this._boot.promise;
         }
@@ -115,7 +129,7 @@ export class CoqWorker {
     attachWorker(worker) {
         this.worker = worker;
         this.worker.addEventListener('message',
-            this._handler = (/** @type {any} */ evt) => this.coq_handler(evt));
+            this._handler = evt => this.coq_handler(evt));
     }
 
     /**
@@ -125,10 +139,11 @@ export class CoqWorker {
      * @memberof CoqWorker
      */
     sendCommand(msg) {
-        if(this.options.debug) {
+        if(this.config.debug) {
             console.log("Posting: ", msg);
         }
-        this.worker.postMessage(this.backend === 'wa' ? JSON.stringify(msg) : msg);
+        if (this.config.backend === 'wa') msg = JSON.stringify(msg);
+        this.worker.postMessage(msg);
     }
 
     /**
@@ -234,7 +249,7 @@ export class CoqWorker {
      * @param {{base_path: string, pkg: string} | string} url
      */
     loadPkg(url) {
-        switch (this.backend) {
+        switch (this.config.backend) {
         case 'js':
             if (typeof url !== 'object') throw new Error('invalid URL for js mode (object expected)');
             this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
@@ -257,7 +272,7 @@ export class CoqWorker {
      * @param {any} load_path
      */
     refreshLoadPath(load_path) {
-        switch (this.backend) {
+        switch (this.config.backend) {
         case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
         case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
         }
@@ -276,7 +291,7 @@ export class CoqWorker {
         }
 
         var msg = ["Put", filename, content];
-        if(this.options.debug) {
+        if(this.config.debug) {
             console.debug("Posting file: ", msg);
         }
         this.worker.postMessage(msg, transferOwnership ? [abuf] : []);
@@ -331,7 +346,7 @@ export class CoqWorker {
 
         this.end();  // kill!
 
-        await this.createWorker(this._worker_script);
+        await this.createWorker(this.config.path);
     }
 
     end() {
@@ -382,19 +397,11 @@ export class CoqWorker {
      */
     _wrapWithPromise(rid) {
         let pfr = new PromiseFeedbackRoute();
-        this.routes[rid] = [pfr];
-        pfr.atexit = () => { delete this.routes[rid]; };
+        this.routes.set(rid, [pfr]);
+        pfr.atexit = () => { this.routes.delete(rid); };
         return pfr.promise;
     }
 
-    spawn(base_path) {
-        this.worker.removeEventListener('message', this._handler);
-        return new CoqWorker(base_path, null, this.worker, this.backend, this.is_npm);
-    }
-
-    /**
-     * @param {{ _handler: any; }} child
-     */
     join(child) {
         this.worker.removeEventListener('message', child._handler);
         this.worker.addEventListener('message', this._handler);
@@ -412,7 +419,7 @@ export class CoqWorker {
         var msg_args = msg.slice(1);
         var handled = false;
 
-        if(this.options.debug) {
+        if(this.config.debug) {
             if (msg_tag === 'LibProgress' || msg_tag === 'Log' && msg_args[0][0] === 'Debug')
                 console.debug("Coq message", msg); // too much spam :\
             else
@@ -428,7 +435,7 @@ export class CoqWorker {
             }
          }
 
-         if (!handled && this.options.warn) {
+         if (!handled && this.config.warn) {
             console.warn('Message ', msg, ' not handled');
         }
     }
@@ -449,11 +456,12 @@ export class CoqWorker {
         var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1), in_mode];
         var handled = false;
 
-        if(this.options.debug)
+        if(this.config.debug)
             console.log('Coq Feedback message', fb_msg.span_id, fb_msg.contents);
 
         // We call the corresponding method feed$feed_tag(sid, msg[1]..msg[n])
-        for (let o of this.routes[feed_route] || []) {
+        const routes = this.routes.get(feed_route) || [];
+        for (let o of routes) {
             let handler = o['feed'+feed_tag];
             if (handler) {
                 handler.apply(o, feed_args);
@@ -461,7 +469,7 @@ export class CoqWorker {
             }
         }
 
-        if (!handled && this.options.warn) {
+        if (!handled && this.config.warn) {
             console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
         }
     }
@@ -474,7 +482,7 @@ export class CoqWorker {
 
         var handled = false;
 
-        for (let o of this.routes[rid] || []) {
+        for (let o of this.routes.get(rid) || []) {
             var handler = o['feedSearchResults'];
             if (handler) {
                 handler.call(o, bunch);
@@ -482,7 +490,7 @@ export class CoqWorker {
             }
         }
 
-        if (!handled && this.options.warn) {
+        if (!handled && this.config.warn) {
             console.warn(`SearchResults not handled (route ${rid})`);
         }
     }
@@ -517,7 +525,7 @@ export class CoqSubprocessAdapter extends CoqWorker {
 }
 
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
-function prefetchResource(url, progress = (pc :number,ev:ProgressEvent)=>{}) {
+function prefetchResource(url, progress = (pc:number,ev:ProgressEvent)=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "blob";

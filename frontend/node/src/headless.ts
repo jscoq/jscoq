@@ -28,15 +28,9 @@ import { FSInterface, fsif_native } from '../../../coq-jslib/build/fsif';
 import { CoqProject } from '../../../coq-jslib/build/project';
 
 class HeadlessCoqWorker extends CoqWorker {
-    when_created: Promise<any>
-    worker: any
-    observers: any[]
-    _handler: any
-    coq_handler: any
-    options: any
 
     constructor() {
-        var backend : 'js' = 'js', is_npm = false, base_path = './';
+        var backend : 'js' = 'js', is_npm = false, base_path = import.meta.url + '../../../';
         super(base_path, null, HeadlessCoqWorker.instance(), backend, is_npm);
         this.when_created.then(() => {
             this.worker.onmessage = this._handler = evt => {
@@ -44,8 +38,6 @@ class HeadlessCoqWorker extends CoqWorker {
             };
         });
     }
-
-    spawn() { return new HeadlessCoqWorker(); }
 
     static instance() {
         global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
