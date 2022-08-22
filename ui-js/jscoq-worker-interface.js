@@ -566,8 +566,7 @@ class PromiseFeedbackRoute extends Future {
     }
 }
 
-
-class CoqSubprocessAdapter extends CoqWorker {
+export class CoqSubprocessAdapter extends CoqWorker {
     constructor() {
         const subproc = require('wacoq-bin/dist/subproc');
         super(null, new subproc.IcoqSubprocess());

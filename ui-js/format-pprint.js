@@ -96,7 +96,7 @@ export class FormatPrettyPrint {
             return $([]);
 
         default:
-            console.warn("unhandled Format case", msg);
+            console.warn("unhandled Format case", tag);
             return $([]);
         }
     }
@@ -345,7 +345,7 @@ export class FormatPrettyPrint {
      */
     goal2DOM(goal) {
         let mklabel = (id) =>
-                $('<label>').text(this.constructor._idToString(id)),
+                $('<label>').text(FormatPrettyPrint._idToString(id)),
             mkdef = (pp) =>
                 $('<span>').addClass('def').append(this.pp2DOM(pp));
 
@@ -377,10 +377,10 @@ export class FormatPrettyPrint {
     /**
      * This attempts to mimic the behavior of `Format.print_break` in relation
      * to line breaks.
-     * @param {jQuery} jdom a DOM subtree produced by `pp2DOM` or `goals2DOM`.
+     * @param {JQuery<HTMLElement>} jdom a DOM subtree produced by `pp2DOM` or `goals2DOM`.
      */
     adjustBreaks(jdom) {
-        var width = jdom.width(),
+        var width = jdom.width() || 0,
             boxes = jdom.find('.Pp_box');
 
         /** @todo should probably reset the state of all breaks, in case `adjustBreaks` is called a second time e.g. after resize */

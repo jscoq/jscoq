@@ -1,3 +1,4 @@
+//@ts-check
 "use strict"
 
 import 'codemirror/addon/edit/matchbrackets.js';

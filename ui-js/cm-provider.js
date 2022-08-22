@@ -2,9 +2,10 @@
 
 "use strict";
 
-import { CodeMirror, localforage, $ } from '../dist/lib.js';
-import './mode/coq-mode.js';
 import { copyOptions } from './etc.js';
+import { CodeMirror, localforage, $ } from '../dist/lib.js';
+import { JsCoq } from './index.js';
+import './mode/coq-mode.js';
 
 /**
  * A Coq sentence, typically ended in dot "."
@@ -54,11 +55,12 @@ export class CmCoqProvider {
      * @param {*} element
      * @param {*} options
      * @param {*} replace
+     * @param {number} idx
      * @memberof CmCoqProvider
      */
-    constructor(element, options, replace) {
+    constructor(element, options, replace, idx) {
 
-        this.constructor._config();
+        CmCoqProvider._config();
 
         var cmOpts =
             { mode : { name : "coq",
@@ -92,6 +94,9 @@ export class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
+        
+        // Index of this particular provider
+        this.idx = idx;
 
         if (replace) this.editor.addKeyMap('jscoq-snippet');
 
@@ -139,8 +144,10 @@ export class CmCoqProvider {
         this.editor.on('endCompletion', (/** @type {any} */ cm)             => this.onTipOut());
     }
 
+    static file_store = null;
+
     /**
-     * @param {ParentNode | ((host: HTMLElement) => void)} element
+     * @param {HTMLElement} element
      * @param {CodeMirror.EditorConfiguration | undefined} opts
      * @param {any} replace
      */
@@ -501,7 +508,7 @@ export class CmCoqProvider {
     }
 
     /**
-     * @param {EventTarget | null} dom
+     * @param {HTMLElement} dom
      */
     _markFromElement(dom) {
         var sid = dom.classList.contains('CodeMirror-line') ?
@@ -776,15 +783,15 @@ export class CmCoqProvider {
     }
 
     /**
-     * @param {{ val: (arg0: undefined) => void; }} input
-     * @param {{ children: (arg0: string) => { (): any; new (): any; get: { (): any[]; new (): any; }; }; }} list
+     * @param { * } input
+     * @param { * } list
      */
     _complete(input, list) {
         var value = input.val();
 
         if (value) {
             var match = list.children('option').get()
-                            .find((/** @type {{ value: string | any[]; }} */ o) => o.value.includes(value));
+                            .find((o) => o.value.includes(value));
             if (match) {
                 input.val(match.value);
             }

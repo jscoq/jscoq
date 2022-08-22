@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+//@ts-check
 
 const fs = require('fs'),
       path = require('path'),
@@ -74,7 +75,7 @@ function parseArgs(args) {
 }
 
 async function generateDocs(coqdocArgs, opts) {
-    template = opts.template ? fs.readFileSync(opts.template, 'utf-8')
+    var template = opts.template ? fs.readFileSync(opts.template, 'utf-8')
                              : DEFAULT_TEMPLATE;
 
     await chld.spawn('coqdoc', ['--body-only', ...coqdocArgs], {stdio: 'inherit'});

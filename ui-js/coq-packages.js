@@ -27,6 +27,9 @@ export class PackageManager {
         this.coq           = coq;
 
         this.coq.observers.push(this);
+        this.packages = [];
+        this.packages_by_name = {};
+        this.packages_by_uri = {};
 
         this.initializePackageList(packages, pkg_path_aliases);
     }
