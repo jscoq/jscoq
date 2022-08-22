@@ -11,9 +11,10 @@
 
 import { $ } from '../dist/lib.js';
 
+import { Future } from './future.js';
 import { JsCoq } from './index.js';
 import { copyOptions } from './etc.js';
-import { Future, CoqWorker } from './jscoq-worker-interface.js';
+import { CoqWorker } from './jscoq-worker-interface.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { ProviderContainer } from './cm-provider-container.js';

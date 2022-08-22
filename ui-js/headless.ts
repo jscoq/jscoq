@@ -6,7 +6,8 @@ import unzip from 'fflate-unzip';
 import * as find from 'find';
 import glob from 'glob';
 
-import { CoqWorker, Future } from './jscoq-worker-interface';
+import { Future } from './future.js';
+import { CoqWorker } from './jscoq-worker-interface';
 import { CoqIdentifier } from './contextual-info';
 import { FormatPrettyPrint } from './format-pprint';
 import { arreq_deep } from '../ui-js/etc';
