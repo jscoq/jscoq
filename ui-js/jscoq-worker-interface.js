@@ -27,7 +27,7 @@ export class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        this.load_progress = (/** @type {any} */ pc) => {};
+        this.load_progress = (pc) => {};
 
         if (worker) {
             this.attachWorker(worker);

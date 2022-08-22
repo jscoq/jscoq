@@ -91,8 +91,27 @@ module.exports = (env, argv) => [
   name: 'lib',
   entry: './ui-js/lib.js',
   ...basics(argv),
+  module: {
+    rules: [ts]
+  },
   resolve,
   output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
+},
+/**
+ * Backend
+ */
+{
+  name: 'backend',
+  entry: './backend/index.ts',
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {...output('dist', 'backend.js'), libraryTarget: 'module'},
   experiments: {
     outputModule: true
   }

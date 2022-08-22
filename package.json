@@ -9,6 +9,7 @@
     "jscoqdoc": "ui-js/jscoqdoc.cjs"
   },
   "dependencies": {
+    "assert": "^2.0.0",
     "array-equal": "^1.0.0",
     "child-process-promise": "^2.2.1",
     "codemirror": "^5.61.0",
@@ -25,6 +26,7 @@
     "neatjson": "^0.8.3",
     "path": "^0.12.7",
     "proper-lockfile": "^4.1.2",
+    "vscode-jsonrpc": "^8.0.2",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6"
   },
