@@ -16,7 +16,7 @@ export class CoqWorker {
     observers: any[];
     routes: any[];
     sids: Future<void>[];
-    load_progress: Function;
+    load_progress: (ratio: number, ev: ProgressEvent) => void;
     when_created: Promise<void>;
     _boot : Future<void>;
     _worker_script: string;
@@ -28,12 +28,6 @@ export class CoqWorker {
 
     /**
      * Creates an instance of CoqWorker.
-     * @param {string} scriptPath
-     * @param {Worker} worker
-     * @param {'js' | 'wa'} backend
-     * @param {boolean} is_npm
-     * @memberof CoqWorker
-     * @constructor
      */
     constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend, is_npm : boolean) {
         this.options = {
@@ -44,12 +38,10 @@ export class CoqWorker {
         this.backend = backend || 'js';
         this.is_npm = is_npm || false;
 
-        /** @type {object[]} observers are duck-typed */
         this.observers = [this];
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        /** @type {(ratio: number, ev: ProgressEvent) => void} */
         this.load_progress = (ratio, ev) => {};
 
         if (worker) {
@@ -112,7 +104,6 @@ export class CoqWorker {
      */
     async newWorkerWithProgress(url) {
         await prefetchResource(url, (pc, ev) => this.load_progress(pc, ev));
-        // await prefetchResource(url, pc => this.load_progress(pc));
         // have to use `url` again so that the worker has correct base URI;
         // should be cached at this point though.
         return new Worker(url);
