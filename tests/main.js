@@ -1,14 +1,15 @@
-const assert = require('assert'),
-      fs = require('fs'),
-      glob = require('glob'),
-      child_process = require('child_process'),
-      util = require('util');
+import * as assert from 'assert';
+import * as fs from 'fs';
+import * as child_process from 'child_process';
+import * as util from 'util';
+import pkg from 'glob';
+const { glob } = pkg;
 
 const cliJsPath = locateCliJs();
 
 function locateCliJs() {
-    var alts = glob.sync('_build/jscoq+*/dist/cli.js');
-    if (alts.length == 0) throw new Error('cli.js not found');
+    var alts = glob.sync('_build/jscoq+*/dist/cli.cjs');
+    if (alts.length == 0) throw new Error('cli.cjs not found');
     else if (alts.length > 1) throw new Error('multiple builds found: ' + alts);
     return alts[0];
 }
@@ -19,7 +20,7 @@ function cliSubprocess(flags) {
 }
 
 describe('qa0 - sanity test', function() {
-    this.timeout(10000); 
+    this.timeout(10000);
 
     describe('nonzeros', function() {
         var rc;
