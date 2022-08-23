@@ -1,14 +1,17 @@
 "use strict";
-import { JsCoq } from './index.js';
+
 import { Future, PromiseFeedbackRoute } from './future.js';
 
 export class CoqWorker {
 
-    constructor(scriptPath, worker) {
+    constructor(scriptPath, worker, backend, is_npm) {
         this.options = {
             debug: false,
             warn: true
         };
+        this.backend = backend;
+        this.is_npm = is_npm;
+
         this.observers = [this];
         this.routes = [this.observers];
         this.sids = [, new Future()];
@@ -20,9 +23,9 @@ export class CoqWorker {
             this.when_created = Promise.resolve();
         }
         else {
-            this.when_created = 
+            this.when_created =
                 this.createWorker(scriptPath ||
-                                  this.constructor.defaultScriptPath());
+                                  CoqWorker.defaultScriptPath(backend, is_npm));
         }
     }
 
@@ -30,10 +33,10 @@ export class CoqWorker {
      * Default location for worker script -- computed relative to the URL
      * from which this script is loaded.
      */
-    static defaultScriptPath() {
-        var nmPath = JsCoq.is_npm ? '../..' : '../node_modules';
+    static defaultScriptPath(backend, is_npm) {
+        var nmPath = is_npm ? '../..' : '../node_modules';
         return new URL({'js': "../coq-js/jscoq_worker.bc.cjs",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[JsCoq.backend],
+                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
                        this.scriptUrl).href;
     }
 
@@ -54,7 +57,7 @@ export class CoqWorker {
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
 
-        if (JsCoq.backend == 'wa') {
+        if (this.backend == 'wa') {
             this._boot = new Future();
             return this._boot.promise;
         }
@@ -77,7 +80,7 @@ export class CoqWorker {
         if(this.options.debug) {
             console.log("Posting: ", msg);
         }
-        if (JsCoq.backend === 'wa') msg = JSON.stringify(msg);
+        if (this.backend === 'wa') msg = JSON.stringify(msg);
         this.worker.postMessage(msg);
     }
 
@@ -138,7 +141,7 @@ export class CoqWorker {
     }
 
     loadPkg(url) {
-        switch (JsCoq.backend) {
+        switch (this.backend) {
         case 'js':
             this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
             break;
@@ -153,7 +156,7 @@ export class CoqWorker {
     }
 
     refreshLoadPath(load_path) {
-        switch (JsCoq.backend) {
+        switch (this.backend) {
         case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
         case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
         }
@@ -349,9 +352,9 @@ export class CoqWorker {
 }
 
 class CoqSubprocessAdapter extends CoqWorker {
-    constructor() {
+    constructor(backend, is_npm) {
         const subproc = require('wacoq-bin/dist/subproc');
-        super(null, new subproc.IcoqSubprocess());
+        super(null, new subproc.IcoqSubprocess(), backend, is_npm);
         window.addEventListener('beforeunload', () => this.worker.end());
     }
     coq_handler(...a) {

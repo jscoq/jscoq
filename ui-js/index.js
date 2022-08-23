@@ -15,9 +15,8 @@ const JsCoq = {
     is_npm: false,  /* indicates that jsCoq was installed via `npm install` */
 
     load(...args) {
-        let opts = this._getopt('load', ...args),
-            {base_path, node_modules_path} = opts;
-        return this._load(base_path, node_modules_path).then(() => opts);
+        let { jscoq_ids, jscoq_opts } = this._getopt('load', ...args);
+        return this._load(jscoq_opts.base_path, jscoq_opts.node_modules_path).then(() => opts);
     },
 
     _load(base_path, node_modules_path) {
@@ -29,11 +28,9 @@ const JsCoq = {
     },
 
     async start(...args) {
-        let opts = this._getopt('start', ...args),
-            {base_path, node_modules_path, jscoq_ids, jscoq_opts} = opts;
-        this.backend = jscoq_opts.backend || this.backend;
-        await this._load(base_path, node_modules_path);
-        return new CoqManager(jscoq_ids, jscoq_opts)
+        let { jscoq_ids, jscoq_opts } = this._getopt('start', ...args);
+        await this._load(jscoq_opts.base_path, jscoq_opts.node_modules_path);
+        return new CoqManager(jscoq_ids, jscoq_opts);
     },
 
     /**
@@ -45,12 +42,15 @@ const JsCoq = {
      *  * (string[]) elements ids / CSS selectors designating interactive snippets
      *  * (object) options object passed to `CoqManager` (see `coq-manager.js`)
      * All arguments are optional. Assignment is done according to type.
-     * @returns 
+     * @returns
      */
     _getopt(method, ...args) {
-        var base_path = undefined, node_modules_path = undefined,
-            jscoq_ids = ['ide-wrapper'], jscoq_opts = {};
-        
+
+        var base_path = undefined,
+            node_modules_path = undefined,
+            jscoq_ids = ['ide-wrapper'],
+            jscoq_opts = {};
+
         // Interpret args according to spec, skip missing values
         if (typeof args[0] === 'string') base_path = args.shift();
         if (typeof args[0] === 'string') node_modules_path = args.shift();
@@ -59,14 +59,16 @@ const JsCoq = {
 
         if (args.length > 0) console.warn(`too many arguments to JsCoq.${method}()`);
 
-        // Set base and node_modules path from options if not given, use defaults
-        base_path ||= jscoq_opts.base_path || this.base_path;
-        jscoq_opts.base_path ||= base_path;
-        node_modules_path ||= jscoq_opts.node_modules_path || 
-                              base_path + (this.is_npm ? "../" : "node_modules/");
-        jscoq_opts.node_modules_path ||= node_modules_path;
+        // Backend setup
+        jscoq_opts.backend = jscoq_opts.backend || this.backend;
 
-        return {base_path, node_modules_path, jscoq_ids, jscoq_opts}
+        // Set base and node_modules path from options if not given, use defaults
+        jscoq_opts.base_path = base_path || jscoq_opts.base_path || this.base_path;
+        jscoq_opts.node_modules_path = node_modules_path
+                                    || jscoq_opts.node_modules_path
+                                    || jscoq_opts.base_path + (this.is_npm ? "../" : "node_modules/");
+
+        return {jscoq_ids, jscoq_opts}
     },
 
     globalConfig(v) {
@@ -131,5 +133,8 @@ function whenReady() {
                 document.readyState === 'complete' && r()));
 }
 
-
 export { JsCoq, CoqManager }
+
+// Local Variables:
+// js-indent-level: 4
+// End:

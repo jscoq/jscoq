@@ -103,7 +103,7 @@ export class CoqLayoutClassic {
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path,
-            backend: JsCoq.backend, ...params});
+            backend: this.options.backend, ...params});
 
         this.ide.appendChild(this.panel);
 

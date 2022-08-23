@@ -12,8 +12,7 @@
 import { $ } from '../dist/lib.js';
 
 import { Future } from './future.js';
-import { JsCoq } from './index.js';
-import { copyOptions } from './etc.js';
+import { copyOptions, isMac, arreq_deep } from './etc.js';
 import { CoqWorker } from './jscoq-worker-interface.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
@@ -21,8 +20,6 @@ import { ProviderContainer } from './cm-provider-container.js';
 import { CoqIdentifier, CoqContextualInfo } from './contextual-info.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-import { isMac, arreq_deep } from './etc.js';
-
 
 /***********************************************************************/
 /* CoqManager coordinates the coq code objects, the panel, and the coq */
@@ -45,7 +42,9 @@ export class CoqManager {
             wrapper_id: 'ide-wrapper',
             theme:      'light',
             base_path:   "./",
-            pkg_path:    PackageManager.defaultPkgPath(),
+            node_modules_path: "./node_modules/",
+            backend: "js",
+            pkg_path:    PackageManager.defaultPkgPath(options.backend || 'js'),
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['coq'].concat(PKG_AFFILIATES),
@@ -275,8 +274,9 @@ export class CoqManager {
     async launch() {
         try {
             // Setup the Coq worker.
-            this.coq = this.options.subproc ? new CoqSubprocessAdapter()
-                                            : new CoqWorker();
+            this.coq = this.options.subproc
+                ? new CoqSubprocessAdapter(this.options.backend, this.options.is_npm)
+                : new CoqWorker(null, null, this.options.backend, this.options.is_npm);
             this.coq.options = this.options;
             this.coq.observers.push(this);
 
@@ -289,11 +289,16 @@ export class CoqManager {
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${JsCoq.node_modules_path}@${JsCoq.backend}coq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${this.options.node_modules_path}@${this.options.backend}coq/${ap}/coq-pkgs`]))
             };
 
-            this.packages = new PackageManager(this.layout.packages,
-                this.options.all_pkgs, pkg_path_aliases, this.coq);
+            this.packages = new PackageManager(
+                this.layout.packages,
+                this.options.all_pkgs,
+                pkg_path_aliases,
+                this.coq,
+                this.options.backend
+            );
 
             this.packages.expand();
             this.packages.populate();
@@ -306,7 +311,7 @@ export class CoqManager {
             this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
                                                         this.coq, this.pprint, this.company_coq);
 
-            if (JsCoq.backend !== 'wa') {
+            if (this.options.backend !== 'wa') {
                 await this.coq.when_created;
                 this.coqBoot();  // only the WA backend emits `Boot` events
             }
