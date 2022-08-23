@@ -16,7 +16,7 @@ const JsCoq = {
 
     load(...args) {
         let { jscoq_ids, jscoq_opts } = this._getopt('load', ...args);
-        return this._load(jscoq_opts.base_path, jscoq_opts.node_modules_path).then(() => opts);
+        return this._load(jscoq_opts.base_path, jscoq_opts.node_modules_path).then(() => jscoq_opts);
     },
 
     _load(base_path, node_modules_path) {
