@@ -121,7 +121,7 @@ wacoq:
 .PHONY: test watch serve dev
 
 test:
-	npx mocha tests/main.js
+	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- npx mocha tests/main.js
 
 watch: DUNE_FLAGS+=--watch
 watch: jscoq
