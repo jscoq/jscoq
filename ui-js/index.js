@@ -1,3 +1,4 @@
+//@ts-check
 "use strict"
 
 import { CoqManager } from './coq-manager.js';

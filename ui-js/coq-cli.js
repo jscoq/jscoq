@@ -1,3 +1,4 @@
+//@ts-check
 import { HeadlessCoqManager } from './headless.ts';
 
 export class HeadlessCLI {
@@ -68,5 +69,4 @@ export class HeadlessCLI {
 
         return 0;
     }
-
 }

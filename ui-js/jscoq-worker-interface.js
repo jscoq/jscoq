@@ -1,9 +1,23 @@
+//@ts-check
 "use strict";
 
 import { Future, PromiseFeedbackRoute } from './future.js';
 
+/**
+ * Main Coq Worker Class
+ *
+ * @class CoqWorker
+ * @property {Function} CoqWorker#defaultScriptPath
+ */
 export class CoqWorker {
 
+    /**
+     * Creates an instance of CoqWorker.
+     * @param {string} scriptPath
+     * @param {Worker} worker
+     * @memberof CoqWorker
+     * @constructor
+     */
     constructor(scriptPath, worker, backend, is_npm) {
         this.options = {
             debug: false,
@@ -16,7 +30,7 @@ export class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        this.load_progress = pc => {};
+        this.load_progress = (/** @type {any} */ pc) => {};
 
         if (worker) {
             this.attachWorker(worker);
@@ -32,6 +46,7 @@ export class CoqWorker {
     /**
      * Default location for worker script -- computed relative to the URL
      * from which this script is loaded.
+     * 
      */
     static defaultScriptPath(backend, is_npm) {
         var nmPath = is_npm ? '../..' : '../node_modules';
@@ -43,11 +58,20 @@ export class CoqWorker {
     /**
      * Adjusts a given URI so that it can be requested by the worker.
      * (the worker may have a different base path than the page.)
+     * @param {string | URL} uri
      */
     resolveUri(uri) {
         return new URL(uri, window.location).href;
     }
 
+    /**
+     * Creates the worker object
+     *
+     * @param {string} script_path
+     * @return {Promise<Worker>} 
+     * @async
+     * @memberof CoqWorker
+     */
     async createWorker(script_path) {
         this._worker_script = script_path;
 
@@ -63,6 +87,9 @@ export class CoqWorker {
         }
     }
 
+    /**
+     * @param {string} url
+     */
     async newWorkerWithProgress(url) {
         await prefetchResource(url, pc => this.load_progress(pc));
         // have to use `url` again so that the worker has correct base URI;
@@ -70,12 +97,21 @@ export class CoqWorker {
         return new Worker(url);
     }
 
+    /**
+     * @param {Worker} worker
+     */
     attachWorker(worker) {
         this.worker = worker;
         this.worker.addEventListener('message', 
-            this._handler = evt => this.coq_handler(evt));
+            this._handler = (/** @type {any} */ evt) => this.coq_handler(evt));
     }
 
+    /**
+     * Sends a Command to Coq worker
+     *
+     * @param {object[]} msg
+     * @memberof CoqWorker
+     */
     sendCommand(msg) {
         if(this.options.debug) {
             console.log("Posting: ", msg);
@@ -84,10 +120,20 @@ export class CoqWorker {
         this.worker.postMessage(msg);
     }
 
+    /**
+     * @param {any[]} msg
+     */
     sendDirective(msg) {   // directives are intercepted by the JS part of the worker
         this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
+    /**
+     * Send Init Command to Coq
+     *
+     * @param {string} coq_opts
+     * @param {string} doc_opts
+     * @memberof CoqWorker
+     */
     init(coq_opts, doc_opts) {
         this.sendCommand(["Init", coq_opts]);
         if (doc_opts)
@@ -98,29 +144,54 @@ export class CoqWorker {
         this.sendCommand(["GetInfo"]);
     }
 
+    /**
+     * @param {any} ontop_sid
+     * @param {string | number} new_sid
+     * @param {any} stm_text
+     * @param {boolean} resolve
+     */
     add(ontop_sid, new_sid, stm_text, resolve) {
         this.sids[new_sid] = new Future();
         this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve || false]);
     }
 
+    /**
+     * @param {any} ontop_sid
+     * @param {any} new_sid
+     * @param {any} stm_text
+     */
     resolve(ontop_sid, new_sid, stm_text) {
         this.add(ontop_sid, new_sid, stm_text, true);
     }
 
+    /**
+     * @param {any} sid
+     */
     exec(sid) {
         this.sendCommand(["Exec", sid]);
     }
 
+    /**
+     * @param {number} sid
+     */
     cancel(sid) {
         for (let i in this.sids)
             if (i >= sid && this.sids[i]) { this.sids[i].reject(); delete this.sids[i]; }
         this.sendCommand(["Cancel", sid]);
     }
 
+    /**
+     * @param {any} sid
+     */
     goals(sid) {
         this.sendCommand(["Query", sid, 0, ["Goals"]]);
     }
 
+    /**
+     * @param {number} sid
+     * @param {any} rid
+     * @param {any[]} query
+     */
     query(sid, rid, query) {
         if (typeof query == 'undefined') { query = rid; rid = undefined; }
         if (typeof rid == 'undefined')
@@ -129,17 +200,28 @@ export class CoqWorker {
         return rid;
     }
 
+    /**
+     * @param {any} sid
+     * @param {undefined} rid
+     * @param {any} search_query
+     */
     inspect(sid, rid, search_query) {
         if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
         return this.query(sid, rid, ['Inspect', search_query])
     }
 
+    /**
+     * @param {string | string[]} option_name
+     */
     getOpt(option_name) {
         if (typeof option_name === 'string')
             option_name = option_name.split(/\s+/);
         this.sendCommand(["GetOpt", option_name]);
     }
 
+    /**
+     * @param {{ base_path: string, pkg: string}} url
+     */
     loadPkg(url) {
         switch (this.backend) {
         case 'js':
@@ -151,10 +233,17 @@ export class CoqWorker {
         }
     }
 
+    /**
+     * @param {any} base_path
+     * @param {any} pkgs
+     */
     infoPkg(base_path, pkgs) {
         this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
     }
 
+    /**
+     * @param {any} load_path
+     */
     refreshLoadPath(load_path) {
         switch (this.backend) {
         case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
@@ -162,6 +251,10 @@ export class CoqWorker {
         }
     }
 
+    /**
+     * @param {string} filename
+     * @param {Buffer} content
+     */
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
         var abuf = content;
@@ -181,6 +274,9 @@ export class CoqWorker {
          */
     }
 
+    /**
+     * @param {Buffer} buffer
+     */
     arrayBufferOfBuffer(buffer) {
         return (buffer.byteOffset === 0 && 
                 buffer.byteLength === buffer.buffer.byteLength) ?
@@ -189,6 +285,9 @@ export class CoqWorker {
                                 buffer.byteOffset + buffer.byteLength);
     }
 
+    /**
+     * @param {any} filename
+     */
     register(filename) {
         this.sendCommand(["Register", filename]);
     }
@@ -232,6 +331,10 @@ export class CoqWorker {
     }
 
     // Promise-based APIs
+
+    /**
+     * @param {string | number} sid
+     */
     execPromise(sid) {
         this.exec(sid);
 
@@ -242,16 +345,29 @@ export class CoqWorker {
         return this.sids[sid].promise;
     }
 
+    /**
+     * @param {any} sid
+     * @param {any} rid
+     * @param {any} query
+     */
     queryPromise(sid, rid, query) {
         return this._wrapWithPromise(
             rid = this.query(sid, rid, query));
     }
 
+    /**
+     * @param {any} sid
+     * @param {any} rid
+     * @param {any} search_query
+     */
     inspectPromise(sid, rid, search_query) {
         return this._wrapWithPromise(
             this.inspect(sid, rid, search_query));
     }
 
+    /**
+     * @param {string | number} rid
+     */
     _wrapWithPromise(rid) {
         let pfr = new PromiseFeedbackRoute();
         this.routes[rid] = [pfr];
@@ -264,6 +380,9 @@ export class CoqWorker {
         return new CoqWorker(null, this.worker);
     }
 
+    /**
+     * @param {{ _handler: any; }} child
+     */
     join(child) {
         this.worker.removeEventListener('message', child._handler);
         this.worker.addEventListener('message', this._handler);
@@ -271,6 +390,9 @@ export class CoqWorker {
 
     // Internal event handling
 
+    /**
+     * @param {{ data: any; }} evt
+     */
     coq_handler(evt) {
 
         var msg     = evt.data;
@@ -304,6 +426,10 @@ export class CoqWorker {
             this._boot.resolve();
     }
 
+    /**
+     * @param {{ contents: string | any[]; route: number; span_id: any; }} fb_msg
+     * @param {any} in_mode
+     */
     coqFeedback(fb_msg, in_mode) {
 
         var feed_tag = fb_msg.contents[0];
@@ -328,6 +454,10 @@ export class CoqWorker {
         }
     }
 
+    /**
+     * @param {string | number} rid
+     * @param {any} bunch
+     */
     coqSearchResults(rid, bunch) {
 
         var handled = false;
@@ -345,24 +475,34 @@ export class CoqWorker {
         }
     }
 
+    /**
+     * @param {string | number} sid
+     */
     feedProcessed(sid) {
         var fut = this.sids[sid];
         if (fut) { fut.resolve(); }
     }
 }
 
-class CoqSubprocessAdapter extends CoqWorker {
+export class CoqSubprocessAdapter extends CoqWorker {
     constructor(backend, is_npm) {
         const subproc = require('wacoq-bin/dist/subproc');
         super(null, new subproc.IcoqSubprocess(), backend, is_npm);
         window.addEventListener('beforeunload', () => this.worker.end());
     }
+
+    /**
+     * @param {any[]} a
+     */
     coq_handler(...a) {
         setTimeout(() => super.coq_handler(...a), 0); // force window context
     }
 }
 
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
+/**
+ * @param {string | URL} url
+ */
 function prefetchResource(url, progress=()=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);

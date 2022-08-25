@@ -1,3 +1,4 @@
+//@ts-check
 "use strict";
 
 import { JSZip, $ } from '../dist/lib.js';
@@ -25,6 +26,9 @@ export class PackageManager {
         this.coq           = coq;
 
         this.coq.observers.push(this);
+        this.packages = [];
+        this.packages_by_name = {};
+        this.packages_by_uri = {};
 
         this.initializePackageList(packages, pkg_path_aliases);
     }
@@ -53,6 +57,13 @@ export class PackageManager {
         }
     }
 
+    /**
+     * Returns the default package path
+     *
+     * @static
+     * @return {*}
+     * @memberof PackageManager
+     */
     static defaultPkgPath(backend) {
         return {
             'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
@@ -70,6 +81,12 @@ export class PackageManager {
         }));
     }
 
+    /**
+     * Adds a package
+     *
+     * @param {*} pkg
+     * @memberof PackageManager
+     */
     addPackage(pkg) {
         this.packages.push(pkg);
         this.packages_by_name[pkg.name] = pkg;

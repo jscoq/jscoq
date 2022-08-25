@@ -6,7 +6,8 @@
     "lib": ["esnext", "dom"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["_build", "dist"]
 }

@@ -1,38 +1,70 @@
-// Not possible to do this well with CM 5?
-// import { CodeMirror } from '../node_modules/codemirror/src/edit/main.js';
+//@ts-check
 
 "use strict";
 
-import { CodeMirror, localforage, $ } from '../dist/lib.js';
-import './mode/coq-mode.js';
 import { copyOptions } from './etc.js';
+import { CodeMirror, localforage, $ } from '../dist/lib.js';
+import { JsCoq } from './index.js';
+import './mode/coq-mode.js';
 
-
+/**
+ * A Coq sentence, typically ended in dot "."
+ *
+ * @class CmSentence
+ */
 class CmSentence {
 
+    /**
+     * Creates an instance of CmSentence.
+     * @param {CodeMirror.Position} start
+     * @param {CodeMirror.Position} end
+     * @param {string} text
+     * @param {object} flags
+     * @memberof CmSentence
+     */
     constructor(start, end, text, flags) {
         // start, end: {line: number, ch: number}
         // flags: {is_comment: bool, is_hidden: bool}
         this.start = start;
         this.end   = end;
         this.text  = text;
+        /**
+         * @type {undefined}
+         */
         this.mark  = undefined;
         this.flags = flags || {};
         this.feedback = [];
+        /**
+         * @type {undefined}
+         */
         this.action = undefined;
     }
 
 }
 
-// A CodeMirror-based Provider of coq statements.
-class CmCoqProvider {
+/**
+ * A CodeMirror-based Provider of coq statements.
+ *
+ * @class CmCoqProvider
+ *
+ */
+export class CmCoqProvider {
 
-    constructor(element, options, replace) {
+    /**
+     * Creates an instance of CmCoqProvider.
+     * @param {*} element
+     * @param {*} options
+     * @param {*} replace
+     * @param {number} idx
+     * @memberof CmCoqProvider
+     */
+    constructor(element, options, replace, idx) {
 
-        this.constructor._config();
+        CmCoqProvider._config();
 
         var cmOpts =
             { mode : { name : "coq",
+                       /** @type {4} */
                        version: 4,
                        singleLineStringErrors : false
                      },
@@ -62,6 +94,9 @@ class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
+        
+        // Index of this particular provider
+        this.idx = idx;
 
         if (replace) this.editor.addKeyMap('jscoq-snippet');
 
@@ -71,17 +106,17 @@ class CmCoqProvider {
         if (this.filename) { this.openLocal(); this.startAutoSave(); }
 
         // Event handlers (to be overridden by ProviderContainer)
-        this.onInvalidate = (mark) => {};
-        this.onMouseEnter = (stm, ev) => {};
-        this.onMouseLeave = (stm, ev) => {};
-        this.onTipHover = (entries, zoom) => {};
+        this.onInvalidate = (/** @type {any} */ mark) => {};
+        this.onMouseEnter = (/** @type {any} */ stm, /** @type {any} */ ev) => {};
+        this.onMouseLeave = (/** @type {any} */ stm, /** @type {any} */ ev) => {};
+        this.onTipHover = (/** @type {any} */ entries, /** @type {any} */ zoom) => {};
         this.onTipOut = () => {};
-        this.onResize = (lineCount) => {};
-        this.onAction = (action) => {};
+        this.onResize = (/** @type {any} */ lineCount) => {};
+        this.onAction = (/** @type {any} */ action) => {};
 
-        this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
+        this.editor.on('beforeChange', (/** @type {any} */ cm, /** @type {any} */ evt) => this.onCMChange(cm, evt) );
 
-        this.editor.on('cursorActivity', (cm) => 
+        this.editor.on('cursorActivity', (/** @type {{ operation: (arg0: () => void) => any; }} */ cm) => 
             cm.operation(() => this._adjustWidgetsInSelection()));
 
         this.trackLineCount();
@@ -102,13 +137,20 @@ class CmCoqProvider {
         this.hover = [];
 
         // Handle hint events
-        this.editor.on('hintHover',     completion     => this.onTipHover([completion], false));
-        this.editor.on('hintZoom',      completion     => this.onTipHover([completion], true));
-        this.editor.on('hintEnter',     (tok, entries) => this.onTipHover(entries, false));
+        this.editor.on('hintHover',     (/** @type {any} */ completion)     => this.onTipHover([completion], false));
+        this.editor.on('hintZoom',      (/** @type {any} */ completion)     => this.onTipHover([completion], true));
+        this.editor.on('hintEnter',     (/** @type {any} */ tok, /** @type {any} */ entries) => this.onTipHover(entries, false));
         this.editor.on('hintOut',       ()             => this.onTipOut());
-        this.editor.on('endCompletion', cm             => this.onTipOut());
+        this.editor.on('endCompletion', (/** @type {any} */ cm)             => this.onTipOut());
     }
 
+    static file_store = null;
+
+    /**
+     * @param {HTMLElement} element
+     * @param {CodeMirror.EditorConfiguration | undefined} opts
+     * @param {any} replace
+     */
     createEditor(element, opts, replace) {
         var text = replace && $(element).text(),
             editor = new CodeMirror(element, opts);
@@ -119,6 +161,9 @@ class CmCoqProvider {
         return editor;
     }
 
+    /**
+     * @param {{ theme: any; }} options
+     */
     configure(options) {
         if (options.theme) {
             this.editor.setOption('theme', options.theme);
@@ -132,7 +177,7 @@ class CmCoqProvider {
 
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
-        this.editor.on('change', ev => {
+        this.editor.on('change', (/** @type {any} */ ev) => {
             let lineCount = this.editor.lineCount();
             if (lineCount != this.lineCount)
                 this.onResize(this.lineCount = lineCount);
@@ -152,6 +197,10 @@ class CmCoqProvider {
     }
 
     // If prev == null then get the first.
+    /**
+     * @param {{ end: any; }} prev
+     * @param {CodeMirror.Position} until
+     */
     getNext(prev, until) {
 
         var doc = this.editor.getDoc(),
@@ -191,6 +240,11 @@ class CmCoqProvider {
     }
 
     // Mark a sentence with {clear, processing, error, ok}
+    /**
+     * @param {{ mark: { find: () => any; clear: () => void; } | null; start: any; end: any; }} stm
+     * @param {string} mark_type
+     * @param {undefined} [loc_focus]
+     */
     mark(stm, mark_type, loc_focus) {
 
         if (stm.mark) {
@@ -225,6 +279,10 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * @param {{ mark: { className: string; }; coq_sid: any; }} stm
+     * @param {boolean} flag
+     */
     highlight(stm, flag) {
         if (stm.mark && stm.coq_sid) {
             var spans = $(this.editor.getWrapperElement())
@@ -240,6 +298,11 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * @param {any} stm
+     * @param {any} loc
+     * @param {string} className
+     */
     squiggle(stm, loc, className) {
         var pos = this._subregion(stm, loc);
         if (pos)
@@ -257,6 +320,10 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * @param {{ coq_sid?: any; mark?: any; start?: any; end?: any; }} stm
+     * @param {string} className
+     */
     markWithClass(stm, className) {
         var doc = this.editor.getDoc(),
             {start, end} = stm;
@@ -271,6 +338,11 @@ class CmCoqProvider {
         stm.mark = mark;
     }
 
+    /**
+     * @param {{ mark: { on: (arg0: string, arg1: () => any) => void; }; }} stm
+     * @param {{ start: any; end: any; }} pos
+     * @param {any} className
+     */
     markSubordinate(stm, pos, className) {
         var doc = this.editor.getDoc(),
             {start, end} = pos;
@@ -284,11 +356,15 @@ class CmCoqProvider {
         return mark;
     }
 
+    /**
+     * @param {{ text: string | undefined; start: any; end: any; }} stm
+     * @param {{ bp: any; ep: number; }} loc
+     */
     _subregion(stm, loc) {
         // Offsets are in bytes :/
         var stmBytes = new TextEncoder().encode(stm.text),
             td = new TextDecoder(),
-            bytesToChars = (i) => td.decode(stmBytes.slice(0, i)).length,
+            bytesToChars = (/** @type {number | undefined} */ i) => td.decode(stmBytes.slice(0, i)).length,
             bp = bytesToChars(loc.bp), ep = bytesToChars(loc.ep);
 
         var doc = this.editor.getDoc(),
@@ -303,11 +379,14 @@ class CmCoqProvider {
      * Hack to apply MarkedSpan CSS class formatting and attributes to widgets
      * within mark boundaries as well. 
      * (This is not handled by the native CodeMirror#markText.)
+     * @param {any} start
+     * @param {any} end
+     * @param {{ className: string; attributes: {}; }} mark
      */
     _markWidgetsAsWell(start, end, mark) {
         var classNames = mark.className.split(/ +/);
         var attrs = mark.attributes || {};
-        for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
+        for (let w of this.editor.findMarks(start, end, (/** @type {{ widgetNode: any; }} */ x) => x.widgetNode)) {
             for (let cn of classNames)
                 w.widgetNode.classList.add(cn);
             for (let attr in attrs)
@@ -315,11 +394,13 @@ class CmCoqProvider {
         }
     }
 
-    /** 
+    /**
      * Hack contd: negates effects of _markWidgetsAsWell when mark is cleared.
+     * @param {any} start
+     * @param {any} end
      */
     _unmarkWidgets(start, end) {
-        for (let w of this.editor.findMarks(start, end, x => x.widgetNode)) {
+        for (let w of this.editor.findMarks(start, end, (/** @type {{ widgetNode: any; }} */ x) => x.widgetNode)) {
             for (let cn of [...w.widgetNode.classList]) {
                 if (/^coq-/.exec(cn))
                     w.widgetNode.classList.remove(cn);
@@ -345,7 +426,7 @@ class CmCoqProvider {
 
         // Locate selection mark and adjust widgets contain therein
         var selmark = editor.findMarksAt(editor.getCursor())
-            .filter(m => m.className == sel_className)[0], selmark_at;
+            .filter((/** @type {{ className: string; }} */ m) => m.className == sel_className)[0], selmark_at;
 
         if (selmark && (selmark_at = selmark.find()))
             this._markWidgetsAsWell(selmark_at.from, selmark_at.to, selmark);
@@ -355,11 +436,18 @@ class CmCoqProvider {
         return this.editor.getCursor();
     }
 
+    /**
+     * @param {{ line: number; ch: number; }} c1
+     * @param {{ line: number; ch: number; }} c2
+     */
     cursorLess(c1, c2) {
         return (c1.line < c2.line ||
                 (c1.line === c2.line && c1.ch < c2.ch));
     }
 
+    /**
+     * @param {{ end: any; }} stm
+     */
     cursorToEnd(stm) {
         this.editor.scrollTo(0);  // try to get back to the leftmost part
         this.editor.setCursor(stm.end);
@@ -368,8 +456,8 @@ class CmCoqProvider {
     /**
      * Checks whether the range from start to end consists solely of
      * whitespaces.
-     * @param {Pos} start starting position ({line, ch})
-     * @param {Pos} end ending position ({line, ch})
+     * @param {CodeMirror.Position} start starting position ({line, ch})
+     * @param {CodeMirror.Position} end ending position ({line, ch})
      */
     onlySpacesBetween(start, end) {
         if (start.line > end.line) return true;
@@ -384,11 +472,18 @@ class CmCoqProvider {
         return this._onlySpaces(this.editor.getRange(cur, end));
     }
 
+    /**
+     * @param {string} str
+     */
     _onlySpaces(str) {
         return !!(/^\s*$/.exec(str));
     }
 
     // If any marks, then call the invalidate callback!
+    /**
+     * @param {{ getDoc: () => any; }} editor
+     * @param {{ from: any; }} evt
+     */
     onCMChange(editor, evt) {
 
         var doc   = editor.getDoc();
@@ -412,6 +507,9 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * @param {HTMLElement} dom
+     */
     _markFromElement(dom) {
         var sid = dom.classList.contains('CodeMirror-line') ?
                     $(dom).find('[data-coq-sid]').last().attr('data-coq-sid')
@@ -431,7 +529,7 @@ class CmCoqProvider {
     /**
      * Highlights the sentence mark under the mouse cursor and emits
      * onMouseEnter/onMouseLeave when the active mark changes.
-     * @param {MouseEvent} evt event object
+     * @param {JQuery.MouseMoveEvent} evt event object
      */
     onCMMouseMove(evt) {
 
@@ -462,7 +560,7 @@ class CmCoqProvider {
 
     /**
      * De-highlights and emits onMouseLeave when leaving the active mark.
-     * @param {MouseEvent} evt event object
+     * @param {JQuery.MouseLeaveEvent} evt event object
      */
     onCMMouseLeave(evt) {
         if (this.hover.length > 0) {
@@ -473,12 +571,21 @@ class CmCoqProvider {
         }
     }
 
+    /**
+     * @param {{ key: string; }} evt
+     */
     keyHandler(evt) {
         /* re-issue mouse enter when modifier key is pressed or released */
         if (this.hover[0] && (evt.key === 'Control'))
             this.onMouseEnter(this.hover[0].stm, evt);
     }
 
+    /**
+     * XXXX
+     * @function _config
+     * @memberof CmCoqProvider
+     * @static
+     */
     static _config() {
         CodeMirror.defineOption('className', null, (cm, val) => {
             if (val) {
@@ -509,6 +616,10 @@ class CmCoqProvider {
     // Persistence Part
     // ================
 
+    /**
+     * @param {string} text
+     * @param {any} filename
+     */
     load(text, filename, dirty=false) {
         if (this.autosave && this.dirty) this.saveLocal();
 
@@ -521,6 +632,9 @@ class CmCoqProvider {
         // TODO clear marks and issue invalidate
     }
 
+    /**
+     * @param {Blob} file
+     */
     openFile(file) {
         var rdr = new FileReader();
         return new Promise((resolve, reject) => {
@@ -532,16 +646,22 @@ class CmCoqProvider {
         });
     }
 
+    /**
+     * @param {undefined} [filename]
+     */
     openLocal(filename) {
         filename = filename || this.filename;
 
         if (filename) {
             var file_store = this.getLocalFileStore();
-            return file_store.getItem(filename).then((text) =>
+            return file_store.getItem(filename).then((/** @type {any} */ text) =>
                 { this.load(text || "", filename); return text; });
         }
     }
 
+    /**
+     * @param {undefined} [filename]
+     */
     saveLocal(filename) {
         if (filename) this.filename = filename;
 
@@ -580,7 +700,7 @@ class CmCoqProvider {
 
         span.append(a);
 
-        this.editor.openDialog(span[0], sel => this.openLocal(sel));
+        this.editor.openDialog(span[0], (/** @type {any} */ sel) => this.openLocal(sel));
     }
 
     openFileDialog() {
@@ -602,7 +722,7 @@ class CmCoqProvider {
 
         span.append(a1, share.append(a2, a3));
 
-        this.editor.openDialog(span[0], sel => this.saveLocal(sel), 
+        this.editor.openDialog(span[0], (/** @type {any} */ sel) => this.saveLocal(sel), 
                                {value: this.filename});
     }
 
@@ -621,12 +741,15 @@ class CmCoqProvider {
         this.onAction({type: 'share-p2p'});
     }
 
+    /**
+     * @param {string | number | boolean | ((this: HTMLElement, index: number, text: string) => string | number | boolean)} text
+     */
     _makeFileDialog(text) {
         var list_id = 'cm-provider-local-files',
             input = $('<input>').attr('list', list_id),
             list = $('<datalist>').attr('id', list_id);
-        
-        this.getLocalFileStore().keys().then((keys) => {
+
+        this.getLocalFileStore().keys().then((/** @type {any} */ keys) => {
             for (let key of keys) {
                 list.append($('<option>').val(key));
             }
@@ -638,25 +761,37 @@ class CmCoqProvider {
             .on('done', () => this.editor.focus());
     }
 
+    /**
+     * @param {string | number | boolean | ((this: HTMLElement, index: number, text: string) => string | number | boolean)} text
+     * @param {{ (): void; (): void; (): void; (): void; (): void; }} handler
+     */
     _makeDialogLink(text, handler, className="dialog-link") {
         return $('<a>').addClass(className).text(text)
             .on('mousedown', ev => ev.preventDefault())
             .on('click', ev => { handler(); $(ev.target).trigger('done'); });
     }
 
+    /**
+     * @param {JQuery<HTMLElement>} input
+     * @param {JQuery<HTMLElement>} list
+     */
     _setupTabCompletion(input, list) {
-        input.keydown(ev => { if (ev.key === 'Tab') {
+        input.keydown((/** @type {{ key: string; preventDefault: () => void; stopPropagation: () => void; }} */ ev) => { if (ev.key === 'Tab') {
             this._complete(input, list);
             ev.preventDefault(); ev.stopPropagation(); } 
         });
     }
 
+    /**
+     * @param { * } input
+     * @param { * } list
+     */
     _complete(input, list) {
         var value = input.val();
 
         if (value) {
             var match = list.children('option').get()
-                            .find(o => o.value.includes(value));
+                            .find((o) => o.value.includes(value));
             if (match) {
                 input.val(match.value);
             }
@@ -681,6 +816,9 @@ class CmCoqProvider {
     }
 }
 
+/**
+ * @param {{ (): JQuery<HTMLElement>; (): any; }} thing
+ */
 function betaOnly(thing) {
     return JsCoq.globalConfig().features.includes('beta')
              ? thing() : undefined;
@@ -691,11 +829,12 @@ function betaOnly(thing) {
  * This means that editor focus is lost when scrolling with the keyboard;
  * but seems better than the alternative, which is the user having to
  * click PageUp/PageDn twice to initiate scroll.
+ * @param {{ addEventListener: (arg0: string, arg1: (ev: any) => void, arg2: { capture: boolean; }) => void; }} element
  */
 function pageUpDownOverride(element) {
     var scrollable = document.querySelector('#page'); /** @todo */
     if (scrollable)
-        element.addEventListener('keydown', ev => {
+        element.addEventListener('keydown', (/** @type {{ key: string; stopPropagation: () => void; }} */ ev) => {
             if (ev.key === 'PageDown' || ev.key === 'PageUp') {
                 ev.stopPropagation(); scrollable.focus();
             }
@@ -707,7 +846,7 @@ function pageUpDownOverride(element) {
  * This reverses the modifications made during pretty-printing
  * to allow the text to be placed in an editor.
  */
-class Deprettify {
+export class Deprettify {
 
     /**
      * Remove redundant leading and trailing newlines generated by coqdoc.
@@ -727,11 +866,17 @@ class Deprettify {
         return element;
     }
 
+    /**
+     * @param {ChildNode} node
+     */
     static isWS(node) {
         return node.nodeType === Node.TEXT_NODE &&
                node.nodeValue.match(/^\s*\n$/);
     }
 
+    /**
+     * @param {ChildNode} node
+     */
     static isBR(node) {
         return node.nodeType === Node.ELEMENT_NODE &&
                node.nodeName === 'BR';
@@ -753,9 +898,6 @@ Deprettify.REPLACES = [  /* Safari does not support static members? */
     [/⊢/g, '|-'],   [/\n☐/g, ''],
     [/∃/g, 'exists']  /* because it is also a tactic... */
 ];
-
-
-export { CmCoqProvider, CmSentence, Deprettify }
 
 // Local Variables:
 // js-indent-level: 4
