@@ -50,7 +50,7 @@ describe('qa0 - sanity test', function() {
 
     describe('options', function() {
         it('should read default option value', async function() {
-            rc = await cliSubprocess(['run', '-e', "Test Silent."]);
+            var rc = await cliSubprocess(['run', '-e', "Test Silent."]);
             var expected = fs.readFileSync('tests/qa0/options-0.out', 'utf-8');
             assert.strictEqual(rc.stdout, expected);
         });
