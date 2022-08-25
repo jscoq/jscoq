@@ -128,6 +128,23 @@ export default (env, argv) => [
   }
 },
 /**
+ * Package frontend for wider-comsumption and sanity
+ */
+{
+  name: 'frontend',
+  entry: './frontend/classic/js/index.js',
+  dependencies: [ 'lib' ],
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {...output('dist', 'frontend.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
+},
+/**
  * Multi-file Project UI
  */
 {
