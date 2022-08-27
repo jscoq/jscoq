@@ -201,7 +201,7 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .caption {
   flex: 0 0 20px;
   font-size: 11px;
-  padding: 3px 10px 0 10px;
+  padding: 2px 10px 1px 10px;
   position: relative;
   z-index: 3;
   width: 100%;
@@ -298,6 +298,22 @@ body.jscoq-main .CodeMirror-linenumber {
 #goal-text {
   border: 0;
   white-space: pre;
+}
+
+#help-panel {
+  display: none;
+}
+
+#help-panel:not(.collapsed) {
+  flex-grow: 2000;
+}
+
+#panel-wrapper.show-help #goal-panel {
+  display: none;
+}
+
+#panel-wrapper.show-help #help-panel {
+  display: initial;
 }
 
 #vsep, #hsep {

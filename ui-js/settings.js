@@ -1,5 +1,6 @@
 //@ts-check
 "use strict";
+//@ts-ignore
 import { $ } from '../dist/lib.js';
 
 /**
@@ -33,6 +34,7 @@ export class SettingsPanel {
                 <a href="https://coq.inria.fr" title="Coq" class="link-to-coq"></a>
                 <a href="https://coq.zulipchat.com/#narrow/stream/256336-jsCoq" title="Zulip" class="link-to-zulip"></a>
                 <a href="https://github.com/jscoq/jscoq" title="GitHub" class="link-to-github"></a>
+                <a href="#" title="Quick Help" class="link-to-quick-help"></a>
             </div>
         </div>
         `;
@@ -42,12 +44,19 @@ export class SettingsPanel {
         this.el = $(this.html());
         this.model = model || new CoqSettings();
         this.active = new ReactiveVar(false);
+        /** @type {(ev: {action: string}) => void} */
+        this.onAction = () => {};
 
         this.el.find('#settings--theme').on('change', ev => {
             this.model.theme.value = ev.target.checked ? 'light' : 'dark';
         });
         this.el.find('#settings--company').on('change', ev => {
             this.model.company.value = ev.target.checked;
+        });
+        this.el.find('.link-to-quick-help').on('click', (/** @type {MouseEvent} */ ev) => {
+            this.onAction({action: 'quick-help'});
+            this.hide();
+            ev.preventDefault();
         });
         // clickaway trick
         this.el.on('blur', ev => {

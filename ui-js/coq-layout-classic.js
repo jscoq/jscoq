@@ -5,6 +5,7 @@
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
+// @ts-ignore
 import { $ } from '../dist/lib.js';
 import { SettingsPanel } from './settings.js';
 
@@ -66,6 +67,10 @@ export class CoqLayoutClassic {
         <div class="content" id="goal-text" data-lang="coq">
         </div>
       </div>
+      <div id="help-panel" class="flex-panel">
+        <div class="caption">Help</div>
+        <div class="content" id="help-text"></div>
+      </div>
       <div class="msg-area flex-panel">
         <div class="caption">
           Messages
@@ -104,6 +109,7 @@ export class CoqLayoutClassic {
         this.ide = document.getElementById(options.wrapper_id);
         this.ide.classList.add('jscoq-ide', `layout-${options.layout || 'flex'}`);
 
+        /** @type {HTMLElement} */
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path,
@@ -187,6 +193,21 @@ export class CoqLayoutClassic {
 
     toggle() {
         this.isVisible() ? this.hide() : this.show();
+    }
+
+    showHelp() {
+        this.panel.classList.add('show-help');
+        this.panel.querySelector('#help-panel').classList.remove('collapsed');
+    }
+
+    hideHelp() {
+        this.panel.classList.remove('show-help');
+    }
+
+    toggleHelp() {
+        this.panel.classList.toggle('show-help');
+        if (this.panel.classList.contains('show-help'))
+            this.panel.querySelector('#help-panel').classList.remove('collapsed');
     }
 
     splash(version_info, msg, mode='wait') {
@@ -371,6 +392,11 @@ export class CoqLayoutClassic {
         this.settings.model.theme.observe(theme => {
             this.configure({theme});
         });
+        this.settings.onAction = ev => {
+            switch (ev.action) {
+            case 'quick-help': this.showHelp(); break;
+            }
+        }
     }
 
     /**
