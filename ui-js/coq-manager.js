@@ -980,7 +980,7 @@ export class CoqManager {
      * package manager.
      * @returns {Promise} resolves after 'init' command has been issued.
      */
-    reset() {
+    async reset() {
         this.layout.update_goals($('<b>').text('Coq worker reset.'));
         this.disable();
         this.provider.retract();
@@ -991,7 +991,7 @@ export class CoqManager {
 
         this.error = [];
 
-        this.coq.restart();
+        await this.coq.restart();
 
         // Reload packages and init
         var pkgs = this.packages.loaded_pkgs.slice();

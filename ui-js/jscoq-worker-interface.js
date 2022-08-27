@@ -318,12 +318,12 @@ export class CoqWorker {
             console.warn("interrupt requested but has not been set up");
     }
 
-    restart() {
+    async restart() {
         this.sids = [, new Future()];
 
         this.end();  // kill!
 
-        this.createWorker(this._worker_script);
+        await this.createWorker(this._worker_script);
     }
 
     end() {
