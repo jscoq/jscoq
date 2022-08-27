@@ -69,7 +69,9 @@ export class CoqLayoutClassic {
       </div>
       <div id="help-panel" class="flex-panel">
         <div class="caption">Help</div>
-        <div class="content" id="help-text"></div>
+        <div class="content" id="help-text">
+            <iframe src="${base_path}/docs/quick-help.html"></iframe>
+        </div>
       </div>
       <div class="msg-area flex-panel">
         <div class="caption">

@@ -308,6 +308,15 @@ body.jscoq-main .CodeMirror-linenumber {
   flex-grow: 2000;
 }
 
+#help-panel div.content {
+  padding: 0;
+  height: 100%;
+}
+#help-panel div.content iframe {
+  height: 100%;
+  width: 100%;
+}
+
 #panel-wrapper.show-help #goal-panel {
   display: none;
 }
