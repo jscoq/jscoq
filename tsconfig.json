@@ -3,11 +3,13 @@
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["esnext", "dom"],
+    "outDir": "dist",
+    "lib": ["esnext", "dom", "dom.iterable"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true
   },
   "exclude": ["_build", "dist"]
 }

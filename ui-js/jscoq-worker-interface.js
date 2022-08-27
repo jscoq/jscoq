@@ -7,6 +7,7 @@ import { Future, PromiseFeedbackRoute } from './future.js';
  * Main Coq Worker Class
  *
  * @class CoqWorker
+ * @property {Worker} worker
  * @property {Function} CoqWorker#defaultScriptPath
  */
 export class CoqWorker {
@@ -15,6 +16,8 @@ export class CoqWorker {
      * Creates an instance of CoqWorker.
      * @param {string} scriptPath
      * @param {Worker} worker
+     * @param {'js' | 'wa'} backend
+     * @param {boolean} is_npm
      * @memberof CoqWorker
      * @constructor
      */
@@ -61,14 +64,14 @@ export class CoqWorker {
      * @param {string | URL} uri
      */
     resolveUri(uri) {
-        return new URL(uri, window.location).href;
+        return new URL(uri, window.location.href).href;
     }
 
     /**
      * Creates the worker object
      *
      * @param {string} script_path
-     * @return {Promise<Worker>} 
+     * @return {Promise<any>} resolves when worker is up and running 
      * @async
      * @memberof CoqWorker
      */
@@ -76,7 +79,7 @@ export class CoqWorker {
         this._worker_script = script_path;
 
         this.attachWorker(await 
-            this.newWorkerWithProgress(this._worker_script)); // this._worker_script));
+            this.newWorkerWithProgress(this._worker_script));
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
@@ -116,8 +119,7 @@ export class CoqWorker {
         if(this.options.debug) {
             console.log("Posting: ", msg);
         }
-        if (this.backend === 'wa') msg = JSON.stringify(msg);
-        this.worker.postMessage(msg);
+        this.worker.postMessage(this.backend === 'wa' ? JSON.stringify(msg) : msg);
     }
 
     /**
@@ -176,7 +178,7 @@ export class CoqWorker {
      */
     cancel(sid) {
         for (let i in this.sids)
-            if (i >= sid && this.sids[i]) { this.sids[i].reject(); delete this.sids[i]; }
+            if (+i >= sid && this.sids[i]) { this.sids[i]?.reject(); delete this.sids[i]; }
         this.sendCommand(["Cancel", sid]);
     }
 
@@ -220,11 +222,12 @@ export class CoqWorker {
     }
 
     /**
-     * @param {{ base_path: string, pkg: string}} url
+     * @param {{base_path: string, pkg: string} | string} url
      */
     loadPkg(url) {
         switch (this.backend) {
         case 'js':
+            if (typeof url !== 'object') throw new Error('invalid URL for js mode (object expected)');
             this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
             break;
         case 'wa':
@@ -257,7 +260,7 @@ export class CoqWorker {
      */
     put(filename, content, transferOwnership=false) {
         /* Access ArrayBuffer behind Node.js Buffer */
-        var abuf = content;
+        var abuf = /** @type {Buffer | ArrayBufferLike} */ (content);
         if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
             abuf = this.arrayBufferOfBuffer(content);
             content = new Buffer(abuf);
@@ -377,7 +380,7 @@ export class CoqWorker {
 
     spawn() {
         this.worker.removeEventListener('message', this._handler);
-        return new CoqWorker(null, this.worker);
+        return new CoqWorker(null, this.worker, this.backend, this.is_npm);
     }
 
     /**
@@ -484,17 +487,24 @@ export class CoqWorker {
     }
 }
 
+/**
+ * This class is meant to support running the worker as a native subprocess,
+ * available in waCoq through the `subproc` module.
+ */
 export class CoqSubprocessAdapter extends CoqWorker {
     constructor(backend, is_npm) {
-        const subproc = require('wacoq-bin/dist/subproc');
-        super(null, new subproc.IcoqSubprocess(), backend, is_npm);
-        window.addEventListener('beforeunload', () => this.worker.end());
+        // @ts-ignore
+        const subproc = require('wacoq-bin/dist/subproc'),
+              icoq = new subproc.IcoqSubprocess();
+        super(null, icoq, backend, is_npm);
+        window.addEventListener('beforeunload', () => icoq.end());
     }
 
     /**
      * @param {any[]} a
      */
     coq_handler(...a) {
+        // @ts-ignore
         setTimeout(() => super.coq_handler(...a), 0); // force window context
     }
 }
@@ -502,8 +512,9 @@ export class CoqSubprocessAdapter extends CoqWorker {
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
 /**
  * @param {string | URL} url
+ * @param {(ratio: number) => void} progress
  */
-function prefetchResource(url, progress=()=>{}) {
+function prefetchResource(url, progress = ()=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "blob";

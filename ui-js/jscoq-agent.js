@@ -37,20 +37,13 @@ var jscoq_opts = {
 async function jsCoqLoad() {
     // - remove empty code fragments (coqdoc generates some spurious ones)
     for (let code of document.querySelectorAll('#main > div.code')) {
-        if (code.textContent.match(/^\s*$/)) code.remove();
+        if (code.textContent?.match(/^\s*$/)) code.remove();
     }
 
     // - make page div focusable so that keyboard scrolling works
-    var page = document.querySelector('#page');
-    page.setAttribute('tabindex', -1);
+    var page = /** @type {HTMLElement} */ (document.querySelector('#page'));
+    page.setAttribute('tabindex', '-1');
     page.focus();
-
-    // - set presenter keyboard bindings to page-up/page-down to allow editing
-    if (typeof KEYS !== 'undefined')
-        Object.assign(KEYS, {
-            next: 34,        // PageDown
-            prev: 33         // PageUp
-        });
 
     // - load and start jsCoq
     await JsCoq.load(jscoq_opts.base_path);
@@ -60,16 +53,14 @@ async function jsCoqLoad() {
         [/∈/g, '\\in']);
 
     var coq = await JsCoq.start(jscoq_ids, jscoq_opts);
+    //@ts-ignore
     window.coq = coq;
     window.addEventListener('beforeunload', () => { localStorage.jsCoqShow = coq.layout.isVisible(); })
-
-    // - close button (replaces jsCoq's bulky power button)
-    //$('#panel-wrapper #toolbar').prepend($('<button>').addClass('close').text('×')
-    //    .on('click', () => coq.layout.hide()));
 }
 
 function jsCoqStart() {
-    coq.layout.show();
+    //@ts-ignore
+    window.coq.layout.show();
 }
 
 /** SF-style terse mode */

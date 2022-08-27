@@ -6,18 +6,19 @@
  */
 
 var loadModuleCompat = function(fn) {
-    // Note: can only load a single module! `window._jscoq_resolve` is global.
+    // Note: can only load a single module! `window._jscoq_resolve` is global. :\
     return new Promise(function (resolve, error) {
         var script    = document.createElement('script');
         script.type   = 'module';
         script.innerText = `import { JsCoq } from './${fn}'; window.JsCoq = JsCoq; window._jscoq_resolve(JsCoq);`;
+        //@ts-ignore
         window._jscoq_resolve = resolve;
         document.head.appendChild(script);
     });
 };
 
 var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
-        document.currentScript.attributes.src.value.replace(/[^/]*$/, '') : undefined,
+        document.currentScript.getAttribute('src')?.replace(/[^/]*$/, '') : undefined,
     basePath = scriptDir ? `${scriptDir}../` : "./",
     loading = loadModuleCompat(basePath + 'ui-js/index.js');
 
