@@ -29,6 +29,7 @@ export class CoqWorker {
         this.backend = backend;
         this.is_npm = is_npm;
 
+        /** @type {object[]} observers are duck-typed */
         this.observers = [this];
         this.routes = [this.observers];
         this.sids = [, new Future()];
@@ -132,8 +133,8 @@ export class CoqWorker {
     /**
      * Send Init Command to Coq
      *
-     * @param {string} coq_opts
-     * @param {string} doc_opts
+     * @param {object} coq_opts
+     * @param {object} doc_opts
      * @memberof CoqWorker
      */
     init(coq_opts, doc_opts) {
@@ -152,9 +153,9 @@ export class CoqWorker {
      * @param {any} stm_text
      * @param {boolean} resolve
      */
-    add(ontop_sid, new_sid, stm_text, resolve) {
+    add(ontop_sid, new_sid, stm_text, resolve = false) {
         this.sids[new_sid] = new Future();
-        this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve || false]);
+        this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve]);
     }
 
     /**

@@ -11,10 +11,11 @@
 
 "use strict";
 
+//@ts-ignore
 import { $ } from '../dist/lib.js';
 
 import { Future } from './future.js';
-import { copyOptions, isMac, arreq_deep } from './etc.js';
+import { copyOptions, isMac, ArrayFuncs, arreq_deep } from './etc.js';
 import { CoqWorker, CoqSubprocessAdapter } from './jscoq-worker-interface.js';
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
@@ -289,9 +290,10 @@ export class CoqManager {
     }
 
     getLoadPath() {
+        // @ts-ignore
         if (this.options.subproc) return [this.coq.worker.packages.dir];
-        else return [this.packages, this.project].map(p =>
-                        p ? p.getLoadPath() : []).flatten();
+        else return ArrayFuncs.flatten(
+            [this.packages, this.project].map(p => p ? p.getLoadPath() : []));
     }
 
     /**
@@ -359,8 +361,8 @@ export class CoqManager {
     }
 
     feedFileLoaded(sid, mod, file) {
-        let item = [...this.layout.query.getElementsByClassName('loading')]
-                    .findLast(x => $(x).data('mod') === mod),
+        let item = ArrayFuncs.findLast([...this.layout.query.getElementsByClassName('loading')],
+                                       x => $(x).data('mod') === mod),
             msg = `${mod} loaded.`;
 
         if (item)
@@ -491,15 +493,15 @@ export class CoqManager {
         let ontop_finished =    // assumes that exec is harmless if ontop was executed already...
             this.coq.execPromise(ontop.coq_sid);
 
-        var pkg_deps = new Set();
+        var pkg_deps_set = new Set();
         for (let module_name of module_names) {
             let deps = this.packages.index.findPackageDeps(prefix, module_name)
-            for (let dep of deps) pkg_deps.add(dep);
+            for (let dep of deps) pkg_deps_set.add(dep);
         }
 
-        for (let d of this.packages.loaded_pkgs) pkg_deps.delete(d);
+        for (let d of this.packages.loaded_pkgs) pkg_deps_set.delete(d);
 
-        pkg_deps = [...pkg_deps.values()];
+        var pkg_deps = [...pkg_deps_set];
 
         var cleanup = () => {};
 
@@ -693,8 +695,8 @@ export class CoqManager {
             return true;
         }
 
-        var back_to_stm = this.doc.sentences.slice(0, -1)
-            .findLast(stm => !(stm.flags.is_comment || stm.flags.is_hidden));
+        var back_to_stm = ArrayFuncs.findLast(this.doc.sentences.slice(0, -1),
+            stm => !(stm.flags.is_comment || stm.flags.is_hidden));
         if (!back_to_stm) return false;
 
         var cancel_stm = this.nextAdded(back_to_stm.coq_sid);
@@ -714,7 +716,7 @@ export class CoqManager {
 
         this.clearErrors();
 
-        let last_stm = this.doc.sentences.last(),
+        let last_stm = ArrayFuncs.last(this.doc.sentences),
             next_stm = this.provider.getNext(last_stm, until),
             queue = [next_stm];
 
@@ -876,7 +878,7 @@ export class CoqManager {
     }
 
     lastAdded(before=Infinity) {
-        return this.doc.sentences.findLast(stm => stm.coq_sid < before);
+        return ArrayFuncs.findLast(this.doc.sentences, stm => stm.coq_sid < before);
     }
 
     nextAdded(after=0) {
@@ -1142,7 +1144,7 @@ export class CoqManager {
      * Show the proof state for the latest non-error sentence.
      */
     refreshGoals() {
-        var s = this.doc.sentences.findLast(stm => stm.phase !== Phases.ERROR);
+        var s = ArrayFuncs.findLast(this.doc.sentences, stm => stm.phase !== Phases.ERROR);
         if (s)
             this.updateGoalsFor(s);
     }

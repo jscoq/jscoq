@@ -25,8 +25,7 @@ class HeadlessCoqWorker extends CoqWorker {
     options: any
 
     constructor() {
-        var backend = 'js', is_npm = 'false';
-        super(null, HeadlessCoqWorker.instance(), backend, is_npm);
+        super(null, HeadlessCoqWorker.instance(), /* backend */ 'js', /* is_npm */ false);
         this.when_created.then(() => {
             this.worker.onmessage = this._handler = evt => {
                 process.nextTick(() => this.coq_handler({data: evt}));

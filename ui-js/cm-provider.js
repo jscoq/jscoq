@@ -3,6 +3,7 @@
 "use strict";
 
 import { copyOptions } from './etc.js';
+//@ts-ignore
 import { CodeMirror, localforage, $ } from '../dist/lib.js';
 import { JsCoq } from './index.js';
 import './mode/coq-mode.js';
@@ -633,14 +634,16 @@ export class CmCoqProvider {
     }
 
     /**
-     * @param {Blob} file
+     * @param {File} file
+     * @return {Promise<string>}
      */
     openFile(file) {
         var rdr = new FileReader();
         return new Promise((resolve, reject) => {
             rdr.onload = evt => {
-                this.load(evt.target.result, file.name);
-                resolve(evt.target.result);
+                let content = /** @type {string} */ (evt.target.result);
+                this.load(content, file.name);
+                resolve(content);
             };
             rdr.readAsText(file, 'utf-8');
         });
@@ -829,10 +832,10 @@ function betaOnly(thing) {
  * This means that editor focus is lost when scrolling with the keyboard;
  * but seems better than the alternative, which is the user having to
  * click PageUp/PageDn twice to initiate scroll.
- * @param {{ addEventListener: (arg0: string, arg1: (ev: any) => void, arg2: { capture: boolean; }) => void; }} element
+ * @param {HTMLElement} element
  */
 function pageUpDownOverride(element) {
-    var scrollable = document.querySelector('#page'); /** @todo */
+    var scrollable = /** @type {HTMLElement} */ (document.querySelector('#page')); /** @todo */
     if (scrollable)
         element.addEventListener('keydown', (/** @type {{ key: string; stopPropagation: () => void; }} */ ev) => {
             if (ev.key === 'PageDown' || ev.key === 'PageUp') {
@@ -892,12 +895,13 @@ export class Deprettify {
     }
 }
 
-Deprettify.REPLACES = [  /* Safari does not support static members? */
+/* Safari does not support static members? */
+Deprettify.REPLACES = /** @type {[RegExp, string][]} */ ([
     [/\xa0/g, ' '], [/⇒/g, '=>'],   [/×/g, '*'],
     [/→/g, '->'],   [/←/g, '<-'],   [/¬/g, '~'],
     [/⊢/g, '|-'],   [/\n☐/g, ''],
     [/∃/g, 'exists']  /* because it is also a tactic... */
-];
+]);
 
 // Local Variables:
 // js-indent-level: 4
