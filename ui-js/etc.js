@@ -6,8 +6,8 @@ class ArrayFuncs {
     static last(/** @type {Array} */ arr) { return arr[arr.length - 1]; }
     static flatten(/** @type {Array} */ arr) { return [].concat.apply([], arr); }
     static findLast(/** @type {Array} */ arr, /** @type {(el: any) => boolean} */ p) {
-        var r; for (let i = this.length; i > 0; )
-            if (p(r = this[--i])) return r;
+        var r;
+        for (let i = arr.length; i > 0; ) if (p(r = arr[--i])) return r;
     }
     static equals(/** @type {Array} */ arr1, /** @type {Array} */ arr2) {
         return arreq_deep(arr1, arr2);
