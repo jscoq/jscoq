@@ -12,9 +12,11 @@ h1 {
   margin-top: 12px;
   margin-bottom: 7px;
   font-size: 120%;
+  font-style: normal;
+  font-weight: bold;
 }
 
-h5 {
+h2 {
   margin-top: 12px;
   margin-bottom: 7px;
   font-size: 110%;

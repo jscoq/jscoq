@@ -7,7 +7,8 @@
     </head>
     <body>
         <h1>Quick Help</h1>
-        <h5>Basic Navigation</h5>
+
+        <h2>Basic Navigation</h2>
         <table class="doc-actions">
           <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
           <tr>
@@ -38,6 +39,68 @@
             </td>
             <td>Hover executed statements to peek at the proof state after each step.</td>
           </tr>
+          <tr>
+            <td><img src="../ui-images/stop.png" height="20px"></td>
+            <td class="has-kbd nowrap">
+              <kbd>Esc</kbd>
+            </td>
+            <td>Interrupt a currently executing statement.</td>
+          </tr>
+          <tr>
+            <td><img src="../ui-images/reset.png" height="20px"></td>
+            <td></td>
+            <td>Completely restart Coq, re-initializing document and libraries.</td>
+          </tr>
         </table>
+        
+        <h2>Using the Scratchpad</h2>
+        <table class="doc-actions">
+            <tr class="nowrap"><th>Button</th><th>Key binding</th><th>Action</th></tr>
+            <tr>
+                <td><img src="../ui-images/scratchpad.png" style="height: 1.3em"></td>
+                <td></td>
+                <td>Open the scratchpad for editing. (This icon is located in the landing page and on the splash screen.)</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="has-kbd nowrap">
+                    <kbd>Ctrl</kbd>+<kbd>S</kbd>
+                </td>
+                <td>
+                    Save file in the browser's local storage (with the last name provided, or `untitled.v`).
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="has-kbd nowrap">
+                    <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>
+                </td>
+                <td>
+                    Save file as (prompts for local file name), download to disk, or share.
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="has-kbd nowrap">
+                    <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd>
+                </td>
+                <td>
+                    Save file to disk (using the browser's Save dialog, or preset destination
+                    if such is configured in your browser).
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td class="has-kbd nowrap">
+                    <kbd>Ctrl</kbd>+<kbd>O</kbd>
+                </td>
+                <td>
+                    Open file (prompts for local file name from list, supports tab completion).
+                </td>
+            </tr>
+        </table>
+        On Mac, replace <kbd>Ctrl</kbd> with <kbd>⌘</kbd> (command) and <kbd>Alt</kbd> with
+        <kbd>⌥</kbd> (option), as is traditional.
+
     </body>
 </html>

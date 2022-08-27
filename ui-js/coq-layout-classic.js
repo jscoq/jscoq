@@ -167,7 +167,8 @@ export class CoqLayoutClassic {
      */
     configure(options) {
         if (options.theme) {
-            this.panel.classList.remove(...this.panel.classList);
+            this.panel.classList.remove(...[...this.panel.classList]
+                .filter(c => c.startsWith('jscoq-theme-')));
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
         }
         this.settings.configure({

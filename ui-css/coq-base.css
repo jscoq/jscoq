@@ -201,7 +201,8 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .caption {
   flex: 0 0 20px;
   font-size: 11px;
-  padding: 2px 10px 1px 10px;
+  line-height: 1;
+  padding: 4px 10px 0 10px;
   position: relative;
   z-index: 3;
   width: 100%;
@@ -252,6 +253,8 @@ body.jscoq-main .CodeMirror-linenumber {
   transform: none;
 }
 
+/* Goal panel */
+
 #goal-panel {
   position: relative;  /* for positioning div.contextual-info */
 }
@@ -300,9 +303,7 @@ body.jscoq-main .CodeMirror-linenumber {
   white-space: pre;
 }
 
-#help-panel {
-  display: none;
-}
+/* Help panel (when shown, replaces Goal) */
 
 #help-panel:not(.collapsed) {
   flex-grow: 2000;
@@ -311,24 +312,27 @@ body.jscoq-main .CodeMirror-linenumber {
 #help-panel div.content {
   padding: 0;
   height: 100%;
+  overflow: hidden;  /* scroll within iframe */
 }
 #help-panel div.content iframe {
   height: 100%;
   width: 100%;
+  border: none;
 }
+#help-panel > .content::before,
+#help-panel > .content::after {  display: none;  }
 
-#panel-wrapper.show-help #goal-panel {
+#panel-wrapper.show-help #goal-panel,
+#panel-wrapper:not(.show-help) #help-panel {
   display: none;
 }
 
-#panel-wrapper.show-help #help-panel {
-  display: initial;
-}
-
+/*
 #vsep, #hsep {
   position: absolute;
   z-index: 3;
 }
+*/
 
 #hide-panel {
   cursor: pointer;
