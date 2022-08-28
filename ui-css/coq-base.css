@@ -310,6 +310,7 @@ body.jscoq-main .CodeMirror-linenumber {
 }
 
 #help-panel div.content {
+  position: relative;  /* for positioning the close button */
   padding: 0;
   height: 100%;
   overflow: hidden;  /* scroll within iframe */
@@ -326,6 +327,23 @@ body.jscoq-main .CodeMirror-linenumber {
 #panel-wrapper:not(.show-help) #help-panel {
   display: none;
 }
+
+#help-panel button.btn-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  background: url(../ui-images/go-back.png);
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  opacity: .25;
+  box-shadow: none;
+}
+
+#help-panel button.btn-close:hover { opacity: 0.5; }
+#help-panel button.btn-close:active { opacity: 0.75; }
 
 /*
 #vsep, #hsep {

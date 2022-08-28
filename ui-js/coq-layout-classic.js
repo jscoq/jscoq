@@ -70,6 +70,7 @@ export class CoqLayoutClassic {
       <div id="help-panel" class="flex-panel">
         <div class="caption">Help</div>
         <div class="content" id="help-text">
+            <button class="btn-close" alt="Hide help (${kb.help})" title="Hide help (${kb.help})"></button>
             <iframe src="${base_path}/docs/quick-help.html"></iframe>
         </div>
       </div>
@@ -148,6 +149,9 @@ export class CoqLayoutClassic {
             this.settings.toggle());
         this.settings.active.observe(active =>
             this.menubtn.classList.toggle('active', active));
+
+        this.panel.querySelector('#help-panel button.btn-close')
+            .addEventListener('click', () => this.hideHelp());
 
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
