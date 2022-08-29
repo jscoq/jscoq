@@ -30,6 +30,7 @@ import { CoqProject } from '../../../coq-jslib/build/project';
 class HeadlessCoqWorker extends CoqWorker {
 
     constructor() {
+
         var backend : 'js' = 'js', is_npm = false, base_path = import.meta.url + '../../../';
         super(base_path, null, HeadlessCoqWorker.instance(), backend, is_npm);
         this.when_created.then(() => {
@@ -64,7 +65,11 @@ class HeadlessCoqManager {
     doc: any[]
     when_done: Future<void>
 
+    startup_time: number;
+    startup_timeEnd: number;
+
     constructor(worker=undefined, volume=fsif_native) {
+        this.startup_time = Date.now();
         this.coq = worker || new HeadlessCoqWorker();
         this.coq.observers.push(this);
         this.volume = volume;
@@ -154,8 +159,12 @@ class HeadlessCoqManager {
     }
 
     eof() {
+
+        this.startup_timeEnd = Date.now();
+
         var inspect = this.options.inspect;
         if (inspect) this.performInspect(inspect);
+
         if (this.options.compile) {
             let input = this.options.compile.input,
                 output = this.options.compile.output || '._JsCoq.vo';
@@ -168,6 +177,10 @@ class HeadlessCoqManager {
     }
 
     require(module_name: string, import_=false) {
+
+        // EJGA: CoqWorker::init has built-in support for this, so no
+        // need to hack the document itself.
+
         this.provider.enqueue(`Require ${import_ ? "Import " : ""}${module_name}.`);
     }
 
@@ -212,7 +225,7 @@ class HeadlessCoqManager {
                             .filter(query_filter);
             this.volume.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
             var time_elapsed = Date.now() - time_start;
-            console.log(`Wrote '${out_fn}' (${symbols.length} symbols) in ${time_elapsed} ms.`);
+            console.log(`Wrote '${out_fn}' (${symbols.length} symbols) in ${time_elapsed} ms (init: ${this.startup_timeEnd - this.startup_time} ms).`);
         })
         .catch((err: Error) => console.error(err));
     }
