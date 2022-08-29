@@ -66,7 +66,7 @@ class CLI {
         var icoq = new IcoqPodCLI();
         await icoq.boot();
         await icoq.loadPackages(opts.loads);
-    
+
         for (let [pkgname, inproj] of Object.entries(this.workspace.projs)) {
             var task = new CompileTask(new BatchPod(icoq), inproj, <any>opts);
 
@@ -74,7 +74,7 @@ class CLI {
             var out = await out.toPackage(
                             opts.package || path.join(outdir, pkgname)),
                 {pkg} = await out.save();
-                
+
             this.progress(`wrote ${pkg.filename}.`, true);
         }
         */
@@ -91,13 +91,17 @@ class CLI {
             outfn = bundle ? undefined : opts.package;
 
         for (let pkgname in this.workspace.projs) {
+            var time_start = Date.now();
             this.progress(`[${pkgname}] `, false);
+
             var p = await this.workspace.projs[pkgname]
                     .toPackage(outfn || path.join(outdir, pkgname),
                                undefined, prep, postp);
+
             try {
-                await p.save(bundle && bundle.manifest);    
-                this.progress(`wrote ${p.pkg.filename}.`, true);
+                await p.save(bundle && bundle.manifest);
+                var time_elapsed = Date.now() - time_start;
+                this.progress(`wrote ${p.pkg.filename} in ${time_elapsed} ms.`, true);
             }
             catch (e) {
                 this.progress(`error writing ${p.pkg.filename}:\n    ` + e);

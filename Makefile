@@ -48,6 +48,9 @@ COQINST_COMMAS = $(subst $(space),$(comma),$(COQINST))
 
 COQPKGS_ROOT := $(current_dir)/_build/$(BUILD_CONTEXT)/coq-pkgs
 
+# This is very convenient when calling npm, a bit less when compiling
+# OCaml code
+DUNE_FLAGS=--no-buffer
 override DUNE_FLAGS += ${if $(DUNE_WORKSPACE), --workspace=$(DUNE_WORKSPACE),}
 
 NJOBS ?= 4
@@ -104,7 +107,7 @@ links-clean:
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
-	node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
+	@node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 

@@ -201,6 +201,7 @@ class HeadlessCoqManager {
     }
 
     performInspect(inspect) {
+        var time_start = Date.now();
         var out_fn = inspect.filename || 'inspect.symb',
             query_filter = inspect.modules ?
                 (id => inspect.modules.some(m => this._identifierWithin(id, m)))
@@ -209,7 +210,8 @@ class HeadlessCoqManager {
             var symbols = results.map(fp => CoqIdentifier.ofQualifiedName(fp))
                             .filter(query_filter);
             this.volume.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
-            console.log(`Wrote '${out_fn}' (${symbols.length} symbols).`);
+            var time_elapsed = Date.now() - time_start;
+            console.log(`Wrote '${out_fn}' (${symbols.length} symbols) in ${time_elapsed} ms.`);
         })
         .catch((err: Error) => console.error(err));
     }
