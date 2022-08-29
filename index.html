@@ -4,14 +4,14 @@
     <title>jsCoq – Use Coq in Your Browser</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
-    <link rel="icon" href="ui-images/favicon.png">
+    <link rel="icon" href="frontend/classic/images/favicon.png">
 
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
-    <link rel="stylesheet" type="text/css" href="ui-css/landing-page.css">
-    <link rel="stylesheet" type="text/css" href="ui-css/kbd.css">
+    <link rel="stylesheet" type="text/css" href="frontend/classic/css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="frontend/classic/css/kbd.css">
   </head>
 
 <body class="jscoq-main">
@@ -23,7 +23,7 @@
     <!------------------------------->
     <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand"><img src="ui-images/favicon.png"></a>
+        <a class="navbar-brand"><img src="frontend/classic/images/favicon.png"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -46,11 +46,11 @@
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <li><a class="dropdown-item" href="examples/inf-primes.html">Infinitude of Primes</a></li>
-                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <span class="math"><img class="symbol-sqrt" src="ui-images/sqrt.svg">2</span></a></li>
+                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <span class="math"><img class="symbol-sqrt" src="frontend/classic/images/sqrt.svg">2</span></a></li>
                 <!-- these are only available from the full website -->
                 <li><a class="dropdown-item" href="/fun/coqoban.html">🎡 Çoqoban</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="ui-images/book.svg">Software Foundations</a></li>
+                <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="frontend/classic/images/book.svg">Software Foundations</a></li>
               </ul>
             </li>
           </ul>
@@ -162,12 +162,12 @@ Qed.</textarea>
     <table class="doc-actions">
       <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
       <tr>
-        <td><img src="ui-images/power-button-512-black.png" height="20px"></td>
+        <td><img src="frontend/classic/images/power-button-512-black.png" height="20px"></td>
         <td class="has-kbd"><kbd>F8</kbd></td>
         <td>Toggles the goal panel.</td>
       </tr>
       <tr>
-        <td><img src="ui-images/down.png" height="15px"><img src="ui-images/up.png" height="15px"></td>
+        <td><img src="frontend/classic/images/down.png" height="15px"><img src="frontend/classic/images/up.png" height="15px"></td>
         <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
           <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
@@ -175,7 +175,7 @@ Qed.</textarea>
         <td>Move through the proof.</td>
       </tr>
       <tr>
-        <td><img src="ui-images/to-cursor.png" height="20px"></td>
+        <td><img src="frontend/classic/images/to-cursor.png" height="20px"></td>
         <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
           (⌘ on Mac)
@@ -185,7 +185,7 @@ Qed.</textarea>
       <tr>
         <td></td>
         <td class="has-kbd">
-          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="ui-images/pointer.svg">
+          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="frontend/classic/images/pointer.svg">
         </td>
         <td>Hover executed statements to peek at the proof state after each step.</td>
       </tr>

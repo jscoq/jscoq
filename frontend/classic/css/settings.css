@@ -59,18 +59,18 @@ div.settings-panel div.links {
 }
 
 .link-to-github::after {
-  background-image: url(../ui-images/github.png);
+  background-image: url(../images/github.png);
 }
 
 .link-to-zulip::after {
-  background-image: url(../ui-images/zulip-logo.png);
+  background-image: url(../images/zulip-logo.png);
   background-size: 20px 22px;
   background-position: 3px 2px;
   width: 23px;
 }
 
 .link-to-coq::after {
-  background-image: url(../ui-images/coq-logo.png);
+  background-image: url(../images/coq-logo.png);
   background-size: contain;
   padding-bottom: 0;
   width: 17px;
@@ -78,7 +78,7 @@ div.settings-panel div.links {
 }
 
 .link-to-quick-help::after {
-  background-image: url(../ui-images/help.svg);
+  background-image: url(../images/help.svg);
   background-size: 20px 20px;
   background-position: 50% 33%;
   width: 20px;

@@ -1,9 +1,13 @@
 //@ts-check
 "use strict";
 
-import { JSZip, $ } from '../dist/lib.js';
+// Backend imports
 import { ArrayFuncs } from './etc.js';
-import { CoqWorker } from './jscoq-worker-interface.js';
+import { Future } from '../../../backend/future.js';
+import { CoqWorker } from '../../../backend/coq-worker.js';
+
+// Frontend imports (not so clear for the package manager
+import { JSZip, $ } from '../../../dist/lib.js';
 
 export class PackageManager {
 

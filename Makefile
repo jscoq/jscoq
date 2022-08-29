@@ -97,10 +97,10 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/coq-js/jscoq_worker.bc.cjs coq-js/jscoq_worker.bc.cjs
+	ln -sf ../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
 
 links-clean:
-	rm -f coq-pkgs coq-js/jscoq_worker.bc.cjs
+	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
@@ -149,8 +149,8 @@ distclean: clean
 ########################################################################
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	coq-js/jscoq_worker.bc.cjs coq-pkgs \
-	jscoq.js ui-js ui-css ui-images ui-external dist examples docs}
+	backend/jsoo/jscoq_worker.bc.cjs coq-pkgs \
+	jscoq.js frontend backend dist examples docs}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -187,12 +187,12 @@ dist-npm:
 	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
 
 WACOQ_NPMOBJ = README.md \
-	jscoq.js ui-js ui-css ui-images ui-external dist examples docs
+	jscoq.js frontend backend examples dist docs
 # ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
 
 dist-npm-wacoq:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
-	rm -rf ${add-prefix $(NPMSTAGEDIR)/, coq-js coq-pkgs}  # in case these were created by jsCoq :/
+	rm -rf ${add-prefix $(NPMSTAGEDIR)/, backend coq-pkgs}  # in case these were created by jsCoq :/
 	rsync -apR --delete $(NPMEXCLUDE) $(WACOQ_NPMOBJ) $(NPMSTAGEDIR)
 	cp package.json.wacoq $(NPMSTAGEDIR)/package.json
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html

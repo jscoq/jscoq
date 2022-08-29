@@ -106,7 +106,7 @@ ul.problem-list ul.problem-group {
 
 ul.problem-list ul.problem-group > li {
     padding-left: 16px;
-    background: url(../ui-images/log-error.png);
+    background: url(../images/log-error.png);
     background-repeat: no-repeat;
     background-size: 12px;
     background-position-y: 2px;

@@ -5,8 +5,7 @@
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
-// @ts-ignore
-import { $ } from '../dist/lib.js';
+import { $ } from '../../../dist/lib.js';
 import { SettingsPanel } from './settings.js';
 
 "use strict";
@@ -42,8 +41,8 @@ export class CoqLayoutClassic {
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">
-          <img class="${backend}-logo" src="${base_path}ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
-            --><img class="coq-logo" src="${base_path}ui-images/coq-logo.png" alt="Coq">
+          <img class="${backend}-logo" src="${base_path}/frontend/classic/images/${backend}-logo.svg" alt="js"><i>+</i><!--
+            --><img class="coq-logo" src="${base_path}/frontend/classic/images/coq-logo.png" alt="Coq">
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
@@ -225,7 +224,7 @@ export class CoqLayoutClassic {
             image = $(this.proof).find('.splash-image'), 
             below = $(this.proof).find('.splash-below');
 
-        var overlay = `${this.options.base_path}/ui-images/${mode}.gif`;
+        var overlay = `${this.options.base_path}/frontend/classic/images/${mode}.gif`;
 
         if (!(above.length && image.length && below.length)) {
             $(this.proof).empty().append(
@@ -255,7 +254,7 @@ export class CoqLayoutClassic {
                 <a href="#scratchpad"><img>Scratchpad</a>
             </p>`);
         // Set icons
-        let icon = fn => `${this.options.base_path}/ui-images/${fn}`;
+        let icon = fn => `${this.options.base_path}/frontend/classic/images/${fn}`;
         bar.find('a[href="#quick-help"] img').attr('src', icon('help.svg')).height("1em");
         bar.find('a[href="#scratchpad"] img').attr('src', icon('scratchpad.png')).height("1em");
         // Set quick-help action
@@ -437,7 +436,7 @@ export class CoqLayoutClassic {
      * Auxiliary function to improve UX by preloading images.
      */
     _preloadImages() {
-        var imgs_dir = `${this.options.base_path}/ui-images`,
+        var imgs_dir = `${this.options.base_path}/frontend/classic/images`,
             img_fns = ['jscoq-splash.png', 'egg.png'];
 
         for (let fn of img_fns) {

@@ -6,7 +6,7 @@ index f3ce295..8dd815d 100644
  
  exception Timeout
  
-+(* implemented in coq-js/js_stub/interrupt.js *)
++(* implemented in backend/jsoo/js_stub/interrupt.js *)
 +external interrupt_pending : unit -> bool = "interrupt_pending"
 +
 +let timeout_deadline : (float * (unit -> unit)) option ref = ref None
@@ -74,5 +74,5 @@ index 0000000..0cc1e5c
 @@ -0,0 +1,4 @@
 +#include <caml/mlvalues.h>
 +
-+// jsCoq Stub; actual implementation is in coq-js/js_stub/interrupt.js
++// jsCoq Stub; actual implementation is in backend/jsoo/js_stub/interrupt.js
 +value interrupt_pending() { return Val_false; }

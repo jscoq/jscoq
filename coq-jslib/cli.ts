@@ -4,13 +4,13 @@
 import path from 'path';
 import commander from 'commander';
 import manifest from '../package.json';
-//import { FormatPrettyPrint } from '../ui-js/format-pprint';
+//import { FormatPrettyPrint } from '../frontend/classic/js/format-pprint';
 import { JsCoqCompat } from './build/project';
 import { Workspace } from './build/workspace';
 import { Batch, CompileTask, BuildError } from './build/batch';
 import * as sdk from './build/sdk/toolkit';
 
-import { HeadlessCLI } from '../ui-js/coq-cli';  // oops
+import { HeadlessCLI } from '../frontend/classic/js/coq-cli';  // oops
 
 class CLI {
 

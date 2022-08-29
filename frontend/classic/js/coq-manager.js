@@ -11,12 +11,15 @@
 
 "use strict";
 
-//@ts-ignore
-import { $ } from '../dist/lib.js';
+// Backend imports
+import { Future } from '../../../backend/future.js';
+import { CoqWorker, CoqSubprocessAdapter } from '../../../backend/coq-worker.js'
 
-import { Future } from './future.js';
+// UI imports
+import { $ } from '../../../dist/lib.js';
+
 import { copyOptions, isMac, ArrayFuncs, arreq_deep } from './etc.js';
-import { CoqWorker, CoqSubprocessAdapter } from './jscoq-worker-interface.js';
+
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider.js';

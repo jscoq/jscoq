@@ -82,8 +82,8 @@ a, a:link, a:visited, a:active {
 }
 
 .coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
-  cursor: url(../ui-images/eye.png) 2 2, cell;
-  cursor: -webkit-image-set(url(../ui-images/eye@2x.png) 2x, url(../ui-images/eye.png) 1x) 2 2, cell;
+  cursor: url(../images/eye.png) 2 2, cell;
+  cursor: -webkit-image-set(url(../images/eye@2x.png) 2x, url(../images/eye.png) 1x) 2 2, cell;
 }
 
 .jscoq.CodeMirror .CodeMirror-crosshair {
@@ -283,7 +283,7 @@ body.jscoq-main .CodeMirror-linenumber {
   width: 150px;
   height: 63px;
   background-size: 300px;
-  background-image: url(../ui-images/jscoq-splash.png);
+  background-image: url(../images/jscoq-splash.png);
 }
 
 #goal-panel div.splash-middle div.wait {
@@ -348,7 +348,7 @@ body.jscoq-main .CodeMirror-linenumber {
   height: 25px;
   border: none;
   box-shadow: none;
-  background: url(../ui-images/go-back.png);
+  background: url(../images/go-back.png);
   background-size: 80%;
   background-repeat: no-repeat;
   background-position: 50% 50%;
@@ -478,23 +478,23 @@ body.jscoq-main .CodeMirror-linenumber {
 }
 
 #buttons button[name=up] {
-  background-image: url(../ui-images/up.png);
+  background-image: url(../images/up.png);
   width: 20px;
   height: 20px;
 }
 #buttons button[name=down] {
-  background-image: url(../ui-images/down.png);
+  background-image: url(../images/down.png);
   width: 20px;
   height: 20px;
 }
 #buttons button[name=to-cursor] {
-  background-image: url(../ui-images/to-cursor.png);
+  background-image: url(../images/to-cursor.png);
 }
 #buttons button[name=interrupt] {
-  background-image: url(../ui-images/stop.png);
+  background-image: url(../images/stop.png);
 }
 #buttons button[name=reset] {
-  background-image: url(../ui-images/reset.png);
+  background-image: url(../images/reset.png);
 }
 
 
@@ -576,12 +576,12 @@ body.jscoq-main .CodeMirror-linenumber {
 button.download-icon {
   width: 25px;
   height: 20px;
-  background-image: url("../ui-images/dl.png");
+  background-image: url("../images/dl.png");
   background-repeat: no-repeat;
 }
 
 button.download-icon.checked {
-  background-image: url("../ui-images/checked.png");
+  background-image: url("../images/checked.png");
 }
 
 .rel-pos {
@@ -599,7 +599,7 @@ button.download-icon.checked {
 }
 
 .progress-egg {
-  background-image: url("../ui-images/egg.png");
+  background-image: url("../images/egg.png");
   background-size: contain;
   position: absolute;
   top: -19px;

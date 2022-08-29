@@ -5,9 +5,10 @@ import assert from 'assert';
 import Vue from 'vue';
 
 // import { JsCoq } from './index.js';  // @todo later; right now it will duplicate it :/
-import { BatchWorker, CompileTask } from '../coq-jslib/build/batch.ts';
-import { CoqProject, InMemoryVolume, ZipVolume } from '../coq-jslib/build/project.ts';
-import '../ui-css/project.css';
+
+import { BatchWorker, CompileTask } from '../../../coq-jslib/build/batch.ts';
+import { CoqProject, InMemoryVolume, ZipVolume } from '../../../coq-jslib/build/project.ts';
+import '../css/project.css';
 
 class ProjectPanel {
 
@@ -457,7 +458,7 @@ class JsCoqBatchWorker extends BatchWorker {
     }
 }
 
-import { fsif_native } from '../coq-jslib/build/fsif.ts';
+import { fsif_native } from '../../../coq-jslib/build/fsif.ts';
 
 class WacoqBatchWorker extends BatchWorker {
     constructor(coqw, pkgr) {

@@ -223,7 +223,7 @@ See the `etc/notes/` directory for some random notes about the project.
 
 ## Acknowledgements
 
-![FEEVER Logo](/ui-images/feever-logo.png?raw=true "Feever Logo")
+![FEEVER Logo](/frontend/classic/images/feever-logo.png?raw=true "Feever Logo")
 
 jsCoq was made possible thanks to funding by the
 [FEEVER](http://feever.fr) project and support from [MINES

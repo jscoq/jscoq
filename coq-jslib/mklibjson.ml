@@ -3,7 +3,7 @@
  * (C) Mines ParisTech
  * Written by: Emilio J. Gallego Arias
  *
- * (This is currently superseded by the CLI in `ui-js/cli.ts` but is kept
+ * (This is currently superseded by the CLI in `frontend/classic/js/cli.ts` but is kept
  * for posterity)
  *)
 

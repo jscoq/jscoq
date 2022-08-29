@@ -78,7 +78,7 @@
 }
 
 .settings-panel[data-theme=dark] .link-to-github::after {
-  background-image: url(../ui-images/themes/dark/github.png);
+  background-image: url(../images/themes/dark/github.png);
 }
 
 /* Code settings */

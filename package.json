@@ -3,10 +3,10 @@
   "version": "0.16.0",
   "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
-  "main": "ui-js/index.js",
+  "main": "frontend/classic/js/index.js",
   "bin": {
     "jscoq": "./dist/cli.cjs",
-    "jscoqdoc": "ui-js/jscoqdoc.cjs"
+    "jscoqdoc": "frontend/classic/js/jscoqdoc.cjs"
   },
   "dependencies": {
     "array-equal": "^1.0.0",
@@ -61,15 +61,14 @@
     "webpack-cli": "^4.10.0"
   },
   "files": [
-    "ui-js",
-    "ui-css",
-    "ui-images",
-    "ui-external",
-    "coq-js/*.bc.cjs",
+    "frontend",
+    "backend/*.js",
+    "backend/*.ts",
+    "backend/jsoo/*.bc.cjs",
     "coq-pkgs",
     "dist",
     "examples",
-    "docs/*.html",
+    "docs",
     "jscoq.js",
     "index.html"
   ],
@@ -77,7 +76,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack",
     "watch": "webpack -w",
-    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/' ui-js/index.js"
+    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/' frontend/classic/js/index.js"
   },
   "repository": {
     "type": "git",

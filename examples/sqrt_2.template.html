@@ -4,14 +4,14 @@
     <title>jsCoq – Use Coq in Your Browser</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
-    <link rel="icon" href="../ui-images/favicon.png">
+    <link rel="icon" href="../frontend/classic/images/favicon.png">
 
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../node_modules/katex/dist/katex.min.css">
-    <link rel="stylesheet" type="text/css" href="../ui-css/landing-page.css">
-    <link rel="stylesheet" type="text/css" href="../ui-css/kbd.css">
-    <link rel="stylesheet" type="text/css" href="../ui-css/jscoqdoc.css">
+    <link rel="stylesheet" type="text/css" href="../frontend/classic/css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="../frontend/classic/css/kbd.css">
+    <link rel="stylesheet" type="text/css" href="../frontend/classic/css/jscoqdoc.css">
   </head>
 
 <body class="jscoq-main">
@@ -26,7 +26,7 @@
         </span></span></span><span class="vlist-s"></span></span><span class="vlist-r"><span class="vlist" style="height:0.1328em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span></span><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8556em;vertical-align:-0.1667em;"></span><span class="mord mathbb">Q</span></span></span></span>
     </h4>
     <p>
-      The following is a simple proof that <span class="math"><img class="symbol-sqrt" src="../ui-images/sqrt.svg">2</span>
+      The following is a simple proof that <span class="math"><img class="symbol-sqrt" src="../frontend/classic/images/sqrt.svg">2</span>
       cannot be expressed as the ratio of two integers; that is, for every two integers
       <span class="math"><i>p</i></span> and <span class="math"><i>q</i></span>, 
       <span class="math">(<i>p/q</i>)<sup>2</sup> ≠ 2</span>.
@@ -107,7 +107,7 @@ Qed.</textarea>
 
   <script type="module">
 
-    import { JsCoq } from '../ui-js/index.js';
+    import { JsCoq } from '../frontend/classic/js/index.js';
 
     if (!localStorage['scratchpad.last_filename'])
       setTimeout(() => document.body.classList.add('welcome'), 1500);

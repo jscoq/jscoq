@@ -2,7 +2,7 @@
 "use strict"
 
 import { CoqManager } from './coq-manager.js';
-export { CoqWorker } from './jscoq-worker-interface.js';
+export { CoqWorker } from '../../../backend/coq-worker.js';
 export { PackageManager } from './coq-packages.js';
 export { FormatPrettyPrint } from './format-pprint.js';
 export { CmCoqProvider, Deprettify } from './cm-provider.js';
@@ -12,7 +12,7 @@ const scriptDir = import.meta.url.replace(/[^/]*$/, '');
 const JsCoq = {
     backend: 'js',  /* 'js' or 'wa' */
 
-    base_path: scriptDir ? `${scriptDir}../` : "./",
+    base_path: scriptDir ? `${scriptDir}../../../` : "./",
     node_modules_path: '',
     loaded: undefined,
 
@@ -98,11 +98,11 @@ async function loadJsCoq(base_path, node_modules_path) {
                  node_modules_path + 'codemirror/theme/darcula',
                  node_modules_path + 'codemirror/addon/hint/show-hint',
                  node_modules_path + 'codemirror/addon/dialog/dialog',
-                 base_path + 'ui-css/coq-log',
-                 base_path + 'ui-css/coq-base',
-                 base_path + 'ui-css/coq-light',
-                 base_path + 'ui-css/coq-dark',
-                 base_path + 'ui-css/settings']
+                 base_path + 'frontend/classic/css/coq-log',
+                 base_path + 'frontend/classic/css/coq-base',
+                 base_path + 'frontend/classic/css/coq-light',
+                 base_path + 'frontend/classic/css/coq-dark',
+                 base_path + 'frontend/classic/css/settings']
     };
 
     for (let fn of files.css) loadCss(fn)

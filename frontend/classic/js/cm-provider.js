@@ -1,13 +1,14 @@
 //@ts-check
-
 "use strict";
 
+// Misc imports
 import { copyOptions } from './etc.js';
-//@ts-ignore
-import { CodeMirror, localforage, $ } from '../dist/lib.js';
 import { JsCoq } from './index.js';
-import { CompanyCoq }  from './addon/company-coq.js';
+
+// CM imports
+import { CodeMirror, localforage, $ } from '../../../dist/lib.js';
 import './mode/coq-mode.js';
+import { CompanyCoq }  from './addon/company-coq.js';
 
 /**
  * A Coq sentence, typically ended in dot "."
@@ -716,7 +717,7 @@ export class CmCoqProvider {
         var span = this._makeFileDialog("Save file: "),
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
             share = $('<span>').addClass('dialog-share')
-                    .append($('<img>').attr('src', JsCoq.base_path + 'ui-images/share.svg')),
+                    .append($('<img>').attr('src', JsCoq.base_path + 'frontend/classic/images/share.svg')),
             a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
             a3 = betaOnly(() =>
                  this._makeDialogLink('P2P', () => this.shareP2P()));

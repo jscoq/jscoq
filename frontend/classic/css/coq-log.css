@@ -10,19 +10,19 @@
 }
 
 #query-panel .Error {
-  background: url('../ui-images/log-error.png') no-repeat;
+  background: url('../images/log-error.png') no-repeat;
 }
 
 #query-panel .Warning {
-  background: url('../ui-images/log-warn.png') no-repeat;
+  background: url('../images/log-warn.png') no-repeat;
 }
 
 #query-panel .Notice {
-  background: url('../ui-images/log-notice.png') no-repeat;
+  background: url('../images/log-notice.png') no-repeat;
 }
 
 #query-panel .Info {
-  background: url('../ui-images/log-info.png') no-repeat;
+  background: url('../images/log-info.png') no-repeat;
 }
 
 #query-panel .Error,

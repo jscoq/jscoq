@@ -30,10 +30,10 @@
 
 (rule
  (target jscoq_version.ml)
- (deps ../package.json)
+ (deps ../../package.json)
  (action (with-stdout-to %{target}
   (run node -p 
-      "`let jscoq_version = \"${require(\"../package.json\").version}\"`"))))
+      "`let jscoq_version = \"${require(\"../../package.json\").version}\"`"))))
 
 (rule
  (targets marshal-arch.js)

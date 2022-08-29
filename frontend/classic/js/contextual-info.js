@@ -1,7 +1,11 @@
 //@ts-check
 "use strict";
-import { $ } from '../dist/lib.js';
-import { CoqWorker } from './jscoq-worker-interface.js';
+
+// backend import
+import { CoqWorker } from '../../../backend/coq-worker.js';
+
+// frontend import
+import { $ } from '../../../dist/lib.js';
 import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq } from './addon/company-coq.js';
 

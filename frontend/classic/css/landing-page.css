@@ -68,7 +68,7 @@ img.symbol-mouse {
 a#scratchpad {
   height: 30px;
   width: 30px;
-  background: url(../ui-images/scratchpad.png);
+  background: url(../images/scratchpad.png);
   background-repeat: no-repeat;
   background-size: contain;
   border: none;
@@ -107,7 +107,7 @@ a#scratchpad .scratchpad-tip::after {
   width: 1.2em;
   height: 1.2em;
   margin-bottom: -0.2em;
-  background: url(../ui-images/scratchpad.png);
+  background: url(../images/scratchpad.png);
   background-repeat: no-repeat;
   background-size: contain;
   border: none;

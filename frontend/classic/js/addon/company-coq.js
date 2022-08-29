@@ -14,7 +14,7 @@
 /*    of yet).                                                          */
 /************************************************************************/
 
-import { CodeMirror, $ } from '../../dist/lib.js'
+import { CodeMirror, $ } from '../../../../dist/lib.js'
 
 var Pos = CodeMirror.Pos;
 

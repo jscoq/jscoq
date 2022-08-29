@@ -28,7 +28,7 @@ _build/%.vo: _build/%.v
 sqrt_2!JSCOQDOC_FLAGS = --template sqrt_2.template.html
 
 %.html: _build/%.v _build/%.vo
-	JSCOQ_URL=.. ../ui-js/jscoqdoc.cjs $($*!JSCOQDOC_FLAGS) \
+	JSCOQ_URL=.. ../frontend/classic/js/jscoqdoc.cjs $($*!JSCOQDOC_FLAGS) \
 	  --no-index --no-lib-name --parse-comments $<
 	@rm coqdoc.css  # urghh
 

@@ -20,7 +20,7 @@ var loadModuleCompat = function(fn) {
 var scriptDir = (typeof document !== 'undefined' && document.currentScript) ?
         document.currentScript.getAttribute('src')?.replace(/[^/]*$/, '') : undefined,
     basePath = scriptDir ? `${scriptDir}../` : "./",
-    loading = loadModuleCompat(basePath + 'ui-js/index.js');
+    loading = loadModuleCompat(basePath + 'frontend/classic/js/index.js');
 
 console.warn(`Loading jsCoq in compatibility mode; switching to ES modules is recommended:\n  ` +
     `Use \`<script type="module">import { JsCoq } from './${basePath}jscoq.js'\` instead of \`<script src="...">\`.`)

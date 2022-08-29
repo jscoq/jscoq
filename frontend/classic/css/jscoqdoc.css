@@ -56,7 +56,7 @@ body {
   right: 0;
   top: 40px;
   width: 40px !important;
-  background: url(../ui-images/jscoq-splash.png);  
+  background: url(../images/jscoq-splash.png);
   background-size: cover;
   cursor: pointer;
   /*transition: visibility 0s linear 1s, width 0.2s ease; */

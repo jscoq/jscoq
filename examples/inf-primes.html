@@ -4,11 +4,11 @@
     <title>jsCoq – Infinitude of Primes</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
-    <link rel="icon" href="../ui-images/favicon.png">
+    <link rel="icon" href="../frontend/classic/images/favicon.png">
 
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="../ui-css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="../frontend/classic/css/landing-page.css">
   </head>
 
 <body class="jscoq-main">
@@ -28,12 +28,12 @@
     <table class="doc-actions">
       <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
       <tr>
-        <td><img src="../ui-images/power-button-512-black.png" height="20px"></td>
+        <td><img src="../frontend/classic/images/power-button-512-black.png" height="20px"></td>
         <td class="has-kbd"><kbd>F8</kbd></td>
         <td>Toggles the goal panel.</td>
       </tr>
       <tr>
-        <td><img src="../ui-images/down.png" height="15px"><img src="../ui-images/up.png" height="15px"></td>
+        <td><img src="../frontend/classic/images/down.png" height="15px"><img src="../frontend/classic/images/up.png" height="15px"></td>
         <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
           <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
@@ -41,7 +41,7 @@
         <td>Move through the proof.</td>
       </tr>
       <tr>
-        <td><img src="../ui-images/to-cursor.png" height="20px"></td>
+        <td><img src="../frontend/classic/images/to-cursor.png" height="20px"></td>
         <td class="has-kbd">
           <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
           (⌘ on Mac)
@@ -51,7 +51,7 @@
       <tr>
         <td></td>
         <td class="has-kbd">
-          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="../ui-images/pointer.svg">
+          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="../frontend/classic/images/pointer.svg">
         </td>
         <td>Hover executed statements to peek at the proof state after each step.</td>
       </tr>
@@ -141,7 +141,7 @@ Qed.</textarea>
 
   <script type="module">
 
-    import { JsCoq } from '../ui-js/jscoq-loader.js';
+    import { JsCoq } from '../frontend/classic/js/jscoq-loader.js';
 
     var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
     var jscoq_opts = {

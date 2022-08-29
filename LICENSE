@@ -12,60 +12,60 @@ Authors: Emilio J. Gallego Arias
 Files: notes/*
 License: AGPL-3+ / CC-BY-SA 3.0 / LGPL-2.1+
 
-Files: ui-images/checked.png
+Files: frontend/classic/images/checked.png
 License: CC-BY 3.0
 Comment:
   - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
 
-Files: ui-images/dl.png
+Files: frontend/classic/images/dl.png
 License: CC-BY 3.0
 Comment: Cloud button made by Yannick, yanlu.de from www.flaticon.com, licensed under CC BY 3.0
 
-Files: ui-images/power-button-512-black.png
+Files: frontend/classic/images/power-button-512-black.png
 License: CC-BY 3.0
 Comment: Power buton made by Freepik, www.freepik.com from www.flaticon.com, licensed under CC BY 3.0
 
-Files: ui-images/log-info.png
+Files: frontend/classic/images/log-info.png
 License: CC-BY 3.0
 Comment: Kirill Kazachek, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
 
-Files: ui-images/log-error.png
+Files: frontend/classic/images/log-error.png
 License: SIL OFL
 Comment: Dave Gandy (Font Awesome), via iconfinder [https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL]
          DinosoftLabs, via iconfinder (free for commercial use).
          Combined into a single 32x32 image.
 
-Files: ui-images/log-warn.png
+Files: frontend/classic/images/log-warn.png
 License: CC-BY 2.5
 Comment: Ben Gillbanks, via iconfinder [https://creativecommons.org/licenses/by/2.5/]
 
-Files: ui-images/log-notice.png
+Files: frontend/classic/images/log-notice.png
 License: CC-BY 3.0
 Comment: Rudy Muhardika, via iconfinder [https://creativecommons.org/licenses/by/3.0/]
          Cropped so that actual image area is a little below 32x32.
 
-Files: ui-images/reset.png, ui-images/assets/reset.svg
+Files: frontend/classic/images/reset.png, frontend/classic/images/assets/reset.svg
 License: CC-BY 3.0
 Comment: Hali Gali Harun, IT, via TheNounProject
 
-Files: ui-images/{up,down}.png, ui-images/assets/arrow.svg
+Files: frontend/classic/images/{up,down}.png, frontend/classic/images/assets/arrow.svg
 Licence: CC-BY 3.0
 Comment: Dean Mocha, TW
 
-Files: ui-images/to-cursor.png, ui-images/assets/{text,to}-cursor.svg
+Files: frontend/classic/images/to-cursor.png, frontend/classic/images/assets/{text,to}-cursor.svg
 Licence: CC-BY 3.0
 Comments: Derived work from those of Dean Mocha, TW & Icon 54, via TheNounProject
 
-Files: ui-images/github.png, ui-images/themes/dark/github.png
+Files: frontend/classic/images/github.png, frontend/classic/images/themes/dark/github.png
 Licence: Proprietary
 Comments: Fair use according to the terms of https://github.com/logos.
 
-Files: ui-images/assets/sphere.svg
+Files: frontend/classic/images/assets/sphere.svg
 Licence: CC-BY 3.0
 Comments: From Wikipedia (by Geek3) https://en.wikipedia.org/wiki/Sphere.
           Reduced number of grid lines.
 
-Files: ui-images/*
+Files: frontend/classic/images/*
 License: AGPL-3
 Comment: Other graphics are parts, and so licenced, as JsCoq.
 
@@ -73,7 +73,7 @@ Files: examples/Stlc.html
 License: BSD
 Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
 
-Files: coq-js/js_stub/marshal*.js
+Files: backend/jsoo/js_stub/marshal*.js
 Licence: LGPL2.0
 Comment: Derived from js_of_ocaml (https://github.com/ocsigen/js_of_ocaml).
  (if js_of_ocaml updates to LGPL2.1+, then these should be updated to the same.)

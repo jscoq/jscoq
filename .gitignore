@@ -22,7 +22,7 @@ node_modules
 
 # Links for in-place serving
 coq-pkgs
-/coq-js/jscoq_worker.bc.cjs
+/backend/jsoo/jscoq_worker.bc.cjs
 
 # Apple stuff
 .DS_Store

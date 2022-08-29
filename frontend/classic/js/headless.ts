@@ -6,15 +6,18 @@ import unzip from 'fflate-unzip';
 import * as find from 'find';
 import glob from 'glob';
 
-import { Future } from './future.js';
-import { CoqWorker } from './jscoq-worker-interface';
+// Backend imports
+import { Future } from '../../../backend/future.js';
+import { CoqWorker } from '../../../backend/coq-worker.js';
+
+// Frontend imports, this seems common to the frontends
 import { CoqIdentifier } from './contextual-info';
 import { FormatPrettyPrint } from './format-pprint';
-import { arreq_deep } from '../ui-js/etc';
+import { arreq_deep } from './etc.js';
 
-import { FSInterface, fsif_native } from '../coq-jslib/build/fsif';
-import { CoqProject } from '../coq-jslib/build/project';
-
+// Where to put this?
+import { FSInterface, fsif_native } from '../../../coq-jslib/build/fsif';
+import { CoqProject } from '../../../coq-jslib/build/project';
 
 class HeadlessCoqWorker extends CoqWorker {
     when_created: Promise<any>
@@ -37,7 +40,7 @@ class HeadlessCoqWorker extends CoqWorker {
 
     static instance() {
         global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
-        var jscoq = require('../coq-js/jscoq_worker.bc.cjs').jsCoq;
+        var jscoq = require('../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
             jscoq.onmessage = handler;
