@@ -16,6 +16,7 @@ const
     stats: {
       hash: false, version: false, modules: false  // reduce verbosity
     },
+    cache: { type: 'filesystem' },
     performance: {
       maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
     }
@@ -54,7 +55,7 @@ const
   // resources that only make sense in browser context
   browserOnly = /\/codemirror\/|(\/dist\/lib.js$)|(coq-mode.js$)|(company-coq.js$)/,
   resolve = {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: [ '.tsx', '.ts', '.js', '.cjs' ]
   },
   output = (dirname, filename) => ({
     filename, path: path.join(__dirname, dirname)
