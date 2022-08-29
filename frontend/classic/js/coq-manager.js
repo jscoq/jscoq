@@ -33,7 +33,8 @@ import { CoqContextualInfo } from './contextual-info.js';
 // XXX Port to CM 6.x
 // import { CompanyCoq }  from './addon/company-coq.js';
 
-import { CoqCodeMirror, CoqProseMirror } from './coq-editor.js';
+import { CoqCodeMirror } from './coq-editor-cm.js';
+import { CoqProseMirror } from './coq-editor-pm.js';
 
 /**
  * Coq Document Manager, client-side.
@@ -91,16 +92,11 @@ export class CoqManager {
         }
 
         // Setup the Coq editor.
-        if (this.options.prosemirror) {
-            this.editor = new CoqProseMirror(elems[0]);
-            this.editor.onChange = newText => {
-                this.coq.update(newText);
-            }
-        } else {
-            this.editor = new CoqCodeMirror(elems[0]);
-            this.editor.onChange = evt => {
-                this.coq.update(this.editor.getValue());
-            }
+        var CoqEditor = this.options.prosemirror ? CoqProseMirror : CoqCodeMirror;
+
+        this.editor = new CoqEditor(elems[0]);
+        this.editor.onChange = newText => {
+            this.coq.update(newText);
         };
 
         /** @type {PackageManager} */
@@ -326,6 +322,7 @@ export class CoqManager {
 
     // Coq document diagnostics.
     coqNotification(diags) {
+
         this.editor.clearMarks();
 
         console.log("Diags received: " + diags.length.toString());
