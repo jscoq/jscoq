@@ -12,6 +12,7 @@ import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams
 // UI imports
 import $ from 'jquery';
 import { FormatPrettyPrint } from '../../format-pprint/js';
+import { throttle } from 'throttle-debounce';
 
 // Common imports
 import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
@@ -106,10 +107,10 @@ export class CoqManager {
         const eIdx = { 'pm' : CoqProseMirror, 'cm5': CoqCodeMirror5 };
         var CoqEditor = eIdx[this.options.frontend];
         this.editor = new CoqEditor(elems, this.options, this);
-        this.editor.onChange = raw => {
+        this.editor.onChange = throttle(200, raw => {
             this.version++;
-            this.coq.update( { uri: this.uri, version: this.version, raw });
-        };
+            this.coq.update({ uri: this.uri, version: this.version, raw });
+        });
 
         /** @type {PackageManager} */
         this.packages = null;
