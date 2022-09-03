@@ -62,6 +62,7 @@ const JsCoq = {
 
         // Backend setup
         jscoq_opts.backend = jscoq_opts.backend || this.backend;
+        jscoq_opts.is_npm = this.is_npm;
 
         // Set base and node_modules path from options if not given, use defaults
         jscoq_opts.base_path = base_path || jscoq_opts.base_path || this.base_path;

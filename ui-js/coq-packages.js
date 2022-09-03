@@ -64,10 +64,10 @@ export class PackageManager {
      * @return {*}
      * @memberof PackageManager
      */
-    static defaultPkgPath(backend) {
+    static defaultPkgPath(backend, is_npm) {
         return {
             'js': new URL('../coq-pkgs/', CoqWorker.scriptUrl).href,
-            'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath()).href
+            'wa': new URL('../bin/coq/', CoqWorker.defaultScriptPath(backend, is_npm)).href
         }[backend];
     }
 

@@ -58,7 +58,7 @@ export class CoqManager {
             base_path:   "./",
             node_modules_path: "./node_modules/",
             backend: "js",
-            pkg_path:    PackageManager.defaultPkgPath(options.backend || 'js'),
+            pkg_path:    PackageManager.defaultPkgPath(options.backend || 'js', options.is_npm),
             implicit_libs: false,
             init_pkgs: ['init'],
             all_pkgs:  ['coq'].concat(PKG_AFFILIATES),
