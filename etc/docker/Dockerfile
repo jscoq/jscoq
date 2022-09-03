@@ -232,7 +232,7 @@ ARG NJOBS=4
 
 RUN git pull --ff-only
 RUN npm install
-RUN eval $(opam env) && make coq && make
+RUN eval $(opam env) && make coq && make && make symb
 RUN make dist-npm
 
 WORKDIR /root
