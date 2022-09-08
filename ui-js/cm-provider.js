@@ -6,6 +6,7 @@ import { copyOptions } from './etc.js';
 //@ts-ignore
 import { CodeMirror, localforage, $ } from '../dist/lib.js';
 import { JsCoq } from './index.js';
+import { CompanyCoq }  from './addon/company-coq.js';
 import './mode/coq-mode.js';
 
 /**
@@ -63,12 +64,9 @@ export class CmCoqProvider {
 
         CmCoqProvider._config();
 
-        var cmOpts =
+        var cmOpts = /** @type {CodeMirror.EditorConfiguration} */ (
             { mode : { name : "coq",
-                       /** @type {4} */
-                       version: 4,
-                       singleLineStringErrors : false
-                     },
+                       singleLineStringErrors : false },
               lineNumbers       : true,
               indentUnit        : 2,
               tabSize           : 2,
@@ -78,7 +76,7 @@ export class CmCoqProvider {
               dragDrop          : false, /* handled by CoqManager */
               keyMap            : "jscoq",
               className         : "jscoq"
-            };
+            });
 
         if (options)
             copyOptions(options, cmOpts);
@@ -169,7 +167,7 @@ export class CmCoqProvider {
         if (options.theme) {
             this.editor.setOption('theme', options.theme);
         }
-        CodeMirror.CompanyCoq.configure(this.editor, options);
+        CompanyCoq.configure(this.editor, options);
     }
 
     getText() {
