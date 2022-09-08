@@ -174,6 +174,9 @@ export class CoqLayoutClassic {
             this.panel.classList.remove(...[...this.panel.classList]
                 .filter(c => c.startsWith('jscoq-theme-')));
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
+            // - configure help which is in an iframe
+            /** @type {HTMLIFrameElement} */ (this.panel.querySelector('#help-panel iframe'))
+                .contentDocument.body.setAttribute('theme', options.theme);
         }
         this.settings.configure({
             theme: options.theme,

@@ -8,6 +8,10 @@ body {
   padding-bottom: 4em;
 }
 
+body[theme=dark] {
+  color: #ddd;
+}
+
 h1 {
   margin-top: 12px;
   margin-bottom: 7px;
@@ -71,4 +75,10 @@ table.doc-actions th {
 table.doc-actions td {
   padding-bottom: .25em;
 }
-  
+
+[theme=dark] img.power-button {
+  background: #aaa;
+}
+[theme=dark] img.symbol-mouse {
+  filter: invert(1);
+}
