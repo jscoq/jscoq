@@ -241,6 +241,30 @@ export class CoqLayoutClassic {
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
+
+        if (mode !== 'wait') this.splashLinks();
+    }
+
+    splashLinks() {
+        var bar = $(`
+            <p class="quick-links">
+                <a href="#quick-help"><img>Quick help</a>
+                <a href="#scratchpad"><img>Scratchpad</a>
+            </p>`);
+        // Set icons
+        let icon = fn => `${this.options.base_path}/ui-images/${fn}`;
+        bar.find('a[href="#quick-help"] img').attr('src', icon('help.svg')).height("1em");
+        bar.find('a[href="#scratchpad"] img').attr('src', icon('scratchpad.png')).height("1em");
+        // Set quick-help action
+        bar.find('a[href="#quick-help"]').on('click', ev => {
+            ev.preventDefault(); this.showHelp();
+        });
+        // Set scratchpad action
+        bar.find('a[href="#scratchpad"]').attr('href',
+            this.options.links?.scratchpad ??
+            `${this.options.base_path}/examples/scratchpad.html`);
+        // Ship it
+        bar.prependTo($(this.proof).find('.splash-below'));
     }
 
     createOutline() {

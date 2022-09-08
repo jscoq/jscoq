@@ -294,6 +294,18 @@ body.jscoq-main .CodeMirror-linenumber {
   width: 100%;
 }
 
+#goal-panel p.splash-below p.quick-links {
+  white-space: normal;
+  text-align: center;
+}
+
+#goal-panel p.splash-below p.quick-links a {
+  margin-left: 1em;
+}
+#goal-panel p.splash-below p.quick-links img {
+  margin-right: 0.5em;
+}
+
 #goal-panel p.system {
   margin: 0.75em 0; 
 }
