@@ -5,6 +5,7 @@
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
+// @ts-ignore
 import { $ } from '../dist/lib.js';
 import { SettingsPanel } from './settings.js';
 
@@ -66,6 +67,13 @@ export class CoqLayoutClassic {
         <div class="content" id="goal-text" data-lang="coq">
         </div>
       </div>
+      <div id="help-panel" class="flex-panel">
+        <div class="caption">Help</div>
+        <div class="content" id="help-text">
+            <button class="btn-close" alt="Hide help (${kb.help})" title="Hide help (${kb.help})"></button>
+            <iframe src="${base_path}/docs/quick-help.html"></iframe>
+        </div>
+      </div>
       <div class="msg-area flex-panel">
         <div class="caption">
           Messages
@@ -104,6 +112,7 @@ export class CoqLayoutClassic {
         this.ide = document.getElementById(options.wrapper_id);
         this.ide.classList.add('jscoq-ide', `layout-${options.layout || 'flex'}`);
 
+        /** @type {HTMLElement} */
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path,
@@ -141,6 +150,9 @@ export class CoqLayoutClassic {
         this.settings.active.observe(active =>
             this.menubtn.classList.toggle('active', active));
 
+        this.panel.querySelector('#help-panel button.btn-close')
+            .addEventListener('click', () => this.hideHelp());
+
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
         $(this.panel).find('select[name=msg_filter]')
@@ -159,8 +171,12 @@ export class CoqLayoutClassic {
      */
     configure(options) {
         if (options.theme) {
-            this.panel.classList.remove(...this.panel.classList);
+            this.panel.classList.remove(...[...this.panel.classList]
+                .filter(c => c.startsWith('jscoq-theme-')));
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
+            // - configure help which is in an iframe
+            /** @type {HTMLIFrameElement} */ (this.panel.querySelector('#help-panel iframe'))
+                .contentDocument.body.setAttribute('theme', options.theme);
         }
         this.settings.configure({
             theme: options.theme,
@@ -189,6 +205,21 @@ export class CoqLayoutClassic {
         this.isVisible() ? this.hide() : this.show();
     }
 
+    showHelp() {
+        this.panel.classList.add('show-help');
+        this.panel.querySelector('#help-panel').classList.remove('collapsed');
+    }
+
+    hideHelp() {
+        this.panel.classList.remove('show-help');
+    }
+
+    toggleHelp() {
+        this.panel.classList.toggle('show-help');
+        if (this.panel.classList.contains('show-help'))
+            this.panel.querySelector('#help-panel').classList.remove('collapsed');
+    }
+
     splash(version_info, msg, mode='wait') {
         var above = $(this.proof).find('.splash-above'), 
             image = $(this.proof).find('.splash-image'), 
@@ -213,6 +244,30 @@ export class CoqLayoutClassic {
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
+
+        if (mode !== 'wait') this.splashLinks();
+    }
+
+    splashLinks() {
+        var bar = $(`
+            <p class="quick-links">
+                <a href="#quick-help"><img>Quick help</a>
+                <a href="#scratchpad"><img>Scratchpad</a>
+            </p>`);
+        // Set icons
+        let icon = fn => `${this.options.base_path}/ui-images/${fn}`;
+        bar.find('a[href="#quick-help"] img').attr('src', icon('help.svg')).height("1em");
+        bar.find('a[href="#scratchpad"] img').attr('src', icon('scratchpad.png')).height("1em");
+        // Set quick-help action
+        bar.find('a[href="#quick-help"]').on('click', ev => {
+            ev.preventDefault(); this.showHelp();
+        });
+        // Set scratchpad action
+        bar.find('a[href="#scratchpad"]').attr('href',
+            this.options.links?.scratchpad ??
+            `${this.options.base_path}/examples/scratchpad.html`);
+        // Ship it
+        bar.prependTo($(this.proof).find('.splash-below'));
     }
 
     createOutline() {
@@ -371,6 +426,11 @@ export class CoqLayoutClassic {
         this.settings.model.theme.observe(theme => {
             this.configure({theme});
         });
+        this.settings.onAction = ev => {
+            switch (ev.action) {
+            case 'quick-help': this.showHelp(); break;
+            }
+        }
     }
 
     /**

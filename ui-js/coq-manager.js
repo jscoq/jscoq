@@ -1000,8 +1000,8 @@ export class CoqManager {
     }
 
     keyTooltips() {
-        return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎'} :
-            {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter'}
+        return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎', help: 'F1'} :
+            {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter', help: 'F1'}
     }
 
     /**
@@ -1019,6 +1019,7 @@ export class CoqManager {
               goNext    = () => this.goNext(true),
               goPrev    = () => this.goPrev(true),
               toggle    = () => this.layout.toggle(),
+              help      = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
         const nav_bindings = {
             '_Enter':     goCursor, '_NumpadEnter': goCursor,
@@ -1026,6 +1027,7 @@ export class CoqManager {
             '_ArrowDown': goNext,
             '_ArrowUp':   goPrev,
             'F8': toggle,
+            'F1': help,
             'Escape': interrupt
         };
         if (!isMac) {

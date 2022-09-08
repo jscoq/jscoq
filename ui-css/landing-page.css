@@ -43,16 +43,9 @@ span.jscoq-name {
   padding: 5px;
 }
 
-#panel-wrapper {
-  z-index: 1021 !important;  /* above navbar */
-}
-
-.jscoq-main .CodeMirror-hints {
-  z-index: 1022 !important;  /* eek */
-}
-
 /* Navbar */
 nav.navbar {
+  z-index: 19; /* do not hide the power button */
   padding: 0;
   border-bottom: 1px solid #eee;
 }

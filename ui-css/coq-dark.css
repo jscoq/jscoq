@@ -229,3 +229,7 @@
 .jscoq-theme-dark .contextual-info .message {
   color: #bbb;
 }
+
+.jscoq-theme-dark #help-panel button.btn-close {
+  filter: invert(1);
+}

@@ -201,7 +201,8 @@ body.jscoq-main .CodeMirror-linenumber {
 .flex-panel > .caption {
   flex: 0 0 20px;
   font-size: 11px;
-  padding: 3px 10px 0 10px;
+  line-height: 1;
+  padding: 4px 10px 0 10px;
   position: relative;
   z-index: 3;
   width: 100%;
@@ -252,6 +253,8 @@ body.jscoq-main .CodeMirror-linenumber {
   transform: none;
 }
 
+/* Goal panel */
+
 #goal-panel {
   position: relative;  /* for positioning div.contextual-info */
 }
@@ -291,6 +294,18 @@ body.jscoq-main .CodeMirror-linenumber {
   width: 100%;
 }
 
+#goal-panel p.splash-below p.quick-links {
+  white-space: normal;
+  text-align: center;
+}
+
+#goal-panel p.splash-below p.quick-links a {
+  margin-left: 1em;
+}
+#goal-panel p.splash-below p.quick-links img {
+  margin-right: 0.5em;
+}
+
 #goal-panel p.system {
   margin: 0.75em 0; 
 }
@@ -300,10 +315,54 @@ body.jscoq-main .CodeMirror-linenumber {
   white-space: pre;
 }
 
+/* Help panel (when shown, replaces Goal) */
+
+#help-panel:not(.collapsed) {
+  flex-grow: 2000;
+}
+
+#help-panel div.content {
+  position: relative;  /* for positioning the close button */
+  padding: 0;
+  height: 100%;
+  overflow: hidden;  /* scroll within iframe */
+}
+#help-panel div.content iframe {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+#help-panel > .content::before,
+#help-panel > .content::after {  display: none;  }
+
+#panel-wrapper.show-help #goal-panel,
+#panel-wrapper:not(.show-help) #help-panel {
+  display: none;
+}
+
+#help-panel button.btn-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  background: url(../ui-images/go-back.png);
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  opacity: .25;
+  box-shadow: none;
+}
+
+#help-panel button.btn-close:hover { opacity: 0.5; }
+#help-panel button.btn-close:active { opacity: 0.75; }
+
+/*
 #vsep, #hsep {
   position: absolute;
   z-index: 3;
 }
+*/
 
 #hide-panel {
   cursor: pointer;
