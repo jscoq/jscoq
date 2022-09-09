@@ -187,7 +187,7 @@ dist-npm:
 	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
 
 WACOQ_NPMOBJ = README.md \
-	jscoq.js ui-js ui-css ui-images ui-external examples dist
+	jscoq.js ui-js ui-css ui-images ui-external dist examples docs
 # ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
 
 dist-npm-wacoq:
