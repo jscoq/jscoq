@@ -1,9 +1,11 @@
-# jsCoq 0.16.0 "To plugin or not to plugin"
+# jsCoq 0.16.0 "Paris-bound"
 -------------------------------------------
 
- - Update to Coq 8.16.0 (@corwin-of-amber, @ejgallego)
- - Now Coq loads plugins using findlib, but we don't yet support that
- - Port the JS codebase to ES modules (@ejgallego , #276)
+ - Update to Coq 8.16.0. (@corwin-of-amber, @ejgallego)
+ - Now Coq loads plugins using findlib, but we don't yet support that;
+   most plugins can still load in legacy mode.
+ - Port the JS codebase to ES modules (@ejgallego, #276)
+ - Add a quick help screen in the UI (@corwin-of-amber, #290)
 
 # jsCoq 0.15.1 "Go For Your Toad, or Similar"
 ---------------------------------------
