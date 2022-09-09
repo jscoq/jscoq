@@ -66,8 +66,9 @@
     "ui-external",
     "coq-js/*.bc.cjs",
     "coq-pkgs",
-    "examples",
     "dist",
+    "examples",
+    "docs/*.html",
     "jscoq.js",
     "index.html"
   ],

@@ -63,8 +63,9 @@
     "ui-css",
     "ui-images",
     "ui-external",
-    "examples",
     "dist",
+    "examples",
+    "docs/*.html",
     "jscoq.js",
     "index.html"
   ],

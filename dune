@@ -37,6 +37,7 @@
    (source_tree ui-images)
    (source_tree ui-external)
    (source_tree examples)
+   (source_tree docs)  ; for `quick-help.html`
    jscoq.js
    index.html
    coq-pkgs

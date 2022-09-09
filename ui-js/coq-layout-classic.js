@@ -42,8 +42,8 @@ export class CoqLayoutClassic {
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">
-          <img class="${backend}-logo" src="${base_path}/ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
-            --><img class="coq-logo" src="${base_path}/ui-images/coq-logo.png" alt="Coq">
+          <img class="${backend}-logo" src="${base_path}ui-images/${backend}-logo.svg" alt="js"><i>+</i><!--
+            --><img class="coq-logo" src="${base_path}ui-images/coq-logo.png" alt="Coq">
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
@@ -71,7 +71,7 @@ export class CoqLayoutClassic {
         <div class="caption">Help</div>
         <div class="content" id="help-text">
             <button class="btn-close" alt="Hide help (${kb.help})" title="Hide help (${kb.help})"></button>
-            <iframe src="${base_path}/docs/quick-help.html"></iframe>
+            <iframe src="${base_path}docs/quick-help.html"></iframe>
         </div>
       </div>
       <div class="msg-area flex-panel">

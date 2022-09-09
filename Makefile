@@ -150,7 +150,7 @@ distclean: clean
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
 	coq-js/jscoq_worker.bc.cjs coq-pkgs \
-	jscoq.js ui-js ui-css ui-images ui-external dist examples}
+	jscoq.js ui-js ui-css ui-images ui-external dist examples docs}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
