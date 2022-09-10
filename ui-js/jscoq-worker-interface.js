@@ -34,7 +34,8 @@ export class CoqWorker {
         this.routes = [this.observers];
         this.sids = [, new Future()];
 
-        this.load_progress = (/** @type {any} */ pc) => {};
+        /** @type {(ratio: number, ev: ProgressEvent) => void} */
+        this.load_progress = (ratio, ev) => {};
 
         if (worker) {
             this.attachWorker(worker);
@@ -95,7 +96,7 @@ export class CoqWorker {
      * @param {string} url
      */
     async newWorkerWithProgress(url) {
-        await prefetchResource(url, pc => this.load_progress(pc));
+        await prefetchResource(url, (pc, ev) => this.load_progress(pc, ev));
         // have to use `url` again so that the worker has correct base URI;
         // should be cached at this point though.
         return new Worker(url);
@@ -513,7 +514,7 @@ export class CoqSubprocessAdapter extends CoqWorker {
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
 /**
  * @param {string | URL} url
- * @param {(ratio: number) => void} progress
+ * @param {(ratio: number, ev: ProgressEvent) => void} progress
  */
 function prefetchResource(url, progress = ()=>{}) {
     var xhr = new XMLHttpRequest();
@@ -527,7 +528,9 @@ function prefetchResource(url, progress = ()=>{}) {
 
         xhr.addEventListener("progress", (event) => {
             if (event.lengthComputable)
-                progress(event.loaded / event.total);
+                progress(event.loaded / event.total, event);
+            else
+                progress(undefined, event);
         });
         xhr.send();
     });

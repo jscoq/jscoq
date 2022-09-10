@@ -310,8 +310,10 @@ export class CoqManager {
             this.coq.observers.push(this);
 
             // @todo load progress with an egg
-            this.coq.load_progress = pc =>
-                this.layout.splash(`Loading worker... ${Math.round(pc * 100)}%`, undefined, 'wait');
+            let progressFmt = (pc, ev) =>
+                typeof pc === 'number' ? `${Math.round(pc * 100)}%` : `${(ev.loaded / 1e6).toFixed(1)} MB`;
+            this.coq.load_progress = (pc, ev) =>
+                this.layout.splash(`Loading worker... ${progressFmt(pc, ev)}`, undefined, 'wait');
 
             this.provider.wait_for = this.when_ready;
 
