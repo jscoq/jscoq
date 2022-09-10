@@ -2,7 +2,10 @@
 "use strict"
 
 import { CoqManager } from './coq-manager.js';
-export { Deprettify } from './cm-provider.js';
+export { CoqWorker } from './jscoq-worker-interface.js';
+export { PackageManager } from './coq-packages.js';
+export { FormatPrettyPrint } from './format-pprint.js';
+export { CmCoqProvider, Deprettify } from './cm-provider.js';
 
 const scriptDir = import.meta.url.replace(/[^/]*$/, '');
 

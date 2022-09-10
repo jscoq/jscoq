@@ -14,10 +14,10 @@ export class PackageManager {
      *   names in the format
      *   `{'base_uri1', ['pkg_name1', 'pkg_name2', ...], 'base_uri2': ...}`.
      * @param {object} pkg_path_aliases mnemonic for specific base URIs
-     * @param {CoqWorker} coq reference to the Coq worker instance to send
+     * @param {CoqWorker} coq reference to the `CoqWorker` instance to send
      *   load requests to
      */
-    constructor(panel_dom, packages, pkg_path_aliases, coq, backend) {
+    constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.backend) {
 
         this.backend = backend;
         this.panel         = panel_dom;

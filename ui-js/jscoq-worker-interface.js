@@ -21,7 +21,7 @@ export class CoqWorker {
      * @memberof CoqWorker
      * @constructor
      */
-    constructor(scriptPath, worker, backend, is_npm) {
+    constructor(scriptPath, worker, backend='js', is_npm=false) {
         this.options = {
             debug: false,
             warn: true

@@ -7,9 +7,7 @@
 
 <body>
   <script type="module">
-    import { JsCoq } from "../ui-js/index.js";
-    import { CoqWorker } from "../ui-js/jscoq-worker-interface.js";
-    import { PackageManager } from "../ui-js/coq-packages.js";
+    import { JsCoq, CoqWorker, PackageManager, FormatPrettyPrint } from "../jscoq.js";
 
     class Observer {
       constructor() {
@@ -19,7 +17,7 @@
       coqGoalInfo(sid, goals) {
         var bar = `\n${"-".repeat(60)}\n`
         console.log(bar, goals, bar);
-        $('body').append(this.pprint.goals2DOM(goals));
+        document.body.append(this.pprint.goals2DOM(goals)[0]);
       }
     }
 
@@ -28,9 +26,11 @@
     (async () => {
       await JsCoq.load();
 
-      coq = new CoqWorker('../coq-js/jscoq_worker.bc.cjs');
+      coq = new CoqWorker(new URL('../coq-js/jscoq_worker.bc.cjs', window.location));
       pm = new PackageManager(document.createElement('div'),  /* need a div, sry */
                               {'../coq-pkgs/': ['coq']}, {}, coq);
+
+      window.coq = coq;
 
       coq.options.debug = true;
       coq.options.warn = false;  // will silence warnings about unhandled messages
@@ -39,7 +39,8 @@
       // Load packages
       await coq.when_created;
       await pm.populate();
-      await pm.loadDeps(['coq']);
+      await pm.loadDeps(['init']);
+      pm.loaded_pkgs.push('init');
 
       // Initialize document
       coq.init({lib_path: pm.getLoadPath()}, {lib_init: ["Coq.Init.Prelude"]});
