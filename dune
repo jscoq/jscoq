@@ -32,10 +32,8 @@
 (alias
  (name jscoq-static)
  (deps
-   (source_tree ui-js)
-   (source_tree ui-css)
-   (source_tree ui-images)
-   (source_tree ui-external)
+   (source_tree frontend)
+   (source_tree backend)
    (source_tree examples)
   index.html
   jscoq.install))

@@ -95,16 +95,20 @@ export class CoqManager {
             editor:    { /* codemirror options */ }
         };
 
-        this.uri = "file:///src/browser.mv";
-        this.version = 0;
         this.options = copyOptions(options, this.options);
+
+        // Create new document
+        let markdown =
+            (this.options.frontend !== 'pm' && this.options.content_type === 'markdown');
+        this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
+        this.version = 0;
 
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
         // Setup the Coq editor.
-        const eIdx = { 'pm' : CoqProseMirror, 'cm5': CoqCodeMirror5 };
+        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
         var CoqEditor = eIdx[this.options.frontend];
         this.editor = new CoqEditor(elems, this.options, this);
         this.editor.onChange = throttle(200, raw => {
@@ -331,7 +335,7 @@ export class CoqManager {
         this.enable();
         this.when_ready.resolve(null);
 
-        // Create the first document
+        // Send the document creation request.
         let dp = { uri: this.uri, version: this.version, raw: this.editor.getValue() };
         this.coq.newDoc(dp)
     }

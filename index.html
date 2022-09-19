@@ -115,6 +115,8 @@ Please edit your code here!
     var jscoq_ids  = ['coqCode'];
     var jscoq_opts = {
         backend:   sp.get('backend') ?? ifHas('wa'),
+        frontend:  sp.get('frontend'),
+        content_type:  sp.get('content_type'),
         implicit_libs: false,
         focus: false,
         debug: true,

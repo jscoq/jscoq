@@ -2,7 +2,7 @@
 import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 import { Diagnostic } from "../../../backend";
-import { editorAppend } from "./coq-editor";
+import { ICoqEditor, editorAppend } from "./coq-editor";
 
 // import './mode/coq-mode.js';
 
@@ -36,7 +36,7 @@ const diagField = StateField.define({
   provide: f => EditorView.decorations.from(f)
 })
 
-export class CoqCodeMirror6 {
+export class CoqCodeMirror6 implements ICoqEditor {
     view : EditorView;
 
     // element e
@@ -100,11 +100,7 @@ export class CoqCodeMirror6 {
         this.view.dispatch(tr);
     }
 
-    buildDecSet() {
-        return this.decorationSet;
-    }
-
-    markDiagnostic(d : Diagnostic) {
+    markDiagnostic(d: Diagnostic) {
 
         var from = d.range.start.offset, to = d.range.end.offset;
 
@@ -124,4 +120,8 @@ export class CoqCodeMirror6 {
         // var doc = this.editor.getDoc();
         // doc.markText(from, to, {className: mclass});
     }
+
+    configure() {}
+    openFile() {}
+    focus() {}
 }
