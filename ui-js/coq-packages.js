@@ -2,6 +2,7 @@
 "use strict";
 
 import { JSZip, $ } from '../dist/lib.js';
+import { ArrayFuncs } from './etc.js';
 import { CoqWorker } from './jscoq-worker-interface.js';
 
 export class PackageManager {
@@ -223,11 +224,11 @@ export class PackageManager {
     getLoadPath() {
         switch (this.backend) {
         case 'js':
-            return this.loaded_pkgs.map( pkg_name => {
+            return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
                 let pkg = this.getPackage(pkg_name),
                     phys = pkg.archive ? ['/lib'] : [];
-                return pkg.info.pkgs.map( pkg => [pkg.pkg_id, phys] );
-            }).flatten();
+                return pkg.info.pkgs.map(pkg => [pkg.pkg_id, phys]);
+            }));
         case 'wa':
             return ['/lib'];
         }
@@ -311,7 +312,7 @@ export class PackageManager {
 
     /**
      * Adds a package from a dropped file and immediately downloads it.
-     * @param {Blob} file a dropped File or a Blob that contains an archive
+     * @param {File} file a dropped File or a Blob that contains an archive
      */
     dropPackage(file) {
         this.expand();
@@ -421,11 +422,11 @@ export class PackageManager {
     }
 
     collapse() {
-        this.panel.parentNode.classList.add('collapsed');
+        this.panel.parentElement.classList.add('collapsed');
     }
 
     expand() {
-        this.panel.parentNode.classList.remove('collapsed');
+        this.panel.parentElement.classList.remove('collapsed');
     }
 
     _expandCollapseRow(row) {
@@ -557,7 +558,7 @@ class CoqPkgInfo {
 
     getUrl(resource) {
         // Generate URL with the package's base_uri as the base
-        return new URL(resource, new URL(this.base_uri, location));
+        return new URL(resource, new URL(this.base_uri, location.href));
     }
 
     getDownloadURL() {
@@ -593,6 +594,7 @@ class CoqPkgArchive {
         else
             throw new Error(`invalid resource for archive: '${resource}'`);
 
+        /** @type {(ev: any) => void} */
         this.onProgress = () => {};
     }
 
