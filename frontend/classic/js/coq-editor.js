@@ -34,6 +34,7 @@ export function editorAppend(eId) {
 
     // Create container for editor
     const container = document.createElement('div');
+    container.setAttribute('spellCheck', "false");
     container.classList = area.classList;
 
     if (area.nextSibling) {

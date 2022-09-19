@@ -107,8 +107,13 @@ let markdown_process text =
   let lines = md_map_lines false lines in
   String.concat "\n" lines
 
+let markdown = false
+
+let process_contents ~text =
+  if markdown then markdown_process text else text
+
 let new_doc opts ~text =
-  let text = markdown_process text in
+  let text = process_contents text in
   let state = !root_state, opts.vo_path, [], 0 in
   let uri = opts.uri in
   let fmt = Format.formatter_of_out_channel stdout in
@@ -116,7 +121,8 @@ let new_doc opts ~text =
   Controller.Coq_doc.check fmt doc fb_queue
 
 let check_doc ~doc =
-  let doc = { doc with Controller.Coq_doc.contents = markdown_process doc.Controller.Coq_doc.contents } in
+  let contents = process_contents doc.Controller.Coq_doc.contents in
+  let doc = { doc with Controller.Coq_doc.contents = contents } in
   let fmt = Format.formatter_of_out_channel stdout in
   Controller.Coq_doc.check fmt doc fb_queue
 
