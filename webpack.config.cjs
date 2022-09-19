@@ -1,7 +1,8 @@
 const webpack = require('webpack'),
       fs = require('fs'),
       path = require('path'),
-      { VueLoaderPlugin } = require('vue-loader');
+      { VueLoaderPlugin } = require('vue-loader'),
+      TerserPlugin = require('terser-webpack-plugin');
 
 const
   basics = (argv) => ({
@@ -13,6 +14,13 @@ const
     performance: {
       maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
     },
+    optimization: {
+      minimizer: [
+        new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
+          terserOptions: { keep_fnames: /^CodeMirror$/ }
+        })  
+      ]
+    }   
   }),
   ts = {
     test: /\.tsx?$/,
@@ -42,7 +50,7 @@ const
     new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
     new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
     function() {
-      this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0755));
+      this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0o755));
     }
   ],
   // resources that only make sense in browser context
