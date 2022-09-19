@@ -1,9 +1,14 @@
-const webpack = require('webpack'),
-      fs = require('fs'),
-      path = require('path'),
-      { VueLoaderPlugin } = require('vue-loader'),
-      TerserPlugin = require('terser-webpack-plugin');
+import webpack from 'webpack';
+import fs from 'fs';
+import path from 'path';
+import { createRequire } from 'module';
 
+import { VueLoaderPlugin } from 'vue-loader';
+import TerserPlugin from 'terser-webpack-plugin';
+
+const __dirname = path.resolve('.'),
+      require = createRequire(import.meta.url);
+  
 const
   basics = (argv) => ({
     mode: 'development',
@@ -13,14 +18,7 @@ const
     },
     performance: {
       maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
-    },
-    optimization: {
-      minimizer: [
-        new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
-          terserOptions: { keep_fnames: /^CodeMirror$/ }
-        })  
-      ]
-    }   
+    }
   }),
   ts = {
     test: /\.tsx?$/,
@@ -62,7 +60,7 @@ const
     filename, path: path.join(__dirname, dirname)
   });
 
-module.exports = (env, argv) => [
+export default (env, argv) => [
 /**
  * jsCoq CLI
  * (note: the waCoq CLI is located in package `wacoq-bin`)
@@ -101,6 +99,13 @@ module.exports = (env, argv) => [
   ...basics(argv),
   resolve,
   output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
+  optimization: {
+    minimizer: [
+      new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
+        terserOptions: { keep_fnames: /^CodeMirror$/ }
+      })  
+    ]
+  },
   experiments: {
     outputModule: true
   }

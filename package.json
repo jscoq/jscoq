@@ -57,8 +57,8 @@
     "util": "^0.12.4",
     "vue-loader": "^15.9.8",
     "vue-template-compiler": "^2.6.12",
-    "webpack": "^5.49.0",
-    "webpack-cli": "^4.7.2"
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   },
   "files": [
     "ui-js",
