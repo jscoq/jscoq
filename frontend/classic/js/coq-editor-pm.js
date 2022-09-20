@@ -19,6 +19,22 @@ function diagNew(d) {
     return Decoration.inline(d.range.start_pos + 1, d.range.end_pos + 1, { class: mark_class });
 }
 
+// Implementation of Asynchronous diagnostics
+//
+// We use two transactions: `clear` to clear the diagnostics, and
+// regular one that will just append to the DecorationSet.
+//
+// An interesting side-effect of cur.add taking a `doc` is that it is
+// possible to have a race condition where a diagnostic transaction
+// will revert a user-initiated one. We solve this with a guard on
+// document versions. CM 6 doesn't see to suffer from this problem.
+//
+// The two entry points are:
+//
+// - onChange: this will notify the user the document has changed so
+//   the linter can be called
+// - markDiagnostic: used by the linter to notify a new diagnostic
+// - clearMarks: clear all diagnostics, we put the logic in the user (for now)
 let coqDiags = new Plugin({
     props: {
         decorations(st) {
