@@ -14,140 +14,81 @@
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
+  <div id="document-wrapper">
   <div id="document">
   <div>
-    <h3>Infinitude of Primes</h3>
-    <p>
-      The following document contains embedded Coq code.
-      All the code is editable and can be run directly on the page.
-      Once <span class="jscoq-name">jsCoq</span> finishes loading, you are
-      free to experiment by stepping through the proof and viewing intermediate
-      proof states on the right panel.
-    </p>
-    <h5>Actions</h5>
-    <table class="doc-actions">
-      <tr><th>Button</th><th>Key binding</th><th>Action</th></tr>
-      <tr>
-        <td><img src="../frontend/classic/images/power-button-512-black.png" height="20px"></td>
-        <td class="has-kbd"><kbd>F8</kbd></td>
-        <td>Toggles the goal panel.</td>
-      </tr>
-      <tr>
-        <td><img src="../frontend/classic/images/down.png" height="15px"><img src="../frontend/classic/images/up.png" height="15px"></td>
-        <td class="has-kbd">
-          <kbd>Alt</kbd>+<kbd>↓</kbd>/<kbd>↑</kbd> or<br/>
-          <kbd>Alt</kbd>+<kbd>N</kbd>/<kbd>P</kbd>
-        </td>
-        <td>Move through the proof.</td>
-      </tr>
-      <tr>
-        <td><img src="../frontend/classic/images/to-cursor.png" height="20px"></td>
-        <td class="has-kbd">
-          <kbd>Alt</kbd>+<kbd>Enter</kbd> or<br/> <kbd>Ctrl</kbd>+<kbd>Enter</kbd><br/>
-          (⌘ on Mac)
-        </td>
-        <td>Run (or go back) to the current point.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td class="has-kbd">
-          <kbd>Ctrl</kbd>+<img class="symbol-mouse" src="../frontend/classic/images/pointer.svg">
-        </td>
-        <td>Hover executed statements to peek at the proof state after each step.</td>
-      </tr>
-    </table>
-    
-    <p>
-      As a relatively advanced showcase, we display a proof of the infinitude of primes in Coq.
-      The proof relies on the <a href="https://math-comp.github.io">Mathematical Components</a>
-      library from the
-      <a href="http://ssr.msr-inria.inria.fr/">MSR/Inria</a> team led
-      by Georges Gonthier, so our first step will be to load it:
-    </p>
-  </div>
-  <div>
-    <textarea id="addnC" >
+    <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
+    <textarea id="coqCode" class="snippet">
+## Infinitude of Primes
+
+As a relatively advanced showcase, we display a proof of the
+infinitude of primes in Coq.
+
+The proof relies on the [Mathematical Components](https://math-comp.github.io) library from the [MSR Inria team](http://ssr.msr-inria.inria.fr/) team led by Georges Gonthier, so our first step will be to load it:
+
+```
 From Coq Require Import ssreflect ssrfun ssrbool.
-From mathcomp Require Import eqtype ssrnat div prime. </textarea>
-  </div>
-  <div>
-    <h5>Ready to do Proofs!</h5>
-    <p>
-      Once the basic environment has been set up, we can proceed to
-      the proof:
-    </p>
-  </div> <!-- panel-heading -->
-  <div>
-    <textarea id="prime_above1" >
+From mathcomp Require Import eqtype ssrnat div prime.
+```
+
+### Ready to do Proofs!
+
+Once the basic environment has been set up, we can proceed to the proof:
+
+```
 (* A nice proof of the infinitude of primes, by Georges Gonthier *)
 Lemma prime_above m : {p | m < p & prime p}.
-Proof. </textarea>
-    <p>
-      The lemma states that for any number <code>m</code>,
-      there is a prime number larger than <code>m</code>.
+Proof.
+```
 
-      Coq is a <em>constructive system</em>, which among other things
-      implies that to show the existence of an object, we need to
-      actually provide an algorithm that will construct it.
+The lemma states that for any number `m` there is a prime number larger than `m`.
 
-      In this case, we need to find a prime number <code>p</code>
-      that is greater than <code>m</code>.
-      What would be a suitable <code>p</code>?
+Coq is a _constructive system_, which among other things implies that to show the existence of an object, we need to actually provide an algorithm that will construct it.
 
-      Choosing <code>p</code> to be the first prime divisor of <code>m! + 1</code>
-      works.
-      As we will shortly see, properties of divisibility will imply that
-      <code>p</code> must be greater than <code>m</code>.
-    </p>
-    <textarea id="prime_above2" >
-have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1
-  by rewrite addn1 ltnS fact_gt0.</textarea>
-    <p>
-      Our first step is thus to use the library-provided lemma
-      <code>pdivP</code>, which states that every number is divided by a
-      prime. Thus, we obtain a number <code>p</code> and the corresponding
-      hypotheses <code>pr_p : prime p</code> and <code>p_dv_m1</code>,
-      "p divides m! + 1".
-      The ssreflect tactic <code>have</code> provides a convenient way to
-      instantiate this lemma and discard the side proof obligation
-      <code>1 &lt; m! + 1</code>.
-    </p>
-    <textarea id="prime_above3" >
-exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.</textarea>
-    <p>
-      It remains to prove that <code>p</code> is greater than <code>m</code>.
-      We reason by
-      contraposition with the divisibility hypothesis, which gives us
-      the goal "if <code>p ≤ m</code> then <code>p</code> is not a prime divisor of 
-      <code>m! + 1</code>".
-    </p>
-    <textarea id="prime_above4" >
+In this case, we need to find a prime number `p` that is greater than `m`. What would be a suitable `p`?
+
+Choosing `p` to be the first prime divisor of `m! + 1` works. As we will shortly see, properties of divisibility will imply that `p` must be greater than `m`.
+
+```
+have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
+```
+
+Our first step is thus to use the library-provided lemma `pdivP`, which states that every number is divided by a prime. Thus, we obtain a number `p` and the corresponding hypotheses `pr_p : prime p` and `p_dv_m1`, "p divides m! + 1".
+
+The ssreflect tactic `have` provides a convenient way to instantiate this lemma and discard the side proof obligation `1 < m! + 1`.
+
+```
+exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
+```
+
+It remains to prove that `p` is greater than `m`. We reason by contraposition with the divisibility hypothesis, which gives us the goal "if `p ≤ m` then `p` is not a prime divisor of  `m! + 1`".
+
+```
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
-Qed.</textarea>
-    <p>
-      The goal follows from basic properties of divisibility, plus
-      from the fact that if <code>p ≤ m</code>, then <code>p</code> divides
-      <code>m!</code>, so that for <code>p</code> to divide
-      <code>m! + 1</code> it must also divide 1,
-      in contradiction to <code>p</code> being prime.
-    </p>
-    <hr/>
-    <p>
-      <i>¡Salut!</i>
-    </p>
+Qed.
+```
+
+The goal follows from basic properties of divisibility, plus from the fact that if `p ≤ m`, then `p` divides `m!`, so that for `p` to divide `m! + 1` it must also divide 1, in contradiction to `p` being prime.
+
+<i>¡Salut!</i>
+</textarea>
   </div> <!-- /#document -->
+  </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
   </div> <!-- /#ide-wrapper -->
 
   <script type="module">
 
-    import { JsCoq } from '../frontend/classic/js/jscoq-loader.js';
+    import { JsCoq } from '../jscoq.js';
 
-    var jscoq_ids  = ['addnC', 'prime_above1', 'prime_above2', 'prime_above3', 'prime_above4' ];
+    var jscoq_ids  = ['coqCode' ];
     var jscoq_opts = {
         implicit_libs: false,
         focus: false,
-        all_pkgs:  ['coq', 'mathcomp']
+        debug: true,
+        editor: { mode: { 'company-coq': false } },
+        init_pkgs: ['init', 'coq-base', 'mathcomp'],
+        all_pkgs: ['coq', 'mathcomp']
     };
 
     JsCoq.start(jscoq_ids, jscoq_opts).then(res => window.coq = res);
