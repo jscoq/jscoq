@@ -365,7 +365,8 @@ export class CoqManager {
 
         level = level[0];
 
-        if (this.options.debug) {
+        // if (this.options.debug) {
+        if (false) {
             if (level === 'Debug')
                 console.debug(fmsg, level)
             else
