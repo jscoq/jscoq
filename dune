@@ -53,7 +53,7 @@
  (deps
   (source_tree coq-jslib)
   (source_tree ui-js)
-  webpack.config.cjs
+  webpack.config.js
   tsconfig.json
   node_modules)
  (action
