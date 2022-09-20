@@ -63,7 +63,9 @@ export class CoqCodeMirror {
 
         let { container, area } = editorAppend(eId);
 
-        var obj_ref = this;
+        var cm = this;
+
+        this.version = 1;
 
         // this._set_keymap();
 
@@ -75,7 +77,8 @@ export class CoqCodeMirror {
                       // Document changed
                       var newText = v.state.doc.toString();
                       area.value = newText;
-                      obj_ref.onChange(newText);
+                      cm.version++;
+                      cm.onChange(newText, cm.version);
                   }})
             ];
 
@@ -103,7 +106,9 @@ export class CoqCodeMirror {
         this.view.dispatch(tr);
     }
 
-    markDiagnostic(d) {
+    markDiagnostic(d, version) {
+
+        if (version < this.version) { return; };
 
         var from = d.range.start_pos, to = d.range.end_pos;
 

@@ -96,8 +96,8 @@ export class CoqManager {
         var CoqEditor = this.options.prosemirror ? CoqProseMirror : CoqCodeMirror;
 
         this.editor = new CoqEditor(elems[0]);
-        this.editor.onChange = throttle(200, newText => {
-            this.coq.update(newText);
+        this.editor.onChange = throttle(200, (newText, version) => {
+            this.coq.update(newText, version);
         });
 
         /** @type {PackageManager} */
@@ -322,7 +322,7 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    coqNotification(diags) {
+    coqNotification(diags, version) {
 
         this.editor.clearMarks();
 
@@ -333,7 +333,7 @@ export class CoqManager {
             // this.layout.log(d.message, 'Info');
             // this.layout.log(JSON.stringify(d), 'Info');
             if (d.severity < 4) {
-                this.editor.markDiagnostic(d);
+                this.editor.markDiagnostic(d, version);
             }
         }
     }
@@ -408,8 +408,9 @@ export class CoqManager {
             doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
         }
 
+        let markdown = !this.options.prosemirror;
         let contents = this.editor.getValue();
-        this.coq.init(init_opts, doc_opts, contents);
+        this.coq.init(init_opts, doc_opts, contents, markdown);
         // Almost done!
         // Now we just wait for the `Ready` event.
     }

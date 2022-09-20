@@ -16,7 +16,7 @@
 type diagnostic = Lsp.Base.Diagnostic.t
 
 type coq_opts =
-  { notification_cb : diagnostic -> unit
+  { notification_cb : diagnostic -> int -> unit
   (** callback to handle notifications *)
   ; debug        : bool
   (** Enable debug mode *)
@@ -107,12 +107,13 @@ let markdown_process text =
   let lines = md_map_lines false lines in
   String.concat "\n" lines
 
-let markdown = false
+let parse_markdown = ref false
 
 let process_contents ~text =
-  if markdown then markdown_process text else text
+  if !parse_markdown then markdown_process text else text
 
-let new_doc opts ~text =
+let new_doc opts ~markdown ~text =
+  parse_markdown := markdown;
   let text = process_contents text in
   let state = !root_state, opts.vo_path, [], 0 in
   let uri = opts.uri in

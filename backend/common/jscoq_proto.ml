@@ -94,8 +94,8 @@ let opaque_of_yojson _x = Result.Error "opaque value"
 (* Main RPC calls *)
 type jscoq_cmd =
   | Init    of jscoq_options
-  | NewDoc  of doc_options * string
-  | Update  of string
+  | NewDoc  of doc_options * string * bool
+  | Update  of string * int
 
   | InfoPkg of string * string list
   | LoadPkg of string * string
@@ -109,7 +109,7 @@ type jscoq_cmd =
 type jscoq_answer =
   | CoqInfo   of string
   | Ready     of unit
-  | Notification of diagnostic list
+  | Notification of diagnostic list * int
   | Log       of Feedback.level * Pp.t
   | JsonExn   of string
   [@@deriving to_yojson]

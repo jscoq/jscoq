@@ -185,14 +185,14 @@ export class CoqWorker {
      * Send Init Command to Coq
      *
      */
-    init(coq_opts, doc_opts, text) {
+    init(coq_opts, doc_opts, text, markdown) {
         this.sendCommand(["Init", coq_opts]);
         if (doc_opts)
-            this.sendCommand(["NewDoc", doc_opts, text]);
+            this.sendCommand(["NewDoc", doc_opts, text, markdown]);
     }
 
-    update(text) {
-        this.sendCommand(["Update", text]);
+    update(text, version) {
+        this.sendCommand(["Update", text, version]);
     }
 
     loadPkg(url) {

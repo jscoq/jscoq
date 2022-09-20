@@ -33,7 +33,7 @@ let coqDiags = new Plugin({
                 if(d === "clear") {
                     return DecorationSet.empty;
                 } else {
-                    return cur.add(tr.doc, [diagNew(d)])
+                    return cur.add(tr.doc, [d])
                 }
             } else {
                 return cur.map(tr.mapping, tr.doc);
@@ -52,6 +52,8 @@ export class CoqProseMirror {
         var doc = defaultMarkdownParser.parse(area.value);
         var pm = this;
 
+        this.version = 1;
+
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
@@ -60,17 +62,21 @@ export class CoqProseMirror {
                 }),
                 // We update the text area
                 dispatchTransaction(tr) {
-                    const { state } = this.state.applyTransaction(tr);
-                    this.updateState(state);
-
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
+
+                        // We update the version!
+                        pm.version++;
+
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        pm.onChange(newDoc);
+                        pm.onChange(newDoc, pm.version);
 
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
                         area.value = newMarkdown;
                     }
+
+                    const { state } = this.state.applyTransaction(tr);
+                    this.updateState(state);
                 },
             });
 
@@ -98,16 +104,14 @@ export class CoqProseMirror {
         this.view.dispatch(tr);
     }
 
-    markDiagnostic(d) {
-
-        var from = d.range.start_pos, to = d.range.end_pos;
-
-        console.log("mark from " + from.toString() + " to " + to.toString());
-
-        var tr = this.view.state.tr;
-        tr.setMeta(coqDiags, d);
-        this.view.dispatch(tr);
-
+    markDiagnostic(d, version) {
+        // This is racy w.r.t. user edits if we don't check the
+        // document version; async stuff, always fun :)
+        if (version === this.version) {
+            var tr = this.view.state.tr;
+            tr.setMeta(coqDiags, diagNew(d));
+            this.view.dispatch(tr);
+        }
     }
 
     static process_node(acc) {

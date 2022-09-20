@@ -65,7 +65,8 @@ let post_lib_event le =
 let post_answer ans =
   jscoq_answer_to_yojson ans |> !Callbacks.cb.post_message
 
-let post_notification fb = Notification [fb] |> post_answer
+(* XXX: Fixme, version should use the one in the document *)
+let post_notification fb version = Notification ([fb],version) |> post_answer
 
 (** Coq stuff **)
 
@@ -131,17 +132,17 @@ let jscoq_execute =
   | Init opts ->
     exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
-  | NewDoc (opts, text) ->
-    let ndoc, _st, diags = create_doc opts text in
+  | NewDoc (opts, text, markdown) ->
+    let ndoc, _st, diags = create_doc opts markdown text in
     doc := ndoc;
     out_fn @@ Ready ();
-    out_fn (Notification diags)
+    out_fn (Notification (diags,1))
 
-  | Update contents ->
+  | Update (contents, version) ->
     let ndoc = { !doc with contents } in
     let ndoc, _state, diags = Icoq.check_doc ~doc:ndoc in
     doc := ndoc;
-    out_fn (Notification diags)
+    out_fn (Notification (diags, version))
 
   | Register file_path  ->
     !Callbacks.cb.register_cma ~file_path
