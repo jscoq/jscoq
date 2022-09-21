@@ -1,6 +1,3 @@
-//@ts-check
-"use strict";
-
 // Misc imports
 import { copyOptions, isMac } from '../../common/etc.js';
 import { JsCoq } from './index.js';
@@ -8,6 +5,8 @@ import { JsCoq } from './index.js';
 // Misc imports
 import localforage from "localforage";
 import $ from 'jquery';
+
+import { Deprettify } from './deprettify';
 
 // CM imports
 import CodeMirror, { Editor } from "codemirror";
@@ -32,8 +31,7 @@ import 'codemirror/addon/dialog/dialog.css';
 import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
 import './mode/coq-mode.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-
-import { Deprettify } from './deprettify';
+import { Diagnostic } from '../../../backend/coq-worker.js';
 
 /**
  * A Coq sentence, typically ended in dot "."
@@ -98,11 +96,12 @@ declare module "codemirror" {
     }
 }
 
+interface CM5Options {
+    mode?: { "company-coq": boolean } 
+}
+
 /**
  * A CodeMirror-based Provider of coq statements.
- *
- * @class CmCoqProvider
- *
  */
 export class CmCoqProvider {
     idx : number;
@@ -133,7 +132,7 @@ export class CmCoqProvider {
      * @param {number} idx
      * @memberof CmCoqProvider
      */
-    constructor(element, options, replace, idx) {
+    constructor(element, options : CM5Options, replace : boolean, idx : number) {
 
         CmCoqProvider._config();
 
@@ -178,7 +177,7 @@ export class CmCoqProvider {
         if (this.filename) { this.openLocal(this.filename); this.startAutoSave(); }
 
         // Event handlers (to be overridden by ProviderContainer)
-        this.onChange = (text) => {};
+        this.onChange = (nt) => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
@@ -247,7 +246,24 @@ export class CmCoqProvider {
     getText() {
         return this.editor.getValue();
     }
+    // ----------------------------------
+    // CoqEditor interface implementation
 
+    getValue() {
+         return this.editor.getValue();
+     }
+     
+    getCursorOffset() {
+        return this.editor.getDoc().indexFromPos(this.editor.getCursor());
+    }
+
+    // ---------------------------------
+
+    getLength() {
+        /** @todo optimize */
+        return this.editor.getValue().length;
+    }
+    
     trackLineCount() {
         this.lineCount = this.editor.lineCount();
         this.editor.on('change', (ev) => {
@@ -312,46 +328,6 @@ export class CmCoqProvider {
         }
     }
 
-    // Mark a sentence with {clear, processing, error, ok}
-    /**
-     * @param {{ mark: { find: () => any; clear: () => void; } | null; start: any; end: any; }} stm
-     * @param {string} mark_type
-     * @param {undefined} [loc_focus]
-     */
-    mark(stm, mark_type, loc_focus?) {
-
-        if (stm.mark) {
-            let b = stm.mark.find();
-            if (!b) return;  /* mark has been deleted altogether; fail silently */
-            stm.start = b.from; stm.end = b.to;
-            stm.mark.clear(); this._unmarkWidgets(stm.start, stm.end);
-            stm.mark = null;
-        }
-
-        switch (mark_type) {
-        case "clear":
-            // XXX: Check this is the right place.
-            // doc.setCursor(stm.start);
-            break;
-        case "processing":
-            this.markWithClass(stm, 'coq-eval-pending');
-            break;
-        case "error":
-            this.markWithClass(stm, 'coq-eval-failed');
-            if (loc_focus) {
-                let foc = this.squiggle(stm, loc_focus, 'coq-squiggle');
-                if (foc) this.editor.setCursor(foc.find().to);
-            }
-            else {
-                this.editor.setCursor(stm.end);
-            }
-            break;
-        case "ok":
-            this.markWithClass(stm, 'coq-eval-ok');
-            break;
-        }
-    }
-
     /**
      * @param {{ mark: { className: string; }; coq_sid: any; }} stm
      * @param {boolean} flag
@@ -387,28 +363,25 @@ export class CmCoqProvider {
      */
     retract() {
         for (let mark of this.editor.getAllMarks()) {
-            if (mark.stm) {
-                this.mark(mark.stm, 'clear');
-            }
+            mark.clear();
         }
     }
 
-    /**
-     * @param {{ coq_sid?: any; mark?: any; start?: any; end?: any; }} stm
-     * @param {string} className
-     */
-    markWithClass(stm, className) {
-        var doc = this.editor.getDoc(),
-            {start, end} = stm;
+    mark(diag : Diagnostic) {
 
-        var mark = 
-            doc.markText(start, end, {className: className,
-                attributes: {'data-coq-sid': stm.coq_sid}});
+        var tr_loc = ({character, line}) => { return {line: line, ch: character } };
+
+        var className = (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
+
+        var doc = this.editor.getDoc();
+        let start = tr_loc(diag.range.start), end = tr_loc(diag.range.end);
+
+        var mark =
+            doc.markText(start, end,
+             {className: className, attributes: {'data-range': JSON.stringify(diag.range)}});
 
         this._markWidgetsAsWell(start, end, mark);
 
-        mark.stm = stm;
-        stm.mark = mark;
     }
 
     /**

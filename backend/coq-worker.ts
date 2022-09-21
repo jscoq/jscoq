@@ -135,7 +135,7 @@ export class CoqWorker {
     intvec: Int32Array;
 
     // Should be private
-    load_progress: (ratio: number, ev: ProgressEvent) => void;
+    load_progress: (ratio: number | undefined, ev: ProgressEvent) => void;
 
     // Misc
     private _boot : Future<void>;
@@ -152,7 +152,7 @@ export class CoqWorker {
     private sids: Future<void>[];
     private _gen_rid : number;
 
-    constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend) {
+    constructor(base_path : (string | URL), scriptPath : URL | null, worker, backend : backend) {
 
         this.config = new CoqWorkerConfig(base_path, backend);
         this.config.path = scriptPath || this.config.path;
@@ -427,7 +427,7 @@ export class CoqSubprocessAdapter extends CoqWorker {
 }
 
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
-function prefetchResource(url, progress = (pc:number,ev:ProgressEvent)=>{}) {
+function prefetchResource(url, progress = (pc:number|undefined,ev:ProgressEvent)=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "blob";

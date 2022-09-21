@@ -103,6 +103,7 @@ export class CoqManager {
         this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
         this.version = 0;
 
+        // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
@@ -110,19 +111,21 @@ export class CoqManager {
         // Setup the Coq editor.
         const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
         var CoqEditor = eIdx[this.options.frontend];
+
+        if (!CoqEditor)
+            throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
+
         this.editor = new CoqEditor(elems, this.options, this);
         this.editor.onChange = throttle(200, raw => {
             this.version++;
             this.coq.update({ uri: this.uri, version: this.version, raw });
         });
 
-        /** @type {PackageManager} */
         this.packages = null;
 
         /** @type {CoqContextualInfo} */
         this.contextual_info = null;
 
-        /** @type {CoqWorker} */
         this.coq = null;
 
         // Setup the Panel UI.
@@ -425,7 +428,7 @@ export class CoqManager {
             };
 
         for (let pkg of this.options.init_import || []) {
-            init_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
+            init_opts.lib_init?.push(PKG_ALIASES[pkg] || pkg);
         }
 
         this.coq.init(init_opts);

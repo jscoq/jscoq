@@ -73,7 +73,7 @@ export class CoqProseMirror implements ICoqEditor {
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
-                    doc: doc,
+                    doc: doc || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
                 }),
                 // We update the text area
@@ -124,6 +124,10 @@ export class CoqProseMirror implements ICoqEditor {
         var tr = this.view.state.tr;
         tr.setMeta(coqDiags, diagNew(d));
         this.view.dispatch(tr);
+    }
+
+    getCursorOffset(): number {
+        return this.view.state.selection.head;
     }
 
     configure() {}

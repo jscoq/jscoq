@@ -62,8 +62,6 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         // Adjust the mark for the line offset
         diag.range.start.line -= ln;
         diag.range.end.line -= ln;
-        let start = { line: diag.range.start.line, ch: diag.range.start.character };
-        let end = { line: diag.range.end.line, ch: diag.range.end.character };
-        in_part.mark( { start, end }, "error");
+        in_part.mark(diag);
     }
 }

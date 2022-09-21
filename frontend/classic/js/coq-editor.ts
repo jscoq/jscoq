@@ -1,15 +1,14 @@
-//@ts-check
-"use strict";
-
 /* jsCoq
  *
  * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
  * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
  * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
  */
+import { Diagnostic } from "../../../backend";
 
-import { Diagnostic } from "../../../backend"
-
+/**
+ * Interface for Coq Editor's
+ */
 export interface ICoqEditor {
     getValue() : string
     onChange(newContent : string) : void
@@ -24,19 +23,26 @@ export interface ICoqEditor {
 // to.
 export function editorAppend(eId) : { container, area: HTMLTextAreaElement} {
 
-    var area = document.getElementById(eId) as HTMLTextAreaElement;
+    // var area = document.getElementById(eId) as HTMLTextAreaElement;
+
+    var area : HTMLTextAreaElement =
+        (eId instanceof HTMLTextAreaElement ? eId
+             : document.getElementById(eId) as HTMLTextAreaElement);
+
+    if (area.tagName !== 'TEXTAREA')
+        throw new Error(`not implemented: '${eId}' must be a textarea`);
 
     area.style.display = 'none';
 
     // Create container for editor
     const container = document.createElement('div');
     container.setAttribute('spellCheck', "false");
-    container.className = area.className;
+    container.classList.add(...area.classList);
 
     if (area.nextSibling) {
-        area.parentElement.insertBefore(container, area.nextSibling);
+        area.parentElement?.insertBefore(container, area.nextSibling);
     } else {
-        area.parentElement.appendChild(container);
+        area.parentElement?.appendChild(container);
     }
     return { container, area };
 }

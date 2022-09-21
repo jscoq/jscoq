@@ -42,22 +42,6 @@ export class CoqCodeMirror6 implements ICoqEditor {
     // element e
     constructor(eIds : string[]) {
 
-        var cmOpts =
-            { mode : { name : "coq",
-                       version: 4,
-                       singleLineStringErrors : false
-                     },
-              lineNumbers       : true,
-              indentUnit        : 2,
-              tabSize           : 2,
-              indentWithTabs    : false,
-              matchBrackets     : true,
-              styleSelectedText : true,
-              dragDrop          : false, /* handled by CoqManager */
-              keyMap            : "jscoq",
-              className         : "jscoq"
-            };
-
         let { container, area } = editorAppend(eIds[0]);
 
         var obj_ref = this;
@@ -121,6 +105,10 @@ export class CoqCodeMirror6 implements ICoqEditor {
         // doc.markText(from, to, {className: mclass});
     }
 
+    getCursorOffset(): number {
+        return 0;
+    }
+    
     configure() {}
     openFile() {}
     focus() {}
