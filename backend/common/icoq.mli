@@ -14,7 +14,6 @@
    Copyright (C) 2019-2022 Shachar Itzhaky, Tehcnion, Haifa.
 *)
 
-(* Should be json *)
 type diagnostic = Lsp.Base.Diagnostic.t
 
 type coq_opts =

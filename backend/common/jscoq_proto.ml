@@ -40,18 +40,18 @@ type 'a ser_goals =
 module Proto = struct
 
 module Point = struct
-
   type t = [%import: Lsp.Base.Point.t]
   [@@deriving yojson]
-
 end
 
 module Range = struct
   type t = [%import: Lsp.Base.Range.t]
   [@@deriving yojson]
 end
+
 type diagnostic =
-  [%import: Lsp.Base.Diagnostic.t]
+  [%import: Lsp.Base.Diagnostic.t
+  [@with range := range;]]
   [@@deriving yojson]
 
 type coq_options = (string list * Goptions.option_value) list [@@deriving yojson]
@@ -80,22 +80,64 @@ type search_query =
   [%import: Code_info.Query.t]
   [@@deriving yojson]
 
-type query =
-  | Mode
-  | Goals
-  | Vernac of string
-  | Inspect of search_query
+module Method = struct
+
+  type t =
+    | Mode
+    | Goals
+    | Search of string
+    | TypeAtPoint
+    | TypeOfId of string
+    | Inspect of search_query
+    | Completion of string
   [@@deriving yojson]
+
+end
+
+module Answer = struct
+
+  type t =
+  | Goals of Pp.t reified_goal ser_goals option
+  | Void
+  [@@deriving to_yojson]
+
+end
 
 type opaque
 let opaque_to_yojson _x = `Null
 let opaque_of_yojson _x = Result.Error "opaque value"
+
+module Request = struct
+
+  type 'a t =
+    { id : int
+    ; loc : int
+    (* In fact, we should use Lsp.Base.point instead of int for
+       location, however ProseMirror and CM6 use offsets *)
+    ; v : 'a
+    }
+  [@@deriving yojson]
+
+  let make ~id ~loc v = { id; loc; v }
+
+  type 'a answer =
+    { id : int
+    ; res : 'a
+    }
+  [@@deriving yojson]
+
+  let process { id; loc; v } ~f =
+    { id; res = f loc v }
+
+end
 
 (* Main RPC calls *)
 type jscoq_cmd =
   | Init    of jscoq_options
   | NewDoc  of doc_options * string * bool
   | Update  of string * int
+
+  | Request of Method.t Request.t
 
   | InfoPkg of string * string list
   | LoadPkg of string * string
@@ -110,6 +152,7 @@ type jscoq_answer =
   | CoqInfo   of string
   | Ready     of unit
   | Notification of diagnostic list * int
+  | Response  of Answer.t Request.answer
   | Log       of Feedback.level * Pp.t
   | JsonExn   of string
   [@@deriving to_yojson]

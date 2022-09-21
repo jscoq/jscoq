@@ -144,6 +144,11 @@ let jscoq_execute =
     doc := ndoc;
     out_fn (Notification (diags, version))
 
+  | Request q ->
+    let f = Request_interp.do_request ~doc:!doc in
+    let res = Request.process ~f q in
+    out_fn (Response res)
+
   | Register file_path  ->
     !Callbacks.cb.register_cma ~file_path
 
