@@ -18,10 +18,13 @@
     "jscoqdoc": "frontend/classic/js/jscoqdoc.cjs"
   },
   "dependencies": {
+    "@codemirror/state": "^6.1.1",
+    "@codemirror/view": "^6.2.4",
+    "@types/codemirror": "^5.60.5",
     "array-equal": "^1.0.0",
     "browser-or-node": "^2.0.0",
     "child-process-promise": "^2.2.1",
-    "codemirror": "^6.0.1",
+    "codemirror": "^5.61.0",
     "commander": "^5.0.0",
     "fflate-unzip": "^0.7.0",
     "find": "^0.3.0",
@@ -35,6 +38,7 @@
     "path": "^0.12.7",
     "proper-lockfile": "^4.1.2",
     "prosemirror-example-setup": "^1.2.1",
+    "prosemirror-highlightjs": "0.9.1",
     "prosemirror-markdown": "^1.9.3",
     "prosemirror-schema-basic": "^1.2.0",
     "prosemirror-state": "^1.4.1",

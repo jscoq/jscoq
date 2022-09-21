@@ -12,6 +12,12 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 
+import hljs from 'highlight.js/lib/core';
+import coqhl from 'highlight.js/lib/languages/coq';
+import { highlightPlugin } from "prosemirror-highlightjs"
+
+hljs.registerLanguage('coq', coqhl);
+
 import { editorAppend } from './coq-editor.js';
 
 function diagNew(d) {

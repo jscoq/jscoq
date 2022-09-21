@@ -34,7 +34,8 @@ import { CoqContextualInfo } from './contextual-info.js';
 // XXX Port to CM 6.x
 // import { CompanyCoq }  from './addon/company-coq.js';
 
-import { CoqCodeMirror } from './coq-editor-cm.js';
+import { CoqCodeMirror5 } from './coq-editor-cm5.js';
+import { CoqCodeMirror6 } from './coq-editor-cm6.js';
 import { CoqProseMirror } from './coq-editor-pm.js';
 
 /**
@@ -65,7 +66,7 @@ export class CoqManager {
         // Default options
         this.options = {
             prelaunch:  false,
-            prosemirror: true,
+            frontend:   'pm',     // one of pm, cm5, cm6
             prelude:    true,
             debug:      true,
             show:       true,
@@ -93,7 +94,8 @@ export class CoqManager {
         }
 
         // Setup the Coq editor.
-        var CoqEditor = this.options.prosemirror ? CoqProseMirror : CoqCodeMirror;
+        var frontend = { 'pm': CoqProseMirror, 'cm5': CoqCodeMirror5, 'cm6': CoqCodeMirror6 };
+        var CoqEditor = frontend[this.options.frontend];
 
         this.editor = new CoqEditor(elems[0]);
         this.editor.onChange = throttle(200, (newText, version) => {
@@ -409,7 +411,7 @@ export class CoqManager {
             doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
         }
 
-        let markdown = !this.options.prosemirror;
+        let markdown = (this.options.frontend !== 'pm');
         let contents = this.editor.getValue();
         this.coq.init(init_opts, doc_opts, contents, markdown);
         // Almost done!

@@ -39,7 +39,7 @@ const diagField = StateField.define({
   provide: f => EditorView.decorations.from(f)
 })
 
-export class CoqCodeMirror {
+export class CoqCodeMirror6 {
 
 
     // element e
@@ -127,23 +127,6 @@ export class CoqCodeMirror {
         // var d = new Decoration(from, to);
         // var doc = this.editor.getDoc();
         // doc.markText(from, to, {className: mclass});
-    }
-
-    _set_keymap() {
-
-        CodeMirror.keyMap['jscoq'] = {
-            'Tab': 'indentMore',
-            'Shift-Tab': 'indentLess',
-            'Ctrl-Space': 'autocomplete',
-            fallthrough: ["default"]
-        };
-
-        CodeMirror.keyMap['jscoq-snippet'] = {
-            PageUp: false,
-            PageDown: false,
-            //'Cmd-Up': false,   /** @todo this does not work? */
-            //'Cmd-Down': false
-        };
     }
 }
 

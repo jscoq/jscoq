@@ -14,7 +14,7 @@
 /*    of yet).                                                          */
 /************************************************************************/
 
-// import CodeMirror from 'codemirror';
+import CodeMirror from 'codemirror';
 import $ from 'jquery';
 
 // XXX Port to CM 6
