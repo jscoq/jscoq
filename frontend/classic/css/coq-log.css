@@ -1,0 +1,61 @@
+
+#query-panel > div {
+  line-height: 1.25em;
+  padding-left: 18px;
+  white-space: pre;
+}
+
+#query-panel > div.text-only {
+  white-space: normal;
+}
+
+#query-panel .Error {
+  background: url('../images/log-error.png') no-repeat;
+}
+
+#query-panel .Warning {
+  background: url('../images/log-warn.png') no-repeat;
+}
+
+#query-panel .Notice {
+  background: url('../images/log-notice.png') no-repeat;
+}
+
+#query-panel .Info {
+  background: url('../images/log-info.png') no-repeat;
+}
+
+#query-panel .Error,
+#query-panel .Warning,
+#query-panel .Notice,
+#query-panel .Info,
+#query-panel .Debug {
+  display: none;
+  background-size: 16px;
+
+  /* Force log indicators to show in printed output
+   * even when "Print backgrounds" is deselected in the
+   * browser's print settings */
+  -webkit-print-color-adjust: exact !important;   /* Chrome, Safari */
+  color-adjust: exact !important;                 /* Firefox */
+}
+
+/* These will override the default rule for displayed items */
+#query-panel.show-Error   .Error   { display: block; }
+#query-panel.show-Warning .Warning { display: block; }
+#query-panel.show-Notice  .Notice  { display: block; }
+#query-panel.show-Info    .Info    { display: block; }
+#query-panel.show-Debug   .Debug   { display: block; }
+
+#query-panel div.coq-sid-start:not(.coq-prev-end) {
+  border-top: 1px solid #e8e8e8;
+  margin-top: 1px;
+  padding-top: 1px;
+  background-position-y: 1px;
+}
+
+#query-panel div.coq-sid-end {
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 1px;
+  padding-bottom: 1px;
+}

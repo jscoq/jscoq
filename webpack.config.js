@@ -16,6 +16,7 @@ const
     stats: {
       hash: false, version: false, modules: false  // reduce verbosity
     },
+    cache: { type: 'filesystem' },
     performance: {
       maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
     }
@@ -54,7 +55,7 @@ const
   // resources that only make sense in browser context
   browserOnly = /\/codemirror\/|(\/dist\/lib.js$)|(coq-mode.js$)|(company-coq.js$)/,
   resolve = {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: [ '.tsx', '.ts', '.js', '.cjs' ]
   },
   output = (dirname, filename) => ({
     filename, path: path.join(__dirname, dirname)
@@ -75,7 +76,7 @@ export default (env, argv) => [
   },
   externals: [
     {  /* do not bundle the worker */
-      '../coq-js/jscoq_worker.bc.cjs': 'commonjs2 ../coq-js/jscoq_worker.bc.cjs',
+      '../backend/jsoo/jscoq_worker.bc.cjs': 'commonjs2 ../backend/jsoo/jscoq_worker.bc.cjs',
       'wacoq-bin/dist/subproc': 'undefined',
       'cross-spawn': 'commonjs2 cross-spawn'
     },
@@ -95,7 +96,7 @@ export default (env, argv) => [
  */
 {
   name: 'lib',
-  entry: './ui-js/lib.js',
+  entry: './frontend/classic/js/lib.js',
   ...basics(argv),
   resolve,
   output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
@@ -111,11 +112,44 @@ export default (env, argv) => [
   }
 },
 /**
+ * Package backend for wider-comsumption.
+ */
+{
+  name: 'backend',
+  entry: './backend/index.ts',
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {...output('dist', 'backend.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
+},
+/**
+ * Package frontend for wider-comsumption and sanity
+ */
+{
+  name: 'frontend',
+  entry: './frontend/classic/js/index.js',
+  dependencies: [ 'lib' ],
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve,
+  output: {...output('dist', 'frontend.js'), libraryTarget: 'module'},
+  experiments: {
+    outputModule: true
+  }
+},
+/**
  * Multi-file Project UI
  */
 {
   name: 'ide-project',
-  entry: './ui-js/ide-project.js',
+  entry: './frontend/classic/js/ide-project.js',
   ...basics(argv),
   output: {
     filename: 'ide-project.browser.js',
@@ -143,7 +177,7 @@ export default (env, argv) => [
  */
 {
   name: 'collab',
-  entry: './ui-js/addon/collab/index.ts',
+  entry: './frontend/classic/js/addon/collab/index.ts',
   ...basics(argv),
   output: {
     filename: 'collab.browser.js',

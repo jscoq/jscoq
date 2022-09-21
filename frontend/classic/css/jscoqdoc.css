@@ -1,0 +1,619 @@
+body {
+  overscroll-behavior-y: none;
+  --header-bg: #4b525f87;
+  --heading-bg: #91a1d1;
+}
+
+@media (max-width: 1564px) {  /* 860 / 0.55 */
+
+  /* this is a hack that's needed because changing padding causes reflow */
+  /* and loses the current scroll position */
+  .terse#ide-wrapper #main {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .terse#ide-wrapper #page {
+    padding-left: 80px;
+    transition: padding 0.1s ease;
+    transition-delay: 0.5s;
+  }
+  .terse#ide-wrapper:not(.toggled) #page {
+    padding-left: 0;
+  }
+  #ide-wrapper #main {
+    transition: padding 0.1s ease;
+    transition-delay: 0.3s;
+  }
+  .full#ide-wrapper:not(.toggled) #main {
+    padding-right: 10px;
+    transition: padding 0.1s ease;
+  }
+  #ide-wrapper:not(.toggled) #page {
+    transition-delay: 0s;
+  }
+  .terse#ide-wrapper #panel-wrapper {
+    transition-delay: 0.1s;
+  }
+
+}
+
+#ide-wrapper.layout-flex #panel-wrapper {
+  max-width: 38em !important;  /* jsCoq's default is 48em */
+}
+
+.doc div.code {
+  display: block;
+  overflow-x: auto;
+}
+
+*:focus {
+  outline: none;
+}
+
+#jscoq-plug {
+  position: absolute;
+  height: 32px;
+  right: 0;
+  top: 40px;
+  width: 40px !important;
+  background: url(../images/jscoq-splash.png);
+  background-size: cover;
+  cursor: pointer;
+  /*transition: visibility 0s linear 1s, width 0.2s ease; */
+  transition: width 0.2s ease;
+}
+
+#jscoq-plug:hover {
+  width: 60px !important;
+}
+
+body.goals-active #jscoq-plug {
+  width: 0 !important;
+}
+
+.jscoqdoc .CodeMirror .CodeMirror-hscrollbar {
+  display: none !important;  /* sorry, just looks awkward in a snippet. use arrow keys. */
+}
+
+/*
+ * Larger fonts in presentation mode (SF's `terse`)
+ */
+
+body.terse #panel-wrapper .flex-panel {
+  font-size: 125%;
+}
+body.terse #panel-wrapper .exits.right {
+  display: none;
+}
+
+body.terse .CodeMirror.jscoq {
+  font-size: 22px;
+  line-height: 34px;
+}
+
+body.terse #goal-panel div.contextual-info {
+  font-size: 100%; /* overrides jsCoq's style */
+}
+
+body.terse #query-panel .Error,
+body.terse #query-panel .Warning,
+body.terse #query-panel .Notice,
+body.terse #query-panel .Info,
+body.terse #query-panel .Debug {
+  background-size: 18px;
+  background-position-y: 3px;
+  padding-left: 22px;
+}
+
+#footer hr {
+  border-top: 1px solid black;
+  opacity: 0.2;
+}
+
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * Document body styles;
+ * Based on Software Foundations 
+ */
+
+body {
+  padding: 0px 0px;
+  margin: 0px 0px;
+  padding-left: 1em;
+  background-color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+#page {
+  display: block;
+  padding: 0px;
+  margin: 0px;
+}
+
+#header {
+  min-height: 30px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding-left: 80px;
+  padding-right: 80px;
+  padding-top: 30px;
+  background-color: var(--header-bg);
+}
+
+#header h1 {
+  padding: 0;
+  margin: 0;
+}
+
+/* Menu */
+ul#menu {
+  padding: 0;
+  display: block;
+  margin: auto;
+}
+
+ul#menu li, div.button {
+  display: inline-block;
+  background-color: white;
+  padding: 5px;
+  font-size: .70em;
+  text-transform: uppercase;
+  width: 30%;
+  text-align: center;
+  font-weight: 600;
+}
+
+div.button {
+      margin-top:5px;
+  width: 40%;
+}
+
+#button_block {margin-top:50px;}
+
+ul#menu a.hover li  {
+  background-color: red;
+}
+
+/* Contents */
+
+#main, #main_home {
+  display: block;
+  padding: 80px;
+  padding-top: 60px; /* BCP */
+  font-size: 100%;
+  line-height: 100%;
+  max-width: 760px;
+  background-color: #ffffff;
+  margin: 0 auto;
+}
+
+#main_home {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+#index_content div.intro p {
+  font-size: 12px;
+}
+
+#main  h1 {
+  /* line-height: 80%; */
+  line-height: normal;
+  padding-top: 3px;
+  padding-bottom: 4px;
+  /* Demitri: font-size: 22pt; */
+  font-size: 200%; /* BCP */
+}
+
+/* allow for multi-line headers */
+#main  a.idref:visited {color : #416DFF; text-decoration : none; }
+#main  a.idref:link {color : #416DFF; text-decoration : none; }
+#main  a.idref:hover {text-decoration : none; }
+#main  a.idref:active {text-decoration : none; }
+
+#main  a.modref:visited {color : #416DFF; text-decoration : none; }
+#main  a.modref:link {color : #416DFF; text-decoration : none; }
+#main  a.modref:hover {text-decoration : none; }
+#main  a.modref:active {text-decoration : none; }
+
+#main .keyword { color : #697f2f }
+#main { color: black }
+
+/* General section class - applies to all .section IDs */
+.section {
+  padding-top: 12px;
+  padding-bottom: 11px;
+  padding-left: 8px;
+  margin-top: 5px;
+  margin-bottom: 3px;
+  margin-top: 18px;
+  font-size : 125%;
+  color: #ffffff;
+}
+
+.section, ul#menu li.section_name, div.button, td.logical_tab, .ui-state-active  {
+  background-color: var(--heading-bg);
+}
+
+/* Book title in header */
+.booktitleinheader {
+  color: #000000;
+  text-transform: uppercase;
+  font-weight: 300;
+  letter-spacing: 1px;
+  font-size: 125%;
+  margin-left: 0px;
+  margin-bottom: 22px;
+}
+
+/* Chapter titles */
+.libtitle {
+  max-width: 860px;
+  text-transform: uppercase;
+  margin: 5px auto;
+  font-weight: 500;
+  padding-bottom: 2px;
+  font-size: 120%;
+  letter-spacing: 3px;
+}
+
+.subtitle {
+  display: block;
+  padding-top: 10px;
+  font-size: 70%;
+  line-height: normal;
+}
+
+h2.section {
+  color: #2a2c71;
+  background-color: transparent;
+  padding-left: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  /* margin-top: 0px; */
+  margin-top: 9px; /* BCP 2/20 */
+  font-size : 135%; }
+
+h3.section {
+  /* background-color: rgb(90%,90%,100%); */
+  background-color: white;
+  /* padding-left: 8px; */
+  padding-left: 0px;
+  /* padding-top: 7px;  */
+  padding-top: 0px;
+  /* padding-bottom: 0px; */
+  padding-bottom: 0.5em;
+  /* margin-top: 9px; */
+  /* margin-top: 4px;  (BCP 2/20) */
+  margin-top: 9px;   /* BCP 2/20 */
+  font-size : 115%;
+  color:black;
+}
+
+h4.section {
+  margin-top: .2em;
+  background-color: white;
+  color: #2a2c71;
+  padding-left: 0px;
+  padding-top: 0px;
+  padding-bottom: 0.5em; /* 0px;  */
+  font-size : 100%;
+  font-style : bold;
+  text-decoration : underline;
+}
+
+#header p {
+  font-size: 13px;
+}
+
+/* Sets up Main ID and margins */
+
+#main .doc {
+  margin: 0px auto;
+  font-size: 14px;
+  line-height: 22px;
+  /* max-width: 570px; */
+  color: black;
+  /* text-align: justify; */
+  border-style: plain;
+  /* This might work better after changing back to standard coqdoc: */
+  padding-top: 10px;
+  /* padding-top: 18px; */
+}
+
+.quote {
+  margin-left: auto;
+  margin-right: auto;
+  width: 40em;
+  color: darkred;
+}
+
+.loud {
+  color: darkred;
+}
+
+pre {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.inlinecode {
+  display: inline;
+  /* font-size: 125%; */
+  color: #444444;
+  font-family: monospace }
+
+.doc .inlinecode {
+  display: inline;
+  font-size: 105%;
+  color: rgb(35%,35%,70%);
+  font-family: monospace }
+
+h1 .inlinecode .id, h1.section span.inlinecode {
+      color: #ffffff;
+}
+
+.inlinecodenm {
+  display: inline;
+  /* font-size: 125%; */
+  color: #444444;
+}
+
+.doc .inlinecodenm {
+  display: inline;
+  color: rgb(35%,35%,70%);
+}
+
+.doc .inlinecodenm .id {
+  color: rgb(35%,35%,70%);
+}
+
+.doc .code {
+  display: inline;
+  font-size: 110%;
+  color: rgb(35%,35%,70%);
+  font-family: monospace;
+  padding-left: 0px;
+}
+
+.comment {
+  display: inline;
+  font-family: monospace;
+  color: rgb(50%,50%,80%);
+}
+
+.inlineref {
+  display: inline;
+  /* font-family: monospace; */
+  color: rgb(50%,50%,80%);
+}
+
+.show::before {
+  /* content: "more"; */
+  content: "+";
+}
+
+.show {
+  background-color: rgb(93%,93%,93%);
+  display: inline;
+  font-family: monospace;
+  font-size: 60%;
+  padding-top: 1px;
+  padding-bottom: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+  color: rgb(60%,60%,60%);
+}
+
+/*
+.show {
+  display: inline;
+  font-family: monospace;
+  font-size: 60%;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 10px;
+  border: 1px;
+  border-style: solid;
+  color: rgb(75%,75%,85%);
+}
+*/
+
+.proofbox {
+  font-size: 90%;
+  color: rgb(75%,75%,75%);
+}
+
+#main .less-space {
+  margin-top: -12px;
+}
+
+/* Inline quizzes */
+.quiz:before {
+  color: rgb(40%,40%,40%);
+  /* content: "- Quick Check -" ; */
+  display: block;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.quiz {
+  border: 4px;
+  border-color: rgb(80%,80%,80%);
+  /*
+  margin-left: 40px;
+  margin-right: 100px;
+ */
+  padding: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  border-style: solid;
+}
+
+/* For textual ones... */
+.show-old {
+  display: inline;
+  font-family: monospace;
+  font-size: 80%;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 3px;
+  padding-right: 3px;
+  border: 1px;
+  margin-top: 5px;   /* doesn't work?! */
+  border-style: solid;
+  color: rgb(75%,75%,85%);
+}
+
+.largebr {
+  margin-top: 10px;
+}
+
+.code {
+  padding-left: 20px;
+  font-size: 14px;
+  font-family: monospace;
+  line-height: 17px;
+  margin-top: 9px;
+}
+
+/* Working:
+.code {
+  display: block;
+  padding-left: 0px;
+  font-size: 110%;
+  font-family: monospace;
+}
+*/
+
+.code-space {
+  max-width: 50em;
+  margin-top: 0em;
+  /* margin-bottom: -.5em; */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.code-tight {
+  max-width: 50em;
+  margin-top: .6em;
+  /* margin-bottom: -.7em; */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+hr.doublespaceincode {
+  height: 1pt;
+  visibility: hidden;
+  font-size: 10px;
+}
+
+/*
+code.br {
+height: 5em;
+}
+*/
+
+#main .citation {
+  color: rgb(70%,0%,0%);
+  text-decoration: underline;
+}
+
+table.infrule {
+  border: 0px;
+  margin-left: 50px;
+  margin-top: .5em;
+  margin-bottom: 1.2em;
+}
+
+td.infrule {
+  font-family: monospace;
+  text-align: center;
+  /*    color: rgb(35%,35%,70%);  */
+  padding: 0px;
+  line-height: 100%;
+}
+
+tr.infrulemiddle hr {
+  margin: 1px 0 1px 0;
+}
+
+.infrulenamecol {
+  color: rgb(60%,60%,60%);
+  font-size: 80%;
+  padding-left: 1em;
+  padding-bottom: 0.1em
+}
+
+#footer {
+  font-size: 65%;
+  font-family: sans-serif;
+}
+
+.id { display: inline; }
+
+.id[title="constructor"] {
+  color: #697f2f;
+}
+
+.id[title="var"],
+.id[title="variable"] {
+  color: rgb(40%,0%,40%);
+}
+
+.id[title="definition"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="abbreviation"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="lemma"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="instance"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="projection"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="method"] {
+  color: rgb(0%,40%,0%);
+}
+
+.id[title="inductive"] {
+  color: #034764;
+}
+
+.id[title="record"] {
+  color: rgb(0%,0%,80%);
+}
+
+.id[title="class"] {
+  color: rgb(0%,0%,80%);
+}
+
+.id[title="keyword"] {
+  color : #697f2f;
+  /*     color: black; */
+}
+
+.inlinecode .id {
+  color: rgb(0%,0%,0%);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.HIDEFROMHTML {
+  display: none;
+}

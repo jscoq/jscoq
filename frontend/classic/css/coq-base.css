@@ -1,0 +1,849 @@
+/*!
+ * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)
+ * Code licensed under the Apache License v2.0.
+ * For details, see http://www.apache.org/licenses/LICENSE-2.0.
+ */
+
+/* Toggle Styles */
+
+body.jscoq-main * {
+  box-sizing: border-box;
+}
+
+body.jscoq-main {
+  margin: 0;
+  padding: 0;
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+  font-size: 11pt;
+  overscroll-behavior-y: none;
+}
+
+a, a:link, a:visited, a:active {
+  text-decoration: none;
+}
+
+#ide-wrapper {
+  height: 100vh;
+  margin-right: auto;
+  margin-left: auto;
+  overscroll-behavior: none;
+  --base-font-size: 11pt;
+}
+
+#ide-wrapper.layout-fixed {
+  padding-right: 45%;
+  transition: padding 0.5s ease;
+}
+
+#ide-wrapper.layout-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+#ide-wrapper.layout-fixed.toggled {
+  padding-right: 0px;
+}
+
+#ide-wrapper.layout-flex > * {
+  overflow-x: hidden;
+  max-height: 100%;
+  box-sizing: border-box;
+}
+
+#ide-wrapper.layout-flex > #panel-wrapper {
+  overflow-x: visible;  /* needed for power button to be visible */
+}
+
+#ide-wrapper.layout-flex > *:not(#panel-wrapper):not(#outline-pane):not(.CodeMirror-hints) {
+  flex-grow: 1; /* take all remaining space */
+  width: 1px;   /* this provides better perf than width:100%; flex-shrink:1 */
+}
+
+#ide-wrapper #document {
+  max-width: 51em;
+}
+
+.on-hold * {
+  cursor: progress !important;
+}
+
+/* CodeMirror */
+
+.jscoq.CodeMirror {
+  font-size: var(--base-font-size);
+  height: 100%;  /* auto-size to fit content */
+  line-height: initial;
+}
+
+.jscoq.CodeMirror span[role=presentation] {
+  line-height: 12px;  /* because some characters are too tall (due to alternative font glyph rendering) */
+  font-family: monospace, times, 'Arial Unicode MS';
+}
+
+.coq-crosshair .jscoq.CodeMirror .CodeMirror-lines {
+  cursor: url(../images/eye.png) 2 2, cell;
+  cursor: -webkit-image-set(url(../images/eye@2x.png) 2x, url(../images/eye.png) 1x) 2 2, cell;
+}
+
+.jscoq.CodeMirror .CodeMirror-crosshair {
+  cursor: text; /* overrides CodeMirror (normally set when Alt is held) */
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog {
+  padding: .75em;
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog span.dialog-share {
+  display: inline-block;
+  padding: 0 1em 0 .2em;
+  margin-left: 2em;
+  border: 1px solid #d8d8d8;
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog span.dialog-share > img {
+  vertical-align: middle;
+  width: 20px;
+  opacity: 0.65;
+}
+
+.jscoq.CodeMirror .CodeMirror-dialog a.dialog-link {
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: sans-serif;
+  font-size: 80%;
+  padding-left: 2em;
+}
+
+body.jscoq-main .CodeMirror-scroll,
+body.jscoq-main .CodeMirror-sizer,
+body.jscoq-main .CodeMirror-gutter,
+body.jscoq-main .CodeMirror-gutters,
+body.jscoq-main .CodeMirror-linenumber {
+  box-sizing: content-box;  /* need to override `jscoq-main > *` */
+}
+
+.coq-squiggle {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
+/*
+ * This is here for the time interval between document load and creation of
+ * the CodeMirror editors from textareas.
+ */
+#ide-wrapper textarea {
+  width: 100%;
+  height: auto;
+  padding: 4px;
+  margin-bottom: .5em;
+  border: 1px dashed #888;
+  font-family: monospace, times, 'Arial Unicode MS';
+  font-size: 80%;
+}
+
+/* Panel and sub-panels */
+
+#panel-wrapper {
+  padding: 0;
+  width: 45%;
+  height: 100%;
+  transition: width 0.5s ease;
+  z-index: 20;  /* notice: CodeMirror-dialog is at index 15 */
+
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+  font-size: var(--base-font-size);
+}
+
+.CodeMirror-hints {
+  z-index: 21 !important;
+}
+
+#panel-wrapper * {
+  box-sizing: border-box;
+}
+
+#ide-wrapper.layout-fixed #panel-wrapper {
+  top: 0;
+  right: 0;
+  position: fixed;
+}
+
+#ide-wrapper.layout-flex #panel-wrapper {
+  position: relative; /* for the power button */
+  max-width: 48em;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+#ide-wrapper.toggled #panel-wrapper {
+  width: 0px;
+  /* overflow: auto; */
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 36px);  /* 36px = height of toolbar */
+  overflow: hidden;
+}
+
+.flex-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1000 0 20px;
+  justify-content: flex-end;
+  overflow: hidden;
+  transition: flex-grow 0.5s ease-in-out;
+}
+
+.flex-panel > .caption {
+  flex: 0 0 20px;
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 10px 0 10px;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  cursor: pointer;
+}
+
+.flex-panel > .caption:after {
+  /* css arrow */
+  position: absolute;
+  content: "";
+  border-top: 8px solid transparent;
+  border-right: 8px solid #565656;
+  border-bottom: 8px solid transparent;
+  top: 2px;
+  right: 7px;
+  transform: rotate(-90deg);
+  transition: transform 0.5s ease-in-out;
+}
+
+.flex-panel > .caption select {
+  font-size: 8px;
+  margin-left: 1em;
+  position: relative;
+  top: -1px;
+}
+
+.flex-panel > .content {
+  flex: 1 0 0;
+  padding: 0 4px;
+  font-family: monospace, times, 'Arial Unicode MS';
+  line-height: 1.2;  /* because some characters are too tall (due to alternative font glyph rendering) */
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.flex-panel > .content::before,
+.flex-panel > .content::after {  /* work around vertical padding issue */
+  content: "";
+  display: block;
+  height: 2px;
+}
+
+.flex-panel.collapsed {
+  flex-grow: 0;
+}
+
+.flex-panel.collapsed > .caption:after {
+  transform: none;
+}
+
+/* Goal panel */
+
+#goal-panel {
+  position: relative;  /* for positioning div.contextual-info */
+}
+
+#goal-panel:not(.collapsed) {
+  flex-grow: 2000;
+}
+
+#goal-panel p {
+  margin: 0;
+}
+
+#goal-panel p.splash-above {
+  margin-top: 0.2em;
+  margin-left: 0.5em;
+}
+
+#goal-panel div.splash-middle {
+  text-align: center;
+  margin: 1em 0;
+  line-height: 0;
+}
+
+#goal-panel div.splash-middle div.splash-image {
+  display: inline-block;
+  width: 150px;
+  height: 63px;
+  background-size: 300px;
+  background-image: url(../images/jscoq-splash.png);
+}
+
+#goal-panel div.splash-middle div.wait {
+  background-position-x: -150px;
+}
+
+#goal-panel div.splash-middle div.splash-image img {
+  width: 100%;
+}
+
+#goal-panel p.splash-below p.quick-links {
+  white-space: normal;
+  text-align: center;
+}
+
+#goal-panel p.splash-below p.quick-links a:not(:first-child) {
+  margin-left: 1em;
+}
+#goal-panel p.splash-below p.quick-links img {
+  margin-right: 0.5em;
+}
+
+#goal-panel p.system {
+  margin: 0.75em 0; 
+}
+
+#goal-text {
+  border: 0;
+  white-space: pre;
+}
+
+/* Help panel (when shown, replaces Goal) */
+
+#help-panel:not(.collapsed) {
+  flex-grow: 2000;
+}
+
+#help-panel div.content {
+  position: relative;  /* for positioning the close button */
+  padding: 0;
+  height: 100%;
+  overflow: hidden;  /* scroll within iframe */
+}
+#help-panel div.content iframe {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+#help-panel > .content::before,
+#help-panel > .content::after {  display: none;  }
+
+#panel-wrapper.show-help #goal-panel,
+#panel-wrapper:not(.show-help) #help-panel {
+  display: none;
+}
+
+#help-panel button.btn-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  border: none;
+  box-shadow: none;
+  background: url(../images/go-back.png);
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  opacity: .25;
+}
+
+#help-panel button.btn-close:hover { opacity: 0.5; }
+#help-panel button.btn-close:active { opacity: 0.75; }
+
+/*
+#vsep, #hsep {
+  position: absolute;
+  z-index: 3;
+}
+*/
+
+#hide-panel {
+  cursor: pointer;
+  width: 32px;
+  position: absolute;
+  left: -34px;
+  top: 2px
+}
+
+#hide-panel g path {
+  fill: #00a806;
+}
+
+#ide-wrapper.toggled #hide-panel g path {
+  fill: #f20000
+}
+
+/* Toolbar */
+
+#toolbar {
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+  overflow: hidden;
+  height: 36px;
+}
+
+#toolbar .exits {
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: top;
+  padding-left: .5em;
+}
+
+#toolbar .js-logo,
+#toolbar .wa-logo {
+  height: 20px;
+  margin-top: 3px;
+  vertical-align: top;
+}
+
+#toolbar .js-logo ~ i { color: #c96; }
+#toolbar .wa-logo ~ i { color: #56c; }
+
+#toolbar .coq-logo {
+  height: 35px;
+  vertical-align: middle;
+  margin-left: -1px;
+}
+
+#toolbar .exits.right {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  transition: opacity 620ms ease-in;
+}
+
+#ide-wrapper.toggled #toolbar .exits.right {
+  opacity: 0;
+  transition: opacity 120ms linear;
+}
+
+#toolbar svg.app-menu-button {
+  height: 36px;
+  fill: #ccc;
+}
+#toolbar svg.app-menu-button:hover {
+  fill: #777;
+  background-color: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active {
+  background-color: #676b67;
+  fill: #f2f6f2;
+}
+#toolbar svg.app-menu-button.active:hover {
+  background-color: #757a75;
+  fill: #f2f6f2;
+}
+
+#buttons {
+  display: inline-block;
+  text-align: left;
+  padding-left: 2em;
+  transition: opacity 500ms ease;
+  vertical-align: middle;
+  margin-top: 5px;
+}
+
+#buttons button {
+  background: none;
+  border: none;
+  width: 25px;
+  height: 25px;
+  background-size: 100%;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: opacity 1s ease;
+}
+
+#buttons button:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
+#buttons button:active {
+  opacity: 0.8;
+}
+
+#buttons button:focus {
+  outline: none;
+  transition: none;
+}
+
+#buttons button[name=up] {
+  background-image: url(../images/up.png);
+  width: 20px;
+  height: 20px;
+}
+#buttons button[name=down] {
+  background-image: url(../images/down.png);
+  width: 20px;
+  height: 20px;
+}
+#buttons button[name=to-cursor] {
+  background-image: url(../images/to-cursor.png);
+}
+#buttons button[name=interrupt] {
+  background-image: url(../images/stop.png);
+}
+#buttons button[name=reset] {
+  background-image: url(../images/reset.png);
+}
+
+
+/* Proper  */
+
+#document {
+  margin: auto;
+  position: relative;
+  padding: 15px;
+}
+
+#document code {
+  white-space: pre;
+}
+
+#document .CodeMirror {
+  margin-bottom: 0.5em;
+}
+
+#packages-panel div.package-row {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#packages-panel div.package-row > button {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  margin-right: 4px;
+  vertical-align: bottom;
+  cursor: pointer;
+}
+
+#packages-panel div.package-row.has-chunks {
+  overflow: hidden;
+}
+
+#packages-panel div.package-row > div.package-row {
+  padding-left: 20px;
+  position: relative;
+  top: 0;
+  height: 22px;
+  transition-property: top, height, opacity, padding;
+  transition-duration: .5s;
+}
+
+#packages-panel div.package-row:not(.expanded) > div.package-row {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  top: -20px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#packages-panel div.package-row > .loaded-chunks {
+  margin-left: 2em;
+  color: #888;
+  font-size: 80%;
+}
+
+#packages-panel div.package-row > .loaded-chunks::before,
+#packages-panel div.package-row > .loaded-chunks::after,
+#packages-panel div.package-row > .loaded-chunks > span:not(:last-child)::after {
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+}
+
+#packages-panel div.package-row > .loaded-chunks::before { content: "["; }
+#packages-panel div.package-row > .loaded-chunks::after { content: "]"; }
+
+#packages-panel div.package-row > .loaded-chunks > span:not(:last-child)::after {
+  content: ",";
+  margin-right: 0.1em;
+}
+
+button.download-icon {
+  width: 25px;
+  height: 20px;
+  background-image: url("../images/dl.png");
+  background-repeat: no-repeat;
+}
+
+button.download-icon.checked {
+  background-image: url("../images/checked.png");
+}
+
+.rel-pos {
+  position: relative;
+  height:0;
+}
+
+.progressbar {
+  background: #3c57a6;
+  height:2px;
+  border-radius: 2px;
+  position:relative;
+  top: -2px;
+  width:0;
+}
+
+.progress-egg {
+  background-image: url("../images/egg.png");
+  background-size: contain;
+  position: absolute;
+  top: -19px;
+  right: 0;
+  height: 18px;
+  width: 18px;
+}
+
+.jscoq-ide #outline-pane {
+  width: 0;
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  transition: width 0.2s ease-in-out;
+}
+
+.jscoq-ide.outline-active #outline-pane {
+  width: 15%;
+}
+
+.jscoq-ide.goals-active.outline-active #outline-pane {
+  width: 9%;
+}
+
+/* Pretty-printing hacks */
+
+div.Pp_box {
+  display: inline;
+}
+
+div.Pp_box[data-margin="1"] {
+  margin-left: 0.75em;
+}
+
+div.Pp_box[data-margin="2"] {
+  margin-left: 1.5em;
+}
+
+div.Pp_box[data-mode="horizontal"] {
+  cursor: text;
+}
+
+/*
+ * Adjust line breaks and indentation to appear in appropriate modes:
+ * - Vertical mode or horizontal when line is broken: hide spaces, show br and indents.
+ * - Horizontal mode when line not broken: show spaces, hide br and indents.
+ */
+div.Pp_box .Pp_break.br > span.spaces,
+div.Pp_box[data-mode="vertical"] > .Pp_break > span.spaces {
+  display: none;
+}
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > br,
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > span.indent,
+div.Pp_box:not([data-mode="vertical"]) > .Pp_break:not(.br) > span.prev-indent {
+  display: none;
+}
+
+/* for debugging (usually invisible, as these spans only contain spaces) */
+div.Pp_box .Pp_break > span { opacity: 0.25; }
+div.Pp_box .Pp_break > span.indent { color: red; }
+
+#goal-text > div.Pp_box[data-mode="vertical"],
+#goal-text > div.Pp_box[data-mode="vertical"] > div.Pp_box[data-mode="vertical"] {
+  display: block;
+}
+
+#goal-text p.num-goals,
+#goal-text p.no-goals {
+  margin-top: .2em;
+  margin-bottom: 1em;
+  white-space: normal;
+}
+
+#goal-text .coq-env {
+  padding-left: 1.25em;
+}
+
+#goal-text p.aside {
+  white-space: normal;
+  color: #777;
+}
+
+#goal-text p.num-goals + p.aside {
+  margin-top: -1em;
+  margin-bottom: 1em;
+}
+
+.coq-hypothesis {
+  margin-bottom: 2px;
+}
+
+.coq-hypothesis > label {
+  font-weight: normal;  /* override bootstrap */
+  margin: 0;
+}
+
+.coq-hypothesis > label::after {
+  content: ",";
+  margin-right: 0.25em;
+}
+
+.coq-hypothesis > label:last-of-type::after,
+.coq-hypothesis > span.def::after {
+  content: ":";
+  margin: 0 .5em;
+}
+
+.coq-hypothesis.coq-has-def > label:last-of-type::after {
+  content: ":=";
+  margin: 0 .5em;
+  color: #777;
+}
+
+.coq-hypothesis > label ~ div {
+  display: inline-table;  /* this is used to indent hypothesis at their labels */
+  table-layout: fixed;
+}
+
+.coq-env hr {
+  margin: 0.5em 0;
+  border: 1px inset;
+}
+
+.coq-subgoal-pending {
+  margin: 1em 0;
+}
+
+.coq-subgoal-pending > label {
+  display: block;
+  margin-bottom: .2em;
+  color: #777;
+}
+.coq-subgoal-pending > label::before {
+  content: "subgoal ";
+}
+.coq-subgoal-pending > label::after {
+  content: " is:"
+}
+
+.coq-subgoal-pending > .Pp_box {
+  margin-left: .8em;
+}
+
+/* Contextual info */
+
+#goal-panel div.contextual-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(0,0,0,0.25);
+  font-family: monospace, times, 'Arial Unicode MS';
+  font-size: 9pt;
+  white-space: pre-wrap;
+  max-height: 25%;
+  overflow: hidden;
+  /* this is needed to adjust the height of `.content` somehow */
+  display: flex;
+  flex-direction: column;
+}
+
+#goal-panel div.contextual-info > .content {
+  padding: 0 0.75em 2px 3px;
+  overflow-y: auto;
+}
+
+div.hint-package {
+  float: right;
+  margin-left: 1em;
+  color: #aaa;
+  font-size: 90%;
+  position: relative;
+  top: 1px;  /* this is safer than padding or margin, for floats */
+}
+.CodeMirror-hint-active div.hint-package {
+  color: #ddd;
+}
+
+.scroll-shadow {
+  position: absolute;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  height: 20px;
+  pointer-events: none;
+}
+
+.scroll-shadow--bottom {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 1), transparent);
+}
+
+/* company-coq */
+
+.company-coq-sub {
+  font-size: 70%;
+  position: relative;
+  top: 0.1em;
+  /* using position: relative prevents line-height increase */
+  padding-top: 0.4em;
+  /* the padding is to align the background with the rest of the line;
+     not pixel-accurate :\ */
+}
+
+.company-coq-hidden {
+  display: inline-block;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+  font-size: 1pt;
+}
+
+/* Printing options */
+
+@media print {
+  #hide-panel { display: none; }
+  a.link-to-github { display: none; }
+
+  .flex-panel:not(.collapsed) .caption {
+    border-bottom: 1px dashed #ccc;
+  }
+
+  /* Multi-page documents with flex are not portable (e.g. Firefox) */
+  /* falling back to absolute positioning + padding */
+
+  #ide-wrapper {
+    display: block;
+    padding-right: 45%;
+    transition: none;
+  }
+
+  #ide-wrapper.toggled {
+    padding-right: 0;
+  }
+
+  #ide-wrapper > * {
+    max-height: initial;
+  }
+
+  #panel-wrapper {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-bottom: 1px solid #aaa;
+  }
+
+}

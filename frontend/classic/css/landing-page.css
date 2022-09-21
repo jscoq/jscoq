@@ -1,0 +1,150 @@
+@import url('kbd.css');
+
+h4 {
+  background: #f6f9f9;
+  padding: 3px;
+  color: #089;
+  margin-top: 1em;
+}
+
+h5 {
+  margin-top: 12px;
+  margin-bottom: 7px;
+  font-size: 110%;
+  font-style: italic;
+  color: #089;
+}
+
+p.interim {
+  margin: .5em 0 .5em 2em;
+  line-height: 1.2;
+}
+/* poor-man's KaTeX for simple inline math */
+span.math {
+  font-family: KaTeX_Main;
+  font-size: 110%;
+  margin: 0 0.1em;
+  line-height: 1;
+}
+span.symbol-minus, span.symbol-plus {
+  margin: 0 0.2em;
+}
+span.symbol-square {
+  font-size: 70%;
+}
+
+span.jscoq-name {
+  color: #363;
+}
+
+#team {
+  margin-top: 2em;
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+
+/* Navbar */
+nav.navbar {
+  z-index: 19; /* do not hide the power button */
+  padding: 0;
+  border-bottom: 1px solid #eee;
+}
+.navbar-brand img {
+  height: 2em;
+}
+img.symbol-sqrt {
+  height: 1em;
+  margin: -0.2em -0.55em 0 0;
+}
+img.symbol-book {
+  height: 1em;
+  margin-right: 0.3em;
+}
+img.symbol-mouse {
+  height: 1.3em;
+  margin-left: 0.02em;  
+}
+
+a#scratchpad {
+  height: 30px;
+  width: 30px;
+  background: url(../images/scratchpad.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: none;
+  outline: none;
+  position: absolute;
+  top: 5px;
+  right: 40px;
+}
+
+.newcomer {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+body.welcome .newcomer {
+  opacity: 1;
+}
+
+a#scratchpad .scratchpad-tip {
+  position: absolute;
+  right: calc(100% + 1.6em);
+  white-space: nowrap;
+  font-size: 85%;
+  text-align: right;
+  color: #aaa;
+}
+a#scratchpad .scratchpad-tip::after {
+  content: '\2192'; /* → */
+  position: absolute;
+  top: 0;
+  left: calc(100% + .25em);
+}
+
+.scratchpad-small {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  margin-bottom: -0.2em;
+  background: url(../images/scratchpad.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  border: none;
+  outline: none;
+}
+
+/* Keyboard shortcut reference */
+kbd {
+  font-family: var(--bs-font-monospace) !important;
+  padding: .3em .4em .17em .4em !important;
+  border-top: .5px solid #0003;
+  border-left: .5px solid #0001;
+  border-right: .5px solid #0003;
+}
+/* mandated by `kbd.css` */
+.has-kbd {
+/*span:has(> kbd) {  /for when support for this is more common/  */
+  position: relative;
+  z-index: 0;
+}
+br ~ kbd {
+  margin-top: 0.4em !important;
+}
+
+table.doc-actions {
+  margin-bottom: .5em;
+}
+
+table.doc-actions th, table.doc-actions td {
+  padding: .2em .5em;
+  vertical-align: top;
+  border: 1px solid #999;
+}
+
+table.doc-actions td {
+  padding-bottom: .25em;
+}
+
+/* FOUC avoidance */
+body { visibility: visible; }

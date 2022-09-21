@@ -3,7 +3,7 @@
  *
  * By Emilio J. Gallego Arias, Mines ParisTech, Paris.
  *
- * (This is currently superseded by the CLI in `ui-js/cli.ts` but is kept
+ * (This is currently superseded by the CLI in `frontend/classic/js/cli.ts` but is kept
  * for posterity)
 *)
 

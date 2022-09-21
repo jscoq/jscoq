@@ -1,0 +1,242 @@
+
+div.settings-panel {
+  position: absolute;
+  right: 0;
+  top: 35px;
+  z-index: 99;
+  background: white;
+  border: 1px solid black;
+  min-width: 200px;
+  font-family: Helvetica, Geneva, Swiss, Arial, SunSans-Regular, sans-serif;
+  font-size: 11pt;
+  font-weight: normal;
+  padding: .75em .75em .2em .75em;
+  box-shadow: -2px 3px 6px 0px #3332;
+  outline: none !important;
+}
+
+div.settings-panel label {
+  display: block;  /* need to override bootstrap */
+  font-weight: inherit;
+  margin: 0;
+}
+
+div.settings-panel div.setting {
+  line-height: 1.75em;
+}
+
+div.settings-panel .switch {
+  float: right;
+}
+div.settings-panel input.switch {
+  height: 1.75em;
+  margin: 0;
+}
+
+div.settings-panel div.links {
+  margin-top: .2em;
+  text-align: right;
+}
+
+.link-to-github {
+  word-spacing: -2px; /* aren't we picky */
+}
+
+.link-to-github::after,
+.link-to-zulip::after,
+.link-to-coq::after,
+.link-to-quick-help::after {
+  content: "";
+  display: inline-block;
+  height: 25px;
+  width: 25px;
+  background-size: 25px 25px;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  margin-left: .3em;
+  padding-bottom: 5px;
+  box-sizing: content-box;
+}
+
+.link-to-github::after {
+  background-image: url(../images/github.png);
+}
+
+.link-to-zulip::after {
+  background-image: url(../images/zulip-logo.png);
+  background-size: 20px 22px;
+  background-position: 3px 2px;
+  width: 23px;
+}
+
+.link-to-coq::after {
+  background-image: url(../images/coq-logo.png);
+  background-size: contain;
+  padding-bottom: 0;
+  width: 17px;
+  margin-top: -2px;
+}
+
+.link-to-quick-help::after {
+  background-image: url(../images/help.svg);
+  background-size: 20px 20px;
+  background-position: 50% 33%;
+  width: 20px;
+}
+
+/* Light switch (https://codepen.io/marcusconnor/pen/QJNvMa) */
+
+.rocker, .rocker *, .rocker *::before, .rocker *::after {
+  box-sizing: border-box;
+  margin:0;
+  padding:0;
+}
+
+/* Switch starts here */
+.rocker {
+  display: inline-block;
+  position: relative;
+  /*
+  SIZE OF SWITCH
+  ==============
+  All sizes are in em - therefore
+  changing the font-size here
+  will change the size of the switch.
+  See .rocker-small below as example.
+  */
+  font-size: 2em;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  color: #888;
+  width: 7em;
+  height: 4em;
+  overflow: hidden;
+  border-bottom: 0.5em solid #eee;
+}
+
+.rocker-small {
+  font-size: 0.35em; /* Sizes the switch */
+  height: 4.15em; /* had to change this for small font size */
+  margin: 0;
+}
+
+.rocker-small .switch-left,
+.rocker-small .switch-right {
+  transition: 0.1s;  /* shorter transition for small */
+}
+
+.rocker::before {
+  content: "";
+  position: absolute;
+  top: 0.5em;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #999;
+  border: 0.5em solid #eee;
+  border-bottom: 0;
+}
+
+.rocker input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-left,
+.switch-right {
+  cursor: pointer;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5em;
+  width: 3em;
+  transition: 0.2s;
+}
+
+.switch-left {
+  height: 2.4em;
+  width: 2.75em;
+  left: 0.85em;
+  bottom: 0.4em;
+  background-color: #ddd;
+  transform: rotate(15deg) skewX(15deg);
+}
+
+.switch-right {
+  right: 0.5em;
+  bottom: 0;
+  background-color: /*#bd5757;*/ #535;
+  color: #fff;
+}
+
+.switch-left::before,
+.switch-right::before {
+  content: "";
+  position: absolute;
+  width: 0.4em;
+  height: 2.45em;
+  bottom: -0.45em;
+  background-color: #ccc;
+  transform: skewY(-65deg);
+}
+
+.switch-left::before {
+  left: -0.4em;
+}
+
+.switch-right::before {
+  right: -0.375em;
+  background-color: transparent;
+  transform: skewY(65deg);
+}
+
+input:checked + .switch-left {
+  background-color: #eed3aa;
+  color: #880;
+  bottom: 0px;
+  left: 0.5em;
+  height: 2.5em;
+  width: 3em;
+  transform: rotate(0deg) skewX(0deg);
+}
+
+input:checked + .switch-left::before {
+  background-color: transparent;
+  width: 3.0833em;
+}
+
+input:checked + .switch-left + .switch-right {
+  background-color: #ddd;
+  color: #888;
+  bottom: 0.4em;
+  right: 0.8em;
+  height: 2.4em;
+  width: 2.75em;
+  transform: rotate(-15deg) skewX(-15deg);
+}
+
+input:checked + .switch-left + .switch-right::before {
+  background-color: #ccc;
+}
+
+/* Keyboard Users */
+/*
+input:focus + .switch-left {
+  color: #333;
+}
+
+input:checked:focus + .switch-left {
+  color: #fff;
+}
+
+input:focus + .switch-left + .switch-right {
+  color: #fff;
+}
+
+input:checked:focus + .switch-left + .switch-right {
+  color: #333;
+}
+*/

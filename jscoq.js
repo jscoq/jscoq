@@ -1,1 +1,1 @@
-export * from './ui-js/index.js';
+export * from './frontend/classic/js/index.js';

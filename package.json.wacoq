@@ -3,9 +3,9 @@
   "version": "0.16.0",
   "description": "A port of Coq to WebAssembly -- run Coq in your browser",
   "type": "module",
-  "main": "ui-js/index.js",
+  "main": "frontend/classic/js/index.js",
   "bin": {
-    "wacoqdoc": "ui-js/jscoqdoc.js"
+    "wacoqdoc": "frontend/classic/js/jscoqdoc.js"
   },
   "dependencies": {
     "array-equal": "^1.0.0",
@@ -59,10 +59,10 @@
     "webpack-cli": "^4.7.2"
   },
   "files": [
-    "ui-js",
-    "ui-css",
-    "ui-images",
-    "ui-external",
+    "frontend",
+    "backend/*.js"
+    "backend/*.ts"
+    "examples",
     "dist",
     "examples",
     "docs/*.html",
@@ -73,7 +73,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack",
     "watch": "webpack -w",
-    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/;s/\\(backend:\\) .*/\\1 '\\'wa\\',/ ui-js/index.js"
+    "prepack": "sed -i.in 's/\\(is_npm:\\) false/\\1 true/;s/\\(backend:\\) .*/\\1 '\\'wa\\',/ frontend/classic/js/index.js"
   },
   "repository": {
     "type": "git",

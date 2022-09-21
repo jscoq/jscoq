@@ -8,8 +8,6 @@ import { neatJSON } from 'neatjson';
 
 const fs = fsif_native.fs;
 
-
-
 class CoqProject {
 
     volume: FSInterface
@@ -28,7 +26,7 @@ class CoqProject {
 
         this.opts = {
             json: { padding: 1, afterColon: 1, afterComma: 1, wrap: 80 },
-            zip: { }     
+            zip: { }
         };
     }
 
@@ -631,8 +629,6 @@ class JsCoqCompat {
     }
 
 }
-
-
 
 export { CoqProject, SearchPath, SearchPathElement,
          PackageOptions, ModuleIndex, InMemoryVolume, ZipVolume, JsCoqCompat }

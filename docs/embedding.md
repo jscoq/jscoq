@@ -34,13 +34,13 @@ This is typical when using `coqdoc`:
 your development is contained in a `.v` file, which `coqdoc` transforms into HTML.
 
 The following boilerplate code can help you get started:
-[jscoq-agent.js](../ui-js/jscoq-agent.js).
+[jscoq-agent.js](../frontend/classic/js/jscoq-agent.js).
 Either include it directly with a `<script>` tag or copy it to your
 project and then include it from there, which will allow you to customize it.
 Notice that it is an ES module, so that it has to be included with `type="module"`.
 
 ```html
-<script src="node_modules/jscoq/ui-js/jscoq-agent.js" type="module"></script>
+<script src="node_modules/jscoq/frontend/classic/js/jscoq-agent.js" type="module"></script>
 ```
 
 If you want to add those lines automatically as part as your build process, you can use the bundled utility script `jscoqdoc`:
