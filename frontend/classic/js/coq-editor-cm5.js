@@ -77,6 +77,10 @@ export class CoqCodeMirror5 {
         });
     }
 
+    getCursorOffset() {
+        return this.cm.editor.getDoc().indexFromPos(this.cm.editor.getCursor());
+    }
+
     getValue() { 
         // this will become concatenation
         return this.cm.editor.getValue();

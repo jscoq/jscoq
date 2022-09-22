@@ -128,8 +128,12 @@ export class CoqManager {
         this.pprint = new FormatPrettyPrint();
 
         // Setup company-coq
-        if (this.options.editor.mode && this.options.editor.mode['company-coq'])
-            this.company_coq = new CompanyCoq();
+        if (this.options.editor.mode && this.options.editor.mode['company-coq']) {
+            (async () => {
+                let { CompanyCoq } = await import('./addon/company-coq.js');
+                this.company_coq = new CompanyCoq();
+            })
+        }
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -473,6 +477,29 @@ export class CoqManager {
         return this.packages.loadDeps(pkgs).then(() => this.coqInit());
     }
 
+    /**
+     * Shows the goal at a given location.
+     * @param {number?} offset document offset (defaults to current cursor position).
+     */
+    async setGoalCursor(offset = undefined) {
+        offset ??= this.editor.getCursorOffset();
+        let resp = await this.coq.sendRequest(offset, ['Goals']);
+        if (resp[1])
+            this.updateGoals(resp[1]);
+    }
+
+    updateGoals(goals) {
+        var hgoals = this.pprint.goals2DOM(goals);
+
+        if (hgoals) {
+            this.layout.update_goals(hgoals);
+            this.pprint.adjustBreaks($(this.layout.proof));
+            /* Notice: in Pp-formatted text, line breaks are handled by
+             * FormatPrettyPrint rather than by the layout.
+             */
+        }
+    }
+
     keyTooltips() {
         return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎', help: 'F1'} :
             {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter', help: 'F1'}
@@ -493,7 +520,10 @@ export class CoqManager {
               help   = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
 
+        const toCursor  = () => this.setGoalCursor();
         const nav_bindings = {
+            '_Enter':     toCursor, '_NumpadEnter': toCursor,
+            '^Enter':     toCursor, '^NumpadEnter': toCursor,
             'F8': toggle,
             'F1': help,
             'Escape': interrupt
