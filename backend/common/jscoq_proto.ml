@@ -98,6 +98,7 @@ module Answer = struct
 
   type t =
   | Goals of Pp.t reified_goal ser_goals option
+  | Completion of string list
   | Void
   [@@deriving to_yojson]
 

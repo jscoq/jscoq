@@ -14,8 +14,9 @@
 /*    of yet).                                                          */
 /************************************************************************/
 
-import CodeMirror from 'codemirror';
 import $ from 'jquery';
+import { arreq_deep } from '../../../common/etc.js';
+import CodeMirror from 'codemirror';
 
 // XXX Port to CM 6
 var Pos = CodeMirror.Pos;
@@ -118,7 +119,7 @@ class Markup {
     }
 
     _rescan(ln) {
-        if (!ln.styles.equals(ln._cc_recorded_styles)) {
+        if (!arreq_deep(ln.styles, ln._cc_recorded_styles)) {
             ln._cc_recorded_styles = ln.styles;
             this.work.enqueue(() => this.applyToLine(ln.lineNo()));
         }
@@ -259,7 +260,8 @@ var vocab_kinds = {lemmas: 'lemma', tactics: 'tactic', keywords: 'keyword'};
  */
 class AutoComplete {
 
-    constructor() {
+    constructor(manager) {
+        this.manager = manager;
         this.vocab = {};
         this.kinds = vocab_kinds;
 
@@ -283,7 +285,7 @@ class AutoComplete {
         var cur = cm.getCursor(), 
             [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
             match = token.string.trim();
-    
+
         // Build completion list
         var matching = this._matches(match, family);
 
@@ -295,13 +297,13 @@ class AutoComplete {
         for (let m of matching) {
             m.render = (el, self, data) => this._render(el, data, match, cm)
         }
-    
+
         var data = { list: matching, from: token_start, to: token_end };
-    
+
         // Emit 'hintHover' to allow context-sensitive info to be displayed by the IDE
         CodeMirror.on(data, "select",
             completion => CodeMirror.signal(cm, 'hintHover', completion));
-    
+
         return data;
     }
 
@@ -334,11 +336,12 @@ class AutoComplete {
             if (!evt || ((is_head || kind === 'tactic' || kind === 'terminator') &&
                          /^[a-zA-Z_]../.exec(token.string))) {
                 var hint = is_head ? this.tacticHint : this.lemmaHint;
-                requestAnimationFrame(() =>
-                    cm.showHint({
-                        hint: (cm, options) => hint.call(this, cm, options),
-                        completeSingle: false
-                    }));
+
+                // let completions = await this.getCompletionsServer(cm, {});
+                cm.showHint({
+                    hint: (cm, options) => this.getCompletionsServer(cm, options),
+                    completeSingle: false
+                });
             }
         }
     }
@@ -358,9 +361,25 @@ class AutoComplete {
         return hint.call(this, cm, options);
     }
 
+    // Async version of getCompletions
+    async getCompletionsServer(cm, options) {
+        const cur = cm.getCursor(),
+              [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
+              match = token.string.trim(),
+              is_head = token.state.is_head || token.state.begin_sentence;
+
+        const point = cm.getDoc().indexFromPos(cur);
+        const res = await this.manager.coq.sendRequest(point, ["Completion", match]);
+
+        const matches = res[1];
+        const matching = matches.map((id) => ({ text: id, label: id, kind: "Lemma", prefix: "" }));
+        const data = { list: matching, from: token_start, to: token_end };
+        return data;
+    }
+
     _isInsertAtCursor(cm, evt) {
         var cur = cm.getCursor();
-        return (evt.origin === '+input' && 
+        return (evt.origin === '+input' &&
                 cur.line === evt.to.line && cur.ch === evt.to.ch + 1);
     }
 
@@ -369,10 +388,10 @@ class AutoComplete {
             token.end = cur.ch;
             token.string = token.string.slice(0, cur.ch - token.start);
         }
-      
+
         var tokenStart = Pos(cur.line, token.start),
             tokenEnd = Pos(cur.line, token.end);
-      
+
         return [token, tokenStart, tokenEnd];
     }
 
@@ -398,7 +417,7 @@ class AutoComplete {
         matching.sort((x, y) => (x.text.indexOf(match) - y.text.indexOf(match)) ||
                                 (x.text.length - y.text.length) ||
                                 (this._modulePref(x.prefix) - this._modulePref(y.prefix)));
-    
+
         return matching;
     }
 
@@ -565,9 +584,10 @@ const vocab = {
  */
 class CompanyCoq {
 
-    constructor() {
+    constructor(manager) {
+        this.manager = manager;
         this.markup = new Markup();
-        this.completion = new AutoComplete();
+        this.completion = new AutoComplete(manager);
         this.observe = ObserveIdentifier.instance;
 
         this.markup.special_tokens = special_tokens;
@@ -594,9 +614,9 @@ class CompanyCoq {
         return this;
     }
 
-    static hint(cm, options) {
+    static async hint(cm, options) {
         if (cm.company_coq)
-            return cm.company_coq.completion.getCompletions(cm, options);
+            return await cm.company_coq.completion.getCompletionsServer(cm, options);
     }
 
     static mkEmptyScope() {
@@ -624,12 +644,12 @@ class CompanyCoq {
         ObserveIdentifier.instance = new ObserveIdentifier(); // singleton
         ObserveIdentifier.instance.vocab = vocab;
 
-        CodeMirror.defineInitHook(cm =>
-            CompanyCoq.configure(cm, cm.options));
+        // CodeMirror.defineInitHook(cm =>
+        //     CompanyCoq.configure(cm, cm.options));
 
-        CodeMirror.registerGlobalHelper("hint", "company-coq",
-            (mode, cm) => mode.name === 'coq' && !!cm.company_coq, 
-            CompanyCoq.hint);
+        // CodeMirror.registerGlobalHelper("hint", "company-coq",
+        //     (mode, cm) => mode.name === 'coq' && !!cm.company_coq,
+        //     CompanyCoq.hint);
     }
 
     static configure(cm, options) {
@@ -653,3 +673,7 @@ class CompanyCoq {
 CompanyCoq.init();
 
 export { CompanyCoq }
+
+// Local Variables:
+// js-indent-level: 4
+// End:

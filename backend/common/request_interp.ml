@@ -13,6 +13,12 @@ open Jscoq_proto.Proto
 
 module LI = Controller.Lsp_interp
 
+(* XXX: This belongs in Coq *)
+let pr_extref gr =
+  match gr with
+  | Globnames.TrueGlobal gr -> Printer.pr_global gr
+  | Globnames.Abbrev kn -> Names.KerName.print kn
+
 let do_request ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
@@ -24,4 +30,8 @@ let do_request ~doc point (r : Method.t) =
   | Method.TypeAtPoint -> Answer.Void
   | Method.TypeOfId _ -> Answer.Void
   | Method.Inspect _ -> Answer.Void
-  | Method.Completion _ -> Answer.Void
+  | Method.Completion prefix ->
+    (* XXX This should set the proper state! For now it will run in
+       the state resultin from checking the full document. *)
+    let candidates = Nametab.completion_canditates (Libnames.qualid_of_string prefix) in
+    Answer.Completion (List.map (fun x -> Pp.string_of_ppcmds (pr_extref x)) candidates)

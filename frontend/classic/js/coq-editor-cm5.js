@@ -65,29 +65,41 @@ class CmSentence {
 // TODO: turn  this into a manager of several CM5 instances as in the non-lsp version.
 export class CoqCodeMirror5 {
 
-    constructor(eId) {
+    constructor(eId, options, manager) {
+
         CoqCodeMirror5.set_keymap();
         let element = document.getElementById(eId);
+
+        this.options = options;
+        this.manager = manager;
         this.version = 1;
-        this.cm = new CmCoqProvider(element, {}, false, 0);
+
+        this.cm = new CmCoqProvider(element, this.options, false, 0);
+
         this.cm.editor.on('change', (editor, change) => {
             let txt = this.getValue();
             this.version++;
             this.onChange(txt, this.version);
         });
+
+        if (this.options.mode && this.options.mode['company-coq']) {
+            this.company_coq = new CompanyCoq(this.manager);
+            this.company_coq.attach(this.cm.editor);
+        }
+
     }
 
     getCursorOffset() {
         return this.cm.editor.getDoc().indexFromPos(this.cm.editor.getCursor());
     }
 
-    getValue() { 
+    getValue() {
         // this will become concatenation
         return this.cm.editor.getValue();
     }
 
     onChange(newContent, version) { }
-    
+
     clearMarks() {
         this.cm.retract();
     }
@@ -95,6 +107,7 @@ export class CoqCodeMirror5 {
     markDiagnostic(diag) {
         console.log(diag);
         this.cm.mark(diag);
+        
     }
 
     static set_keymap() {
