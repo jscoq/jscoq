@@ -116,7 +116,7 @@ export class CoqProseMirror {
         return CoqProseMirror.serializeDoc(this.view.state.doc);
     }
 
-    onChange(newText) {
+    onChange(newText, version) {
         return;
     }
 
@@ -124,6 +124,10 @@ export class CoqProseMirror {
         var tr = this.view.state.tr;
         tr.setMeta(coqDiags, "clear");
         this.view.dispatch(tr);
+    }
+
+    getCursorOffset() {
+        return this.view.state.selection.head;
     }
 
     markDiagnostic(d, version) {

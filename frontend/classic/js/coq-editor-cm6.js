@@ -106,6 +106,10 @@ export class CoqCodeMirror6 {
         this.view.dispatch(tr);
     }
 
+    getCursorOffset() {
+        return this.view.state.selection.main.head;
+    }
+
     markDiagnostic(d, version) {
 
         if (version < this.version) { return; };

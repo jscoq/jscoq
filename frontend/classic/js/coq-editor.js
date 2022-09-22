@@ -22,6 +22,8 @@ class ICoqEditor {
     clearMarks() { }
 
     markDiagnostic(diag) { }
+
+    getCursorOffset() { }       // returns point
 }
 
 // Takes a textArea and will create an empty div to attach an editor

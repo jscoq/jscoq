@@ -489,7 +489,7 @@ export class CoqManager {
     }
 
     updateGoals(goals) {
-        var hgoals = this.pprint.goals2DOM(goals);
+        var hgoals = this.goals2DOM(goals);
 
         if (hgoals) {
             this.layout.update_goals(hgoals);
