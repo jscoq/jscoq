@@ -11,12 +11,14 @@
 (* Move to coq-lsp *)
 open Jscoq_proto.Proto
 
+module LI = Controller.Lsp_interp
+
 let do_request ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
   | Method.Goals ->
-    let approx = Controller.Lsp_interp.PickPrev in
-    let goals = Controller.Lsp_interp.get_goals_point ~doc ~point ~approx in
+    let approx = LI.PickPrev in
+    let goals = LI.get_goals_point ~doc ~point ~approx in
     Answer.Goals goals
   | Method.Search _ -> Answer.Void
   | Method.TypeAtPoint -> Answer.Void
