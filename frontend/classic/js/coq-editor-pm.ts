@@ -12,7 +12,6 @@ import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
 import { ICoqEditor, editorAppend } from './coq-editor';
-import { Transaction } from '@codemirror/state';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';

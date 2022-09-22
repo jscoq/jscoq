@@ -5,11 +5,13 @@
  * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
  */
 import { Diagnostic } from "../../../backend";
+import { CoqManager, ManagerOptions } from "./coq-manager";
 
 /**
  * Interface for Coq Editor's
  */
 export interface ICoqEditor {
+    // constructor (eIds: string, options: ManagerOptions, manager: CoqManager)
     getValue() : string
     onChange(newContent : string) : void
     clearMarks() : void
