@@ -4,7 +4,7 @@
 // CodeMirror implementation
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
-import { CoqManager } from './coq-manager';
+import { CoqManager, ManagerOptions } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
 
 interface CM5Options {
@@ -14,9 +14,8 @@ interface CM5Options {
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     manager : CoqManager;
 
-    constructor(eIds: (string|HTMLElement)[], options : any, manager : CoqManager) {
+    constructor(eIds: (string|HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
 
-        // CoqCodeMirror5._set_keymap();
         super(eIds, options);
         this.manager = manager;
 
@@ -63,5 +62,9 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         diag.range.start.line -= ln;
         diag.range.end.line -= ln;
         in_part.mark(diag);
+    }
+
+    getCursorOffset(): number {
+        return this.snippets[0].editor.getDoc().indexFromPos(this.snippets[0].editor.getCursor());
     }
 }

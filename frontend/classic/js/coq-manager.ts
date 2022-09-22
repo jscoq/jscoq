@@ -7,7 +7,7 @@
 // and the goal / information panel.
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams, Diagnostic, Goal, Goals } from '../../../backend';
+import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams, Diagnostic, Goal, Goals, backend } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
@@ -40,8 +40,33 @@ import { CompanyCoq }  from './addon/company-coq.js';
  * CoqManager coordinates the coq code objects, the panel, and the Coq
  * worker.
  */
+export interface ManagerOptions {
+    backend: backend,
+    content_type: 'plain' | 'markdown',
+    frontend: 'cm5' | 'cm6' | 'pm',
+    prelaunch: boolean,
+    prelude: boolean,
+    debug: boolean,
+    show: boolean,
+    replace: boolean,
+    wrapper_id: string,
+    theme: 'light',
+    base_path: string,
+    node_modules_path: string,
+    pkg_path: string,
+    implicit_libs: boolean,
+    init_pkgs: string[],
+    all_pkgs: { '+': string[] } | string[],
+    init_import: any[],
+    file_dialog: boolean,
+    line_numbers: 'continue',
+    coq: any, // options for coq and the editor, not the object themselves
+    editor: any,
+    subproc?: CoqWorker
+}
+
 export class CoqManager {
-    options : any;
+    options : ManagerOptions;
     coq : CoqWorker;
     diagsSource : EventTarget;
     editor : ICoqEditor;
@@ -145,8 +170,12 @@ export class CoqManager {
         this.pprint = new FormatPrettyPrint();
 
         // Setup company-coq
-        // if (this.options.editor.mode && this.options.editor.mode['company-coq'])
-        //    this.company_coq = new CompanyCoq();
+        // if (this.options.editor.mode && this.options.editor.mode['company-coq']) {
+        //     (async () => {
+        //         let { CompanyCoq } = await import('./addon/company-coq.js');
+        //         this.company_coq = new CompanyCoq();
+        //     })
+        // }
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -489,6 +518,29 @@ export class CoqManager {
         return this.packages.loadDeps(pkgs).then(() => this.coqInit());
     }
 
+    /**
+     * Shows the goal at a given location.
+     * @param {number?} offset document offset (defaults to current cursor position).
+     */
+    async setGoalCursor(offset = undefined) {
+        offset ??= this.editor.getCursorOffset();
+        let resp = await this.coq.sendRequest(this.uri, offset, ['Goals']);
+        if (resp[1])
+            this.updateGoals(resp[1]);
+    }
+
+    updateGoals(goals : Goals) {
+        var hgoals = this.goals2DOM(goals);
+
+        if (hgoals) {
+            this.layout.update_goals(hgoals);
+            this.pprint.adjustBreaks($(this.layout.proof));
+            /* Notice: in Pp-formatted text, line breaks are handled by
+             * FormatPrettyPrint rather than by the layout.
+             */
+        }
+    }
+
     keyTooltips() {
         return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎', help: 'F1'} :
             {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter', help: 'F1'}
@@ -509,7 +561,10 @@ export class CoqManager {
               help   = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
 
+        const toCursor  = () => this.setGoalCursor();
         const nav_bindings = {
+            '_Enter':     toCursor, '_NumpadEnter': toCursor,
+            '^Enter':     toCursor, '^NumpadEnter': toCursor,
             'F8': toggle,
             'F1': help,
             'Escape': interrupt

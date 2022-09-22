@@ -106,9 +106,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
     }
 
     getCursorOffset(): number {
-        return 0;
+        return this.view.state.selection.main.head;
     }
-    
+
     configure() {}
     openFile() {}
     focus() {}

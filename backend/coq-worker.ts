@@ -148,9 +148,8 @@ export class CoqWorker {
     /* protected */ observers: CoqEventObserver[];
 
     // Private stuff to handle our implementation of requests
-    private routes: Map<number,CoqEventObserver[]>;
-    private sids: Future<void>[];
-    private _gen_rid : number;
+    private request_pending: Future<object>[] = [];
+    private request_nextid = 0;
 
     constructor(base_path : (string | URL), scriptPath : URL | null, worker, backend : backend) {
 
@@ -239,6 +238,20 @@ export class CoqWorker {
      */
     sendDirective(msg) {   // directives are intercepted by the JS part of the worker
         this.worker.postMessage(msg);    // for this reason, they are not stringified
+    }
+
+    sendRequest(uri: string, loc: number, req: object) {
+        let id = this.request_nextid++,
+            fut = this.request_pending[id] = new Future;
+        this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
+        return fut.promise;
+    }
+
+    coqResponse(resp: {id: number, res: object}) {
+        console.warn(resp);
+        let fut = this.request_pending[resp.id];
+        delete this.request_pending[resp.id];
+        fut?.resolve(resp.res);
     }
 
     /**

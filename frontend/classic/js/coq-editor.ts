@@ -14,6 +14,7 @@ export interface ICoqEditor {
     onChange(newContent : string) : void
     clearMarks() : void
     markDiagnostic(diag : Diagnostic) : void
+    getCursorOffset() : number
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
