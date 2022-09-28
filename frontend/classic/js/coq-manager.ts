@@ -128,6 +128,14 @@ export class CoqManager {
         this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
         this.version = 0;
 
+        // Setup preprocess method for markdown, if needed
+        var preprocessFunc = { 'plain': x => x, 'markdown': this.markdownPreprocess };
+        var contentType = this.options.content_type ??  /* oddly specific */
+                          (this.options.frontend === 'pm' ? 'markdown' : 'plain');
+
+        // For now we disable it and use instead the server logic.
+        this.preprocess = preprocessFunc['plain'];
+
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
@@ -143,7 +151,8 @@ export class CoqManager {
         this.editor = new CoqEditor(elems, this.options, this);
         this.editor.onChange = throttle(200, raw => {
             this.version++;
-            this.coq.update({ uri: this.uri, version: this.version, raw });
+            let cooked = this.preprocess(raw);
+            this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
         });
 
         this.packages = null;
@@ -368,7 +377,8 @@ export class CoqManager {
         this.when_ready.resolve(null);
 
         // Send the document creation request.
-        let dp = { uri: this.uri, version: this.version, raw: this.editor.getValue() };
+        let raw = this.preprocess(this.editor.getValue());
+        let dp = { uri: this.uri, version: this.version, raw };
         this.coq.newDoc(dp)
     }
 
@@ -479,6 +489,17 @@ export class CoqManager {
         }
         return Object.entries(coq_options)
                      .map(([k, v]) => [k.split(/\s+/), makeValue(v)]);
+    }
+
+
+    /**
+     * Strip off plain text, leaving the Coq text.
+     * @param {string} text 
+     */
+    markdownPreprocess(text) {
+        let wsfill = s => s.replace(/[^\n]/g, ' ');
+        return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
+                   .join('');
     }
 
     interruptRequest() {
