@@ -244,6 +244,7 @@ export class CoqWorker {
         let id = this.request_nextid++,
             fut = this.request_pending[id] = new Future;
         this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
+        this.interrupt();
         return fut.promise;
     }
 
@@ -261,13 +262,14 @@ export class CoqWorker {
     init(opts : CoqInitOptions) {
         this.sendCommand(["Init", opts]);
     }
-    
+
     newDoc(docp : DocumentParams) {
         this.sendCommand(["NewDoc", docp])
     }
-    
+
     update(docp : DocumentParams) {
         this.sendCommand(["Update", docp]);
+        this.interrupt();
     }
 
     loadPkg(url) {
