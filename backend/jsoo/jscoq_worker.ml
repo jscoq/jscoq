@@ -160,6 +160,8 @@ let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   Js.Optdef.get o (fun () -> jscoq_cmd_of_yojson @@ obj_to_json cobj)
 
 (* Message from the main thread *)
+let event_queue = ref []
+
 let on_msg _doc msg =
 
   let log_cmd cmd =
@@ -171,9 +173,8 @@ let on_msg _doc msg =
 
   match jscoq_cmd_of_obj msg with
   | Result.Ok cmd  ->
-    jscoq_protect (fun () ->
-        log_cmd cmd;
-        Jscoq_interp.jscoq_execute cmd)
+    log_cmd cmd;
+    event_queue := !event_queue @ [cmd]
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 
@@ -202,6 +203,32 @@ let setup_interp () =
   Jscoq_interp.Callbacks.set jsoo_cb;
   ()
 
+let setTimeout cb d = Dom_html.setTimeout cb d
+
+(* The way we do interrupt this doesn't take effect. *)
+let rec filter_queue (cmd, rest) queue =
+  match queue with
+  | [] -> cmd, rest
+  | (Jscoq_proto.Proto.Update _ as cmd') :: rest' ->
+    (* XXX: Cancel the events in rest that we have discarded *)
+    Format.eprintf "discarding %d events@\n%!" (List.length rest + 1);
+    filter_queue (cmd', []) rest'
+  | cmd' :: rest' ->
+    filter_queue (cmd, rest @ [cmd']) rest'
+
+let rec process_queue () =
+  match !event_queue with
+  | [] ->
+    ignore(setTimeout process_queue 0.1)
+  | cmd :: rest ->
+    Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);
+    let cmd, rest = filter_queue (cmd, []) rest in
+    event_queue := rest;
+    jscoq_protect (fun () ->
+        Jscoq_interp.jscoq_execute cmd);
+    (* Give a chance to receive pending messages *)
+    ignore(setTimeout process_queue 0.1)
+
 (* This code is executed on Worker initialization *)
 let _ =
 
@@ -219,6 +246,10 @@ let _ =
   if is_worker then
     Worker.set_onmessage on_msg
   else
-    Js.export "jsCoq" jsCoq;
-    jsCoq##.postMessage := Js.wrap_callback on_msg ;
-    jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
+    begin
+      Js.export "jsCoq" jsCoq;
+      jsCoq##.postMessage := Js.wrap_callback on_msg ;
+      jsCoq##.onmessage := Js.wrap_callback (fun _ -> ())
+    end;
+  ignore(setTimeout process_queue 0.1);
+  ()
