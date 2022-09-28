@@ -135,7 +135,7 @@ end
 (* Main RPC calls *)
 type jscoq_cmd =
   | Init    of jscoq_options
-  | NewDoc  of doc_options * string * bool
+  | NewDoc  of doc_options * string
   | Update  of string * int
 
   | Request of Method.t Request.t

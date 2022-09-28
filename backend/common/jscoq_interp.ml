@@ -132,8 +132,8 @@ let jscoq_execute =
   | Init opts ->
     exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
-  | NewDoc (opts, text, markdown) ->
-    let ndoc, _st, diags = create_doc opts markdown text in
+  | NewDoc (opts, text) ->
+    let ndoc, _st, diags = create_doc opts ~text in
     doc := ndoc;
     out_fn @@ Ready ();
     out_fn (Notification (diags,1))

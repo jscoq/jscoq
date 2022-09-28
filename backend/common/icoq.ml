@@ -91,30 +91,7 @@ let coq_init opts =
   root_state := Controller.Coq_init.(coq_init { fb_handler; ml_load = None; debug });
   ()
 
-let gen l = String.make (String.length l) ' '
-
-let rec md_map_lines coq l =
-  match l with
-  | [] -> []
-  | l :: ls ->
-    if String.equal "```" l then
-      gen l :: md_map_lines (not coq) ls
-    else
-      (if coq then l else gen l) :: md_map_lines coq ls
-
-let markdown_process text =
-  let lines = String.split_on_char '\n' text in
-  let lines = md_map_lines false lines in
-  String.concat "\n" lines
-
-let parse_markdown = ref false
-
-let process_contents ~text =
-  if !parse_markdown then markdown_process text else text
-
-let new_doc opts ~markdown ~text =
-  parse_markdown := markdown;
-  let text = process_contents text in
+let new_doc opts ~text =
   let state = !root_state, opts.vo_path, [], 0 in
   let uri = opts.uri in
   let fmt = Format.formatter_of_out_channel stdout in
@@ -122,8 +99,6 @@ let new_doc opts ~markdown ~text =
   Controller.Coq_doc.check fmt doc fb_queue
 
 let check_doc ~doc =
-  let contents = process_contents doc.Controller.Coq_doc.contents in
-  let doc = { doc with Controller.Coq_doc.contents = contents } in
   let fmt = Format.formatter_of_out_channel stdout in
   Controller.Coq_doc.check fmt doc fb_queue
 

@@ -40,7 +40,7 @@ type doc_opts =
 val coq_init : coq_opts -> unit
 
 (** [new_doc] Initialize a new Coq document *)
-val new_doc : doc_opts -> markdown:bool -> text:string -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
+val new_doc : doc_opts -> text:string -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
 
 (** [check_doc] check a doc, with possibly updated contents *)
 val check_doc
