@@ -152,10 +152,18 @@ let on_msg doc msg =
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 
+let jsoo_cb =
+  Jscoq_interp.Callbacks.
+    { post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
+    ; post_file = post_file
+    ; interrupt_setup = (fun shmen -> interrupt_setup (Js.Unsafe.coerce shmen))
+    ; system_version = Sys_js.js_of_ocaml_version
+    ; create_file = Sys_js.create_file
+    ; update_file = Sys_js.update_file
+    }
+
 let setup_interp () =
-  Jscoq_interp.post_message := (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message);
-  Jscoq_interp.post_file := post_file;
-  Jscoq_interp.interrupt_setup := interrupt_setup;
+  Jscoq_interp.Callbacks.set jsoo_cb;
   ()
 
 (* This code is executed on Worker initialization *)

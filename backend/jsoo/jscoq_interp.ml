@@ -8,9 +8,34 @@
  * Interpreter for the Coq communication protocol
  *)
 
-open Js_of_ocaml
+(* open Js_of_ocaml *)
 open Jscoq_proto.Proto
-open Jslibmng
+
+module Callbacks = struct
+
+  type t =
+    { post_message : (Yojson.Safe.t -> unit)
+    ; post_file : (string -> string -> string -> unit)
+    ; interrupt_setup : (opaque -> unit)
+    ; system_version : string
+    ; create_file : name:string -> content:string -> unit
+    ; update_file : name:string -> content:string-> unit
+    }
+
+  let default =
+    { post_message = (fun _ -> ())
+    ; post_file = (fun _ _ _ -> ())
+    ; interrupt_setup = (fun _ -> ())
+    ; system_version = "undefined"
+    ; create_file = (fun ~name:_ ~content:_ -> ())
+    ; update_file = (fun ~name:_ ~content:_ -> ())
+    }
+
+  let cb = ref default
+
+  let set t = cb := t
+
+end
 
 let opts = ref
     { implicit_libs = true
@@ -18,12 +43,6 @@ let opts = ref
     ; debug = {coq = false; stm = false}
     ; lib_path = []
     }
-
-(* XXX *)
-let post_message = ref (fun _ -> ())
-let post_file = ref (fun _ _ _ -> ())
-let interrupt_setup = ref (fun _ -> ())
-(* End XXX *)
 
 (** Message handlers **)
 type progress_info =
@@ -35,10 +54,10 @@ type lib_event =
   [@@deriving yojson]
 
 let post_lib_event le =
-  lib_event_to_yojson le |> !post_message
+  lib_event_to_yojson le |> !Callbacks.cb.post_message
 
 let post_answer ans =
-  jscoq_answer_to_yojson ans |> !post_message
+  jscoq_answer_to_yojson ans |> !Callbacks.cb.post_message
 
 let post_feedback fb =
   Feedback (Jscoq_util.fb_opt fb) |> post_answer
@@ -47,7 +66,7 @@ let post_feedback fb =
 
 let coq_info_string () =
   let coqv, ccv, cmag = Icoq.version                          in
-  let jsoov = Sys_js.js_of_ocaml_version                      in
+  let jsoov = !Callbacks.cb.system_version                    in
   let header1 = Printf.sprintf
       "jsCoq (%s), Coq %s/%4d\n"
       Jscoq_version.jscoq_version coqv (Int32.to_int cmag)    in
@@ -195,8 +214,8 @@ let jscoq_execute =
 
   | Put (filename, content) ->
     begin
-      try         Sys_js.create_file ~name:filename ~content
-      with _e ->  Sys_js.update_file ~name:filename ~content
+      try         !Callbacks.cb.create_file ~name:filename ~content
+      with _e ->  !Callbacks.cb.update_file ~name:filename ~content
     end;
     if Jslibmng.is_bytecode filename
     then Jslibmng.register_cma ~file_path:filename
@@ -221,7 +240,7 @@ let jscoq_execute =
   | InfoPkg(base, pkgs) ->
     Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
 
-  | InterruptSetup shmem -> !interrupt_setup (Js.Unsafe.coerce shmem)
+  | InterruptSetup shmem -> !Callbacks.cb.interrupt_setup shmem
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
@@ -230,4 +249,4 @@ let jscoq_execute =
     doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
     out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)
   | Compile filename ->
-    !post_file "Compiled" filename (Icoq.compile_vo ~doc:(fst !doc) filename)
+    !Callbacks.cb.post_file "Compiled" filename (Icoq.compile_vo ~doc:(fst !doc) filename)

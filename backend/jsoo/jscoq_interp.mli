@@ -9,9 +9,20 @@
  *)
 
 (** XXX: Functorialize *)
-val post_message : (Yojson.Safe.t -> unit) ref
-val post_file : (string -> string -> string -> unit) ref
-val interrupt_setup : (Js_of_ocaml.Typed_array.int32Array Js_of_ocaml.Js.t -> unit) ref
+module Callbacks : sig
+
+  type t =
+    { post_message : (Yojson.Safe.t -> unit)
+    ; post_file : (string -> string -> string -> unit)
+    ; interrupt_setup : (Jscoq_proto.Proto.opaque -> unit)
+    ; system_version : string
+    ; create_file : name:string -> content:string -> unit
+    ; update_file : name:string -> content:string-> unit
+    }
+
+  val set : t -> unit
+
+end
 
 (** Main execution point *)
 val jscoq_execute
