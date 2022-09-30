@@ -66,10 +66,15 @@ let coqDiags = new Plugin({
 
 export class CoqProseMirror {
 
-    // eId must be a textarea
-    constructor(eId) {
+    /**
+     * Initializes a CodeMirror 6 instance in the specified element.
+     * @param {(string | HTMLElement)[]} elementRefs (must be of length 1)
+     */
+     constructor(elementRefs) {
+        if (elementRefs.length != 1)
+            throw new Error('not implemented: `pm` frontend requires a single element')
 
-        let { container, area } = editorAppend(eId);
+        let { container, area } = editorAppend(elementRefs[0]);
 
         var doc = defaultMarkdownParser.parse(area.value);
         var pm = this;
@@ -91,7 +96,7 @@ export class CoqProseMirror {
                         pm.version++;
 
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        pm.onChange(newDoc, pm.version);
+                        pm.onChangeRev(newDoc, pm.version);
 
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
                         area.value = newMarkdown;
@@ -116,9 +121,8 @@ export class CoqProseMirror {
         return CoqProseMirror.serializeDoc(this.view.state.doc);
     }
 
-    onChange(newText, version) {
-        return;
-    }
+    onChange() { }
+    onChangeRev(newText, version) { }
 
     clearMarks() {
         var tr = this.view.state.tr;

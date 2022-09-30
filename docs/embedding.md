@@ -95,7 +95,7 @@ the `CoqManager` constructor:
 | `wrapper_id`    | string          | `'ide-wrapper'` | Id of `<div>` element in which the jsCoq panel is to be created.                                              |
 | `layout`        | string          | `'flex'`        | Choose between a flex-based layout (`'flex'`) and one based on fixed positioning (`'fixed'`).                 |
 | `frontend`      | enum            | `'cm5'`         | Selectes the view and edit frontend. Alternatives are: `'cm5'` - CodeMirror 5, `'cm6'` - CodeMirror 6, `'pm'` - ProseMirror.  |
-| `content_type`  | enum            | (depends)       | Specifies the format of the edited document. Use `'plain'` for normal `.v` text, `'markdown'` for Markdown text with embedded code blocks. The default is `'plain'` for CodeMirror, `'markdown'` for ProseMirror. |
+| `content_type`  | enum            | `'plain'`       | Specifies the format of the edited document. Use `'plain'` for normal `.v` text, `'markdown'` for Markdown text with embedded code blocks. (For ProseMirror, set to `'plain'`.)   |
 | `all_pkgs`      | array of string / object        | (see below)     | List of available packages that will be listed in the packages panel.                                         |
 | `init_pkgs`     | array of string | `['init']`      | Packages to load at startup.                                                                                  |
 | `init_import`   | array of string | `[]`            | Modules to `Require Import` on startup.                                                                       |

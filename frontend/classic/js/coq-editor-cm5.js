@@ -4,7 +4,7 @@
 "use strict";
 
 import $ from 'jquery';
-import { localforage } from 'localforage';
+import localforage from 'localforage';
 import { copyOptions } from '../../common/etc.js';
 import { JsCoq } from './index.js';
 
@@ -18,6 +18,7 @@ import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/hint/show-hint.js';
 import 'codemirror/addon/dialog/dialog.js';
 
+import { ProviderContainer } from './cm-provider-container.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 import './mode/coq-mode.js';
 
@@ -28,86 +29,80 @@ import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/addon/dialog/dialog.css';
 
 /**
- * A Coq sentence, typically ended in dot "."
- *
- * @class CmSentence
+ * @typedef { import("./coq-editor").ICoqEditor } ICoqEditor
  */
-class CmSentence {
+
+/**
+ * An implementation of `CoqEditor` for CodeMirror 5.
+ */
+
+/** Interface for CM5
+ * @implements ICoqEditor
+ */
+export class CoqCodeMirror5 extends ProviderContainer {
 
     /**
-     * Creates an instance of CmSentence.
-     * @param {CodeMirror.Position} start
-     * @param {CodeMirror.Position} end
-     * @param {string} text
-     * @param {object} flags
-     * @memberof CmSentence
+     *
+     * @param {(string | HTMLElement)[]} elementRefs
+     * @param {object} options
+     * @param {CoqManager} manager
      */
-    constructor(start, end, text, flags) {
-        // start, end: {line: number, ch: number}
-        // flags: {is_comment: bool, is_hidden: bool}
-        this.start = start;
-        this.end   = end;
-        this.text  = text;
-        /**
-         * @type {undefined}
-         */
-        this.mark  = undefined;
-        this.flags = flags || {};
-        this.feedback = [];
-        /**
-         * @type {undefined}
-         */
-        this.action = undefined;
-    }
-
-}
-
-// TODO: turn  this into a manager of several CM5 instances as in the non-lsp version.
-export class CoqCodeMirror5 {
-
-    constructor(eId, options, manager) {
-
+    constructor(elementRefs, options, manager) {
         CoqCodeMirror5.set_keymap();
-        let element = document.getElementById(eId);
+
+        super(elementRefs, options);
 
         this.options = options;
         this.manager = manager;
         this.version = 1;
 
-        this.cm = new CmCoqProvider(element, this.options, false, 0);
-
-        this.cm.editor.on('change', (editor, change) => {
+        this.cm = this.snippets[0].editor;
+        this.onChange = () => {
             let txt = this.getValue();
             this.version++;
-            this.onChange(txt, this.version);
-        });
+            this.onChangeRev(txt, this.version);
+        };
 
         if (this.options.mode && this.options.mode['company-coq']) {
             this.company_coq = new CompanyCoq(this.manager);
-            this.company_coq.attach(this.cm.editor);
+            //this.company_coq.attach(this.cm.editor);
         }
 
     }
 
     getCursorOffset() {
-        return this.cm.editor.getDoc().indexFromPos(this.cm.editor.getCursor());
+        return this.snippets[0].getCursorOffset();
     }
 
     getValue() {
-        // this will become concatenation
-        return this.cm.editor.getValue();
+        return this.snippets.map(part => part.getValue()).join('\n');
     }
 
-    onChange(newContent, version) { }
+    onChangeRev(newContent, version) { }
 
     clearMarks() {
-        this.cm.retract();
+        for (let part of this.snippets)
+            part.retract();
     }
 
     markDiagnostic(diag) {
         console.log(diag);
-        this.cm.mark(diag);
-        
+        // Find the part that contains the target line
+        let ln = 0, start_ln = diag.range.start.line, in_part = undefined;
+        for (let part of this.snippets) {
+            let nlines = part.editor.lineCount();
+            if (start_ln >= ln && start_ln < ln + nlines) {
+                in_part = part;
+                break;
+            }
+            else {
+                ln += nlines;
+            }
+        }
+        // Adjust the mark for the line offset
+        diag.range.start.line -= ln;
+        diag.range._end.line -= ln;
+        in_part.mark(diag);
     }
 
     static set_keymap() {
@@ -165,9 +160,19 @@ export class CmCoqProvider {
         if (options)
             copyOptions(options, cmOpts);
 
-        this.editor = CodeMirror.fromTextArea(element, cmOpts);
-        // this.createEditor(element,cmdOpts, replace) this is for direct creation from a div
-        
+        var makeHidden = $(element).is(':hidden') ||
+            /* corner case: a div with a single hidden child is considered hidden */
+            element.children.length == 1 && $(element.children[0]).is(':hidden');
+
+        if (element.tagName === 'TEXTAREA') {
+            /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
+            element.value ||= element.textContent;
+            this.editor = CodeMirror.fromTextArea(element, cmOpts);
+            replace = true;
+        } else {
+            this.editor = this.createEditor(element, cmOpts, replace);
+        }
+
         // Index of this particular provider
         this.idx = idx;
 
@@ -179,6 +184,7 @@ export class CmCoqProvider {
         if (this.filename) { this.openLocal(); this.startAutoSave(); }
 
         // Event handlers (to be overridden by ProviderContainer)
+        this.onChange = /** @type {() => void} */ (() => {});
         this.onInvalidate = (/** @type {any} */ mark) => {};
         this.onMouseEnter = (/** @type {any} */ stm, /** @type {any} */ ev) => {};
         this.onMouseLeave = (/** @type {any} */ stm, /** @type {any} */ ev) => {};
@@ -188,8 +194,9 @@ export class CmCoqProvider {
         this.onAction = (/** @type {any} */ action) => {};
 
         this.editor.on('beforeChange', (/** @type {any} */ cm, /** @type {any} */ evt) => this.onCMChange(cm, evt) );
+        this.editor.on('change', () => this.onChange());
 
-        this.editor.on('cursorActivity', (/** @type {{ operation: (arg0: () => void) => any; }} */ cm) => 
+        this.editor.on('cursorActivity', (/** @type {{ operation: (arg0: () => void) => any; }} */ cm) =>
             cm.operation(() => this._adjustWidgetsInSelection()));
 
         this.trackLineCount();
@@ -198,8 +205,8 @@ export class CmCoqProvider {
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
         editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
-        // if (makeHidden && !editor_element.is(':hidden'))
-        //     editor_element.css({display: "none"});
+        if (makeHidden && !editor_element.is(':hidden'))
+            editor_element.css({display: "none"});
 
         // Some hack to prevent CodeMirror from consuming PageUp/PageDn
         if (replace) pageUpDownOverride(editor_element[0]);
@@ -244,8 +251,22 @@ export class CmCoqProvider {
         CompanyCoq.configure(this.editor, options);
     }
 
-    getText() {
+    // ----------------------------------
+    // CoqEditor interface implementation
+
+    getValue() {
         return this.editor.getValue();
+    }
+
+    getCursorOffset() {
+        return this.editor.getDoc().indexFromPos(this.editor.getCursor());
+    }
+
+    // ---------------------------------
+
+    getLength() {
+        /** @todo optimize */
+        return this.editor.getValue().length;
     }
 
     trackLineCount() {
@@ -324,7 +345,7 @@ export class CmCoqProvider {
             /* Update the spans directly to avoid having to destroy and     */
             /* re-create the spans.                                         */
             /* (re-creating elements under cursor messes with mouse events) */
-            if (flag) spans.addClass(c); 
+            if (flag) spans.addClass(c);
             else      spans.removeClass(c);
             stm.mark.className =
                 stm.mark.className.replace(/( coq-highlight)?$/, flag ? ' coq-highlight' : '');
@@ -355,15 +376,15 @@ export class CmCoqProvider {
      * @param { any } diag
      */
     mark(diag) {
-     
+
         var tr_loc = ({character, line}) => { return {line: line, ch: character } };
 
         var className = (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
 
         var doc = this.editor.getDoc();
         let start = tr_loc(diag.range.start), end = tr_loc(diag.range._end);
- 
-        var mark = 
+
+        var mark =
             doc.markText(start, end,
              {className: className, attributes: {'data-range': JSON.stringify(diag.range)}});
 
@@ -380,7 +401,7 @@ export class CmCoqProvider {
         var doc = this.editor.getDoc(),
             {start, end} = pos;
 
-        var mark = 
+        var mark =
             doc.markText(start, end, {className: className});
 
         this._markWidgetsAsWell(start, end, mark);
@@ -410,7 +431,7 @@ export class CmCoqProvider {
 
     /**
      * Hack to apply MarkedSpan CSS class formatting and attributes to widgets
-     * within mark boundaries as well. 
+     * within mark boundaries as well.
      * (This is not handled by the native CodeMirror#markText.)
      * @param {any} start
      * @param {any} end
@@ -419,7 +440,7 @@ export class CmCoqProvider {
     _markWidgetsAsWell(start, end, mark) {
         var classNames = mark.className.split(/ +/);
         var attrs = mark.attributes || {};
-        for (let w of this.editor.findMarks(start, end, (/** @type {{ widgetNode: any; }} */ x) => x.widgetNode)) {
+        for (let w of this.editor.findMarks(start, end, (x) => x.widgetNode)) {
             for (let cn of classNames)
                 w.widgetNode.classList.add(cn);
             for (let attr in attrs)
@@ -433,7 +454,7 @@ export class CmCoqProvider {
      * @param {any} end
      */
     _unmarkWidgets(start, end) {
-        for (let w of this.editor.findMarks(start, end, (/** @type {{ widgetNode: any; }} */ x) => x.widgetNode)) {
+        for (let w of this.editor.findMarks(start, end, (x) => x.widgetNode)) {
             for (let cn of [...w.widgetNode.classList]) {
                 if (/^coq-/.exec(cn))
                     w.widgetNode.classList.remove(cn);
@@ -459,7 +480,7 @@ export class CmCoqProvider {
 
         // Locate selection mark and adjust widgets contain therein
         var selmark = editor.findMarksAt(editor.getCursor())
-            .filter((/** @type {{ className: string; }} */ m) => m.className == sel_className)[0], selmark_at;
+            .filter((m) => m.className == sel_className)[0], selmark_at;
 
         if (selmark && (selmark_at = selmark.find()))
             this._markWidgetsAsWell(selmark_at.from, selmark_at.to, selmark);
@@ -712,7 +733,7 @@ export class CmCoqProvider {
             this.editor.on('change', () => { this.dirty = true; });
             this.autosave = setInterval(() => { if (this.dirty) this.saveLocal(); },
                 this.autosave_interval);
-            window.addEventListener('beforeunload', 
+            window.addEventListener('beforeunload',
                 () => { clearInterval(this.autosave);
                         if (this.dirty) this.saveLocal(); });
         }
@@ -730,7 +751,7 @@ export class CmCoqProvider {
 
     openLocalDialog() {
         var span = this._makeFileDialog("Open file: "),
-            a = this._makeDialogLink('From disk...', 
+            a = this._makeDialogLink('From disk...',
                 () => this.openFileDialog());
 
         span.append(a);
@@ -757,7 +778,7 @@ export class CmCoqProvider {
 
         span.append(a1, share.append(a2, a3));
 
-        this.editor.openDialog(span[0], (/** @type {any} */ sel) => this.saveLocal(sel), 
+        this.editor.openDialog(span[0], (/** @type {any} */ sel) => this.saveLocal(sel),
                                {value: this.filename});
     }
 
@@ -813,7 +834,7 @@ export class CmCoqProvider {
     _setupTabCompletion(input, list) {
         input.keydown((/** @type {{ key: string; preventDefault: () => void; stopPropagation: () => void; }} */ ev) => { if (ev.key === 'Tab') {
             this._complete(input, list);
-            ev.preventDefault(); ev.stopPropagation(); } 
+            ev.preventDefault(); ev.stopPropagation(); }
         });
     }
 
@@ -833,6 +854,43 @@ export class CmCoqProvider {
         }
     }
 }
+
+
+/**
+ * A Coq sentence, typically ended in dot "."
+ *
+ * @class CmSentence
+ */
+ class CmSentence {
+
+    /**
+     * Creates an instance of CmSentence.
+     * @param {CodeMirror.Position} start
+     * @param {CodeMirror.Position} end
+     * @param {string} text
+     * @param {object} flags
+     * @memberof CmSentence
+     */
+    constructor(start, end, text, flags) {
+        // start, end: {line: number, ch: number}
+        // flags: {is_comment: bool, is_hidden: bool}
+        this.start = start;
+        this.end   = end;
+        this.text  = text;
+        /**
+         * @type {undefined}
+         */
+        this.mark  = undefined;
+        this.flags = flags || {};
+        this.feedback = [];
+        /**
+         * @type {undefined}
+         */
+        this.action = undefined;
+    }
+
+}
+
 
 /**
  * @param {{ (): JQuery<HTMLElement>; (): any; }} thing
@@ -868,7 +926,7 @@ export class Deprettify {
 
     /**
      * Remove redundant leading and trailing newlines generated by coqdoc.
-     * @param {HTMLElement} element 
+     * @param {HTMLElement} element
      */
     static trim(element) {
         var c;
@@ -878,7 +936,7 @@ export class Deprettify {
             element.removeChild(c);
         //if ((c = element.firstChild) && Deprettify.isWS(c))
         //    element.removeChild(c);
-        while ((c = element.lastChild) && 
+        while ((c = element.lastChild) &&
                 (Deprettify.isWS(c) || Deprettify.isBR(c)))
             element.removeChild(element.lastChild);
         return element;
@@ -902,7 +960,7 @@ export class Deprettify {
 
     /**
      * Translate back some unicode symbols to their original ASCII.
-     * @param {string} text 
+     * @param {string} text
      */
     static cleanup(text) {
         for (let [re, s] of this.REPLACES) text = text.replace(re, s);
@@ -917,6 +975,7 @@ Deprettify.REPLACES = /** @type {[RegExp, string][]} */ ([
     [/⊢/g, '|-'],   [/\n☐/g, ''],
     [/∃/g, 'exists']  /* because it is also a tactic... */
 ]);
+
 
 // Local Variables:
 // js-indent-level: 4

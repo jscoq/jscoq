@@ -5,7 +5,7 @@
 import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 
-import { editorAppend } from './coq-editor.js';
+import { editorAppend } from './coq-editor';
 
 // import './mode/coq-mode.js';
 
@@ -39,29 +39,25 @@ const diagField = StateField.define({
   provide: f => EditorView.decorations.from(f)
 })
 
+/**
+ * @typedef { import("./coq-editor").ICoqEditor } ICoqEditor
+ */
+
+/** Interface for CM5
+ * @implements ICoqEditor
+ */
 export class CoqCodeMirror6 {
 
+    /**
+     * Initializes a CodeMirror 6 instance in the specified element.
+     * @param {(string | HTMLElement)[]} elementRefs (must be of length 1)
+     */
+    constructor(elementRefs) {
 
-    // element e
-    constructor(eId) {
+        if (elementRefs.length != 1)
+            throw new Error('not implemented: `cm6` frontend requires a single element')
 
-        var cmOpts =
-            { mode : { name : "coq",
-                       version: 4,
-                       singleLineStringErrors : false
-                     },
-              lineNumbers       : true,
-              indentUnit        : 2,
-              tabSize           : 2,
-              indentWithTabs    : false,
-              matchBrackets     : true,
-              styleSelectedText : true,
-              dragDrop          : false, /* handled by CoqManager */
-              keyMap            : "jscoq",
-              className         : "jscoq"
-            };
-
-        let { container, area } = editorAppend(eId);
+        let { container, area } = editorAppend(elementRefs[0]);
 
         var cm = this;
 
@@ -78,7 +74,7 @@ export class CoqCodeMirror6 {
                       var newText = v.state.doc.toString();
                       area.value = newText;
                       cm.version++;
-                      cm.onChange(newText, cm.version);
+                      cm.onChangeRev(newText, cm.version);
                   }})
             ];
 
@@ -93,9 +89,8 @@ export class CoqCodeMirror6 {
     }
 
     // To be overriden by the manager as to provide diagnostics
-    onChange(newText) {
-        return;
-    }
+    onChange() { }
+    onChangeRev(newText, version) { }
 
     getValue() {
         return this.view.state.doc.toString();
@@ -123,10 +118,12 @@ export class CoqCodeMirror6 {
         this.view.dispatch(tr);
 
         // Debug code.
-        var from = { line: d.range.start.line, ch: d.range.start.character };
-        var to = { line: d.range._end.line, ch: d.range._end.character };
+        {
+            let from = { line: d.range.start.line, ch: d.range.start.character },
+                to = { line: d.range._end.line, ch: d.range._end.character };
 
-        console.log(`mark from (${from.line},${from.ch}) to (${to.line},${to.ch}) class: ${mclass}`);
+            console.log(`mark from (${from.line},${from.ch}) to (${to.line},${to.ch}) class: ${mclass}`);
+        }
 
         // var d = new Decoration(from, to);
         // var doc = this.editor.getDoc();
