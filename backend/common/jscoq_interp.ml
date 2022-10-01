@@ -11,6 +11,28 @@
 (* open Js_of_ocaml *)
 open Jscoq_proto.Proto
 
+module LibManager = struct
+  type progress_info =
+    { bundle : string
+    ; pkg    : string
+    ; loaded : int
+    ; total  : int
+    } [@@deriving yojson]
+
+  type lib_event =
+    | LibInfo     of string * Jslib.Coq_bundle.t
+    (** Information about the bundle, we could well put the json here *)
+    | LibProgress of progress_info
+    (** Information about loading progress *)
+    | LibLoaded   of string * Jslib.Coq_bundle.t
+    (** Bundle [pkg] is loaded *)
+    | LibError    of string * string
+    (** Bundle failed to load *)
+  [@@deriving yojson]
+end
+
+open LibManager
+
 module Callbacks = struct
 
   type t =
@@ -20,6 +42,7 @@ module Callbacks = struct
     ; system_version : string
     ; create_file : name:string -> content:string -> unit
     ; update_file : name:string -> content:string-> unit
+    ; coq_cma_link : string -> unit
     }
 
   let default =
@@ -29,6 +52,7 @@ module Callbacks = struct
     ; system_version = "undefined"
     ; create_file = (fun ~name:_ ~content:_ -> ())
     ; update_file = (fun ~name:_ ~content:_ -> ())
+    ; coq_cma_link = (fun _ -> ())
     }
 
   let cb = ref default
@@ -45,16 +69,8 @@ let opts = ref
     }
 
 (** Message handlers **)
-type progress_info =
-  [%import: Jslibmng.progress_info]
-  [@@deriving yojson]
-
-type lib_event =
-  [%import: Jslibmng.lib_event]
-  [@@deriving yojson]
-
 let post_lib_event le =
-  lib_event_to_yojson le |> !Callbacks.cb.post_message
+  LibManager.lib_event_to_yojson le |> !Callbacks.cb.post_message
 
 let post_answer ans =
   jscoq_answer_to_yojson ans |> !Callbacks.cb.post_message
@@ -75,11 +91,11 @@ let coq_info_string () =
   header1 ^ header2
 
 (** When a new package is loaded, the library load path has to be updated *)
-let update_loadpath (msg : lib_event) : unit =
+let update_loadpath (msg : LibManager.lib_event) : unit =
   match msg with
   | LibLoaded (_,bundle) ->
     List.iter Loadpath.add_vo_path
-      (Jslibmng.coqpath_of_bundle ~implicit:!opts.implicit_libs bundle)
+      (Jslib.Coq_bundle.coqpath ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
 
 let process_lib_event (msg : lib_event) : unit =
@@ -89,7 +105,7 @@ let process_lib_event (msg : lib_event) : unit =
 let mk_feedback ~span_id ?(route=0) contents =
   Feedback {doc_id = 0; span_id; route; contents}
 
-let mk_vo_path l = Jslibmng.paths_to_coqpath ~implicit:!opts.implicit_libs l
+let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
 (* set_opts  : general Coq initialization options *)
 let exec_init (set_opts : jscoq_options) =
@@ -97,7 +113,7 @@ let exec_init (set_opts : jscoq_options) =
   let opts = (opts := set_opts; set_opts) in
 
   Icoq.coq_init ({
-      ml_load      = Jslibmng.coq_cma_link;
+      ml_load      = !Callbacks.cb.coq_cma_link;
       fb_handler   = post_feedback;
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -113,7 +129,7 @@ let create_doc (opts : doc_options) =
   Icoq.new_doc ({
       top_name      = opts.top_name;
       mode          = opts.mode;
-      require_libs  = Jslibmng.require_libs opts.lib_init;
+      require_libs  = Jslib.require_libs opts.lib_init;
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -133,12 +149,12 @@ let requires ast =
   match ast with
   | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs); _ } ->
     let prefix_str = match prefix with
-    | Some ref -> Jslibmng.module_name_of_qualid ref
+    | Some ref -> Jslib.module_name_of_qualid ref
     | _ -> [] in
     let module_refs_str =
       (* XXX *)
       let module_refs = List.map fst module_refs in
-      List.map (fun modref -> Jslibmng.module_name_of_qualid modref) module_refs
+      List.map (fun modref -> Jslib.module_name_of_qualid modref) module_refs
     in
     Some ((prefix_str, module_refs_str))
   | _ -> None

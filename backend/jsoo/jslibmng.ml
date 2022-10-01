@@ -11,9 +11,7 @@
    Due to the large size of Coq libraries, we wnat to perform caching
    and lazy loading in the browser.
 *)
-open Jslib
 open Lwt
-open Js_of_ocaml
 module JL = Js_of_ocaml_lwt
 
 let verb = false
@@ -38,7 +36,7 @@ type progress_info =
   }
 
 type lib_event =
-  | LibInfo     of string * coq_bundle  (* Information about the bundle, we could well put the json here *)
+  | LibInfo     of string * Coq_bundle.t  (* Information about the bundle, we could well put the json here *)
   | LibProgress of progress_info        (* Information about loading progress *)
   | LibLoaded   of string * coq_bundle  (* Bundle [pkg] is loaded *)
   | LibError    of string * string      (* Bundle failed to load *)
@@ -232,23 +230,6 @@ let is_intrinsic = function
     | "Coq" :: _ -> true
     | _ -> false
 
-let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
-  let phys_path =  (* HACK to allow manual override of dir path *)
-    if last unix_prefix = Some "." then unix_prefix
-                                   else unix_prefix @ lib_path
-  in
-  Loadpath.{
-    unix_path = String.concat "/" phys_path
-  ; coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path)
-  ; has_ml = true
-  ; implicit = implicit && is_intrinsic lib_path
-  ; recursive = false
-  }
-
-let paths_to_coqpath ?(implicit=false) lib_path =
-  List.map (fun (path_el, phys) ->
-    path_to_coqpath ~implicit ~unix_prefix:phys path_el
-  ) lib_path
 
 let require_libs libs =
   List.map (fun lp -> lp, None, Some Lib.Export) libs

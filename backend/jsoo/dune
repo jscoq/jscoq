@@ -4,8 +4,7 @@
  (modules :standard \ jscoq_worker jslog)
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
- (libraries js_of_ocaml-lwt yojson ppx_deriving_yojson.runtime coq-core.stm coq-core.toplevel
-            jslib coq-serapi.serlib coq-serapi.serapi_v8_14))
+ (libraries jscoq_core js_of_ocaml-lwt))
 
 (executable
  (name jscoq_worker)
@@ -27,13 +26,6 @@
 (rule
  (target jscoq_worker.bc.cjs)
  (action (copy jscoq_worker.bc.js jscoq_worker.bc.cjs)))
-
-(rule
- (target jscoq_version.ml)
- (deps ../../package.json)
- (action (with-stdout-to %{target}
-  (run node -p 
-      "`let jscoq_version = \"${require(\"../../package.json\").version}\"`"))))
 
 (rule
  (targets marshal-arch.js)
