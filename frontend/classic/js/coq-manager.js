@@ -313,8 +313,11 @@ export class CoqManager {
             this.coq = this.options.subproc
                 ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend, this.options.is_npm)
                 : new CoqWorker(this.options.base_path, null, null, this.options.backend, this.options.is_npm);
-            this.coq.options = this.options;
             this.coq.observers.push(this);
+
+            if (this.options.debug) {
+                this.coq.config.debug = true;
+            }
 
             // @todo load progress with an egg
             let progressFmt = (pc, ev) =>
@@ -666,7 +669,7 @@ export class CoqManager {
             };
 
         for (let pkg of this.options.init_import || []) {
-            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg.split('.'));
+            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
         }
 
         this.coq.init(init_opts, doc_opts);

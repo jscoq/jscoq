@@ -69,10 +69,12 @@ export class PackageManager {
      * @memberof PackageManager
      */
     static defaultPkgPath(base_path, backend) {
+        return '../coq-pkgs/';
+        /*
         return {
             'js': new URL('../coq-pkgs/', base_path).href,
             'wa': new URL('../bin/coq/', base_path).href
-        }[backend];
+        }[backend];*/
     }
 
     populate() {
@@ -225,16 +227,18 @@ export class PackageManager {
     }
 
     getLoadPath() {
+        /*
         switch (this.backend) {
-        case 'js':
+        case 'js':*/
             return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
                 let pkg = this.getPackage(pkg_name),
                     phys = pkg.archive ? ['/lib'] : [];
                 return pkg.info.pkgs.map(pkg => [pkg.pkg_id, phys]);
             }));
+        /*
         case 'wa':
             return ['/lib'];
-        }
+        }*/
     }
 
     showPackage(bname) {

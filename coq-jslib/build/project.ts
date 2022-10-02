@@ -595,7 +595,7 @@ class JsCoqCompat {
                 infile = mod.physical, outfile = `${infile}.js`;
             // assumes volume is fsif_native...
             child_process.execSync(`js_of_ocaml --wrap-with-fun= -o ${outfile} ${infile}`);
-            return [{...mod, payload: new Uint8Array(/*empty*/)},
+            return [mod, /*{...mod, payload: new Uint8Array(*empty*)},*/
                     {...mod, physical: outfile, ext: '.cma.js'}];
         }
         else return [mod];
