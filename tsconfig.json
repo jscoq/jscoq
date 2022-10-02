@@ -4,7 +4,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
-    "lib": ["esnext", "dom", "dom.iterable"],
+    "lib": ["esnext", "dom", "dom.iterable", "webworker"],
     "esModuleInterop": true,
     // "sourceMap": true,
     // "declaration": true,

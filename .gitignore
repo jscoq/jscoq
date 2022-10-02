@@ -3,6 +3,7 @@
 .*.swp
 .cache
 /dist
+/bin
 
 # Local build configuration file
 /config.inc

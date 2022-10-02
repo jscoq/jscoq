@@ -28,10 +28,9 @@ export class CoqWorkerConfig {
      * from which this script is loaded.
      */
     static determineWorkerPath(base_path, is_npm, backend) : URL {
-        var nmPath = is_npm ? '..' : 'node_modules';
         return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
-                      base_path);
+                        'wa': "dist/wacoq_worker.js"}[backend],
+                       base_path);
     }
 }
 

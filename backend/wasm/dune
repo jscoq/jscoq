@@ -1,0 +1,23 @@
+(executable
+ (name wacoq_worker)
+ (modes byte)
+ (preprocess (staged_pps ppx_import ppx_deriving_yojson))
+ (libraries coq-core.stm coq-core.toplevel yojson coq-serapi.serlib coq-serapi.serapi_v8_14)
+ (ocamlc_flags -no-check-prims)
+ (link_flags -linkall))
+
+(rule
+ (target dllcoqrun_stubs.wasm)
+ (deps byterun_stubs.c)
+ (action
+  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
+	  byterun_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
+      -I%{ocaml-config:standard_library}")))
+
+(rule
+ (target dlllib_stubs.wasm)
+ (deps lib_stubs.c)
+ (action
+  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
+	  lib_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
+      -I%{ocaml-config:standard_library}")))

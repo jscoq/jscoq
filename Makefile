@@ -88,6 +88,9 @@ all:
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
+watch: force
+	$(DUNE) build @jscoq -w $(DUNE_FLAGS)
+
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
 
@@ -100,7 +103,7 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
 
 links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs
