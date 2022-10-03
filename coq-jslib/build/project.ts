@@ -605,6 +605,7 @@ class JsCoqCompat {
      * Converts a package manifest to (older) jsCoq format.
      * @param manifest original JSON manifest
      * @param pkgfile `.coq-pkg` archive filename
+     * @obsolete Package manifest format is now consistent between js/wa.
      */
     static backportManifest(manifest: any, pkgfile: string) {
         var d: {[dp: string]: string[]} = {}

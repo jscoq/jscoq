@@ -227,18 +227,14 @@ export class PackageManager {
     }
 
     getLoadPath() {
-        /*
-        switch (this.backend) {
-        case 'js':*/
-            return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
-                let pkg = this.getPackage(pkg_name),
-                    phys = pkg.archive ? ['/lib'] : [];
-                return pkg.info.pkgs.map(pkg => [pkg.pkg_id, phys]);
-            }));
-        /*
-        case 'wa':
-            return ['/lib'];
-        }*/
+        let prefix = m => m.replace(/[.][^.]+$/, ''),
+            pkgs = ms => [...new Set(ms.map(prefix))].map(pkg => pkg.split('.'));
+
+        return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
+            let pkg = this.getPackage(pkg_name),
+                phys = pkg.archive ? ['/lib'] : [];
+            return pkgs(Object.keys(pkg.info.modules)).map(pkg => [pkg, phys]);
+        }));
     }
 
     showPackage(bname) {
@@ -484,23 +480,8 @@ class PackageIndex {
     }
 
     add(pkgInfo) {
-        if (this.backend === 'js')
-            pkgInfo.modules = this._listModules(pkgInfo);
-
         for (let mod in pkgInfo.modules || {})
             this.moduleIndex.set(mod, pkgInfo);
-    }
-
-    _listModules(pkgInfo) {
-        /** @todo for jsCoq; should put this in the manifest like in waCoq */
-        var modules = {};
-        for (let {pkg_id, vo_files} of pkgInfo.pkgs || []) {
-            for (let [vo] of vo_files) {
-                var mod = [...pkg_id, vo.replace(/[.]vo$/, '')].join('.');
-                modules[mod] = {deps: (pkgInfo.modDeps || {})[mod] || []};
-            }
-        }
-        return modules;
     }
 
     *findModules(prefix, suffix, exact=false) {

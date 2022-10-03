@@ -271,10 +271,7 @@ export class CoqWorker {
      * @param {any} load_path
      */
     refreshLoadPath(load_path) {
-        switch (this.config.backend) {
-        case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
-        case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
-        }
+        this.sendCommand(["ReassureLoadPath", load_path]);
     }
 
     /**
