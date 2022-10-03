@@ -69,8 +69,8 @@ class IcoqPod extends EventEmitter {
             }
         }));
 
-        if (refresh)
-            this.command(['RefreshLoadPath']);
+        //if (refresh)
+        //    this.command(['RefreshLoadPath']);
 
         this.answer([['LoadedPkg', uris]]);
     }
@@ -153,7 +153,8 @@ class IcoqPod extends EventEmitter {
             {
                 js: {
                     wacoq_emit: (s:number) => this._answer(s),
-                    interrupt_pending: (_:number) => this._interrupt_pending()
+                    interrupt_pending: (_:number) => this._interrupt_pending(),
+                    coq_vm_trap: (u:void) => console.warn('coq vm trap!')
                 }
             }
         );

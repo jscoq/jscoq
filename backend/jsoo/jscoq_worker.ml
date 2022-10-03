@@ -118,6 +118,27 @@ let setup_std_printers () =
   Sys_js.set_channel_flusher stderr (fun msg -> post_answer (Log (Notice, Pp.str @@ "stderr: " ^ msg)));
   ()
 
+external coq_vm_trap : unit -> unit = "coq_vm_trap"
+
+let setup_top () =
+  (* Custom toplevel is used for bytecode-to-js dynlink  *)
+  let load_cma = fun cma -> Jslibmng.coq_cma_link ~file_path:cma in
+  let load_plugin pg =
+    match Mltop.PluginSpec.repr pg with
+    | None, _pkg -> ()             (* Findlib; not implemented *)
+    | Some cma, _ -> load_cma cma  (* Legacy loading method *)    in
+
+  let open Mltop in
+  set_top
+    { load_plugin = load_plugin
+    ; load_module = load_cma
+    (* We ignore all the other operations for now. *)
+    ; add_dir  = (fun _ -> ())
+    ; ml_loop  = (fun _ -> ());
+    };
+
+  coq_vm_trap ()
+
 let jscoq_protect f =
   try f ()
   with | exn -> post_answer @@ Jscoq_interp.coq_exn_info exn
@@ -158,7 +179,8 @@ let write_file ~name ~content =
 
 let jsoo_cb =
   Jscoq_interp.Callbacks.
-    { post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
+    { pre_init = setup_top
+    ; post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
     ; post_file = post_file
     ; interrupt_setup = interrupt_setup
     ; branding = "jsCoq"
@@ -166,7 +188,6 @@ let jsoo_cb =
     ; read_file = Sys_js.read_file
     ; write_file = write_file
     ; register_cma = Jslibmng.register_cma
-    ; link_cma = Jslibmng.coq_cma_link
     ; load_pkg = (fun ~base_path ~pkg ~cb ->
       Lwt.async (fun () -> Jslibmng.load_pkg ~verb:false cb base_path pkg))
     ; info_pkg = (fun ~base_path ~pkgs ~cb ->

@@ -13,7 +13,8 @@ module Callbacks : sig
   open Jslib.LibManager
 
   type t =
-    { post_message : (Yojson.Safe.t -> unit)
+    { pre_init : unit -> unit
+    ; post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (Jscoq_proto.Proto.opaque -> unit)
     ; branding : string
@@ -21,7 +22,6 @@ module Callbacks : sig
     ; read_file : name:string -> string
     ; write_file : name:string -> content:string-> unit
     ; register_cma : file_path:string -> unit
-    ; link_cma : file_path:string -> unit
     ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
     ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }

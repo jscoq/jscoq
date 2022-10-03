@@ -18,7 +18,8 @@ module Callbacks = struct
   open LibManager
 
   type t =
-    { post_message : (Yojson.Safe.t -> unit)
+    { pre_init : unit -> unit
+    ; post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (opaque -> unit)
     ; branding : string
@@ -26,13 +27,13 @@ module Callbacks = struct
     ; read_file : name:string -> string
     ; write_file : name:string -> content:string-> unit
     ; register_cma : file_path:string -> unit
-    ; link_cma : file_path:string -> unit
     ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
     ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }
 
   let default =
-    { post_message = (fun _ -> ())
+    { pre_init = (fun () -> ())
+    ; post_message = (fun _ -> ())
     ; post_file = (fun _ _ _ -> ())
     ; interrupt_setup = (fun _ -> ())
     ; branding = "xxCoq"
@@ -40,7 +41,6 @@ module Callbacks = struct
     ; read_file = (fun ~name:_ -> "")
     ; write_file = (fun ~name:_ ~content:_ -> ())
     ; register_cma = (fun ~file_path:_ -> ())
-    ; link_cma = (fun ~file_path:_ -> failwith "not implemented")
     ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> ())
     ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> ())
     }
@@ -102,8 +102,9 @@ let exec_init (set_opts : jscoq_options) =
 
   let opts = (opts := set_opts; set_opts) in
 
+  !Callbacks.cb.pre_init ();
+
   Icoq.coq_init ({
-      ml_load      = (fun cma -> !Callbacks.cb.link_cma ~file_path:cma);
       fb_handler   = post_feedback;
       aopts        = { enable_async = None;
                        async_full   = false;

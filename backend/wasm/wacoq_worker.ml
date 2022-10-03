@@ -1,23 +1,29 @@
+open Jscoq_core
+open Jscoq_core.Jscoq_interp
+open Jscoq_core.Jscoq_proto.Proto
+
 external emit : string -> unit = "wacoq_emit" (* implemented in `core.ts` *)
 
-
-let fb_handler (fb : Feedback.feedback) =
-  emit @@ "[]" (*serialize [Feedback fb]*)
+let deserialize (json : string) =
+  [%of_yojson: jscoq_cmd] @@ Yojson.Safe.from_string json
+  
+let serialize (answers : jscoq_answer list) =
+  Yojson.Safe.to_string @@ `List (List.map [%to_yojson: jscoq_answer] answers)
+  
+let doc = ref (Obj.magic 0)
 
 let handleRequest json_str =
-  "[]"
-  (*
+  Format.eprintf "handling request %s@\n%!" json_str;
   let resp =
-  try
-    let cmd = deserialize json_str                     in
-    match cmd with
-      | Result.Error e -> [JsonExn e]
-      | Result.Ok cmd -> wacoq_execute cmd
-  with exn ->
-    [coq_exn_info exn]
+    try
+      let cmd = deserialize json_str                     in
+      match cmd with
+        | Result.Error e -> [JsonExn e]
+        | Result.Ok cmd -> jscoq_execute doc cmd; []
+    with exn ->
+      [coq_exn_info exn]
   in
-  Interpreter.cleanup () ;
-  serialize resp *)
+  serialize resp
 
 let handleRequestsFromStdin () =
   try
@@ -27,10 +33,24 @@ let handleRequestsFromStdin () =
   with End_of_file -> ()
 
 
+let wasm_cb =
+  Jscoq_interp.Callbacks.
+    { pre_init = (fun () -> ())
+    ; post_message = (fun msg -> emit @@ Yojson.Safe.to_string @@ `List [msg])
+    ; post_file = (fun _ _ _ -> ())
+    ; interrupt_setup = (fun _ -> ())
+    ; branding = "waCoq"
+    ; subsystem_version = "wasi-sdk 12"
+    ; read_file = (fun ~name:_ -> "")
+    ; write_file = (fun ~name:_ ~content:_ -> ())
+    ; register_cma = (fun ~file_path:_ -> ())
+    ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> failwith "handled in JS")
+    ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> failwith "handled in JS")
+    }
+  
 let () =
+  Jscoq_interp.Callbacks.set wasm_cb;
   try
-    (* emit @@ serialize [CoqInfo (info_string ())] ; *)
-    ignore @@ Feedback.add_feeder fb_handler ;
     Callback.register "wacoq_post" handleRequest ;
     if (Array.length Sys.argv > 1) && Sys.argv.(1) = "-stdin" then
       handleRequestsFromStdin ()
