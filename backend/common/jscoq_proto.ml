@@ -91,7 +91,6 @@ type query =
   [@@deriving yojson]
 
 type opaque
-(* type opaque = Js_of_ocaml.Js.Unsafe.any *)
 let opaque_to_yojson _x = `Null
 let opaque_of_yojson _x = Result.Error "opaque value"
 

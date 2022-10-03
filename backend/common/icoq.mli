@@ -58,7 +58,7 @@ val version : string * string * int32
 val mode_of_stm : doc:Stm.doc -> Stateid.t -> in_mode
 val context_of_stm : doc:Stm.doc -> Stateid.t -> (Evd.evar_map * Environ.env)
 
-val compile_vo : read_file:(name:string -> string) -> doc:Stm.doc -> string -> string
+val compile_vo : doc:Stm.doc -> string -> string
 
 (** [set_debug t] enables/disables debug mode  *)
 val set_debug : bool -> unit

@@ -10,7 +10,7 @@
  *)
 
 open Js_of_ocaml
-open Jscoqlib
+open Jscoq_core
 open Jscoq_proto.Proto
 
 let rec json_to_obj (cobj : < .. > Js.t) (json : Yojson.Safe.t) : < .. > Js.t =
@@ -65,7 +65,7 @@ let buffer_of_uint8array array =    (* pretty much copied from CoqWorker.arrayBu
     let buffer = (coerce buffer)##slice array##.byteOffset array##.byteLength in
     new%js Typed_array.uint8Array_fromBuffer buffer, buffer
 
-external interrupt_setup : Typed_array.int32Array Js.t -> unit = "interrupt_setup"
+external interrupt_setup : opaque (* Uint32Array *) -> unit = "interrupt_setup"
 
 let _answer_to_jsobj msg =
   let json_msg = jscoq_answer_to_yojson msg                            in
@@ -130,7 +130,7 @@ let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
   let o = Js.Optdef.bind cmd (fun cmd ->
     if Js.to_string cmd = "InterruptSetup" then
       let arg = Js.array_get (coerce cobj) 1 in
-      Js.Optdef.return @@ Result.Ok (InterruptSetup (inject arg))
+      Js.Optdef.return @@ Result.Ok (InterruptSetup (Obj.magic arg) (* @oops *))
     else Js.undefined) in
   Js.Optdef.get o (fun () -> jscoq_cmd_of_yojson @@ obj_to_json cobj)
 
@@ -152,14 +152,25 @@ let on_msg doc msg =
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
 
+let write_file ~name ~content =
+  try         Sys_js.create_file ~name ~content
+  with _e ->  Sys_js.update_file ~name ~content
+
 let jsoo_cb =
   Jscoq_interp.Callbacks.
     { post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
     ; post_file = post_file
-    ; interrupt_setup = (fun shmen -> interrupt_setup (Js.Unsafe.coerce shmen))
-    ; system_version = Sys_js.js_of_ocaml_version
-    ; create_file = Sys_js.create_file
-    ; update_file = Sys_js.update_file
+    ; interrupt_setup = interrupt_setup
+    ; branding = "jsCoq"
+    ; subsystem_version = "Js_of_ocaml " ^ Sys_js.js_of_ocaml_version
+    ; read_file = Sys_js.read_file
+    ; write_file = write_file
+    ; register_cma = Jslibmng.register_cma
+    ; link_cma = Jslibmng.coq_cma_link
+    ; load_pkg = (fun ~base_path ~pkg ~cb ->
+      Lwt.async (fun () -> Jslibmng.load_pkg ~verb:false cb base_path pkg))
+    ; info_pkg = (fun ~base_path ~pkgs ~cb ->
+      Lwt.async (fun () -> Jslibmng.info_pkg cb base_path pkgs))
     }
 
 let setup_interp () =

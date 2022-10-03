@@ -1,14 +1,14 @@
 (library
  (name jscoqlib)
  (modes byte)
- (modules :standard \ jscoq_worker jslog)
+ (modules :standard \ jscoq_worker jslog jslibmng)
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
  (libraries jscoq_core js_of_ocaml-lwt))
 
 (executable
  (name jscoq_worker)
- (modules jscoq_worker)
+ (modules jscoq_worker jslibmng)
  (modes byte js)
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
@@ -21,7 +21,7 @@
   (flags :standard (:include .extraflags) --dynlink +dynlink.js +toplevel.js --setenv PATH=/bin))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
- (libraries num zarith_stubs_js jscoqlib))
+ (libraries num zarith_stubs_js jscoq_core js_of_ocaml-lwt))
 
 (rule
  (target jscoq_worker.bc.cjs)

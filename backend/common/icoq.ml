@@ -49,7 +49,7 @@ type doc_opts = {
 
 type in_mode = Proof | General (* pun intended *)
 
-external _coq_vm_trap : unit -> unit = "coq_vm_trap"
+external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
 type 'a seq = 'a Seq.t
 
@@ -76,7 +76,7 @@ let coq_init opts =
 
   if opts.debug then CDebug.set_debug_all true;
 
-  (* coq_vm_trap (); *)
+  coq_vm_trap ();
 
   (* Custom toplevel is used for bytecode-to-js dynlink  *)
   let ser_mltop : Mltop.toplevel = let open Mltop in
@@ -149,7 +149,7 @@ let context_of_stm ~doc sid =
 
 (* Compilation *)
 
-let compile_vo ~read_file ~doc vo_out_fn =
+let compile_vo ~doc vo_out_fn =
   ignore(Stm.join ~doc);
   let dirp = Lib.library_dp () in
   (* freeze and un-freeze to to allow "snapshot" compilation *)
@@ -157,7 +157,7 @@ let compile_vo ~read_file ~doc vo_out_fn =
   let frz = Vernacstate.freeze_interp_state ~marshallable:false in
   Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp vo_out_fn;
   Vernacstate.unfreeze_interp_state frz;
-  read_file ~name:vo_out_fn
+  vo_out_fn
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

@@ -12,7 +12,12 @@
    and lazy loading in the browser.
 *)
 open Lwt
+open Js_of_ocaml
 module JL = Js_of_ocaml_lwt
+
+open Jscoq_core
+open Jscoq_core.Jslib
+open Jscoq_core.Jslib.LibManager
 
 let verb = false
 
@@ -28,26 +33,9 @@ let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
 (* The cma resolver cache maps a cma module to its actual path. *)
 let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 103
 
-type progress_info =
-  { bundle : string
-  ; pkg    : string
-  ; loaded : int
-  ; total  : int
-  }
-
-type lib_event =
-  | LibInfo     of string * Coq_bundle.t  (* Information about the bundle, we could well put the json here *)
-  | LibProgress of progress_info        (* Information about loading progress *)
-  | LibLoaded   of string * coq_bundle  (* Bundle [pkg] is loaded *)
-  | LibError    of string * string      (* Bundle failed to load *)
-
 type out_fn = lib_event -> unit
 
 exception DynLinkFailed of string
-
-let is_bytecode file =
-  let chk sf = Filename.check_suffix file sf in
-  chk "cma" || chk "cmo" || chk "cma.js" || chk "cmo.js"
 
 let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t =
   let open JL.XmlHttpRequest                        in
@@ -85,9 +73,9 @@ let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t 
   else Lwt.return_unit
 
 let preload_pkg ~verb out_fn base_path bundle pkg : unit Lwt.t =
-  let pkg_dir = to_dir pkg                                           in
+  let pkg_dir = Coq_pkg.dir pkg                                      in
   let ncma    = List.length pkg.cma_files                            in
-  let nfiles  = no_files pkg                                         in
+  let nfiles  = Coq_pkg.num_files pkg                                in
   if verb then
     Format.eprintf "pre-loading package %s, [00/%02d] files\n%!" pkg_dir nfiles;
   (* XXX: pkg_start, we don't emit an event here *)
@@ -104,12 +92,12 @@ let preload_pkg ~verb out_fn base_path bundle pkg : unit Lwt.t =
   (* out_fn (LibLoadedPkg bundle pkg); *)
   Lwt.return_unit
 
-let parse_bundle base_path file : coq_bundle Lwt.t =
+let parse_bundle base_path file : Coq_bundle.t Lwt.t =
   let open JL.XmlHttpRequest in
   let file_url = base_path ^ file ^ ".json" in
   get file_url >>= fun res ->
   if Int.equal res.code 200 then
-    match Jslib.coq_bundle_of_yojson (Yojson.Safe.from_string res.content) with
+    match Jslib.Coq_bundle.of_yojson (Yojson.Safe.from_string res.content) with
     | Result.Ok bundle -> return bundle
     | Result.Error s   ->
       Format.eprintf "JSON parsing error in parse_bundle for file %s: %s\n%!" file s;
@@ -185,10 +173,10 @@ let coq_vo_req url =
     if verb then Format.eprintf "url request for %s FAILED\n%!" url; (* with category info *)
     None
 
-let coq_cma_link cmo_file =
+let coq_cma_link ~file_path =
   let open Format in
   (* Coq 8.16 doesn't append the extension anymore when submitting this *)
-  let cmo_file = cmo_file ^ ".cma" in
+  let cmo_file = file_path ^ ".cma" in
   if verb then eprintf "bytecode file %s requested\n%!" cmo_file;
   let cmo_file =
     try Hashtbl.find cma_cache cmo_file ^ "/" ^ cmo_file
@@ -220,37 +208,3 @@ let register_cma ~file_path =
   let filename = Filename.basename file_path in
   let dir = Filename.dirname file_path in
   Hashtbl.add cma_cache filename dir
-
-let rec last = function
-    | [] -> None
-    | [x] -> Some x
-    | _ :: t -> last t
-
-let is_intrinsic = function
-    | "Coq" :: _ -> true
-    | _ -> false
-
-
-let require_libs libs =
-  List.map (fun lp -> lp, None, Some Lib.Export) libs
-  (* Last coordinate: *)
-  (*   None            : just require            *)
-  (*   Some Lib.Import : import but don't export *)
-  (*   Some Lib.Export : import and export       *)
-
-let coqpath_of_bundle ?(implicit=false) bundle =
-  List.map (fun pkg ->
-    path_to_coqpath ~implicit pkg.pkg_id
-  ) bundle.pkgs
-
-let path_of_dirpath dirpath =
-  Names.(List.rev_map Id.to_string (DirPath.repr dirpath))
-
-let module_name_of_qualid qualid =
-  let (dirpath, id) = Libnames.repr_qualid qualid in
-  (path_of_dirpath dirpath) @ [Names.Id.to_string id]
-
-(* let module_name_of_reference ref =
- *   match ref with
- *   | Libnames.Ident id -> [Names.Id.to_string id]
- *   | Libnames.Qualid qid -> module_name_of_qualid qid *)

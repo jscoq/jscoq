@@ -8,16 +8,22 @@
  * Interpreter for the Coq communication protocol
  *)
 
-(** XXX: Functorialize *)
 module Callbacks : sig
+
+  open Jslib.LibManager
 
   type t =
     { post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (Jscoq_proto.Proto.opaque -> unit)
-    ; system_version : string
-    ; create_file : name:string -> content:string -> unit
-    ; update_file : name:string -> content:string-> unit
+    ; branding : string
+    ; subsystem_version : string
+    ; read_file : name:string -> string
+    ; write_file : name:string -> content:string-> unit
+    ; register_cma : file_path:string -> unit
+    ; link_cma : file_path:string -> unit
+    ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
+    ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }
 
   val set : t -> unit

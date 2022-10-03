@@ -20,7 +20,7 @@ module Coq_pkg : sig
     } [@@deriving yojson]
 
   val dir  : t -> string
-  val dp : t -> string
+  (*val dp : t -> string*)
   val num_files : t -> int
 end
 
@@ -31,12 +31,34 @@ module Coq_bundle : sig
     ; deps      : string list
     ; pkgs      : Coq_pkg.t list
     ; archive   : string option
-    ; modDeps   : Yojson.Basic.t option
+    ; modDeps   : Yojson.Safe.t option
     } [@@deriving yojson]
 
   val coqpath : ?implicit:bool -> t -> Loadpath.vo_path list
 
 end
+
+module LibManager : sig
+  type progress_info =
+    { bundle : string
+    ; pkg    : string
+    ; loaded : int
+    ; total  : int
+    } [@@deriving yojson]
+
+  type lib_event =
+    | LibInfo     of string * Coq_bundle.t
+    (** Information about the bundle, we could well put the json here *)
+    | LibProgress of progress_info
+    (** Information about loading progress *)
+    | LibLoaded   of string * Coq_bundle.t
+    (** Bundle [pkg] is loaded *)
+    | LibError    of string * string
+    (** Bundle failed to load *)
+  [@@deriving yojson]
+end
+
+val is_bytecode : string -> bool
 
 (** This shouldn't be needed...  *)
 val paths_to_coqpath : ?implicit:bool -> (string list * string list) list -> Loadpath.vo_path list

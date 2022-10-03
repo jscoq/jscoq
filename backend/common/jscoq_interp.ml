@@ -11,48 +11,38 @@
 (* open Js_of_ocaml *)
 open Jscoq_proto.Proto
 
-module LibManager = struct
-  type progress_info =
-    { bundle : string
-    ; pkg    : string
-    ; loaded : int
-    ; total  : int
-    } [@@deriving yojson]
-
-  type lib_event =
-    | LibInfo     of string * Jslib.Coq_bundle.t
-    (** Information about the bundle, we could well put the json here *)
-    | LibProgress of progress_info
-    (** Information about loading progress *)
-    | LibLoaded   of string * Jslib.Coq_bundle.t
-    (** Bundle [pkg] is loaded *)
-    | LibError    of string * string
-    (** Bundle failed to load *)
-  [@@deriving yojson]
-end
-
-open LibManager
+open Jslib
 
 module Callbacks = struct
+
+  open LibManager
 
   type t =
     { post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (opaque -> unit)
-    ; system_version : string
-    ; create_file : name:string -> content:string -> unit
-    ; update_file : name:string -> content:string-> unit
-    ; coq_cma_link : string -> unit
+    ; branding : string
+    ; subsystem_version : string
+    ; read_file : name:string -> string
+    ; write_file : name:string -> content:string-> unit
+    ; register_cma : file_path:string -> unit
+    ; link_cma : file_path:string -> unit
+    ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
+    ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }
 
   let default =
     { post_message = (fun _ -> ())
     ; post_file = (fun _ _ _ -> ())
     ; interrupt_setup = (fun _ -> ())
-    ; system_version = "undefined"
-    ; create_file = (fun ~name:_ ~content:_ -> ())
-    ; update_file = (fun ~name:_ ~content:_ -> ())
-    ; coq_cma_link = (fun _ -> ())
+    ; branding = "xxCoq"
+    ; subsystem_version = "??"
+    ; read_file = (fun ~name:_ -> "")
+    ; write_file = (fun ~name:_ ~content:_ -> ())
+    ; register_cma = (fun ~file_path:_ -> ())
+    ; link_cma = (fun ~file_path:_ -> failwith "not implemented")
+    ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> ())
+    ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> ())
     }
 
   let cb = ref default
@@ -82,12 +72,12 @@ let post_feedback fb =
 
 let coq_info_string () =
   let coqv, ccv, cmag = Icoq.version                          in
-  let jsoov = !Callbacks.cb.system_version                    in
+  let subsys = !Callbacks.cb.subsystem_version                in
   let header1 = Printf.sprintf
       "jsCoq (%s), Coq %s/%4d\n"
       Jscoq_version.jscoq_version coqv (Int32.to_int cmag)    in
   let header2 = Printf.sprintf
-      "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
+      "OCaml %s, %s\n" ccv subsys                             in
   header1 ^ header2
 
 (** When a new package is loaded, the library load path has to be updated *)
@@ -98,7 +88,7 @@ let update_loadpath (msg : LibManager.lib_event) : unit =
       (Jslib.Coq_bundle.coqpath ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
 
-let process_lib_event (msg : lib_event) : unit =
+let process_lib_event (msg : LibManager.lib_event) : unit =
   update_loadpath msg;
   post_lib_event msg
 
@@ -113,7 +103,7 @@ let exec_init (set_opts : jscoq_options) =
   let opts = (opts := set_opts; set_opts) in
 
   Icoq.coq_init ({
-      ml_load      = !Callbacks.cb.coq_cma_link;
+      ml_load      = (fun cma -> !Callbacks.cb.link_cma ~file_path:cma);
       fb_handler   = post_feedback;
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -226,15 +216,12 @@ let jscoq_execute =
     exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
 
   | Register file_path  ->
-    Jslibmng.register_cma ~file_path
+    !Callbacks.cb.register_cma ~file_path
 
   | Put (filename, content) ->
-    begin
-      try         !Callbacks.cb.create_file ~name:filename ~content
-      with _e ->  !Callbacks.cb.update_file ~name:filename ~content
-    end;
-    if Jslibmng.is_bytecode filename
-    then Jslibmng.register_cma ~file_path:filename
+    !Callbacks.cb.write_file ~name:filename ~content;
+    if Jslib.is_bytecode filename
+    then !Callbacks.cb.register_cma ~file_path:filename
 
   | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
 
@@ -250,11 +237,9 @@ let jscoq_execute =
     out_fn @@ Ready iid
 
   | LoadPkg(base, pkg)  ->
-    let verb = false in
-    Lwt.async (fun () -> Jslibmng.load_pkg ~verb process_lib_event base pkg)
-
+    !Callbacks.cb.load_pkg ~base_path:base ~pkg ~cb:process_lib_event
   | InfoPkg(base, pkgs) ->
-    Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
+    !Callbacks.cb.info_pkg ~base_path:base ~pkgs ~cb:process_lib_event
 
   | InterruptSetup shmem -> !Callbacks.cb.interrupt_setup shmem
 
