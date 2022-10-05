@@ -88,14 +88,17 @@ all:
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
-watch: force
-	$(DUNE) build @jscoq -w $(DUNE_FLAGS)
+wacoq: force
+	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
 
 jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)
+
+wacoq_worker:
+	$(DUNE) build @wacoq_worker $(DUNE_FLAGS)
 
 install:
 	$(DUNE) build -p $(COQINST_COMMAS) $(DUNE_FLAGS)
@@ -114,12 +117,6 @@ coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
 	@node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
-
-wacoq:
-	# Currently, this builds in the source tree
-	[ -d node_modules ] || npm install
-	rm -rf dist
-	npm run build
 
 ########################################################################
 # Developer Zone                                                       #

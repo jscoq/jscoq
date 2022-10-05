@@ -92,9 +92,8 @@ export class CoqWorker {
     /**
      * Adjusts a given URI so that it can be requested by the worker.
      * (the worker may have a different base path than the page.)
-     * @param {string | URL} uri
      */
-    resolveUri(uri) {
+    resolveUri(uri: string | URL) {
         return new URL(uri, window.location.href).href;
     }
 

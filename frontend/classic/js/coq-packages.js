@@ -3,7 +3,7 @@
 
 // Backend imports
 import { ArrayFuncs } from '../../common/etc.js';
-import { Future, CoqWorker } from '../../../dist/backend.js';
+import { CoqWorker } from '../../../dist/backend.js';
 
 // Frontend imports (not so clear for the package manager
 import { JSZip, $ } from '../../../dist/lib.js';
@@ -49,6 +49,7 @@ export class PackageManager {
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
+        /** @type {(path: string) => string} */
         let mkpath = path => path && path.replace(/([^/])$/, '$1/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
@@ -64,17 +65,12 @@ export class PackageManager {
     /**
      * Returns the default package path
      *
-     * @static
-     * @return {*}
+     * @param {string} base_path root path of jscoq package
+     * @return {string}
      * @memberof PackageManager
      */
-    static defaultPkgPath(base_path, backend) {
-        return '../coq-pkgs/';
-        /*
-        return {
-            'js': new URL('../coq-pkgs/', base_path).href,
-            'wa': new URL('../bin/coq/', base_path).href
-        }[backend];*/
+    static defaultPkgPath(base_path) {
+        return new URL('coq-pkgs', base_path).href;
     }
 
     populate() {
