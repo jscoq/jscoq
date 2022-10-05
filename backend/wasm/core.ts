@@ -145,8 +145,6 @@ class IcoqPod extends EventEmitter {
      */
     _preloadStub() {
         this.core.proc.dyld.preload(
-            'dllnums.so', `${this.nmDir}/@ocaml-wasm/4.12--num/bin/dllnums.wasm`);
-        this.core.proc.dyld.preload(
             'dllzarith.so', `${this.nmDir}/@ocaml-wasm/4.12--zarith/bin/dllzarith.wasm`);
         this.core.proc.dyld.preload(
             'dllbase_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_stubs.wasm`);

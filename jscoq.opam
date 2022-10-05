@@ -28,8 +28,9 @@ depends: [
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
   # "coq"                 { >= "8.13.0" & < "8.14" }
-  # This are dependencies of Coq itself.
+  # This is a dependency of Coq itself.
   "zarith"              { >= "1.11"    }
+  # (plus stubs for building with jsoo)
   "zarith_stubs_js"     { >= "v0.14.0" }
 ]
 
