@@ -1,15 +1,6 @@
-(library
- (name jscoqlib)
- (modes byte)
- (modules :standard \ jscoq_worker jslog jslibmng)
- (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
- (flags :standard -w -39)
- (libraries jscoq_core js_of_ocaml-lwt))
-
 (executable
  (name jscoq_worker)
- (modules jscoq_worker jslibmng)
- (modes byte js)
+ (modes js)
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
   (javascript_files

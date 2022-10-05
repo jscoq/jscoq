@@ -1,10 +1,18 @@
 (executable
  (name wacoq_worker)
- (modes byte)
+ (modes byte exe)
  (preprocess (staged_pps ppx_import ppx_deriving_yojson))
- (libraries jscoq_core)
+ (libraries jscoq_core wacoq_subproc)
  (ocamlc_flags -no-check-prims)
  (link_flags -linkall))
+
+(library
+ (name wacoq_subproc)
+ (modes native)
+ (modules) ; none
+ (foreign_stubs
+  (language c)
+  (names wacoq_extern)))
 
 (rule
  (target dllcoqrun_stubs.wasm)

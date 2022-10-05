@@ -1,6 +1,6 @@
 (library
  (name jscoq_core)
- (modes byte)
+ (modes byte native)
  (preprocess (staged_pps lwt_ppx ppx_import ppx_deriving_yojson))
  (flags :standard -w -39)
  (libraries
