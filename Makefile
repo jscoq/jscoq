@@ -155,44 +155,48 @@ distclean: clean
 # Dists                                                                #
 ########################################################################
 
+dist: dist-npm dist-tarball
+
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	backend/jsoo/jscoq_worker.bc.cjs coq-pkgs \
-	jscoq.js frontend backend dist examples docs}
+	jscoq.js coq-pkgs frontend backend dist examples docs}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
-
-dist: jscoq
-	mkdir -p $(DISTDIR)
-	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
 TAREXCLUDE = --exclude assets --exclude '*.cma' \
 	--exclude '*.bak' --exclude '*.tgz' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
-dist-tarball: dist
-	# Hack to make the tar contain a jscoq-x.x directory
+dist-tarball:
+	@echo
+	mkdir -p $(DISTDIR)
+	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
+	@# Hack to make the tar contain a jscoq-x.x directory
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tgz -C _build $(TAREXCLUDE) \
+	tar zcf /tmp/jscoq-$(PACKAGE_VERSION)-dist.tgz -C _build $(TAREXCLUDE) \
 	    --dereference jscoq-$(PACKAGE_VERSION)
-	mv /tmp/jscoq-$(PACKAGE_VERSION).tgz $(DISTDIR)
+	mv /tmp/jscoq-$(PACKAGE_VERSION)-dist.tgz $(DISTDIR)
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
+	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-dist.tgz
 
 NPMOBJ = ${filter-out index.html package-lock.json, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
 NPMEXCLUDE = --delete-excluded --exclude assets --exclude _build
 
 dist-npm:
+	@echo
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	mv /tmp/$$( cd /tmp && npm pack $(PWD)/$(NPMSTAGEDIR) | tail -1 ) \
-		$(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
-	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
+	cd $(DISTDIR) && npm pack $(PWD)/$(NPMSTAGEDIR)
+	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tgz
 
+#
+# The following needs to be changed if we want to create separate `jscoq` and `wacoq` packages
+#
 WACOQ_NPMOBJ = README.md \
 	jscoq.js frontend backend examples dist docs
 # ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
