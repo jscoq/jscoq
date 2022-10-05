@@ -89,7 +89,7 @@ jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
 wacoq: force
-	$(DUNE) build @jscoq $(DUNE_FLAGS)
+	$(DUNE) build @wacoq $(DUNE_FLAGS)
 
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
