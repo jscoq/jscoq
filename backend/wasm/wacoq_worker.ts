@@ -8,14 +8,14 @@ function postMessage(msg) {
 
 
 async function main() {
-    var icoq = new IcoqPod();
+    /** @note when serving from source tree, the `node_modules` ref works by chance */
+    var icoq = new IcoqPod('../backend/wasm', '../../../node_modules');
 
     postMessage(['Starting']);
     icoq.on('message', postMessage);
     icoq.on('progress', ev => postMessage(['LibProgress', ev]));
 
     addEventListener('message', (msg) => {
-        console.log(msg.data);
         icoq.command(msg.data);
     });
 

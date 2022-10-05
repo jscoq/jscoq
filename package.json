@@ -28,7 +28,7 @@
     "proper-lockfile": "^4.1.2",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
-    "wacoq-deps": "file:backend/wasm/deps"
+    "wacoq-deps": "^0.1.0"
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
@@ -68,6 +68,7 @@
     "backend/*.ts",
     "backend/jsoo/*.bc.cjs",
     "backend/wasm/*.bc",
+    "backend/wasm/*.wasm",
     "coq-pkgs",
     "dist",
     "examples",

@@ -13,14 +13,16 @@ class IcoqPod extends EventEmitter {
     intr: WorkerInterrupts
 
     binDir: string
+    nmDir: string
     io: IO
 
-    constructor(binDir?: string, fetchMode: FetchMode = DEFAULT_FETCH_MODE) {
+    constructor(binDir?: string, nmDir?: string, fetchMode: FetchMode = DEFAULT_FETCH_MODE) {
         super();
         binDir = binDir || (fetchMode === 'fs' ? './bin' : '../bin');
         this.binDir = binDir;
+        this.nmDir = nmDir ?? '../node_modules';
 
-        this.core = new OCamlExecutable({stdin: false, tty: false, binDir});
+        this.core = new OCamlExecutable({stdin: false, tty: false, binDir: `${nmDir}/ocaml-wasm/bin`});
 
         var utf8 = new TextDecoder();
         this.core.on('stream:out', ev => console.log(utf8.decode(ev.data)));
@@ -143,13 +145,17 @@ class IcoqPod extends EventEmitter {
      */
     _preloadStub() {
         this.core.proc.dyld.preload(
-            'dllbase_internalhash_types_stubs.so', `${this.binDir}/ocaml/dllbase_internalhash_types_stubs.wasm`);
+            'dllnums.so', `${this.nmDir}/@ocaml-wasm/4.12--num/bin/dllnums.wasm`);
         this.core.proc.dyld.preload(
-            'dllbase_stubs.so', `${this.binDir}/ocaml/dllbase_stubs.wasm`);
+            'dllzarith.so', `${this.nmDir}/@ocaml-wasm/4.12--zarith/bin/dllzarith.wasm`);
         this.core.proc.dyld.preload(
-            'dllcoqrun_stubs.so', `${this.binDir}/coq/dllcoqrun_stubs.wasm`);
+            'dllbase_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_stubs.wasm`);
         this.core.proc.dyld.preload(
-            'dlllib_stubs.so', `${this.binDir}/coq/dlllib_stubs.wasm`,
+            'dllbase_internalhash_types_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm`);
+        this.core.proc.dyld.preload(
+            'dllcoqrun_stubs.so', `${this.binDir}/dllcoqrun_stubs.wasm`);
+        this.core.proc.dyld.preload(
+            'dlllib_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
             {
                 js: {
                     wacoq_emit: (s:number) => this._answer(s),

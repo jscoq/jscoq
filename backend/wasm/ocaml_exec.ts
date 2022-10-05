@@ -46,7 +46,7 @@ class OCamlExecutable extends ExecCore {
         for (let p of this.preloads())
             await this.proc.dyld.preload(p.name, p.uri, p.reloc);
 
-        await this.start(`${bin}/ocaml/ocamlrun.wasm`,
+        await this.start(`${bin}/ocamlrun.wasm`,
                          ['ocamlrun', bytecodeFile, ...args], this.env);
 
         this.api = <any>this.wasm.instance.exports as OCamlCAPI;
@@ -56,13 +56,8 @@ class OCamlExecutable extends ExecCore {
     preloads() {
         var bin = this.opts.binDir || '../bin';
         return ['dllcamlstr', 'dllunix', 'dllthreads'].map(b => ({
-            name: `${b}.so`, uri: `${bin}/ocaml/${b}.wasm`, reloc: STDLIB_STUBS[b]
-        } as {name: string, uri: string, reloc?: any}))
-        .concat([
-            {name: 'dllunix.so', uri: `${bin}/ocaml/dllunix.wasm`},
-            {name: 'dllnums.so', uri: `${bin}/num/dllnums.wasm`},
-            {name: 'dllzarith.so', uri: `${bin}/zarith/dllzarith.wasm`}
-        ]);
+            name: `${b}.so`, uri: `${bin}/${b}.wasm`, reloc: STDLIB_STUBS[b]
+        } as {name: string, uri: string, reloc?: any}));
     }
 
     to_caml_string(s: string) {

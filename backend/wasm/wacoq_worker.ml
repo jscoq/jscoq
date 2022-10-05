@@ -13,7 +13,6 @@ let serialize (answers : jscoq_answer list) =
 let doc = ref (Obj.magic 0)
 
 let handleRequest json_str =
-  Format.eprintf "handling request %s@\n%!" json_str;
   let resp =
     try
       let cmd = deserialize json_str                     in

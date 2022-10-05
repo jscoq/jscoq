@@ -25,6 +25,7 @@ node_modules
 coq-pkgs
 /backend/jsoo/jscoq_worker.bc.cjs
 /backend/wasm/wacoq_worker.bc
+*.wasm
 
 # Apple stuff
 .DS_Store
