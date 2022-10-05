@@ -28,7 +28,7 @@
     "proper-lockfile": "^4.1.2",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
-    "wasi-kernel": "^0.1.6"
+    "wacoq-deps": "file:backend/wasm/deps"
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
