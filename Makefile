@@ -104,9 +104,10 @@ install:
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
+	ln -sf ../../_build/jscoq+64bit/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
 
 links-clean:
-	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs
+	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg

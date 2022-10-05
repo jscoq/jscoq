@@ -251,4 +251,5 @@ let jscoq_execute =
     doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
     out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)
   | Compile filename ->
-    !Callbacks.cb.post_file "Compiled" filename (Icoq.compile_vo ~doc:(fst !doc) filename)
+    let vo_out_fn = Icoq.compile_vo ~doc:(fst !doc) filename in
+    !Callbacks.cb.post_file "Compiled" filename (!Callbacks.cb.read_file vo_out_fn)
