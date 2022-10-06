@@ -35,8 +35,6 @@ type doc_opts =
   (** Initial LoadPath *)
   }
 
-type 'a seq = 'a Seq.t
-
 let _set_options opt_values =
   let open Goptions in
   let new_val v _old = v in
@@ -91,16 +89,15 @@ let coq_init opts =
   root_state := Coq.Init.(coq_init { fb_handler; ml_load = None; debug });
   ()
 
-let new_doc opts ~text =
-  let state = !root_state, opts.vo_path, [], 0 in
-  let uri = opts.uri in
-  let fmt = Format.formatter_of_out_channel stdout in
-  let doc = Fleche.Doc.create ~state ~uri ~version:1 ~contents:text in
-  Fleche.Doc.check fmt doc fb_queue
-
 let check_doc ~doc =
   let fmt = Format.formatter_of_out_channel stdout in
   Fleche.Doc.check fmt doc fb_queue
+
+let new_doc opts ~text =
+  let state = !root_state, opts.vo_path, [], 0 in
+  let uri = opts.uri in
+  let doc = Fleche.Doc.create ~state ~uri ~version:1 ~contents:text in
+  check_doc ~doc
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =
