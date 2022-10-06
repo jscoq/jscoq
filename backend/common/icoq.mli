@@ -14,7 +14,7 @@
    Copyright (C) 2019-2022 Shachar Itzhaky, Tehcnion, Haifa.
 *)
 
-type diagnostic = Lsp.Base.Diagnostic.t
+type diagnostic = Fleche.Types.Diagnostic.t
 
 type coq_opts =
   { notification_cb : diagnostic -> int -> unit
@@ -40,12 +40,12 @@ type doc_opts =
 val coq_init : coq_opts -> unit
 
 (** [new_doc] Initialize a new Coq document *)
-val new_doc : doc_opts -> text:string -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
+val new_doc : doc_opts -> text:string -> Fleche.Doc.t * Coq.State.t * diagnostic list
 
 (** [check_doc] check a doc, with possibly updated contents *)
 val check_doc
-  : doc:Controller.Coq_doc.t
-  -> Controller.Coq_doc.t * Controller.Coq_state.t * diagnostic list
+  : doc:Fleche.Doc.t
+  -> Fleche.Doc.t * Coq.State.t * diagnostic list
 
 (** [version] returns miscellaneous version information *)
 val version : string * string * int32

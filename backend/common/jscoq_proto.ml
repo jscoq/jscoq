@@ -22,35 +22,35 @@ module Seq = struct
 end
 
 type 'a hyp =
-  [%import: 'a Serapi.Serapi_goals.hyp]
+  [%import: 'a Coq.Goals.hyp]
   [@@deriving to_yojson]
 
 type info =
-  [%import: Serapi.Serapi_goals.info]
+  [%import: Coq.Goals.info]
   [@@deriving to_yojson]
 
 type 'a reified_goal =
-  [%import: 'a Serapi.Serapi_goals.reified_goal]
+  [%import: 'a Coq.Goals.reified_goal]
   [@@deriving to_yojson]
 
-type 'a ser_goals =
-  [%import: 'a Serapi.Serapi_goals.ser_goals]
+type 'a goals =
+  [%import: 'a Coq.Goals.goals]
   [@@deriving to_yojson]
 
 module Proto = struct
 
 module Point = struct
-  type t = [%import: Lsp.Base.Point.t]
+  type t = [%import: Fleche.Types.Point.t]
   [@@deriving yojson]
 end
 
 module Range = struct
-  type t = [%import: Lsp.Base.Range.t]
+  type t = [%import: Fleche.Types.Range.t]
   [@@deriving yojson]
 end
 
 type diagnostic =
-  [%import: Lsp.Base.Diagnostic.t
+  [%import: Fleche.Types.Diagnostic.t
   [@with range := range;]]
   [@@deriving yojson]
 
@@ -97,7 +97,7 @@ end
 module Answer = struct
 
   type t =
-  | Goals of Pp.t reified_goal ser_goals option
+  | Goals of Pp.t reified_goal goals option
   | Completion of string list
   | Void
   [@@deriving to_yojson]

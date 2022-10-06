@@ -13,7 +13,7 @@
 (* Status: Very Experimental                                            *)
 (************************************************************************)
 
-type diagnostic = Lsp.Base.Diagnostic.t
+type diagnostic = Fleche.Types.Diagnostic.t
 
 type coq_opts =
   { notification_cb : diagnostic -> int -> unit
@@ -46,7 +46,7 @@ let _set_options opt_values =
 
 let _default_warning_flags = "-notation-overridden"
 
-let root_state = ref (Controller.Coq_state.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
+let root_state = ref (Coq.State.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
 let fb_queue = ref []
 
 (**************************************************************************)
@@ -69,7 +69,7 @@ let coq_init opts =
   let fb_handler (Feedback.{ contents; _ }) =
     (* Format.fprintf lp_fmt "%s@\n%!" "fb received"; *)
     match contents with
-    | Message (_lvl, _loc, msg) -> fb_queue := msg :: !fb_queue
+    | Message (_lvl, loc, msg) -> fb_queue := (loc, msg) :: !fb_queue
     | _ -> ()
   in
 
@@ -88,19 +88,19 @@ let coq_init opts =
   (* List.iter Loadpath.add_vo_path opts.vo_path; *)
 
   (* Init Coq *)
-  root_state := Controller.Coq_init.(coq_init { fb_handler; ml_load = None; debug });
+  root_state := Coq.Init.(coq_init { fb_handler; ml_load = None; debug });
   ()
 
 let new_doc opts ~text =
   let state = !root_state, opts.vo_path, [], 0 in
   let uri = opts.uri in
   let fmt = Format.formatter_of_out_channel stdout in
-  let doc = Controller.Coq_doc.create ~state ~uri ~version:1 ~contents:text in
-  Controller.Coq_doc.check fmt doc fb_queue
+  let doc = Fleche.Doc.create ~state ~uri ~version:1 ~contents:text in
+  Fleche.Doc.check fmt doc fb_queue
 
 let check_doc ~doc =
   let fmt = Format.formatter_of_out_channel stdout in
-  Controller.Coq_doc.check fmt doc fb_queue
+  Fleche.Doc.check fmt doc fb_queue
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

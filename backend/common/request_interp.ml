@@ -11,7 +11,7 @@
 (* Move to coq-lsp *)
 open Jscoq_proto.Proto
 
-module LI = Controller.Lsp_interp
+module LI = Fleche.Info
 
 (* XXX: This belongs in Coq *)
 let pr_extref gr =
@@ -24,13 +24,14 @@ let do_request ~doc point (r : Method.t) =
   | Method.Mode -> Answer.Void
   | Method.Goals ->
     let approx = LI.PickPrev in
-    let goals = LI.get_goals_point ~doc ~point ~approx in
+    let goals = LI.O.goals ~doc ~point approx in
     Answer.Goals goals
   | Method.Search _ -> Answer.Void
   | Method.TypeAtPoint -> Answer.Void
   | Method.TypeOfId _ -> Answer.Void
   | Method.Inspect _ -> Answer.Void
   | Method.Completion prefix ->
+    (* XXX Use LI.O.completion *)
     (* XXX This should set the proper state! For now it will run in
        the state resultin from checking the full document. *)
     let candidates = Nametab.completion_canditates (Libnames.qualid_of_string prefix) in
