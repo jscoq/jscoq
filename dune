@@ -40,7 +40,8 @@
  (name wacoq)
  (deps
   (alias shared)
-  backend/wasm/wacoq_worker.bc))
+  backend/wasm/wacoq_worker.bc
+  (glob_files backend/wasm/*.wasm)))
 
 (alias
  (name shared)
