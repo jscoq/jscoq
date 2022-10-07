@@ -21,6 +21,9 @@ type coq_opts =
   (** callback to handle notifications *)
   ; debug        : bool
   (** Enable debug mode *)
+  ; load_module : string -> unit
+  (** callback to load cma/cmo files *)
+  ; load_plugin : Mltop.PluginSpec.t -> unit
 }
 
 type require_lib = (string * string option * Lib.export_flag option)

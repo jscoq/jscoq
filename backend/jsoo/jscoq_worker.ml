@@ -120,24 +120,17 @@ let setup_std_printers () =
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
-let setup_top () =
-  (* Custom toplevel is used for bytecode-to-js dynlink  *)
-  let load_cma = fun cma -> Jslibmng.coq_cma_link ~file_path:cma in
-  let load_plugin pg =
-    match Mltop.PluginSpec.repr pg with
-    | None, _pkg -> ()             (* Findlib; not implemented *)
-    | Some cma, _ -> load_cma cma  (* Legacy loading method *)    in
+(* Custom toplevel is used for bytecode-to-js dynlink  *)
+let load_module = fun cma ->
+  Format.eprintf "load_cma: %s@\n%!" cma;
+  Jslibmng.coq_cma_link ~file_path:cma
 
-  let open Mltop in
-  set_top
-    { load_plugin = load_plugin
-    ; load_module = load_cma
-    (* We ignore all the other operations for now. *)
-    ; add_dir  = (fun _ -> ())
-    ; ml_loop  = (fun _ -> ());
-    };
-
-  coq_vm_trap ()
+let load_plugin pg =
+  let legacy, pkg = Mltop.PluginSpec.repr pg in
+  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
+  match Mltop.PluginSpec.repr pg with
+  | None, _pkg -> ()             (* Findlib; not implemented *)
+  | Some cma, _ -> load_module cma  (* Legacy loading method *)
 
 (* This is already taken care by the LSP layer *)
 let jscoq_protect f =
@@ -184,7 +177,8 @@ let write_file ~name ~content =
 
 let jsoo_cb =
   Jscoq_interp.Callbacks.
-    { pre_init = setup_top
+    { load_module
+    ; load_plugin
     ; post_message = (fun x -> json_to_obj (Js.Unsafe.obj [||]) x |> post_message)
     ; post_file = post_file
     ; interrupt_setup = interrupt_setup
@@ -239,6 +233,7 @@ let _ =
   setup_std_printers ();
 
   setup_interp ();
+  coq_vm_trap ();
 
   let doc = ref (Obj.magic 0) in
   let on_msg = on_msg doc  in

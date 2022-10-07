@@ -26,28 +26,21 @@ let handleRequestsFromStdin () =
     done
   with End_of_file -> ()
 
-let setup_top () =
-  let load_plugin p =
-    match Mltop.PluginSpec.repr p with
-    | Some file, _ ->
-      let mlpath = Mltop.get_ml_path () in
-      let file = file ^ ".cma" in
-      let _, gname = System.find_file_in_path ~warn:false mlpath file in
-      Dynlink.loadfile gname
-    | None, _ -> ()
-  in
-  let open Mltop in
-  set_top
-    { load_plugin = load_plugin
-    ; load_module = Dynlink.loadfile
-    (* We ignore all the other operations for now. *)
-    ; add_dir  = (fun _ -> ())
-    ; ml_loop  = (fun _ -> ());
-    }
+let load_plugin p =
+  match Mltop.PluginSpec.repr p with
+  | Some file, _ ->
+    let mlpath = Mltop.get_ml_path () in
+    let file = file ^ ".cma" in
+    let _, gname = System.find_file_in_path ~warn:false mlpath file in
+    Dynlink.loadfile gname
+  | None, _ -> ()
+
+let load_module = Dynlink.loadfile
 
 let wasm_cb =
   Jscoq_interp.Callbacks.
-    { pre_init = setup_top
+    { load_module
+    ; load_plugin
     ; post_message = (fun msg -> emit @@ Yojson.Safe.to_string @@ `List [msg])
     ; post_file = (fun _ _ _ -> ())
     ; interrupt_setup = (fun _ -> ())

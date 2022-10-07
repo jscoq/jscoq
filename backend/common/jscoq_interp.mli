@@ -13,7 +13,10 @@ module Callbacks : sig
   open Jslib.LibManager
 
   type t =
-    { pre_init : unit -> unit
+    { load_module : string -> unit
+    (** cma file dynamic loader  *)
+    ; load_plugin : Mltop.PluginSpec.t -> unit
+    (** findlib package dynamic loader  *)
     ; post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (Jscoq_proto.Proto.opaque -> unit)

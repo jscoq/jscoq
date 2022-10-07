@@ -18,7 +18,8 @@ module Callbacks = struct
   open LibManager
 
   type t =
-    { pre_init : unit -> unit
+    { load_module : string -> unit
+    ; load_plugin : Mltop.PluginSpec.t -> unit
     ; post_message : (Yojson.Safe.t -> unit)
     ; post_file : (string -> string -> string -> unit)
     ; interrupt_setup : (opaque -> unit)
@@ -32,7 +33,8 @@ module Callbacks = struct
     }
 
   let default =
-    { pre_init = (fun () -> ())
+    { load_module = (fun _ -> ())
+    ; load_plugin = (fun _ -> ())
     ; post_message = (fun _ -> ())
     ; post_file = (fun _ _ _ -> ())
     ; interrupt_setup = (fun _ -> ())
@@ -102,15 +104,13 @@ let exec_init (set_opts : jscoq_options) =
   (* Moved, but still need to improve *)
   (* !Callbacks.cb.pre_init (); *)
 
-  Icoq.coq_init ({
-      notification_cb = post_notification;
-      (* opt_values   = opts.coq_options; *)
-      debug        = opts.debug.stm;
-    });
-
-  (* This is technically wrong, as coq_init needs to enable the serlib
-     instrumentation, but that requires a findlib-enabled loader. *)
-  !Callbacks.cb.pre_init ()
+  Icoq.coq_init (
+    { notification_cb = post_notification
+    (* ; opt_values   = opts.coq_options*)
+    ; debug        = opts.debug.stm
+    ; load_plugin = !Callbacks.cb.load_plugin
+    ; load_module = !Callbacks.cb.load_module
+    })
 
 (* opts  : document initialization options *)
 let create_doc (doc_opts : doc_options) =

@@ -20,7 +20,10 @@ type coq_opts =
   (** callback to handle notifications *)
   ; debug        : bool
   (** Enable debug mode *)
-}
+  ; load_module : string -> unit
+  (** callback to load cma/cmo files *)
+  ; load_plugin : Mltop.PluginSpec.t -> unit
+  }
 
 type require_lib = (string * string option * Lib.export_flag option)
 
@@ -53,6 +56,12 @@ let fb_queue = ref []
 (* module LIO = Lsp.Io
  * module LSP = Lsp.Base *)
 
+let lsp_cb =
+  Fleche.Io.CallBack.
+    { log_error = (fun cat msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
+    ; send_diagnostics = (fun ~uri:_ ~version:_ _diags -> ())
+    }
+
 let coq_init opts =
 
   (**************************************************************************)
@@ -60,6 +69,8 @@ let coq_init opts =
   (**************************************************************************)
 
   (* LSP.std_protocol := std; *)
+
+  Fleche.Io.CallBack.set lsp_cb;
 
   (* XXX : set debug system for stderr *)
   let debug = opts.debug in
@@ -86,7 +97,9 @@ let coq_init opts =
   (* List.iter Loadpath.add_vo_path opts.vo_path; *)
 
   (* Init Coq *)
-  root_state := Coq.Init.(coq_init { fb_handler; ml_load = None; debug });
+  let load_plugin = opts.load_plugin in
+  let load_module = opts.load_module in
+  root_state := Coq.Init.(coq_init { fb_handler; load_plugin; load_module; debug });
   ()
 
 let check_doc ~doc =
