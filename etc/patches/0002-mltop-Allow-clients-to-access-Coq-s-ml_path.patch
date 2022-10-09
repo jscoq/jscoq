@@ -1,0 +1,38 @@
+From 95ba40dd8933ab94875d2316438421c1f67d4a62 Mon Sep 17 00:00:00 2001
+From: Emilio Jesus Gallego Arias <e+git@x80.org>
+Date: Sun, 9 Oct 2022 21:45:28 +0200
+Subject: [PATCH] [mltop] Allow clients to access Coq's ml_path
+
+---
+ vernac/mltop.ml  | 2 ++
+ vernac/mltop.mli | 1 +
+ 2 files changed, 3 insertions(+)
+
+diff --git a/vernac/mltop.ml b/vernac/mltop.ml
+index 67d128e..ee61387 100644
+--- a/vernac/mltop.ml
++++ b/vernac/mltop.ml
+@@ -431,6 +431,8 @@ let declare_ml_modules local l =
+      the ML-MODULE object before them. *)
+   cache_ml_objects mnames
+ 
++let get_ml_path () = !coq_mlpath_copy
++
+ let print_ml_path () =
+   let l = !coq_mlpath_copy in
+   str"ML Load Path:" ++ fnl () ++ str"  " ++
+diff --git a/vernac/mltop.mli b/vernac/mltop.mli
+index fb8593d..0cbd4cf 100644
+--- a/vernac/mltop.mli
++++ b/vernac/mltop.mli
+@@ -95,6 +95,7 @@ val declare_ml_modules : Vernacexpr.locality_flag -> string list -> unit
+ 
+ (** {5 Utilities} *)
+ 
++val get_ml_path : unit -> string list
+ val print_ml_path : unit -> Pp.t
+ val print_ml_modules : unit -> Pp.t
+ val print_gc : unit -> Pp.t
+-- 
+2.34.1
+

@@ -26,6 +26,9 @@ let handleRequestsFromStdin () =
     done
   with End_of_file -> ()
 
+(* Used only for native-compute, so not relevant *)
+let load_module = Dynlink.loadfile
+
 let load_plugin p =
   match Mltop.PluginSpec.repr p with
   | Some file, _ ->
@@ -34,8 +37,6 @@ let load_plugin p =
     let _, gname = System.find_file_in_path ~warn:false mlpath file in
     Dynlink.loadfile gname
   | None, _ -> ()
-
-let load_module = Dynlink.loadfile
 
 let wasm_cb =
   Jscoq_interp.Callbacks.
