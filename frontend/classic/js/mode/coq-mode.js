@@ -276,7 +276,7 @@ import { CodeMirror } from '../../../../dist/lib.js';
         stream.eatWhile(/[\w']/);
 
       var cur = stream.current(),
-          kind = words[cur] || 'variable';
+          kind = Object.hasOwn(words, cur) ? words[cur] : 'variable';
 
       if (at_sentence_start) {
         state.sentence_kind = kind;
