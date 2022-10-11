@@ -110,6 +110,7 @@ jobs:
         with:
           file: etc/docker/Dockerfile
           context: etc/docker
+          target: jscoq-addons
           push: false
           tags: jscoq/jscoq:latest
       - name: Image digest
