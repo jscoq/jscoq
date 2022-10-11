@@ -420,9 +420,7 @@ class PackageDirectory extends EventEmitter {
             pkg = this.packages_by_uri[pkg] ?? this.packages_by_name[pkg]
                 ?? (() => { throw new Error(`package '${pkg}' not loaded`)})();
 
-        return [].concat(...pkg.pkgs.map(({pkg_id, vo_files}) =>
-            vo_files.map(([fn]) =>
-                [...pkg_id, fn.replace(/[.].*/, '')].join('.'))));
+        return Object.keys(pkg.modules).filter(k => !k.endsWith('@cma'));
     }
 
     /**
@@ -454,10 +452,9 @@ class PackageDirectory extends EventEmitter {
 
 type PackageManifest = {
     name: string
-    pkgs: {
-        pkg_id: string[]
-        vo_files: [string, null][]
-    }[]
+    modules: {
+        [name: string]: {deps?: string[]}
+    }
 }
 
 export { HeadlessCoqWorker, HeadlessCoqManager, PackageDirectory }

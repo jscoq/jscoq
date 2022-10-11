@@ -90,7 +90,7 @@ type query =
   | Inspect of search_query
   [@@deriving yojson]
 
-type opaque = Js_of_ocaml.Js.Unsafe.any
+type opaque
 let opaque_to_yojson _x = `Null
 let opaque_of_yojson _x = Result.Error "opaque value"
 

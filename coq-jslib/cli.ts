@@ -85,8 +85,7 @@ class CLI {
 
     async package(opts = this.opts) {
         var outdir = this.workspace.outDir,
-            prep  = JsCoqCompat.transpilePluginsJs,
-            postp = JsCoqCompat.backportManifest;
+            prep  = JsCoqCompat.transpilePluginsJs;
 
         this.workspace.searchPath.createIndex();  // to speed up coqdep
 
@@ -99,7 +98,7 @@ class CLI {
 
             var p = await this.workspace.projs[pkgname]
                     .toPackage(outfn || path.join(outdir, pkgname),
-                               undefined, prep, postp);
+                               undefined, prep);
 
             try {
                 await p.save(bundle && bundle.manifest);

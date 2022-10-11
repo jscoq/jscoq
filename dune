@@ -32,17 +32,29 @@
 (alias
  (name jscoq)
  (deps
-   (source_tree backend)
-   (source_tree frontend)
-   (source_tree examples)
-   (source_tree docs)  ; for `quick-help.html`
-   jscoq.js
-   index.html
-   coq-pkgs
-   node_modules
-   backend/jsoo/jscoq_worker.bc.cjs
-   dist
-   jscoq.install))
+  (alias shared)
+  backend/jsoo/jscoq_worker.bc.cjs
+  dist))
+
+(alias
+ (name wacoq)
+ (deps
+  (alias shared)
+  backend/wasm/wacoq_worker.bc
+  (glob_files backend/wasm/*.wasm)))
+
+(alias
+ (name shared)
+ (deps
+  (source_tree backend)
+  (source_tree frontend)
+  (source_tree examples)
+  (source_tree docs)  ; for `quick-help.html`
+  jscoq.js
+  index.html
+  coq-pkgs
+  node_modules
+  dist))
 
 ; JavaScript build (Webpack)
 ; cli.cjs, ide-project.browser.js, collab.browser.js
@@ -58,15 +70,20 @@
  (action
   (progn
    (run npm install --no-save) ; sorry, have to run this again because of the symlinks I erased before *facepalm*
-   ; (run npm run build))))
+   (run npm run build))))
    ; XXX: setup this to add :dev when the debug env var is set
-   (run npm run build:dev))))
+   ;(run npm run build:dev))))
 
 ; Just the worker
 (alias
   (name jscoq_worker)
   (deps
     backend/jsoo/jscoq_worker.bc.cjs))
+
+(alias
+  (name wacoq_worker)
+  (deps
+    backend/wasm/wacoq_worker.bc))
 
 (dirs (:standard _vendor+* \ dist node_modules))
 (vendored_dirs vendor)

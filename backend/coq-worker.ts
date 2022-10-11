@@ -11,13 +11,15 @@ type CoqEventObserver = Object
 export class CoqWorkerConfig {
 
     path: URL;
+    preload: URL[];
     backend: backend;
     debug: boolean;
     warn: boolean;
 
     // TODO: add smart constructor?
-    constructor(base_path, is_npm, backend) {
-        this.path = CoqWorkerConfig.determineWorkerPath(base_path, is_npm, backend);
+    constructor(basePath: string | URL, backend: backend) {
+        this.path = CoqWorkerConfig.determineWorkerPath(basePath, backend);
+        this.preload = this.getPreloads(basePath, backend)
         this.backend = backend;
         this.debug = false;
         this.warn = true;
@@ -27,11 +29,16 @@ export class CoqWorkerConfig {
      * Default location for worker script -- computed relative to the URL
      * from which this script is loaded.
      */
-    static determineWorkerPath(base_path, is_npm, backend) : URL {
-        var nmPath = is_npm ? '..' : 'node_modules';
+    static determineWorkerPath(basePath: string | URL, backend: backend): URL {
         return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
-                        'wa':`${nmPath}/wacoq-bin/dist/worker.js`}[backend],
-                      base_path);
+                        'wa': "dist/wacoq_worker.js"
+                       }[backend], basePath);
+    }
+
+    getPreloads(basePath: string | URL, backend: backend) {
+        return {'js': [this.path],
+                'wa': [new URL("backend/wasm/wacoq_worker.bc", basePath)]
+               }[backend];
     }
 }
 
@@ -64,7 +71,7 @@ export class CoqWorker {
 
     constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend, is_npm : boolean) {
 
-        this.config = new CoqWorkerConfig(base_path, is_npm, backend);
+        this.config = new CoqWorkerConfig(base_path, backend);
         this.config.path = scriptPath || this.config.path;
 
         this.observers = [this];
@@ -85,9 +92,8 @@ export class CoqWorker {
     /**
      * Adjusts a given URI so that it can be requested by the worker.
      * (the worker may have a different base path than the page.)
-     * @param {string | URL} uri
      */
-    resolveUri(uri) {
+    resolveUri(uri: string | URL) {
         return new URL(uri, window.location.href).href;
     }
 
@@ -102,7 +108,7 @@ export class CoqWorker {
     async createWorker(script_path) {
 
         this.attachWorker(await
-            this.newWorkerWithProgress(this.config.path));
+            this.newWorkerWithProgress(this.config.path, this.config.preload));
 
         if (typeof window !== 'undefined')
             window.addEventListener('unload', () => this.end());
@@ -116,10 +122,11 @@ export class CoqWorker {
     /**
      * @param {string} url
      */
-    async newWorkerWithProgress(url) {
-        await prefetchResource(url, (pc, ev) => this.load_progress(pc, ev));
-        // have to use `url` again so that the worker has correct base URI;
-        // should be cached at this point though.
+    async newWorkerWithProgress(url: URL, preload: URL[]) {
+        for (let uri of preload)
+            await prefetchResource(uri, (pc, ev) => this.load_progress(pc, ev));
+        // have to use `url` here so that the worker has correct base URI;
+        // if it is big, it should be cached at this point though.
         return new Worker(url);
     }
 
@@ -272,10 +279,7 @@ export class CoqWorker {
      * @param {any} load_path
      */
     refreshLoadPath(load_path) {
-        switch (this.config.backend) {
-        case 'js': this.sendCommand(["ReassureLoadPath", load_path]); break;
-        case 'wa': this.sendCommand(["RefreshLoadPath"]); break;
-        }
+        this.sendCommand(["ReassureLoadPath", load_path]);
     }
 
     /**

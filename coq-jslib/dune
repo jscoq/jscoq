@@ -1,8 +1,8 @@
-(library
- (name         jslib)
- (preprocess   (staged_pps ppx_import ppx_deriving_yojson))
- (modules      jslib)
- (libraries    yojson ppx_deriving_yojson.runtime))
+; (library
+;  (name         jslib)
+;  (preprocess   (staged_pps ppx_import ppx_deriving_yojson))
+;  (modules      jslib)
+;  (libraries    yojson ppx_deriving_yojson.runtime))
 
 (library
  (name         dftlibs)
@@ -13,8 +13,8 @@
  (modules      mklibfs)
  (libraries    dftlibs unix))
 
-(executable
- (public_name  mklibjson)
- (modules      mklibjson)
- (libraries    yojson jslib dftlibs))
+; (executable
+;  (public_name  mklibjson)
+;  (modules      mklibjson)
+;  (libraries    yojson jslib dftlibs))
 

@@ -28,8 +28,6 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
   (* Async flags *)
   aopts        : async_flags;
-  (* callback to load cma/cmo files *)
-  ml_load      : string -> unit;
   (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
   opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)
@@ -49,8 +47,6 @@ type doc_opts = {
 
 type in_mode = Proof | General (* pun intended *)
 
-external _coq_vm_trap : unit -> unit = "coq_vm_trap"
-
 type 'a seq = 'a Seq.t
 
 let feedback_id = ref None
@@ -64,30 +60,12 @@ let set_options opt_values =
 
 let default_warning_flags = "-notation-overridden"
 
-let load_plugin ml_load pg =
-  match Mltop.PluginSpec.repr pg with
-  | None, _pkg -> ()            (* Not implemented *)
-  | Some cma, _ -> ml_load cma  (* Legacy loading method *)
-
 (**************************************************************************)
 (* Low-level, internal Coq initialization                                 *)
 (**************************************************************************)
 let coq_init opts =
 
   if opts.debug then CDebug.set_debug_all true;
-
-  (* coq_vm_trap (); *)
-
-  (* Custom toplevel is used for bytecode-to-js dynlink  *)
-  let ser_mltop : Mltop.toplevel = let open Mltop in
-    { load_plugin = load_plugin opts.ml_load
-    ; load_module = opts.ml_load
-    (* We ignore all the other operations for now. *)
-    ; add_dir  = (fun _ -> ())
-    ; ml_loop  = (fun _ -> ());
-  } in
-
-  Mltop.set_top ser_mltop;
 
   (**************************************************************************)
   (* Feedback setup                                                         *)
@@ -157,7 +135,7 @@ let compile_vo ~doc vo_out_fn =
   let frz = Vernacstate.freeze_interp_state ~marshallable:false in
   Library.save_library_to Library.ProofsTodoNone ~output_native_objects:false dirp vo_out_fn;
   Vernacstate.unfreeze_interp_state frz;
-  Js_of_ocaml.Sys_js.read_file ~name:vo_out_fn
+  vo_out_fn
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

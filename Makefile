@@ -88,11 +88,17 @@ all:
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
+wacoq: force
+	$(DUNE) build @wacoq $(DUNE_FLAGS)
+
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
 
 jscoq_worker:
 	$(DUNE) build @jscoq_worker $(DUNE_FLAGS)
+
+wacoq_worker:
+	$(DUNE) build @wacoq_worker $(DUNE_FLAGS)
 
 install:
 	$(DUNE) build -p $(COQINST_COMMAS) $(DUNE_FLAGS)
@@ -100,22 +106,20 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
+	ln -sf ../../_build/jscoq+64bit/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
+	ln -sf ../../_build/jscoq+64bit/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
+	ln -sf ../../_build/jscoq+64bit/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 links-clean:
-	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs
+	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc \
+	       backend/wasm/dlllib_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
 	@node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
-
-wacoq:
-	# Currently, this builds in the source tree
-	[ -d node_modules ] || npm install
-	rm -rf dist
-	npm run build
 
 ########################################################################
 # Developer Zone                                                       #
@@ -151,44 +155,48 @@ distclean: clean
 # Dists                                                                #
 ########################################################################
 
+dist: dist-npm dist-tarball
+
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	backend/jsoo/jscoq_worker.bc.cjs coq-pkgs \
-	jscoq.js frontend backend dist examples docs}
+	jscoq.js coq-pkgs frontend backend dist examples docs}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
 PACKAGE_VERSION = ${shell node -p 'require("./package.json").version'}
-
-dist: jscoq
-	mkdir -p $(DISTDIR)
-	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
 
 TAREXCLUDE = --exclude assets --exclude '*.cma' \
 	--exclude '*.bak' --exclude '*.tgz' \
     ${foreach dir, Coq Ltac2 mathcomp, \
 		--exclude '${dir}/**/*.vo' --exclude '${dir}/**/*.cma.js'}
 
-dist-tarball: dist
-	# Hack to make the tar contain a jscoq-x.x directory
+dist-tarball:
+	@echo
+	mkdir -p $(DISTDIR)
+	rsync -apR --delete $(DISTOBJ) $(DISTDIR)
+	@# Hack to make the tar contain a jscoq-x.x directory
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
 	ln -fs dist _build/jscoq-$(PACKAGE_VERSION)
-	tar zcf /tmp/jscoq-$(PACKAGE_VERSION).tgz -C _build $(TAREXCLUDE) \
+	tar zcf /tmp/jscoq-$(PACKAGE_VERSION)-dist.tgz -C _build $(TAREXCLUDE) \
 	    --dereference jscoq-$(PACKAGE_VERSION)
-	mv /tmp/jscoq-$(PACKAGE_VERSION).tgz $(DISTDIR)
+	mv /tmp/jscoq-$(PACKAGE_VERSION)-dist.tgz $(DISTDIR)
 	@rm -f _build/jscoq-$(PACKAGE_VERSION)
+	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-dist.tgz
 
 NPMOBJ = ${filter-out index.html package-lock.json, $(DISTOBJ)}
 NPMSTAGEDIR = _build/package
 NPMEXCLUDE = --delete-excluded --exclude assets --exclude _build
 
 dist-npm:
+	@echo
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	mv /tmp/$$( cd /tmp && npm pack $(PWD)/$(NPMSTAGEDIR) | tail -1 ) \
-		$(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
-	@echo $(DISTDIR)/jscoq-$(PACKAGE_VERSION)-npm.tgz
+	cd $(DISTDIR) && npm pack $(PWD)/$(NPMSTAGEDIR)
+	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tgz
 
+#
+# The following needs to be changed if we want to create separate `jscoq` and `wacoq` packages
+#
 WACOQ_NPMOBJ = README.md \
 	jscoq.js frontend backend examples dist docs
 # ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment

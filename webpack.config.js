@@ -45,6 +45,20 @@ const
     test: /\.vue$/,
     use: 'vue-loader'
   },
+  shims = {
+    modules: {
+      path: 'path-browserify',
+      stream: 'stream-browserify',
+      tty: false, url: false, worker_threads: false,
+      fs: false, crypto: false
+    },
+    plugins: [
+        new webpack.DefinePlugin({process: {browser: true, env: {}, cwd: () => "/"}}),
+        new webpack.ProvidePlugin({Buffer: ['buffer', 'Buffer']})
+        //new webpack.ProvidePlugin({process: 'process/browser.js',
+        //  Buffer: ['buffer', 'Buffer']})]
+    ]
+  },
   cliPlugins = (scriptName) => [
     new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
     new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
@@ -110,6 +124,21 @@ export default (env, argv) => [
   experiments: {
     outputModule: true
   }
+},
+/**
+ * Package backend for wider-comsumption.
+ */
+ {
+  name: 'wacoq_worker',
+  target: 'webworker',
+  entry: './backend/wasm/wacoq_worker.ts',
+  ...basics(argv),
+  module: {
+    rules: [ts]
+  },
+  resolve: {...resolve, fallback: shims.modules},
+  output: output('dist', 'wacoq_worker.js'),
+  plugins: shims.plugins
 },
 /**
  * Package backend for wider-comsumption.
@@ -212,7 +241,8 @@ export default (env, argv) => [
       }
     }
   },
-  plugins: [new webpack.ProvidePlugin({process: 'process/browser.js',
-                                       Buffer: ['buffer', 'Buffer']})]
+  plugins: shims.plugins
+           //[new webpack.ProvidePlugin({process: 'process/browser.js',
+           //                            Buffer: ['buffer', 'Buffer']})]
 }
 ];

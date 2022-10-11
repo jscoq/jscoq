@@ -8,9 +8,48 @@
  * Interpreter for the Coq communication protocol
  *)
 
-open Js_of_ocaml
+(* open Js_of_ocaml *)
 open Jscoq_proto.Proto
-open Jslibmng
+
+open Jslib
+
+module Callbacks = struct
+
+  open LibManager
+
+  type t =
+    { pre_init : unit -> unit
+    ; post_message : (Yojson.Safe.t -> unit)
+    ; post_file : (string -> string -> string -> unit)
+    ; interrupt_setup : (opaque -> unit)
+    ; branding : string
+    ; subsystem_version : string
+    ; read_file : name:string -> string
+    ; write_file : name:string -> content:string-> unit
+    ; register_cma : file_path:string -> unit
+    ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
+    ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
+    }
+
+  let default =
+    { pre_init = (fun () -> ())
+    ; post_message = (fun _ -> ())
+    ; post_file = (fun _ _ _ -> ())
+    ; interrupt_setup = (fun _ -> ())
+    ; branding = "xxCoq"
+    ; subsystem_version = "??"
+    ; read_file = (fun ~name:_ -> "")
+    ; write_file = (fun ~name:_ ~content:_ -> ())
+    ; register_cma = (fun ~file_path:_ -> ())
+    ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> ())
+    ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> ())
+    }
+
+  let cb = ref default
+
+  let set t = cb := t
+
+end
 
 let opts = ref
     { implicit_libs = true
@@ -19,26 +58,12 @@ let opts = ref
     ; lib_path = []
     }
 
-(* XXX *)
-let post_message = ref (fun _ -> ())
-let post_file = ref (fun _ _ _ -> ())
-let interrupt_setup = ref (fun _ -> ())
-(* End XXX *)
-
 (** Message handlers **)
-type progress_info =
-  [%import: Jslibmng.progress_info]
-  [@@deriving yojson]
-
-type lib_event =
-  [%import: Jslibmng.lib_event]
-  [@@deriving yojson]
-
 let post_lib_event le =
-  lib_event_to_yojson le |> !post_message
+  LibManager.lib_event_to_yojson le |> !Callbacks.cb.post_message
 
 let post_answer ans =
-  jscoq_answer_to_yojson ans |> !post_message
+  jscoq_answer_to_yojson ans |> !Callbacks.cb.post_message
 
 let post_feedback fb =
   Feedback (Jscoq_util.fb_opt fb) |> post_answer
@@ -47,38 +72,39 @@ let post_feedback fb =
 
 let coq_info_string () =
   let coqv, ccv, cmag = Icoq.version                          in
-  let jsoov = Sys_js.js_of_ocaml_version                      in
+  let subsys = !Callbacks.cb.subsystem_version                in
   let header1 = Printf.sprintf
       "jsCoq (%s), Coq %s/%4d\n"
       Jscoq_version.jscoq_version coqv (Int32.to_int cmag)    in
   let header2 = Printf.sprintf
-      "OCaml %s, Js_of_ocaml %s\n" ccv jsoov                  in
+      "OCaml %s, %s\n" ccv subsys                             in
   header1 ^ header2
 
 (** When a new package is loaded, the library load path has to be updated *)
-let update_loadpath (msg : lib_event) : unit =
+let update_loadpath (msg : LibManager.lib_event) : unit =
   match msg with
   | LibLoaded (_,bundle) ->
     List.iter Loadpath.add_vo_path
-      (Jslibmng.coqpath_of_bundle ~implicit:!opts.implicit_libs bundle)
+      (Jslib.Coq_bundle.coqpath ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
 
-let process_lib_event (msg : lib_event) : unit =
+let process_lib_event (msg : LibManager.lib_event) : unit =
   update_loadpath msg;
   post_lib_event msg
 
 let mk_feedback ~span_id ?(route=0) contents =
   Feedback {doc_id = 0; span_id; route; contents}
 
-let mk_vo_path l = Jslibmng.paths_to_coqpath ~implicit:!opts.implicit_libs l
+let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
 (* set_opts  : general Coq initialization options *)
 let exec_init (set_opts : jscoq_options) =
 
   let opts = (opts := set_opts; set_opts) in
 
+  !Callbacks.cb.pre_init ();
+
   Icoq.coq_init ({
-      ml_load      = Jslibmng.coq_cma_link;
       fb_handler   = post_feedback;
       aopts        = { enable_async = None;
                        async_full   = false;
@@ -94,7 +120,7 @@ let create_doc (opts : doc_options) =
   Icoq.new_doc ({
       top_name      = opts.top_name;
       mode          = opts.mode;
-      require_libs  = Jslibmng.require_libs opts.lib_init;
+      require_libs  = Jslib.require_libs opts.lib_init;
     })
 
 (* I refuse to comment on this part of Coq code... *)
@@ -114,12 +140,12 @@ let requires ast =
   match ast with
   | Vernacexpr.{ expr = VernacRequire (prefix, _export, module_refs); _ } ->
     let prefix_str = match prefix with
-    | Some ref -> Jslibmng.module_name_of_qualid ref
+    | Some ref -> Jslib.module_name_of_qualid ref
     | _ -> [] in
     let module_refs_str =
       (* XXX *)
       let module_refs = List.map fst module_refs in
-      List.map (fun modref -> Jslibmng.module_name_of_qualid modref) module_refs
+      List.map (fun modref -> Jslib.module_name_of_qualid modref) module_refs
     in
     Some ((prefix_str, module_refs_str))
   | _ -> None
@@ -191,15 +217,12 @@ let jscoq_execute =
     exec_query doc ~span_id:sid ~route:rid query |> List.iter out_fn
 
   | Register file_path  ->
-    Jslibmng.register_cma ~file_path
+    !Callbacks.cb.register_cma ~file_path
 
   | Put (filename, content) ->
-    begin
-      try         Sys_js.create_file ~name:filename ~content
-      with _e ->  Sys_js.update_file ~name:filename ~content
-    end;
-    if Jslibmng.is_bytecode filename
-    then Jslibmng.register_cma ~file_path:filename
+    !Callbacks.cb.write_file ~name:filename ~content;
+    if Jslib.is_bytecode filename
+    then !Callbacks.cb.register_cma ~file_path:filename
 
   | GetOpt opt          -> out_fn @@ CoqOpt (opt, exec_getopt opt)
 
@@ -215,13 +238,11 @@ let jscoq_execute =
     out_fn @@ Ready iid
 
   | LoadPkg(base, pkg)  ->
-    let verb = false in
-    Lwt.async (fun () -> Jslibmng.load_pkg ~verb process_lib_event base pkg)
-
+    !Callbacks.cb.load_pkg ~base_path:base ~pkg ~cb:process_lib_event
   | InfoPkg(base, pkgs) ->
-    Lwt.async (fun () -> Jslibmng.info_pkg post_lib_event base pkgs)
+    !Callbacks.cb.info_pkg ~base_path:base ~pkgs ~cb:process_lib_event
 
-  | InterruptSetup shmem -> !interrupt_setup (Js.Unsafe.coerce shmem)
+  | InterruptSetup shmem -> !Callbacks.cb.interrupt_setup shmem
 
   | ReassureLoadPath load_path ->
     doc := Jscoq_doc.observe ~doc:!doc (Jscoq_doc.tip !doc); (* force current tip *)
@@ -230,4 +251,5 @@ let jscoq_execute =
     doc := Jscoq_doc.load ~doc:!doc filename ~echo:false;
     out_fn @@ Loaded (filename, Jscoq_doc.tip !doc)
   | Compile filename ->
-    !post_file "Compiled" filename (Icoq.compile_vo ~doc:(fst !doc) filename)
+    let vo_out_fn = Icoq.compile_vo ~doc:(fst !doc) filename in
+    !Callbacks.cb.post_file "Compiled" filename (!Callbacks.cb.read_file vo_out_fn)

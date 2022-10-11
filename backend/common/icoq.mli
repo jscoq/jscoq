@@ -27,8 +27,6 @@ type coq_opts = {
   fb_handler : Feedback.feedback -> unit;
   (* Async flags *)
   aopts        : async_flags;
-  (* callback to load cma/cmo files *)
-  ml_load      : string -> unit;
   (* Initial values for Coq options *)    (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_opts *)
   opt_values   : (string list * Goptions.option_value) list;
   (* Enable debug mode *)

@@ -52,6 +52,11 @@ RUN wget -O- https://deb.nodesource.com/setup_16.x | bash -
 # ^ https://github.com/nodesource/distributions/blob/master/README.md
 RUN apt install --no-install-recommends -y $APT_PACKAGES
 
+# wasi-sdk (for waCoq)
+ARG WASI_SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz"
+RUN wget -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
+RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
+
 # ---------------------
 # jsCoq toolchain setup
 # ---------------------
@@ -80,11 +85,12 @@ ARG NJOBS=4
 
 RUN git pull --ff-only
 RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --ff-only ; fi
-RUN eval $(opam env) && make coq && make jscoq
+RUN eval $(opam env) && make coq
+RUN eval $(opam env) && make jscoq
+RUN eval $(opam env) && make wacoq
 
 # - dist tarballs
-RUN rm -rf _build/${SWITCH}/node_modules
-RUN eval $(opam env) && make dist-tarball && make dist-npm \
+RUN eval $(opam env) && make dist \
         && mkdir dist && mv _build/dist/*.tgz dist
 
 # --------------

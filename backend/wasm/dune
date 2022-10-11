@@ -1,0 +1,38 @@
+(executable
+ (name wacoq_worker)
+ (modes byte exe)
+ (preprocess (staged_pps ppx_import ppx_deriving_yojson))
+ (libraries jscoq_core wacoq_subproc)
+ (ocamlc_flags -no-check-prims)
+ (link_flags -linkall))
+
+(library
+ (name wacoq_subproc)
+ (modes native)
+ (modules) ; none
+ (foreign_stubs
+  (language c)
+  (names wacoq_extern)))
+
+(rule
+ (target dllcoqrun_stubs.wasm)
+ (deps byterun_stubs.c)
+ (action
+  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
+	  byterun_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
+      -I%{ocaml-config:standard_library}")))
+
+(rule
+ (target dlllib_stubs.wasm)
+ (deps lib_stubs.c)
+ (action
+  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
+	  lib_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
+      -I%{ocaml-config:standard_library}")))
+
+(rule
+ (target jscoq_version.ml)
+ (deps ../../package.json)
+ (action (with-stdout-to %{target}
+  (run node -p 
+      "`let jscoq_version = \"${require(\"../../package.json\").version}\"`"))))
