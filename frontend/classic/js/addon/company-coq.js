@@ -459,7 +459,7 @@ class ObserveIdentifier {
         var entries;
 
         if (tok && tok.type == 'variable' &&
-            (entries = this._vocab_index[tok.string])) {
+            (entries = this._vocab_index.get(tok.string))) {
             CodeMirror.signal(cm, 'hintEnter', tok, entries);
         }
         else
@@ -468,14 +468,18 @@ class ObserveIdentifier {
 
     _makeVocabIndex(vocab = this.vocab) {
         var kinds = CompanyCoq.kinds,
-            vindex = {};
+            vindex = new Map;
         
         for (let scope of Object.values(vocab)) {
             for (let key in scope) {
                 for (let symb of scope[key]) {
                     if (typeof symb === 'object')
                         symb.kind = symb.kind || kinds[key];
-                    (vindex[symb.label] = vindex[symb.label] || []).push(symb);
+                    else
+                        symb = {label: symb, kind: kinds[key]};
+                    let vl = vindex.get(symb.label);
+                    if (!vl) { vl = []; vindex.set(symb.label, vl); }
+                    vl.push(symb);
                 }
             }
         }
