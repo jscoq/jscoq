@@ -330,7 +330,7 @@ export class CoqManager {
             // Setup package loader
             var pkg_path_aliases = {'+': this.options.pkg_path,
                 ...Object.fromEntries(PKG_AFFILIATES.map(ap =>
-                    [`+/${ap}`, `${this.options.node_modules_path}@${this.options.backend}coq/${ap}/coq-pkgs`]))
+                    [`+/${ap}`, `${this.options.node_modules_path}@jscoq/${ap}/coq-pkgs`]))
             };
 
             this.packages = new PackageManager(
