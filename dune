@@ -18,16 +18,12 @@
 
 (rule
  (targets (dir node_modules))
+ (mode (promote (until-clean)))
  (deps
-   (sandbox always)
    package.json
    package-lock.json)
  (action
-  (progn
-   (run npm install --no-save)
-   ; Otherwise Dune says `Error: Rule produced a file with unrecognised kind "S_LNK"`
-   ; https://github.com/ocaml/dune/issues/5945
-   (run find node_modules -type l -exec rm {} ";"))))
+  (run npm install --no-save)))
 
 (alias
  (name jscoq)
@@ -57,9 +53,11 @@
   dist))
 
 ; JavaScript build (Webpack)
-; cli.cjs, ide-project.browser.js, collab.browser.js
+; Emilio: do we want to list individual files inside dist here or keep
+; the directory as a target?
 (rule
- (target dist)
+ (target (dir dist))
+ (mode (promote (until-clean)))
  (deps
   (source_tree backend)
   (source_tree frontend)
@@ -67,11 +65,7 @@
   tsconfig.json
   node_modules)
  (action
-  (progn
-   (run npm install --no-save) ; sorry, have to run this again because of the symlinks I erased before *facepalm*
-   (run npm run build))))
-   ; XXX: setup this to add :dev when the debug env var is set
-   ;(run npm run build:dev))))
+  (run npm run %{env:NPM_TARGET=build})))
 
 ; Just the worker
 (alias
@@ -84,5 +78,5 @@
   (deps
     backend/wasm/wacoq_worker.bc))
 
-(dirs (:standard _vendor+* \ dist node_modules))
+(dirs (:standard _vendor+*))
 (vendored_dirs vendor)
