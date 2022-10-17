@@ -24,8 +24,8 @@ import { FormatPrettyPrint } from '../../classic/js/format-pprint';
 // CoqProject type is defined canonically by Coq in the OCaml side, so
 // while we can allow different implementations, we should make sure
 // the interfaces for both are the same.
-import { FSInterface, fsif_native } from '../../../coq-jslib/build/fsif';
-import { CoqProject } from '../../../coq-jslib/build/project';
+import { FSInterface, fsif_native } from '../../cli/build/fsif';
+import { CoqProject } from '../../cli/build/project';
 
 class HeadlessCoqWorker extends CoqWorker {
 

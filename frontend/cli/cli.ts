@@ -3,7 +3,7 @@
 
 import path from 'path';
 import commander from 'commander';
-import manifest from '../package.json';
+import manifest from '../../package.json';
 
 //import { FormatPrettyPrint } from '../frontend/classic/js/format-pprint';
 
@@ -13,7 +13,7 @@ import { Batch, CompileTask, BuildError } from './build/batch';
 import * as sdk from './build/sdk/toolkit';
 
 // Headless CLI
-import { HeadlessCLI } from '../frontend/node/src/coq-cli';  // oops
+import { HeadlessCLI } from '../node/src/coq-cli';  // oops
 
 class CLI {
 
@@ -125,7 +125,7 @@ class CLI {
     }
 
     static stdlib() {
-        return require('./metadata/coq-pkgs.json');
+        return require('../../etc/pkg-metadata/coq-pkgs.json');
     }
 
     static stdlibLoads() {

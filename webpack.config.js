@@ -83,7 +83,7 @@ export default (env, argv) => [
 {
   name: 'cli',
   target: 'node',
-  entry: './coq-jslib/cli.ts',
+  entry: './frontend/cli/cli.ts',
   ...basics(argv),
   module: {
     rules: [ts]
