@@ -109,7 +109,7 @@ export class CoqCodeMirror6 {
 
         if (version < this.version) { return; };
 
-        var from = d.range.start_pos, to = d.range.end_pos;
+        var from = d.range.start.offset, to = d.range._end.offset;
 
         var mclass = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
         const diagMark = Decoration.mark( { class: mclass } );

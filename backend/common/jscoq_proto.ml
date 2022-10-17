@@ -49,10 +49,20 @@ module Range = struct
   [@@deriving yojson]
 end
 
-type diagnostic =
-  [%import: Fleche.Types.Diagnostic.t
-  [@with range := range;]]
-  [@@deriving yojson]
+module Diagnostic = struct
+
+  module Extra = struct
+    type t =
+      [%import: Fleche.Types.Diagnostic.Extra.t]
+      [@@deriving yojson]
+  end
+
+  type t =
+    [%import: Fleche.Types.Diagnostic.t
+    [@with range := range;]]
+    [@@deriving yojson]
+
+end
 
 type coq_options = (string list * Goptions.option_value) list [@@deriving yojson]
 type lib_path = (string list * string list) list [@@deriving yojson]
@@ -152,7 +162,7 @@ type jscoq_cmd =
 type jscoq_answer =
   | CoqInfo   of string
   | Ready     of unit
-  | Notification of diagnostic list * int
+  | Notification of Diagnostic.t list * int
   | Response  of Answer.t Request.answer
   | Log       of Feedback.level * Pp.t
   | JsonExn   of string

@@ -22,7 +22,7 @@ import { editorAppend } from './coq-editor.js';
 
 function diagNew(d) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
-    return Decoration.inline(d.range.start_pos + 1, d.range.end_pos + 1, { class: mark_class });
+    return Decoration.inline(d.range.start.offset + 1, d.range._end.offset + 1, { class: mark_class });
 }
 
 // Implementation of Asynchronous diagnostics

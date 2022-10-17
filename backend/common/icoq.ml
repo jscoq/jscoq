@@ -75,10 +75,21 @@ let coq_init opts =
   (* XXX : set debug system for stderr *)
   let debug = opts.debug in
 
+  let lvl_to_severity (lvl : Feedback.level) =
+    match lvl with
+    | Feedback.Debug -> 5
+    | Feedback.Info -> 4
+    | Feedback.Notice -> 3
+    | Feedback.Warning -> 2
+    | Feedback.Error -> 1
+  in
+
   let fb_handler (Feedback.{ contents; _ }) =
     (* Format.fprintf lp_fmt "%s@\n%!" "fb received"; *)
     match contents with
-    | Message (_lvl, loc, msg) -> fb_queue := (loc, msg) :: !fb_queue
+    | Message (lvl, loc, msg) ->
+      let lvl = lvl_to_severity lvl in
+      fb_queue := (loc, lvl, msg) :: !fb_queue
     | _ -> ()
   in
 
@@ -103,8 +114,8 @@ let coq_init opts =
   ()
 
 let check_doc ~doc =
-  let fmt = Format.formatter_of_out_channel stdout in
-  Fleche.Doc.check fmt doc fb_queue
+  let ofmt = Format.formatter_of_out_channel stdout in
+  Fleche.Doc.check ~ofmt ~doc ~fb_queue
 
 let new_doc opts ~text =
   let state = !root_state, opts.vo_path, [], 0 in
