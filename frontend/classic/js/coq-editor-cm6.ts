@@ -99,7 +99,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
         var to_ = { line: d.range.end.line, ch: d.range.end.character };
 
         console.log(`mark from (${from_.line},${from_.ch}) to (${to_.line},${to_.ch}) class: ${mclass}`);
-
+        if (d.extra) console.log('extra: ', d.extra);
         // var d = new Decoration(from, to);
         // var doc = this.editor.getDoc();
         // doc.markText(from, to, {className: mclass});
