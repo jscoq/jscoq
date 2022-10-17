@@ -123,6 +123,7 @@ export class CoqCodeMirror6 {
                 to = { line: d.range._end.line, ch: d.range._end.character };
 
             console.log(`mark from (${from.line},${from.ch}) to (${to.line},${to.ch}) class: ${mclass}`);
+            if (d.extra) console.log('extra: ', d.extra);
         }
 
         // var d = new Decoration(from, to);
