@@ -255,6 +255,7 @@ export class CoqWorker {
         fut?.resolve(resp.res);
     }
 
+    /*--- jsCoq Protocol Commands ---*/
     /**
      * Send Init Command to Coq
      *
@@ -373,6 +374,7 @@ export class CoqWorker {
         if (this.worker) {
             this.worker.removeEventListener('message', this._handler);
             this.worker.terminate();
+            /* @ts-ignore */
             this.worker = undefined;
         }
     }

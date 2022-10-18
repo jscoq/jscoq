@@ -190,14 +190,14 @@ export class PackageManager {
                 throw new Error("packages without archives are obsolete");
         }
 
-        this.index.add(pkg_info);
+        this.index?.add(pkg_info);
 
         this.dispatchEvent(new Event('change'));
     }
 
     async addBundleZip(bname: string, resource: any, pkg_info?: CoqPkgInfo) {
         // @ts-expect-error
-        var pkg_info = pkg_info || {};
+        var pkg_infoo : CoqPkgInfo = pkg_info || {};
 
         var archive = await new CoqPkgArchive(resource).load();
 
@@ -209,13 +209,13 @@ export class PackageManager {
                 throw new Error(`package ${bname} is already present`);
 
             for (let k in pi)
-                if (!pkg_info[k]) pkg_info[k] = pi[k];
+                if (!pkg_infoo[k]) pkg_infoo[k] = pi[k];
 
             var pkg = new CoqPkgInfo(bname, '');
             this.packages.push(pkg);
             this.packages_by_name[bname] = pkg;
 
-            this.addBundleInfo(bname, pkg_info);
+            this.addBundleInfo(bname, pkg_infoo);
             pkg.archive = archive;
             return pkg;
         });

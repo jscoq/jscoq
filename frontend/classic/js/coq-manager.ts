@@ -26,6 +26,7 @@ import { ICoqEditor } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
+import { CoqIdentifier } from '../../../backend/coq-identifier';
 
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
@@ -155,11 +156,12 @@ export class CoqManager {
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
         });
 
+        /* @ts-ignore */
         this.packages = null;
 
-        /** @type {CoqContextualInfo} */
         this.contextual_info = null;
 
+        /* @ts-ignore */
         this.coq = null;
 
         // Setup the Panel UI.
@@ -209,10 +211,10 @@ export class CoqManager {
         const editorThemes = {'light': 'default', 'dark': 'blackboard'};
         this.layout.settings.model.theme.observe(theme => {
             /* this might take some time (do async like renumber?) */
-            this.editor.configure({theme: editorThemes[theme]});
+            // this.editor.configure({theme: editorThemes[theme]});
         });
         this.layout.settings.model.company.observe(enable => {
-            this.editor.configure({mode: {'company-coq': enable}});
+            // this.editor.configure({mode: {'company-coq': enable}});
             // this.company_coq = this.contextual_info.company_coq =
             //    enable ? new CompanyCoq() : undefined;
         });
@@ -225,8 +227,9 @@ export class CoqManager {
         });
         $(this.layout.ide).on('drop', async (evt) => {
             evt.preventDefault();
-            var src = []
-            for (let item of evt.originalEvent.dataTransfer.items) {
+            var src : { entry: FileSystemEntry | null, file: File | null }[] = [];
+
+            for (let item of evt.originalEvent?.dataTransfer?.items || []) {
                 var entry = item.webkitGetAsEntry && item.webkitGetAsEntry(),
                     file = item.getAsFile && item.getAsFile();
                 if (file && file.name.match(/[.]coq-pkg$/))
@@ -383,7 +386,7 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    coqNotification(diags : Diagnostic[], version : number) {
+    async coqNotification(diags : Diagnostic[], version : number) {
 
         this.editor.clearMarks();
 
@@ -394,11 +397,25 @@ export class CoqManager {
             return;
         }
 
-        for (let d of diags) {
-            if (d.severity < 4) {
+        let needRecheck = false, pending;
+        for (let d of diags.reverse()) {
+            for (let extra of d.extra ?? []) {
+                if (extra[0] === 'FailedRequire' &&
+                        (pending = this.handleRequires(extra))) {
+                    this.editor.markDiagnostic(d);
+                    needRecheck = true;
+                    await pending;
+                    /** @todo clear the mark? */
+                }
+            }
+            if (d.severity < 4 && !needRecheck) {
                 this.editor.markDiagnostic(d);
             }
         }
+
+        /* if packages were loaded, need to re-create the document
+         * because the loadpath has changed */
+        if (needRecheck) this.refreshWorkspace();
     }
 
     coqLog(level, msg) {
@@ -507,6 +524,17 @@ export class CoqManager {
         this.coq.interrupt();
     }
 
+    refreshWorkspace() {
+
+        // let uri = this.uri;
+        // let raw = this.preprocess(this.editor.getValue());
+        // XXX: Fix instead do a call to workspace update with the new load path
+        // lib_path: this.getLoadPath(),
+        // let dp = { uri, version: 0, raw };
+        // This is broken after coq-lsp 0.1.3
+        // this.coq.newDoc(dp)
+    }
+
     /**
      * Handles a critial error during worker load/launch.
      * Typically, failure to fetch the jscoq_worker script.
@@ -520,6 +548,44 @@ export class CoqManager {
                 "(Serving from local file;\n" +
                 "has <i>--allow-file-access-from-files</i> been set?)"), 'Info');
         }
+    }
+
+    /**
+     * Handles a `FailedRequire` diagnostic by looking for missing modules in
+     * the package index. 
+     * @param {['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]} info 
+     * @return {Promise<void>} whether additional packages are being loaded
+     */
+    handleRequires(info) {
+        let op = qid => CoqIdentifier.ofQualid(qid).toStrings(),
+            prefix = info[1].prefix ? op(info[1].prefix.v) : [],
+            pkgDeps = new Set();
+
+        for (let suffix of info[1].refs.map(r => op(r.v))) {
+            for (let dep of this.packages.index.findPackageDeps(prefix, suffix))
+                pkgDeps.add(dep);
+        }
+
+        for (let d of this.packages.loaded_pkgs) pkgDeps.delete(d);
+
+        if (pkgDeps.size > 0)
+            return this.handleMissingDeps([...pkgDeps]);
+        else
+            return undefined;
+    }
+
+    /**
+     * Loads some packages and re-checks the document.
+     * @param {string[]} pkgs packages to load
+     */
+    async handleMissingDeps(pkgs) {
+        this.disable();
+        this.packages.expand();
+        let loaded = await this.packages.loadDeps(pkgs);
+        this.layout.systemNotification(
+            `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
+        this.enable();
+        setTimeout(() => this.packages.collapse(), 500);
     }
 
     /**
@@ -643,7 +709,8 @@ export class CoqManager {
     }
 
     toolbarClickHandler(evt) {
-
+        
+        /* @ts-ignore */
         this.editor.focus();
 
         switch (evt.target.name) {

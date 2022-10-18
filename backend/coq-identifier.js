@@ -1,4 +1,6 @@
 "use strict";
+import { arreq_deep } from '../frontend/common/etc.js'; /** @oops need this func which happens to be in the frontend */
+
 /**
  * Coq Identifier
  *
@@ -13,13 +15,15 @@ export class CoqIdentifier {
     constructor(prefix, label) {
         this.prefix = prefix;
         this.label = label;
+        this.tags = [];
     }
 
-    toString() { return [...this.prefix, this.label].join('.'); }
+    toString() { return this.toStrings().join('.'); }
+    toStrings() { return [...this.prefix, this.label]; }
 
     equals(other) {
         return other instanceof CoqIdentifier &&
-            this.prefix.equals(other.prefix) && this.label === other.label;
+            arreq_deep(this.prefix, other.prefix) && this.label === other.label;
     }
 
     /**
@@ -42,20 +46,19 @@ export class CoqIdentifier {
 
     /**
      * Constructs an identifier from a `Libnames.full_path`.
-     * @param {{dirpath: string[], basename: string[]}} fp serialized form of `full_path`.
+     * @param {{dirpath: ['DirPath', any[]], basename: string[]}} fp serialized form of `full_path`.
      */
     static ofFullPath(fp) {
-        /**/ console.assert(fp.dirpath[0] === 'DirPath') /**/
         return new CoqIdentifier(
-            fp.dirpath[1].slice().reverse().map(this._idToString),
-            this._idToString(fp.basename));
+            this._dirpath(fp.dirpath), this._idToString(fp.basename));
     }
 
     /**
      * Constructs an identifier from a `qualified_name`. This type comes from
      * the worker protocol, and may contain a dirpath as well as a module path.
      * @see inspect.ml
-     * @param {{prefix : { dp: string[] }, basename: string[]}} qn serialized form of `qualified_name` (from SearchResults).
+     * @param {{prefix : {dp: ['DirPath', any[]], mod_ids: any[]},
+     *          basename: string[]}} qn serialized form of `qualified_name` (from SearchResults).
      */
     static ofQualifiedName(qn) {
         /**/ console.assert(qn.prefix.dp[0] === 'DirPath') /**/
@@ -63,6 +66,24 @@ export class CoqIdentifier {
             qn.prefix.dp[1].slice().reverse()
                 .concat(qn.prefix.mod_ids).map(this._idToString),
             this._idToString(qn.basename));
+    }
+
+    /**
+     * Constructs an identifier from a serialized `Qualid` (`Ser_Qualid`).
+     */
+    static ofQualid(qid) {
+        /**/ console.assert(qid[0] == 'Ser_Qualid') /**/
+        return new CoqIdentifier(
+            this._dirpath(qid[1]), this._idToString(qid[2]));
+    }
+
+    /**
+     * @param {['DirPath', any[]]} dp serialized `DirPath`
+     * @returns {string[]}
+     */
+    static _dirpath(dp) {
+        /**/ console.assert(dp[0] == 'DirPath') /**/
+        return dp[1].slice().reverse().map(this._idToString);
     }
 
     /**
@@ -75,7 +96,7 @@ export class CoqIdentifier {
 
     dequalify(dirpaths) {
         for (let prefix of dirpaths) {
-            if (this.prefix.slice(0, prefix.length).equals(prefix))
+            if (arreq_deep(this.prefix.slice(0, prefix.length), prefix))
                 return this.ltrunc(prefix.length)
         }
         return this;

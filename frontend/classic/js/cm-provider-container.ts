@@ -117,7 +117,7 @@ export class ProviderContainer {
      * @memberof ProviderContainer
      */
     findElements(elementRefs) : HTMLElement[] {
-        var elements = [];
+        var elements : HTMLElement[] = [];
         for (let e of elementRefs) {
             var els = (typeof e === 'string') ?
                 [document.getElementById(e), ...document.querySelectorAll(e)] : e;
@@ -136,7 +136,7 @@ export class ProviderContainer {
      */
     async renumber(startIndex) {
         let snippet = this.snippets[startIndex],
-            line = snippet.editor.getOption('firstLineNumber') + snippet.lineCount;
+            line = snippet.editor.getOption('firstLineNumber') ?? 0 + snippet.lineCount;
 
         for (let index = startIndex + 1; index < this.snippets.length; index++) {
             let snippet = this.snippets[index];
