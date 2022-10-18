@@ -2,6 +2,8 @@
 import { copyOptions, isMac } from '../../common/etc.js';
 import { JsCoq } from './index.js';
 
+import { CoqManager } from './coq-manager';
+
 // Misc imports
 import localforage from "localforage";
 import $ from 'jquery';
@@ -73,8 +75,8 @@ class CmSentence {
          */
         this.action = undefined;
     }
-
 } 
+
 // Extensions to TS typing in npm
 declare module "codemirror" {
     var keyMap : any;
@@ -123,6 +125,7 @@ export class CmCoqProvider {
     hover : any[];
     company_coq ?: CompanyCoq;
     lineCount : number;
+    manager : CoqManager;
 
     /**
      * Creates an instance of CmCoqProvider.
@@ -132,7 +135,7 @@ export class CmCoqProvider {
      * @param {number} idx
      * @memberof CmCoqProvider
      */
-    constructor(element, options : CM5Options, replace : boolean, idx : number) {
+    constructor(element, options : CM5Options, replace : boolean, idx : number, manager) {
 
         CmCoqProvider._config();
 
@@ -214,7 +217,14 @@ export class CmCoqProvider {
         this.editor.on('hintEnter',     (tok, entries)   => this.onTipHover(entries, false));
         this.editor.on('hintOut',       (cm)             => this.onTipOut(cm));
         this.editor.on('endCompletion', (cm)             => this.onTipOut(cm));
+
+        if (options?.mode?.['company-coq']) {
+            this.company_coq = new CompanyCoq(this.manager);
+            this.company_coq.attach(this.editor);
+        }
     }
+
+
 
     static file_store = null;
 
@@ -363,6 +373,7 @@ export class CmCoqProvider {
      */
     retract() {
         for (let mark of this.editor.getAllMarks()) {
+            // XXX: Avoid to clear company-coq marks
             mark.clear();
         }
     }

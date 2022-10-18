@@ -21,15 +21,12 @@ export class ProviderContainer {
     onAction : (evt : any ) => void;
     wait_for : Future<void>;
     currentFocus : CmCoqProvider;
+    manager : any;
 
     /**
      * Creates an instance of ProviderContainer.
-     * 
-     * @param {string} elementRefs
-     * @param {object} options
-     * @memberof ProviderContainer
      */
-    constructor(elementRefs : (string | HTMLElement)[], options) {
+    constructor(elementRefs : (string | HTMLElement)[], options, manager) {
 
         this.options = options ? options : {};
 
@@ -81,7 +78,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
 
                 this.snippets.push(cm);
 

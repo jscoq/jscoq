@@ -11,13 +11,15 @@ interface CM5Options {
     mode?: { "company-coq": boolean }
 }
 
+// Big TODO: A few operations only work for the first snippet, need to fix.
+// Search for snippets[0]
+
+/** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
-    manager : CoqManager;
 
     constructor(eIds: (string|HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
 
-        super(eIds, options);
-        this.manager = manager;
+        super(eIds, options, manager);
 
         this.onChangeAny = () => {
             let txt = this.getValue();
@@ -31,7 +33,7 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     }
 
     // To be overriden by the manager
-    onChange(txt) { }
+    onChange(txt: string) { }
 
     // To be overriden by the manager
     getValue() {
@@ -65,6 +67,6 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     }
 
     getCursorOffset(): number {
-        return this.snippets[0].editor.getDoc().indexFromPos(this.snippets[0].editor.getCursor());
+        return this.snippets[0].getCursorOffset();
     }
 }
