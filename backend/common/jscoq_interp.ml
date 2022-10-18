@@ -57,7 +57,6 @@ let opts = ref
     { implicit_libs = true
     ; coq_options = []
     ; debug = {coq = false; stm = false}
-    ; lib_path = []
     }
 
 (** Message handlers **)
@@ -116,8 +115,9 @@ let exec_init (set_opts : jscoq_options) =
 let create_doc (doc_opts : doc_options) =
   let opts =
     { Icoq.uri = "file:///browser.v"
+    (* EJGA: Flèche will select markdown depending on the uri now :D [use .mv for markdown] *)
     ; opt_values = []
-    ; vo_path = mk_vo_path !opts.lib_path
+    ; vo_path = mk_vo_path doc_opts.lib_path
     ; require_libs  = Jslib.require_libs doc_opts.lib_init;
     }
   in
@@ -159,6 +159,7 @@ let jscoq_execute =
 
   | LoadPkg(base, pkg)  ->
     !Callbacks.cb.load_pkg ~base_path:base ~pkg ~cb:process_lib_event
+
   | InfoPkg(base, pkgs) ->
     !Callbacks.cb.info_pkg ~base_path:base ~pkgs ~cb:process_lib_event
 

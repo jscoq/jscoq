@@ -411,10 +411,10 @@ export class CoqManager {
         let init_opts = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: {coq: true, stm: true},
-                lib_path: this.getLoadPath()
+                debug: {coq: true, stm: true}
             },
             doc_opts = {
+                lib_path: this.getLoadPath(),
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
 

@@ -117,11 +117,11 @@ class HeadlessCoqManager {
         // Initialize Coq
         let init_opts = {
                 top_name: this.options.top_name,
-                implicit_libs: this.options.implicit_libs,
-                lib_path: this.getLoadPath()
+                implicit_libs: this.options.implicit_libs
             },
             doc_opts = {
-                lib_init: this.options.prelude ? ["Coq.Init.Prelude"] : []
+                lib_init: this.options.prelude ? ["Coq.Init.Prelude"] : [],
+                lib_path: this.getLoadPath()
             };
 
         this.coq.init(init_opts, doc_opts, " ");

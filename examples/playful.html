@@ -42,7 +42,7 @@
       await pm.loadDeps(['coq']);
 
       // Initialize document
-      coq.init({lib_path: pm.getLoadPath()}, {lib_init: ["Coq.Init.Prelude"]});
+      coq.init({}, {lib_path: pm.getLoadPath(), lib_init: ["Coq.Init.Prelude"]});
       await o.when_ready;
 
       // Pretty-printer to format messages and goals

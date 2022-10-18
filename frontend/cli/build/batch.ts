@@ -40,12 +40,13 @@ abstract class Batch {
     }
 
     async init() {
-        await this.do(['Init', {lib_path: this.loadpath}]);
+        await this.do(['Init', {}]);
     }
 
     docOpts(mod: SearchPathElement, outfn: string) {
         /* @todo why does `mode: ['Vo']` end up producing an incorrect module name? */
         return { top_name: mod.logical.join('.'), // mode: ['Vo'],
+                 lib_path: this.loadpath,
                  lib_init: PRELUDE };
     }
 
