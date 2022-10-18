@@ -4,6 +4,8 @@ open Jscoq_core.Jscoq_proto.Proto
 
 external emit : string -> unit = "wacoq_emit" (* implemented in `core.ts` *)
 external interrupt_setup : opaque -> unit = "interrupt_setup" (* implemented in `core.ts` *)
+external read_file : name:string -> string = "read_file" (* implemented in `core.ts` *)
+external write_file : name:string -> content:string -> unit = "read_file" (* implemented in `core.ts` *)
 
 let deserialize (json : string) =
   [%of_yojson: jscoq_cmd] @@ Yojson.Safe.from_string json
@@ -57,8 +59,8 @@ let wasm_cb =
     ; interrupt_setup
     ; branding = "waCoq"
     ; subsystem_version = "wasi-sdk 12"
-    ; read_file = (fun ~name:_ -> "")
-    ; write_file = (fun ~name:_ ~content:_ -> ())
+    ; read_file
+    ; write_file
     ; register_cma = (fun ~file_path:_ -> ())
     ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> failwith "handled in JS")
     ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> failwith "handled in JS")

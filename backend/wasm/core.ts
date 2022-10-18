@@ -111,8 +111,6 @@ class IcoqPod extends EventEmitter {
     command(cmd: any[]) {
         switch (cmd[0]) {
         case 'LoadPkg':        this.loadPackages(cmd[1]);          return;
-        case 'Put':            this.putFile(cmd[1], cmd[2]);       return;
-        case 'Get':            this.getFile(cmd[1]);               return;
         }
 
         const wacoq_post = this.core.callbacks && this.core.callbacks.wacoq_post;
@@ -122,11 +120,11 @@ class IcoqPod extends EventEmitter {
             answer = wacoq_post(this.core.to_caml_string(json));
         this._answer(answer);
     }
-    
+
     answer(msgs: any[][]) {
         for (let msg of msgs) this.emit('message', msg);
     }
-    
+
     _answer(ptr: number) {
         var cstr = this.core.proc.userGetCString(ptr);
         this.answer(JSON.parse(<any>cstr));
@@ -168,13 +166,14 @@ class IcoqPod extends EventEmitter {
                     wacoq_emit: (s:number) => this._answer(s),
                     interrupt_pending: (_:number) => this._interrupt_pending(),
                     interrupt_setup: (opaque) => this.intr.setup(opaque),
+                    read_file: (name) => this.getFile(name),
+                    write_file: (name, content) => this.putFile(name, content),
                     coq_vm_trap: (u:void) => console.warn('coq vm trap!')
                 }
             }
         );
-    }    
+    }
 }
-
 
 class IO {
 
