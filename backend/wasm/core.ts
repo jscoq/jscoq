@@ -113,7 +113,6 @@ class IcoqPod extends EventEmitter {
         case 'LoadPkg':        this.loadPackages(cmd[1]);          return;
         case 'Put':            this.putFile(cmd[1], cmd[2]);       return;
         case 'Get':            this.getFile(cmd[1]);               return;
-        case 'InterruptSetup': this.intr.setup(cmd[1]);            return;
         }
 
         const wacoq_post = this.core.callbacks && this.core.callbacks.wacoq_post;
@@ -168,6 +167,7 @@ class IcoqPod extends EventEmitter {
                 js: {
                     wacoq_emit: (s:number) => this._answer(s),
                     interrupt_pending: (_:number) => this._interrupt_pending(),
+                    interrupt_setup: (opaque) => this.intr.setup(opaque),
                     coq_vm_trap: (u:void) => console.warn('coq vm trap!')
                 }
             }
