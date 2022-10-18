@@ -194,14 +194,14 @@ export class CoqWorker {
         fut?.resolve(resp.res);
     }
 
-    /**
-     * Send Init Command to Coq
-     *
-     */
-    init(coq_opts, doc_opts, text) {
+    /*--- jsCoq Protocol Commands ---*/
+
+    init(coq_opts) {
         this.sendCommand(["Init", coq_opts]);
-        if (doc_opts)
-            this.sendCommand(["NewDoc", doc_opts, text]);
+    }
+
+    newDoc(doc_opts, text) {
+        this.sendCommand(["NewDoc", doc_opts, text]);
     }
 
     update(text, version) {
