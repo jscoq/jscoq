@@ -2,6 +2,7 @@
 "use strict";
 
 import { CmCoqProvider } from "./coq-editor-cm5.js";
+import { CoqManager } from "./coq-manager.js";
 import { Deprettify } from "./deprettify.js";
 
 /**
@@ -19,9 +20,10 @@ export class ProviderContainer {
      * 
      * @param {(string | HTMLElement)[]} elementRefs
      * @param {object} options
+     * @param {CoqManager} manager
      * @memberof ProviderContainer
      */
-    constructor(elementRefs, options) {
+    constructor(elementRefs, options, manager) {
 
         this.options = options ? options : {};
 
@@ -69,7 +71,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options, this.options.replace, idx);
+                let cm = new CmCoqProvider(element, this.options, this.options.replace, idx, manager);
 
                 this.snippets.push(cm);
 

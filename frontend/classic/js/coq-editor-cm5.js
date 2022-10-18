@@ -50,27 +50,21 @@ export class CoqCodeMirror5 extends ProviderContainer {
     constructor(elementRefs, options, manager) {
         CoqCodeMirror5.set_keymap();
 
-        super(elementRefs, options);
+        super(elementRefs, options, manager);
 
         this.options = options;
         this.manager = manager;
         this.version = 1;
 
-        this.cm = this.snippets[0].editor;
         this.onChange = () => {
             let txt = this.getValue();
             this.version++;
             this.onChangeRev(txt, this.version);
         };
-
-        if (this.options.mode && this.options.mode['company-coq']) {
-            this.company_coq = new CompanyCoq(this.manager);
-            //this.company_coq.attach(this.cm.editor);
-        }
-
     }
 
     getCursorOffset() {
+        /** @todo need to get the focused one and add the offset of the ones above it */
         return this.snippets[0].getCursorOffset();
     }
 
@@ -137,9 +131,10 @@ export class CmCoqProvider {
      * @param {*} options
      * @param {*} replace
      * @param {number} idx
+     * @param {CoqManager} manager (required for CompanyCoq)
      * @memberof CmCoqProvider
      */
-    constructor(element, options, replace, idx) {
+    constructor(element, options, replace, idx, manager) {
 
         CmCoqProvider._config();
 
@@ -222,6 +217,11 @@ export class CmCoqProvider {
         this.editor.on('hintEnter',     (/** @type {any} */ tok, /** @type {any} */ entries) => this.onTipHover(entries, false));
         this.editor.on('hintOut',       ()             => this.onTipOut());
         this.editor.on('endCompletion', (/** @type {any} */ cm)             => this.onTipOut());
+
+        if (options?.mode?.['company-coq']) {
+            this.company_coq = new CompanyCoq(manager);
+            this.company_coq.attach(this.editor);
+        }
     }
 
     static file_store = null;
@@ -233,7 +233,7 @@ export class CmCoqProvider {
      */
     createEditor(element, opts, replace) {
         var text = replace && $(element).text(),
-            editor = new CodeMirror(element, opts);
+            editor = CodeMirror(element, opts);
         if (replace) {
             editor.setValue(Deprettify.cleanup(text));
             element.replaceWith(editor.getWrapperElement());
