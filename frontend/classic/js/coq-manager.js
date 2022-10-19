@@ -331,28 +331,34 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    coqNotification(diags, version) {
+    async coqNotification(diags, version) {
 
         this.editor.clearMarks();
 
         console.log("Diags received: " + diags.length.toString());
-        let suppress = false;
+        let needRecheck = false, pending;
         for (let d of diags.reverse()) {
             for (let extra of d.extra) {
                 if (extra[0] === 'FailedRequire' &&
-                        this.handleRequires(extra)) {
+                        (pending = this.handleRequires(extra))) {
                     this.editor.markDiagnostic({...d, inProgress: true});
-                    suppress = true;
+                    needRecheck = true;
+                    await pending;
+                    /** @todo clear the mark? */
                 }
             }
             // d_str = JSON.stringify(d);
             // this.layout.log("Diag", 'Info');
             // this.layout.log(d.message, 'Info');
             // this.layout.log(JSON.stringify(d), 'Info');
-            if (d.severity < 4 && !suppress) {
+            if (d.severity < 4 && !needRecheck) {
                 this.editor.markDiagnostic(d, version);
             }
         }
+
+        /* if packages were loaded, need to re-create the document
+         * because the loadpath has changed */
+        if (needRecheck) this.newDoc();
     }
 
     coqLog(level, msg) {
@@ -490,7 +496,7 @@ export class CoqManager {
      * Handles a `FailedRequire` diagnostic by looking for missing modules in
      * the package index. 
      * @param {['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]} info 
-     * @return {boolean} whether additional packages are being loaded
+     * @return {Promise<void>} whether additional packages are being loaded
      */
     handleRequires(info) {
         let op = qid => CoqIdentifier.ofQualid(qid).toStrings(),
@@ -504,12 +510,10 @@ export class CoqManager {
 
         for (let d of this.packages.loaded_pkgs) pkgDeps.delete(d);
 
-        if (pkgDeps.size > 0) {
-            this.handleMissingDeps([...pkgDeps]);  /* do not await; happens async */
-            return true;   /* let the document know that loading is now in progress */
-        }
+        if (pkgDeps.size > 0)
+            return this.handleMissingDeps([...pkgDeps]);
         else
-            return false;
+            return undefined;
     }
 
     /**
@@ -524,8 +528,6 @@ export class CoqManager {
             `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
         this.enable();
         setTimeout(() => this.packages.collapse(), 500);
-        /* need to re-create the document now that the loadpath has changed */
-        this.newDoc();
     }
 
     /**
