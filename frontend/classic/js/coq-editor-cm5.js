@@ -379,7 +379,8 @@ export class CmCoqProvider {
 
         var tr_loc = ({character, line}) => { return {line: line, ch: character } };
 
-        var className = (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
+        var className = diag.inProgress ? 'coq-eval-pending' :
+                        (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
 
         var doc = this.editor.getDoc();
         let start = tr_loc(diag.range.start), end = tr_loc(diag.range._end);

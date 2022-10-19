@@ -336,16 +336,20 @@ export class CoqManager {
         this.editor.clearMarks();
 
         console.log("Diags received: " + diags.length.toString());
-        for (let d of diags) {
+        let suppress = false;
+        for (let d of diags.reverse()) {
             for (let extra of d.extra) {
-                if (extra[0] === 'FailedRequire')
-                    this.handleRequires(extra);
+                if (extra[0] === 'FailedRequire' &&
+                        this.handleRequires(extra)) {
+                    this.editor.markDiagnostic({...d, inProgress: true});
+                    suppress = true;
+                }
             }
             // d_str = JSON.stringify(d);
             // this.layout.log("Diag", 'Info');
             // this.layout.log(d.message, 'Info');
             // this.layout.log(JSON.stringify(d), 'Info');
-            if (d.severity < 4) {
+            if (d.severity < 4 && !suppress) {
                 this.editor.markDiagnostic(d, version);
             }
         }
@@ -412,21 +416,11 @@ export class CoqManager {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
                 debug: {coq: true, stm: true}
-            },
-            doc_opts = {
-                lib_path: this.getLoadPath(),
-                lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
 
-        for (let pkg of this.options.init_import || []) {
-            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
-        }
-
-        let content = this.preprocess(this.editor.getValue());
         this.coq.init(init_opts)
-        this.coq.newDoc(doc_opts, content);
-        // Almost done!
-        // Now we just wait for the `Ready` event.
+        this.newDoc();
+        // Now we wait for the `Ready` event.
     }
 
     /**
@@ -464,6 +458,19 @@ export class CoqManager {
         this.coq.interrupt();
     }
 
+    newDoc() {
+        let doc_opts = {
+            lib_path: this.getLoadPath(),
+            lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
+        };
+
+        for (let pkg of this.options.init_import || []) {
+            doc_opts.lib_init.push(PKG_ALIASES[pkg] || pkg);
+        }
+
+        this.coq.newDoc(doc_opts, this.preprocess(this.editor.getValue()));
+    }
+
     /**
      * Handles a critial error during worker load/launch.
      * Typically, failure to fetch the jscoq_worker script.
@@ -480,8 +487,10 @@ export class CoqManager {
     }
 
     /**
-     * 
+     * Handles a `FailedRequire` diagnostic by looking for missing modules in
+     * the package index. 
      * @param {['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]} info 
+     * @return {boolean} whether additional packages are being loaded
      */
     handleRequires(info) {
         let op = qid => CoqIdentifier.ofQualid(qid).toStrings(),
@@ -495,24 +504,28 @@ export class CoqManager {
 
         for (let d of this.packages.loaded_pkgs) pkgDeps.delete(d);
 
-        if (pkgDeps.size > 0) this.handleMissingDeps([...pkgDeps]);
+        if (pkgDeps.size > 0) {
+            this.handleMissingDeps([...pkgDeps]);  /* do not await; happens async */
+            return true;   /* let the document know that loading is now in progress */
+        }
+        else
+            return false;
     }
 
     /**
      * Loads some packages and re-checks the document.
      * @param {string[]} pkgs packages to load
      */
-    handleMissingDeps(pkgs) {
+    async handleMissingDeps(pkgs) {
         this.disable();
         this.packages.expand();
-        this.packages.loadDeps(pkgs).then(pkgs => {
-            this.layout.systemNotification(
-                `===> Loaded packages [${pkgs.map(p => p.name).join(', ')}]`);
-            this.enable();
-            setTimeout(() => this.packages.collapse(), 500);
-            /** @todo instead of re-init, just update loadpath and re-check */
-            this.coqInit();
-        });
+        let loaded = await this.packages.loadDeps(pkgs);
+        this.layout.systemNotification(
+            `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
+        this.enable();
+        setTimeout(() => this.packages.collapse(), 500);
+        /* need to re-create the document now that the loadpath has changed */
+        this.newDoc();
     }
 
     /**
