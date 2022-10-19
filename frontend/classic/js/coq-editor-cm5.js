@@ -368,7 +368,8 @@ export class CmCoqProvider {
      */
     retract() {
         for (let mark of this.editor.getAllMarks()) {
-            mark.clear();
+            if (mark.diag)
+                mark.clear();
         }
     }
 
@@ -389,8 +390,9 @@ export class CmCoqProvider {
             doc.markText(start, end,
              {className: className, attributes: {'data-range': JSON.stringify(diag.range)}});
 
-        this._markWidgetsAsWell(start, end, mark);
+        mark.diag = diag;
 
+        this._markWidgetsAsWell(start, end, mark);
     }
 
     /**
