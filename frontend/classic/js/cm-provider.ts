@@ -163,6 +163,7 @@ export class CmCoqProvider {
         if (element.tagName === 'TEXTAREA') {
             /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
             element.value ||= element.textContent;
+            /** @todo desirable, but causes a lot of errors: @ type {CodeMirror.Editor} */
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
@@ -391,7 +392,7 @@ export class CmCoqProvider {
 
         var mark =
             doc.markText(start, end,
-             {className: className, attributes: {'data-range': JSON.stringify(diag.range)}});
+             {className: className, attributes: {'data-coq-range': JSON.stringify(diag.range)}});
 
         this._markWidgetsAsWell(start, end, mark);
 
@@ -445,12 +446,13 @@ export class CmCoqProvider {
     _markWidgetsAsWell(start, end, mark) {
         var classNames = mark.className.split(/ +/);
         var attrs = mark.attributes || {};
-        for (let w of this.editor.findMarks(start, end, (/** @type {{ widgetNode: any; }} */ x) => x.widgetNode)) {
+        for (let w of this.editor.findMarks(start, end, (x) => x.widgetNode)) {
             for (let cn of classNames)
                 w.widgetNode.classList.add(cn);
             for (let attr in attrs)
                 w.widgetNode.setAttribute(attr, attrs[attr]);
         }
+        mark.on('clear', (from, to) => this._unmarkWidgets(from, to));
     }
 
     /**
