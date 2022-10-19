@@ -7,6 +7,19 @@
 
 type backend = 'js' | 'wa';
 
+// Needs to be in sync with jscoq_proto.ml, maybe some day automatically
+interface CoqInitOptions {
+  implicit_libs : boolean,
+  coq_options : [string[], any[]][],
+  debug : { coq : boolean, stm : boolean }
+}
+
+interface DocumentOptions {
+  top_name : string,
+  lib_path : [string[], string[]][],
+  lib_init : string[]
+}
+
 import { Future, PromiseFeedbackRoute } from './future';
 
 type Block_type = 
@@ -196,15 +209,15 @@ export class CoqWorker {
 
     /*--- jsCoq Protocol Commands ---*/
 
-    init(coq_opts) {
+    init(coq_opts : CoqInitOptions) {
         this.sendCommand(["Init", coq_opts]);
     }
 
-    newDoc(doc_opts, text) {
+    newDoc(doc_opts : DocumentOptions, text : string) {
         this.sendCommand(["NewDoc", doc_opts, text]);
     }
 
-    update(text, version) {
+    update(text : string, version : number) {
         this.sendCommand(["Update", text, version]);
     }
 
