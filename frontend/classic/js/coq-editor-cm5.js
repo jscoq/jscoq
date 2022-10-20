@@ -162,6 +162,7 @@ export class CmCoqProvider {
         if (element.tagName === 'TEXTAREA') {
             /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
             element.value ||= element.textContent;
+            /** @todo desirable, but causes a lot of errors: @ type {CodeMirror.Editor} */
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
@@ -230,6 +231,7 @@ export class CmCoqProvider {
      * @param {HTMLElement} element
      * @param {CodeMirror.EditorConfiguration | undefined} opts
      * @param {any} replace
+     * @return {CodeMirror.Editor}
      */
     createEditor(element, opts, replace) {
         var text = replace && $(element).text(),
@@ -388,7 +390,7 @@ export class CmCoqProvider {
 
         var mark =
             doc.markText(start, end,
-             {className: className, attributes: {'data-range': JSON.stringify(diag.range)}});
+             {className: className, attributes: {'data-coq-range': JSON.stringify(diag.range)}});
 
         mark.diag = diag;
 
@@ -438,7 +440,7 @@ export class CmCoqProvider {
      * (This is not handled by the native CodeMirror#markText.)
      * @param {any} start
      * @param {any} end
-     * @param {{ className: string; attributes: {}; }} mark
+     * @param {CodeMirror.TextMarker<CodeMirror.MarkerRange>} mark
      */
     _markWidgetsAsWell(start, end, mark) {
         var classNames = mark.className.split(/ +/);
@@ -449,12 +451,13 @@ export class CmCoqProvider {
             for (let attr in attrs)
                 w.widgetNode.setAttribute(attr, attrs[attr]);
         }
+        mark.on('clear', (from, to) => this._unmarkWidgets(from, to));
     }
 
     /**
      * Hack contd: negates effects of _markWidgetsAsWell when mark is cleared.
-     * @param {any} start
-     * @param {any} end
+     * @param {CodeMirror.Position} from
+     * @param {CodeMirror.Position} to
      */
     _unmarkWidgets(start, end) {
         for (let w of this.editor.findMarks(start, end, (x) => x.widgetNode)) {
