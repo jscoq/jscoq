@@ -8,27 +8,48 @@
 type backend = 'js' | 'wa';
 
 // Needs to be in sync with jscoq_proto.ml, maybe some day automatically
+export interface Point {
+    line : number,
+    character : number,
+    offset : number
+}
+
+export interface Range {
+    start: Point
+    _end: Point
+}
+
+export interface Diagnostic {
+    range: Range
+    severity: number
+    message: string
+    extra: any[]
+}
+
 interface CoqInitOptions {
-  implicit_libs : boolean,
-  coq_options : [string[], any[]][],
-  debug : { coq : boolean, stm : boolean }
+  implicit_libs?: boolean,
+  coq_options?: [string[], any[]][],
+  debug?: { coq?: boolean, stm?: boolean }
 }
 
 interface DocumentOptions {
-  top_name : string,
-  lib_path : [string[], string[]][],
-  lib_init : string[]
+  top_name?: string,
+  lib_path?: [string[], string[]][],
+  lib_init?: string[]
 }
 
-import { Future, PromiseFeedbackRoute } from './future';
+export interface info {
+    evar: number
+    name?: any // Id.t option
+}
 
-type Block_type = 
+type Block_type =
     ['Pp_hbox']
   | ['Pp_vbox', number]
   | ['Pp_hvbox', number]
   | ['Pp_hovbox', number];
 
-  export type Pp =
+export type Pp =
     ['Pp_empty']
   | ['Pp_string', string]
   | ['Pp_glue', Pp[]]
@@ -37,6 +58,24 @@ type Block_type =
   | ['Pp_print_break', number, number]
   | ['Pp_force_newline']
   | ['Pp_comment', string[]];
+
+type hyp = [any[], any, Pp] // Names.Id.t list * 'a option * 'a
+
+export interface Goal {
+    info: info
+    ty: Pp
+    hyp: hyp
+}
+export interface Goals {
+    goals: Goal[]
+    stack: [Goal[],Goal[]][]
+    bullet?: Pp
+    shelf: Goal[]
+    given_up: Goal[]
+}
+
+import { InformationEvent } from 'http';
+import { Future, PromiseFeedbackRoute } from './future';
 
 /**
  * Main Coq Worker Class
