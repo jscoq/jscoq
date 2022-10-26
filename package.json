@@ -91,5 +91,6 @@
   "bugs": {
     "url": "https://github.com/jscoq/jscoq/issues"
   },
-  "homepage": "https://jscoq.github.io"
+  "homepage": "https://jscoq.github.io",
+  "packageManager": "yarn@3.2.4"
 }
