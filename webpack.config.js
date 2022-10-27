@@ -1,3 +1,4 @@
+import os from 'os';
 import webpack from 'webpack';
 import fs from 'fs';
 import path from 'path';
@@ -7,8 +8,9 @@ import { VueLoaderPlugin } from 'vue-loader';
 import TerserPlugin from 'terser-webpack-plugin';
 
 const __dirname = path.resolve('.'),
+      __tmpdir = path.resolve(os.tmpdir()),
       require = createRequire(import.meta.url);
-  
+
 const
   basics = (argv) => ({
     mode: 'development',
@@ -16,7 +18,10 @@ const
     stats: {
       hash: false, version: false, modules: false  // reduce verbosity
     },
-    cache: { type: 'filesystem' },
+    cache: {
+      type: 'filesystem',
+      cacheDirectory: path.resolve(__tmpdir, '.webpack_cache')
+    },
     performance: {
       maxAssetSize: 1e6, maxEntrypointSize: 1e6   // 250k is too small
     }
