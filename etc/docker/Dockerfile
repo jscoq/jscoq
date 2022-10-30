@@ -207,28 +207,10 @@ ARG WASI_SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi
 RUN wget -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
 RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
 
-# ---------------------
-# waCoq toolchain setup
-# ---------------------
-FROM wacoq-preinstall as wacoq-prereq
-
-ARG BRANCH
-ARG WACOQ_BIN_REPO=https://github.com/jscoq/wacoq-bin.git
-ARG WACOQ_BIN_BRANCH=${BRANCH}
-
-WORKDIR /root
-RUN git clone --recursive -b ${WACOQ_BIN_BRANCH} ${WACOQ_BIN_REPO} wacoq-bin
-
-WORKDIR wacoq-bin
-RUN opam update
-RUN ./etc/setup.sh
-RUN opam clean -a -c
-RUN opam list
-
 # -----------------
 # waCoq+jsCoq build
 # -----------------
-FROM wacoq-prereq as wacoq
+FROM wacoq-preinstall as wacoq
 
 ARG BRANCH
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq.git
@@ -245,7 +227,6 @@ WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO} jscoq+wacoq
 
 WORKDIR jscoq+wacoq
-RUN cp ../wacoq-bin/wacoq-bin-*.tar.gz . && npm install ./wacoq-bin-*.tar.gz
 RUN npm install
 RUN make wacoq
 RUN make dist-npm-wacoq
