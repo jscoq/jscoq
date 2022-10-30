@@ -25,7 +25,6 @@ async function setup(basedir = SDK, includeNative = true) {
         nm = findNM(),
         coqpkgsDir: string;
     for (let sp of flag.concat(DEFAULT_PKGS_LOCATION)) {
-        if (existsDir(sp)) { coqpkgsDir = sp; break; }
         var fp = path.join(nm, sp);
         if (existsDir(fp)) { coqpkgsDir = fp; break; }
     }
