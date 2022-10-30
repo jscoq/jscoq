@@ -83,7 +83,6 @@ const
 export default (env, argv) => [
 /**
  * jsCoq CLI
- * (note: the waCoq CLI is located in package `wacoq-bin`)
  */
 {
   name: 'cli',
@@ -96,7 +95,6 @@ export default (env, argv) => [
   externals: [
     {  /* do not bundle the worker */
       '../backend/jsoo/jscoq_worker.bc.cjs': 'commonjs2 ../backend/jsoo/jscoq_worker.bc.cjs',
-      'wacoq-bin/dist/subproc': 'undefined',
       'cross-spawn': 'commonjs2 cross-spawn'
     },
     /* filter out browser-only modules */
@@ -123,7 +121,7 @@ export default (env, argv) => [
     minimizer: [
       new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
         terserOptions: { keep_fnames: /^CodeMirror$/ }
-      })  
+      })
     ]
   },
   experiments: {
@@ -193,7 +191,6 @@ export default (env, argv) => [
   },
   externals: {
     fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
-    'wacoq-bin/dist/subproc': 'commonjs2'
   },
   module: {
     rules: [ts, css, scss, imgs, vuesfc]

@@ -15,8 +15,7 @@ const ME = 'jscoq',
       SDK = `/tmp/${ME}-sdk`,
       SDK_FLAGS = (process.env['JSCOQ'] || '').split(',').filter(x => x);
 
-const DEFAULT_PKGS_LOCATION = ['jscoq/coq-pkgs', 'wacoq-bin/bin/coq']
-
+const DEFAULT_PKGS_LOCATION = 'jscoq/coq-pkgs'
 
 async function setup(basedir = SDK, includeNative = true) {
     mkdirp.sync(basedir);
