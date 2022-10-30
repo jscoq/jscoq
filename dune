@@ -1,27 +1,34 @@
 (env
- (dev     (flags :standard -rectypes))
- (release (flags :standard -rectypes -w +27+32)))
+ (dev
+  (flags :standard -rectypes))
+ (release
+  (flags :standard -rectypes -w +27+32)))
 
 (rule
  (targets coq-pkgs)
  (deps
   (package coq-core)
   (package coq-stdlib)
-  backend/jsoo/jscoq_worker.bc.cjs  ; needed for symbol generation
+  backend/jsoo/jscoq_worker.bc.cjs ; needed for symbol generation
   Makefile)
  (action
   (progn
-   (run node %{dep:dist}/cli.cjs %{dep:etc/pkg-metadata/coq-pkgs.json}
-             --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib)
+   (run
+    node
+    %{dep:dist}/cli.cjs
+    %{dep:etc/pkg-metadata/coq-pkgs.json}
+    --rootdir
+    %{env:COQBUILDDIR_REL=????}
+    --nostdlib)
    ; building symbols using Make because Dune has no pattern rules T.T
    (run make libs-symb))))
 
 (rule
- (targets (dir node_modules))
- (mode (promote (until-clean)))
- (deps
-   package.json
-   package-lock.json)
+ (targets
+  (dir node_modules))
+ (mode
+  (promote (until-clean)))
+ (deps package.json package-lock.json)
  (action
   (run npm install --no-save)))
 
@@ -45,7 +52,7 @@
   (source_tree backend)
   (source_tree frontend)
   (source_tree examples)
-  (source_tree docs)  ; for `quick-help.html`
+  (source_tree docs) ; for `quick-help.html`
   jscoq.js
   index.html
   coq-pkgs
@@ -55,9 +62,12 @@
 ; JavaScript build (Webpack)
 ; Emilio: do we want to list individual files inside dist here or keep
 ; the directory as a target?
+
 (rule
- (target (dir dist))
- (mode (promote (until-clean)))
+ (target
+  (dir dist))
+ (mode
+  (promote (until-clean)))
  (deps
   (source_tree backend)
   (source_tree frontend)
@@ -68,15 +78,16 @@
   (run npm run %{env:NPM_TARGET=build})))
 
 ; Just the worker
-(alias
-  (name jscoq_worker)
-  (deps
-    backend/jsoo/jscoq_worker.bc.cjs))
 
 (alias
-  (name wacoq_worker)
-  (deps
-    backend/wasm/wacoq_worker.bc))
+ (name jscoq_worker)
+ (deps backend/jsoo/jscoq_worker.bc.cjs))
 
-(dirs (:standard _vendor+*))
+(alias
+ (name wacoq_worker)
+ (deps backend/wasm/wacoq_worker.bc))
+
+(dirs
+ (:standard _vendor+*))
+
 (vendored_dirs vendor)

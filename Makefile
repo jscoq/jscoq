@@ -14,32 +14,25 @@ ifdef JSCOQ_BRANCH
 JSCOQ_VERSION:=$(JSCOQ_VERSION)-$(JSCOQ_BRANCH)
 endif
 
-WORD_SIZE ?= 32
-OS := ${shell uname}
-ARCH := $(OS)/$(WORD_SIZE)
+ARCH := ${shell uname}
 
-ifeq ($(WORD_SIZE),64)
-DUNE_WORKSPACE = $(current_dir)/dune-workspace.64
-VARIANT = +64bit
-else
-VARIANT = +32bit
-endif
+DUNE_WORKSPACE = $(current_dir)/dune-workspace
 
-BUILD_CONTEXT = jscoq$(VARIANT)
+BUILD_CONTEXT = default
 BUILDDIR = _build/$(BUILD_CONTEXT)
 
-OPAMENV = eval `opam env --set-switch --switch $(BUILD_CONTEXT)`
+OPAMENV = eval `opam env --set-switch --switch default`
 DUNE = $(OPAMENV) && dune
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 # Directory where the Coq sources and developments are.
-VENDOR_PATH := $(current_dir)/_vendor+$(COQ_VERSION)$(VARIANT)
+VENDOR_PATH := $(current_dir)/_vendor+$(COQ_VERSION)
 COQSRC := $(VENDOR_PATH)/coq/
 
 # Directories where Dune builds and installs Coq
-COQBUILDDIR_REL := _vendor+$(COQ_VERSION)$(VARIANT)/coq
+COQBUILDDIR_REL := _vendor+$(COQ_VERSION)/coq
 COQBUILDDIR := $(current_dir)/_build/$(BUILD_CONTEXT)/$(COQBUILDDIR_REL)
 COQDIR := $(current_dir)/_build/install/$(BUILD_CONTEXT)
 # Dune packages to install for Coq
@@ -107,9 +100,9 @@ install:
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc \
@@ -128,7 +121,7 @@ libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 .PHONY: test watch serve dev
 
 test:
-	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- npx mocha tests/main.js
+	$(DUNE) exec $(DUNE_FLAGS) -- npx mocha tests/main.js
 
 watch: DUNE_FLAGS+=--watch
 watch: jscoq
@@ -217,27 +210,19 @@ dist-npm-wacoq:
 # Externals
 ########################################################################
 
-.PHONY: coq coq-get coq-get-latest coq-build
+.PHONY: coq
 
 COQ_BRANCH = V8.16.0
 COQ_BRANCH_LATEST = v8.16
 COQ_REPOS = https://github.com/coq/coq.git
 
-COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+COQ_PATCHES = trampoline fold timeout coerce-32bit
 
-COQ_PATCHES|64 = coerce-32bit
+coq_configure = ./tools/configure/configure.exe
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
 	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+	cd $@ && $(DUNE) exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
 
-coq_configure=./tools/configure/configure.exe
-
-coq-get: $(COQSRC)
-	$(OPAMENV) && \
-	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
-
-coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
-coq-get-latest: coq-get
-
-coq: coq-get
+coq: $(COQSRC)

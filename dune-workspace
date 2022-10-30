@@ -3,6 +3,7 @@
 (profile release)
 
 (context
- (opam (switch jscoq+32bit)
+ (opam
+  (switch default)
   (disable_dynamically_linked_foreign_archives false) ; https://github.com/ocaml/dune/issues/3262
   (merlin)))
