@@ -91,7 +91,7 @@ RUN eval $(opam env) && make wacoq
 
 # - dist tarballs
 RUN eval $(opam env) && make dist \
-        && mkdir dist && mv _build/dist/*.tgz dist
+        && mkdir -p dist && mv _build/dist/*.tgz dist
 
 # --------------
 # Addon packages
