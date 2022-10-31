@@ -11,27 +11,27 @@ license:      "AGPL-3.0-or-later"
 doc:          "https://github.com/jscoq/jscoq#readme"
 
 depends: [
-  "ocaml"               { >= "4.12.0"           }
+  "ocaml"               { >= "4.14.0"           }
   "dune"                { >= "3.5.0"            }
   "js_of_ocaml"         { >= "4.0.0" & < "5"    }
   "js_of_ocaml-ppx"     { >= "4.0.0" & < "5"    }
   "js_of_ocaml-lwt"     { >= "4.0.0" & < "5"    }
   "yojson"              { >= "2.0.2"            }
-  "ppx_deriving_yojson" { >= "3.5.3"            }
-  "ppx_import"          { >= "1.8.0"            }
-  "lwt_ppx"             { >= "2.0.1"            }
+  "ppx_deriving_yojson" { >= "3.7.0"            }
+  "ppx_import"          { >= "1.10.0"           }
+  "lwt_ppx"             { >= "2.1.0"            }
   # We should just rely on OPAM's serlib but this is still early
-  "sexplib"             { >= "v0.14.0"          }
-  "ppx_sexp_conv"       { >= "v0.14.1" & < "v0.15" }
-  "ppx_hash"            { >= "v0.14.0" & < "v0.15" }
-  "ppx_compare"         { >= "v0.14.0" & < "v0.15" }
+  "sexplib"             { >= "v0.14.0" }
+  "ppx_sexp_conv"       { >= "v0.15.1" }
+  "ppx_hash"            { >= "v0.15.0" }
+  "ppx_compare"         { >= "v0.15.0" }
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
   # "coq"                 { >= "8.13.0" & < "8.14" }
   # This is a dependency of Coq itself.
-  "zarith"              { >= "1.11"    }
+  "zarith"              { >= "1.12"    }
   # (plus stubs for building with jsoo)
-  "zarith_stubs_js"     { >= "v0.14.0" }
+  "zarith_stubs_js"     { >= "v0.15.0" }
 ]
 
 build: [ "dune" "build" "-p" name "-j" jobs ]
