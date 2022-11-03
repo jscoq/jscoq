@@ -76,7 +76,7 @@ all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
 	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
-	@echo "     wacoq: build waCoq [JavaScript, frontend only; depends on wacoq-bin]"
+	@echo "     wacoq: build waCoq [JavaScript, frontend only]"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
