@@ -18,10 +18,10 @@ ARCH := ${shell uname}
 
 DUNE_WORKSPACE = $(current_dir)/dune-workspace
 
-BUILD_CONTEXT = default
+BUILD_CONTEXT = `opam switch show`
 BUILDDIR = _build/$(BUILD_CONTEXT)
 
-OPAMENV = eval `opam env --set-switch --switch default`
+OPAMENV = eval `opam env`
 DUNE = $(OPAMENV) && dune
 
 # ugly but I couldn't find a better way
