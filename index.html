@@ -115,8 +115,8 @@ Please edit your code here!
     var jscoq_opts = {
         backend:   sp.get('backend'),
         implicit_libs: false,
-        frontend: 'cm6',
-        content_type: 'markdown',
+        frontend: sp.get('frontend') || 'cm5',
+        content_type: sp.get('content_type') || 'markdown',
         focus: false,
         debug: true,
         editor: { mode: { 'company-coq': true } },
