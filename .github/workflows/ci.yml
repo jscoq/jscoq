@@ -3,28 +3,28 @@ name: JsCoq's CI Action
 on:
   push:
     branches:
-    - v8.8
-    - v8.9
-    - v8.10
-    - v8.11
-    - v8.12
-    - v8.13
-    - v8.14
-    - v8.15
-    - v8.16
-    - v8.17
+      - v8.8
+      - v8.9
+      - v8.10
+      - v8.11
+      - v8.12
+      - v8.13
+      - v8.14
+      - v8.15
+      - v8.16
+      - v8.17
   pull_request:
     branches:
-    - v8.8
-    - v8.9
-    - v8.10
-    - v8.11
-    - v8.12
-    - v8.13
-    - v8.14
-    - v8.15
-    - v8.16
-    - v8.17
+      - v8.8
+      - v8.9
+      - v8.10
+      - v8.11
+      - v8.12
+      - v8.13
+      - v8.14
+      - v8.15
+      - v8.16
+      - v8.17
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: 'true'
+          submodules: "true"
       - name: Install apt dependencies
         run: |
           sudo dpkg --add-architecture i386
@@ -54,8 +54,8 @@ jobs:
           sudo apt-get -o Acquire::Retries=30 install gcc-multilib g++-multilib libgmp-dev:i386 -y --allow-unauthenticated
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
-          cache: 'npm'
+          node-version: "16"
+          cache: "npm"
       - name: OPAM Set up
         run: |
           sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -e
           echo 'Testing JsCoq...' # && echo -en 'travis_fold:start:jscoq.build\\r'
-          npm install # EJGA: uggg, but otherwise this won't work.
+          yarn install # EJGA: uggg, but otherwise this won't work.
           make test
           # echo -en 'travis_fold:end:jscoq.build\\r'
   docker:

@@ -81,7 +81,7 @@ all:
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo ""
 	@echo "      dist: create a distribution suitable for a web server"
-	@echo "  dist-npm: create NPM packages suitable for \`npm install\`"
+	@echo "  dist-npm: create NPM packages suitable for \`yarn install\`"
 	@echo "       coq: download and build Coq and addon libraries"
 	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
@@ -128,13 +128,13 @@ libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 .PHONY: test watch serve dev
 
 test:
-	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- npx mocha tests/main.js
+	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- yarn exec mocha tests/main.js
 
 watch: DUNE_FLAGS+=--watch
 watch: jscoq
 
 serve:
-	npx http-server $(BUILDDIR) -p 8013 -c 0
+	yarn exec http-server $(BUILDDIR) -p 8013 -c 0
 
 dev:
 	$(MAKE) serve &
@@ -191,7 +191,7 @@ dist-npm:
 	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
 	rsync -apR --delete $(NPMEXCLUDE) $(NPMOBJ) $(NPMSTAGEDIR)
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	cd $(DISTDIR) && npm pack $(PWD)/$(NPMSTAGEDIR)
+	cd $(DISTDIR) && yarn pack $(PWD)/$(NPMSTAGEDIR)
 	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tgz
 
 #
@@ -207,7 +207,7 @@ dist-npm-wacoq:
 	rsync -apR --delete $(NPMEXCLUDE) $(WACOQ_NPMOBJ) $(NPMSTAGEDIR)
 	cp package.json.wacoq $(NPMSTAGEDIR)/package.json
 	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	npm pack ./$(NPMSTAGEDIR)
+	yarn pack ./$(NPMSTAGEDIR)
 
 # The need to maintain and update `package.json.wacoq` alongside `package.json`
 # is absolutely bothersome. I could not conjure a more sustainable way to emit
