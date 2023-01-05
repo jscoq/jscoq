@@ -5,7 +5,7 @@ import path from 'path';
 import commander from 'commander';
 import manifest from '../../package.json';
 
-//import { FormatPrettyPrint } from '../frontend/classic/js/format-pprint';
+// import { FormatPrettyPrint } from '../format-pprint/main';
 
 import { JsCoqCompat } from './build/project';
 import { Workspace } from './build/workspace';

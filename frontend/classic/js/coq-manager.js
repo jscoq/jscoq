@@ -17,6 +17,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier.js';
 
 // UI imports
 import { $ } from '../../../dist/lib.js';
+import { FormatPrettyPrint } from '../../../dist/format-pprint.js';
 
 // Common imports
 import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
@@ -27,7 +28,6 @@ import { CoqLayoutClassic } from './coq-layout-classic.js';
 import { CmCoqProvider } from './cm-provider.js';
 import { ProviderContainer } from './cm-provider-container.js';
 import { CoqContextualInfo } from './contextual-info.js';
-import { FormatPrettyPrint } from './format-pprint.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
 /**
