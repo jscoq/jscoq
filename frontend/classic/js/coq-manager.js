@@ -11,6 +11,10 @@
 
 "use strict";
 
+/**
+  * @typedef { import("../../../dist/backend").Goals } Goals
+  */
+
 // Backend imports
 import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../dist/backend.js';
 import { CoqIdentifier } from '../../../backend/coq-identifier.js';
@@ -1231,8 +1235,7 @@ export class CoqManager {
 
     /**
      * Formats the current proof state.
-     * @param {object} goals a record of proof goals
-     *                       ({goals, stack, shelf, given_up})
+     * @param {Goals} goals
      */
     goals2DOM(goals) {
         var ngoals = goals.goals.length,

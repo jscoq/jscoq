@@ -2,6 +2,16 @@ type backend = 'js' | 'wa';
 
 import { Future, PromiseFeedbackRoute } from './future';
 
+export type Pp =
+    ['Pp_empty']
+  | ['Pp_string', string]
+  | ['Pp_glue', Pp[]]
+  | ['Pp_box', any, Pp]
+  | ['Pp_tag', any, Pp]
+  | ['Pp_print_break', number, number]
+  | ['Pp_force_newline']
+  | ['Pp_comment', string[]];
+
 /**
  * Main Coq Worker Class
  *
