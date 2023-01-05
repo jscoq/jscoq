@@ -2,12 +2,18 @@ type backend = 'js' | 'wa';
 
 import { Future, PromiseFeedbackRoute } from './future';
 
-export type Pp =
+type Block_type = 
+    ['Pp_hbox']
+  | ['Pp_vbox', number]
+  | ['Pp_hvbox', number]
+  | ['Pp_hovbox', number];
+
+  export type Pp =
     ['Pp_empty']
   | ['Pp_string', string]
   | ['Pp_glue', Pp[]]
-  | ['Pp_box', any, Pp]
-  | ['Pp_tag', any, Pp]
+  | ['Pp_box', Block_type, Pp]
+  | ['Pp_tag', string, Pp]
   | ['Pp_print_break', number, number]
   | ['Pp_force_newline']
   | ['Pp_comment', string[]];

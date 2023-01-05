@@ -15,7 +15,7 @@ export class FormatPrettyPrint {
     /**
      * Formats a pretty-printed element to be displayed in an HTML document.
      * @param {Pp} pp a serialized Pp element
-     * @param {string} [topBox] wrap with a box ('vertical' / 'horizontal')
+     * @param {'vertical'|'horizontal'} [topBox] wrap with a box ('vertical' / 'horizontal')
      */
     pp2DOM(pp, topBox) {
         if (!Array.isArray(pp)) {
@@ -28,27 +28,26 @@ export class FormatPrettyPrint {
                 this.makeBox(dom, topBox);
         }
 
-        var [tag, ct] = pp;
-
-        switch (tag) {
+        // switch(tag) is too weak for TS typing
+        switch (pp[0]) {
 
         // ["Pp_glue", [...elements]]
         case "Pp_glue":
-            return ct.map(x => this.pp2DOM(x)).reduce((a, b) => a.add(b), $([]));
+            return pp[1].map(x => this.pp2DOM(x)).reduce((a, b) => a.add(b), $([]));
 
         // ["Pp_string", string]
         case "Pp_string":
-            return $(document.createTextNode(ct));
+            return $(document.createTextNode(pp[1]));
 
         // ["Pp_box", ["Pp_vbox"/"Pp_hvbox"/"Pp_hovbox", _], content]
         case "Pp_box":
-            let [bty, offset] = ct,
+            let [bty, offset] = pp[1],
                 mode = (bty == 'Pp_vbox') ? 'vertical' : 'horizontal';
             return this.makeBox(this.pp2DOM(pp[2]), mode, bty, offset);
 
         // ["Pp_tag", tag, content]
         case "Pp_tag":
-            return this._wrapTrimmed(this.pp2DOM(pp[2]), $('<span>').addClass(ct));
+            return this._wrapTrimmed(this.pp2DOM(pp[2]), $('<span>').addClass(pp[1]));
 
         // ["Pp_force_newline"]
         case "Pp_force_newline":
@@ -67,7 +66,7 @@ export class FormatPrettyPrint {
             return $([]);
 
         default:
-            console.warn("unhandled Format case", tag);
+            console.warn("unhandled Format case", pp[0]);
             return $([]);
         }
     }
