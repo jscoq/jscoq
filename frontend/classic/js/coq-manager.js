@@ -575,7 +575,7 @@ export class CoqManager {
         if (goals) {
             this.coqModeInfo(sid, 'Proof');
 
-            var hgoals = this.pprint.goals2DOM(goals);
+            var hgoals = this.goals2DOM(goals);
 
             // Preprocess pretty-printed output
             if (this.company_coq) {
@@ -1221,6 +1221,85 @@ export class CoqManager {
         }
         return false;
     }
+
+    // Aux function for goals2DOM
+    flatLength(l) {
+        return Array.isArray(l)
+            ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
+            : 1;
+    }
+
+    /**
+     * Formats the current proof state.
+     * @param {object} goals a record of proof goals
+     *                       ({goals, stack, shelf, given_up})
+     */
+    goals2DOM(goals) {
+        var ngoals = goals.goals.length,
+            on_stack = this.flatLength(goals.stack),
+            on_shelf = goals.shelf.length,
+            given_up = goals.given_up.length;
+
+        function aside(msg) {
+            var p = $('<p>').addClass('aside');
+            return (typeof msg === 'string') ? p.text(msg) : p.append(msg);
+        }
+
+        if (ngoals === 0) {
+            /* Empty goals; choose the appropriate message to display */
+            let msg = on_stack ? "This subproof is complete, but there are some unfocused goals."
+                    : (on_shelf ? "All the remaining goals are on the shelf."
+                        : "No more goals."),
+                bullet_notice = goals.bullet ? [this.pprint.pp2DOM(goals.bullet)] : [],
+                given_up_notice = given_up ?
+                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [],
+                notices = bullet_notice.concat(given_up_notice);
+
+            return $('<div>').append(
+                $('<p>').addClass('no-goals').text(msg),
+                notices.map(aside)
+            );
+        }
+        else {
+            /* Construct a display of all the subgoals (first is focused) */
+            let head = ngoals === 1 ? `1 goal` : `${ngoals} goals`,
+                notices = on_shelf ? [`(shelved: ${on_shelf})`] : [];
+
+            let focused_goal = this.goal2DOM(goals.goals[0]);
+
+            let pending_goals = goals.goals.slice(1).map((goal, i) =>
+                $('<div>').addClass('coq-subgoal-pending')
+                    .append($('<label>').text(i + 2))
+                    .append(this.pprint.pp2DOM(goal.ty)));
+
+            return $('<div>').append(
+                $('<p>').addClass('num-goals').text(head),
+                notices.map(aside),
+                focused_goal, pending_goals
+            );
+        }
+    }
+
+    /**
+     * Formats a single, focused goal.
+     * Shows an environment containing hypothesis and goal type.
+     * @param {object} goal current goal record ({name, hyp, ty})
+     */
+    goal2DOM(goal) {
+        let mklabel = (id) =>
+                $('<label>').text(FormatPrettyPrint._idToString(id)),
+            mkdef = (pp) =>
+                $('<span>').addClass('def').append(this.pprint.pp2DOM(pp));
+
+        let hyps = goal.hyp.reverse().map(([h_names, h_def, h_type]) =>
+            $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
+                .append(h_names.map(mklabel))
+                .append(h_def && mkdef(h_def))
+                .append($('<div>').append(this.pprint.pp2DOM(h_type))));
+        let ty = this.pprint.pp2DOM(goal.ty);
+        return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
+    }
+
 }
 
 // enum
