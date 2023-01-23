@@ -4,10 +4,12 @@
 // Backend
 export { CoqWorker } from '../../../dist/backend.js';
 
+// Libs
+export { FormatPrettyPrint } from '../../../dist/format-pprint.js';
+
 // Frontend
 import { CoqManager } from './coq-manager.js';
 export { PackageManager } from './coq-packages.js';
-export { FormatPrettyPrint } from './format-pprint.js';
 export { CmCoqProvider, Deprettify } from './cm-provider.js';
 
 const scriptDir = import.meta.url.replace(/[^/]*$/, '');

@@ -6,7 +6,7 @@ import { CoqWorker } from '../../../dist/backend.js';
 
 // frontend import
 import { $ } from '../../../dist/lib.js';
-import { FormatPrettyPrint } from './format-pprint.js';
+import { FormatPrettyPrint } from '../../../dist/format-pprint.js';
 import { CompanyCoq } from './addon/company-coq.js';
 
 export class CoqContextualInfo {

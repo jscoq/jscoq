@@ -15,7 +15,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 import { arreq_deep } from '../../common/etc.js';
 
 // Frontend imports, specific to the layout but we should refactor
-import { FormatPrettyPrint } from '../../classic/js/format-pprint';
+import { FormatPrettyPrint } from '../../format-pprint/js/main.js';
 
 // Where to put this?
 //

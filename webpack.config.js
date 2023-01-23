@@ -88,6 +88,7 @@ export default (env, argv) => [
 {
   name: 'cli',
   target: 'node',
+  dependencies: [ 'format-pprint' ],
   entry: './frontend/cli/cli.ts',
   ...basics(argv),
   module: {
@@ -123,9 +124,23 @@ export default (env, argv) => [
     minimizer: [
       new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
         terserOptions: { keep_fnames: /^CodeMirror$/ }
-      })  
+      })
     ]
   },
+  experiments: {
+    outputModule: true
+  }
+},
+/**
+ * Format js library
+ */
+{
+  name: 'format-pprint',
+  entry: './frontend/format-pprint/js/main.js',
+  dependencies: [ 'lib' ],
+  ...basics(argv),
+  resolve,
+  output: {...output('dist', 'format-pprint.js'), libraryTarget: 'module'},
   experiments: {
     outputModule: true
   }
@@ -167,7 +182,7 @@ export default (env, argv) => [
 {
   name: 'frontend',
   entry: './frontend/classic/js/index.js',
-  dependencies: [ 'lib' ],
+  dependencies: [ 'lib', 'format-pprint' ],
   ...basics(argv),
   module: {
     rules: [ts]
