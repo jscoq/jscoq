@@ -33,7 +33,7 @@ var nodecli = esbuild
     loader: {
       '.bc.cjs': 'copy'
     },
-    outfile: "dist/cli/cli.cjs",
+    outfile: "dist-cli/cli.cjs",
     ...sourcemap,
     minify,
     // watch: watch(cliEntry),

@@ -8,7 +8,7 @@ const { glob } = pkg;
 const cliJsPath = locateCliJs();
 
 function locateCliJs() {
-    var alts = glob.sync('_build/jscoq+*/dist/cli/cli.cjs');
+    var alts = glob.sync('_build/jscoq+*/dist-cli/cli.cjs');
     if (alts.length == 0) throw new Error('cli.cjs not found');
     else if (alts.length > 1) throw new Error('multiple builds found: ' + alts);
     return alts[0];

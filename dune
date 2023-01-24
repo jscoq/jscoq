@@ -12,7 +12,7 @@
   Makefile)
  (action
   (progn
-   (run node %{dep:dist}/cli/cli.cjs %{dep:etc/pkg-metadata/coq-pkgs.json}
+   (run node %{dep:dist-cli}/cli.cjs %{dep:etc/pkg-metadata/coq-pkgs.json}
              --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib)
    ; building symbols using Make because Dune has no pattern rules T.T
    (run make libs-symb))))
@@ -30,7 +30,6 @@
  (name jscoq)
  (deps
   (alias shared)
-  dist
   backend/jsoo/jscoq_worker.bc.cjs))
 
 (alias
@@ -51,9 +50,11 @@
 
 ; JavaScript build (esbuild)
 (rule
- (target (dir dist))
+ (targets (dir dist) (dir dist-cli))
  (mode (promote (until-clean)))
  (deps
+  backend/jsoo/jscoq_worker.bc.cjs
+  etc/pkg-metadata/coq-pkgs.json
   (source_tree backend)
   (source_tree frontend)
   esbuild.mjs

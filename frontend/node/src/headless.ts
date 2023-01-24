@@ -69,13 +69,15 @@ class HeadlessCoqManager {
     startup_timeEnd: number;
 
     constructor(base_path) {
+        let pkg_path = this.findPackageDir();
+
         this.startup_time = Date.now();
         this.coq = new HeadlessCoqWorker(base_path);
         this.coq.observers.push(this);
         this.volume = fsif_native;
         this.provider = new QueueCoqProvider();
         this.pprint = new FormatPrettyPrint();
-        this.packages = new PackageDirectory();
+        this.packages = new PackageDirectory(pkg_path);
 
         this.project = new CoqProject(undefined, this.volume);
 
@@ -84,7 +86,7 @@ class HeadlessCoqManager {
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
             all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2'],
-            pkg_path: undefined,  /* default: automatic */
+            pkg_path: pkg_path,
             inspect: false,
             log_debug: false,
             warn: true
@@ -102,9 +104,6 @@ class HeadlessCoqManager {
     }
 
     async start() {
-        // Configure load path
-        this.options.pkg_path = this.options.pkg_path || this.findPackageDir();
-
         await this.packages.loadPackages(this.options.all_pkgs.map(pkg =>
             this.getPackagePath(pkg)));
 
@@ -298,7 +297,7 @@ class HeadlessCoqManager {
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
-        var searchPath = ['.', '..', '../..', '../../..']
+        var searchPath = ['.', '..', '../..']
                          .map(rel => path.join(__dirname, rel));
 
         for (let path_el of searchPath) {
@@ -372,10 +371,10 @@ class PackageDirectory extends EventEmitter {
     packages_by_uri: {[name: string]: PackageManifest}
     _plugins: Promise<void>
 
-    constructor() {
+    constructor(dir) {
         super();
 
-        this.dir = os.tmpdir();
+        this.dir = dir;
         this.packages_by_name = {};
         this.packages_by_uri = {};
     }

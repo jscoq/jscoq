@@ -24,7 +24,6 @@ namespace OCamlCAPI {
 
 type i32 = number;
 
-
 class OCamlExecutable extends ExecCore {
 
     declare opts: OCamlExecutableOptions
