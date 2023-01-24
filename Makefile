@@ -76,9 +76,9 @@ all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
 	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
-	@echo "     wacoq: build waCoq [JavaScript, frontend only; depends on wacoq-bin]"
+	@echo "     wacoq: build waCoq [JavaScript and libraries]"
 	@echo ""
-	@echo "    bundle: create JS bundles using esbuild"
+	@echo "    bundle: create the core JS bundles using esbuild in dist"
 	@echo " typecheck: typecheck using tsc"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
@@ -119,17 +119,19 @@ links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc \
 	       backend/wasm/dlllib_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
-.PHONY:modules
+.PHONY:modules bundle typecheck bundle-webpack
 modules:
-	dune build node_modules
+	$(DUNE) build node_modules
 
-.PHONY:bundle
 bundle:
-	dune build dist dist-cli
+	$(DUNE) build dist dist-cli
 
-.PHONY:typecheck
+bundle-webpack:
+	$(DUNE) build dist-webpack --no-buffer
+
 typecheck:
-	dune exec -- npm run typecheck
+	$(DUNE) build node_modules
+	$(DUNE) exec --context=$(BUILD_CONTEXT) -- npm run typecheck
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg

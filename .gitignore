@@ -4,6 +4,7 @@
 .cache
 /dist
 /dist-cli
+/dist-webpack
 /bin
 
 # Local build configuration file

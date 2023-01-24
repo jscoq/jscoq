@@ -62,6 +62,18 @@
  (action
   (run npm run esbuild)))
 
+; Webpack build (legacy)
+(rule
+ (targets (dir dist-webpack))
+ (mode (promote (until-clean)))
+ (deps
+  (source_tree backend)
+  (source_tree frontend)
+  webpack.config.js
+  node_modules)
+ (action
+  (run npm run webpack)))
+
 ; Just the worker
 (alias
   (name jscoq_worker)

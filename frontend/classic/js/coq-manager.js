@@ -276,13 +276,13 @@ export class CoqManager {
 
     async openProject(name) {
         var pane = this.layout.createOutline();
-        await this._load('dist/ide-project.browser.js');
+        await this._load('dist-webpack/ide-project.browser.js');
 
         this.project = ideProject.ProjectPanel.attach(this, pane, name);
     }
 
     async openCollab(documentKey) {
-        await this._load('dist/addon/collab.browser.js');
+        await this._load('dist-webpack/addon/collab.browser.js');
         this.collab = {
             hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
             p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p)
