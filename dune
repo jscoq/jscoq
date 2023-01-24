@@ -12,7 +12,7 @@
   Makefile)
  (action
   (progn
-   (run node %{dep:dist}/cli.cjs %{dep:etc/pkg-metadata/coq-pkgs.json}
+   (run node %{dep:dist}/cli/cli.cjs %{dep:etc/pkg-metadata/coq-pkgs.json}
              --rootdir %{env:COQBUILDDIR_REL=????} --nostdlib)
    ; building symbols using Make because Dune has no pattern rules T.T
    (run make libs-symb))))
@@ -30,12 +30,15 @@
  (name jscoq)
  (deps
   (alias shared)
+  dist
   backend/jsoo/jscoq_worker.bc.cjs))
 
 (alias
  (name wacoq)
  (deps
   (alias shared)
+  dist
+  dist-webpack
   backend/wasm/wacoq_worker.bc
   (glob_files backend/wasm/*.wasm)))
 
@@ -45,12 +48,9 @@
   (source_tree examples)
   (source_tree docs)  ; for `quick-help.html`
   index.html
-  coq-pkgs
-  dist))
+  coq-pkgs))
 
-; JavaScript build (Webpack)
-; Emilio: do we want to list individual files inside dist here or keep
-; the directory as a target?
+; JavaScript build (esbuild)
 (rule
  (target (dir dist))
  (mode (promote (until-clean)))
@@ -58,13 +58,21 @@
   (source_tree backend)
   (source_tree frontend)
   esbuild.mjs
-  webpack.config.js
-  tsconfig.json
   node_modules)
  (action
-  (progn
-   (run npm run webpack)
-   (run npm run esbuild))))
+  (run npm run esbuild)))
+
+; JavaScript build (webpack, to disappear)
+(rule
+ (target (dir dist-webpack))
+ (mode (promote (until-clean)))
+ (deps
+  (source_tree backend)
+  (source_tree frontend)
+  webpack.config.js
+  node_modules)
+ (action
+  (run npm run webpack)))
 
 ; Just the worker
 (alias

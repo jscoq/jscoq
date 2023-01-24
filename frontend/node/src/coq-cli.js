@@ -1,11 +1,14 @@
 //@ts-check
-import { HeadlessCoqManager } from './headless.ts';
+import { HeadlessCoqManager } from './headless';
 
 var debugTime = false;
 
 export class HeadlessCLI {
 
-    constructor() { this.rc = 0; }
+    constructor(base_path) {
+        this.base_path = base_path;
+        this.rc = 0;
+    }
 
     installCommand(commander) {
         let loads = [], requires = [], require_pkgs = [];
@@ -29,7 +32,7 @@ export class HeadlessCLI {
     }
 
     async run(opts) {
-        var coq = new HeadlessCoqManager();
+        var coq = new HeadlessCoqManager(this.base_path);
 
         if (!opts.noinit) coq.options.prelude = true;
         if (opts.verbose) coq.options.log_debug = coq.options.warn = true;

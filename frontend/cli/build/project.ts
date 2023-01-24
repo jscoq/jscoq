@@ -5,7 +5,11 @@ import arreq from 'array-equal';
 import type JSZip from 'jszip';
 import { zipSync, ZipOptions } from 'fflate';
 import { neatJSON } from 'neatjson';
-
+import DEFLATE from 'jszip/lib/compressions';
+import { inflateRaw } from 'pako';
+import child_process from 'child_process';
+import { inspect } from 'util';
+const mkdirp = require('mkdirp').sync;
 const fs = fsif_native.fs;
 
 class CoqProject {
@@ -225,7 +229,6 @@ class PackageResult {
     }
 
     async save(bundle?: {chunks?: any[]}): Promise<PackageResult> {
-        const mkdirp = require('mkdirp').sync;
         mkdirp(path.dirname(this.pkg.filename));
         if (bundle) {
             if (!bundle.chunks) bundle.chunks = [];
@@ -567,9 +570,6 @@ class ZipVolume extends StoreVolume {
     }
 
     _inflateSync(entry: any) {
-        const { DEFLATE } = require('jszip/lib/compressions'),
-              { inflateRaw } = require('pako');
-        
         if (entry._data.compression == DEFLATE)
             return inflateRaw(entry._data.compressedContent);
         else /* STORE */
@@ -591,8 +591,7 @@ class JsCoqCompat {
      */
     static transpilePluginsJs(mod: SearchPathElement) {
         if (mod.physical.endsWith('.cma')) {
-            const child_process = require('child_process'),
-                infile = mod.physical, outfile = `${infile}.js`;
+            const infile = mod.physical, outfile = `${infile}.js`;
             // assumes volume is fsif_native...
             child_process.execSync(`js_of_ocaml --wrap-with-fun= -o ${outfile} ${infile}`);
             return [mod, /*{...mod, payload: new Uint8Array(*empty*)},*/

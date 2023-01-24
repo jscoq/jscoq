@@ -23,21 +23,25 @@ let disable_sourcemap = process.argv.includes("--sourcemap=no");
 let sourcemap = disable_sourcemap ? null : { sourcemap: true };
 
 // Node build
-/* var nodeEntry = "./frontend/cli/cli.ts";
+var cliEntry = "./frontend/cli/cli.ts";
 var nodecli = esbuild
   .build({
-    entryPoints: [nodeEntry],
+    entryPoints: [cliEntry],
     bundle: true,
     platform: "node",
-    outdir: "dist",
+    format: "cjs",
+    loader: {
+      '.bc.cjs': 'copy'
+    },
+    outfile: "dist/cli/cli.cjs",
     ...sourcemap,
     minify,
     // watch: watch(nodeEntry),
   })
   .then(() => {
-    console.log(`[watch] build finished for ${nodeEntry}`);
+    console.log(`[watch] build finished for ${cliEntry}`);
   })
-  .catch(() => process.exit(1)); */
+  .catch(() => process.exit(1));
 
 // Backend build, WASM worker.
 /* var backendEntry = "./backend/wasm/wacoq_worker.ts" 

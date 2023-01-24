@@ -9,7 +9,7 @@
     "stream": "stream-browserify"
   },
   "bin": {
-    "jscoq": "./dist/cli.cjs",
+    "jscoq": "./dist/cli/cli.cjs",
     "jscoqdoc": "frontend/classic/js/jscoqdoc.cjs"
   },
   "dependencies": {
@@ -36,9 +36,11 @@
     "@corwin.amber/hastebin": "^0.1.2",
     "@types/codemirror": "^5.60.5",
     "@types/find": "^0.2.1",
+    "@types/glob": "^8.0.1",
     "@types/jquery": "^3.5.14",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^13.11.1",
+    "@types/pako": "^2.0.0",
     "assert": "^2.0.0",
     "bootstrap": "^5.2.1",
     "buffer": "^4.9.2",

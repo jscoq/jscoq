@@ -3,6 +3,7 @@
 .*.swp
 .cache
 /dist
+/dist-webpack
 /bin
 
 # Local build configuration file

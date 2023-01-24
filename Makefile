@@ -117,7 +117,7 @@ links-clean:
 
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
-	@node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
+	@node --max-old-space-size=2048 ./dist/cli/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 

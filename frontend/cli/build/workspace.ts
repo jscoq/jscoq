@@ -4,8 +4,6 @@ import { neatJSON } from 'neatjson';
 import { CoqProject, SearchPath, SearchPathElement, ZipVolume } from './project';
 import { BuildError } from './batch';
 
-
-
 class Workspace {
 
     projs: {[name: string]: CoqProject} = {}
@@ -105,7 +103,6 @@ class Workspace {
     }
 }
 
-
 namespace Workspace {
     export type Options = {
         ignoreMissing?: boolean
@@ -113,7 +110,5 @@ namespace Workspace {
 
     export type PackagesAndContents = {[pkg: string]: SearchPathElement[]};
 }
-
-
 
 export { Workspace }

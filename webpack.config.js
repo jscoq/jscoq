@@ -64,15 +64,7 @@ const
         //  Buffer: ['buffer', 'Buffer']})]
     ]
   },
-  cliPlugins = (scriptName) => [
-    new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
-    new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
-    function() {
-      this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0o755));
-    }
-  ],
   // resources that only make sense in browser context
-  browserOnly = /\/codemirror\/|(\/dist\/lib.js$)|(coq-mode.js$)|(company-coq.js$)/,
   resolve = {
     extensions: [ '.tsx', '.ts', '.js', '.cjs' ]
   },
@@ -81,40 +73,9 @@ const
   });
 
 export default (env, argv) => [
+
 /**
- * jsCoq CLI
- * (note: the waCoq CLI is located in package `wacoq-bin`)
- *
- * EJGA: This is super-slow due to using the bytecode binary, we
- * should replace it with a native binary.
- */
-{
-  name: 'cli',
-  target: 'node',
-  entry: './frontend/cli/cli.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  externals: [
-    {  /* do not bundle the worker */
-      '../backend/jsoo/jscoq_worker.bc.cjs': 'commonjs2 ../backend/jsoo/jscoq_worker.bc.cjs',
-      'wacoq-bin/dist/subproc': 'undefined',
-      'cross-spawn': 'commonjs2 cross-spawn'
-    },
-    /* filter out browser-only modules */
-    ({context, request}, callback) => {
-      if (request.match(browserOnly)) callback(null, '{}')
-      else callback();
-    }
-  ],
-  resolve,
-  output: output('dist', 'cli.cjs'),
-  plugins: cliPlugins('dist/cli.cjs'),
-  node: false
-},
-/**
- * Package backend for wider-comsumption.
+ * Package WA backend
  */
  {
   name: 'wacoq_worker',
@@ -125,7 +86,7 @@ export default (env, argv) => [
     rules: [ts]
   },
   resolve: {...resolve, fallback: shims.modules},
-  output: output('dist', 'wacoq_worker.js'),
+  output: output('dist-webpack', 'wacoq_worker.js'),
   plugins: shims.plugins
 },
 /**

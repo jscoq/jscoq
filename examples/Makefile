@@ -7,7 +7,7 @@ WORD_SIZE ?= 32
 
 CONTEXT = jscoq+$(WORD_SIZE)bit
 COQC = ../_build/install/$(CONTEXT)/bin/coqc
-JSCOQ_CLI = ../_build/$(CONTEXT)/dist/cli.cjs
+JSCOQ_CLI = ../_build/$(CONTEXT)/dist/cli/cli.cjs
 ###
 
 all: examples.coq-pkg examples.symb.json sqrt_2.html nahas_tutorial.html
