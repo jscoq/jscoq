@@ -6,8 +6,8 @@ import Vue from 'vue';
 
 // import { JsCoq } from './index.js';  // @todo later; right now it will duplicate it :/
 
-import { BatchWorker, CompileTask } from '../../cli/build/batch.ts';
-import { CoqProject, InMemoryVolume, ZipVolume } from '../../cli/build/project.ts';
+import { BatchWorker, CompileTask } from '../../cli/build/batch';
+import { CoqProject, InMemoryVolume, ZipVolume } from '../../cli/build/project';
 import '../css/project.css';
 
 class ProjectPanel {
