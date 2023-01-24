@@ -252,7 +252,7 @@ export class CoqLayoutClassic {
         if (version_info) above.text(version_info);
         if (msg)          below.text(msg);
         
-        image[0].classList = [];
+        image[0].className = "";
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
