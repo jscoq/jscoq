@@ -1,9 +1,7 @@
 // UNTIL THIS IS MERGED INTO THE CLI:
 //   tsc --allowSyntheticDefaultImports --esModuleInterop bin/sdk.ts
-import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import findUp from 'find-up';
 import glob from 'glob';
 import unzip from 'fflate-unzip';
 import chld from 'child-process-promise';
@@ -15,20 +13,16 @@ const ME = 'jscoq',
       SDK = `/tmp/${ME}-sdk`,
       SDK_FLAGS = (process.env['JSCOQ'] || '').split(',').filter(x => x);
 
-const DEFAULT_PKGS_LOCATION = ['jscoq/coq-pkgs', 'wacoq-bin/bin/coq']
-
+const DEFAULT_PKGS_LOCATION = path.join(__dirname, '../coq-pkgs');
 
 async function setup(basedir = SDK, includeNative = true) {
     mkdirp.sync(basedir);
 
     // Locate `coq-pkgs`
     var flag = SDK_FLAGS.map(s => s.match(/^coq-pkgs=(.*)$/)?.[1]).filter(x => x),
-        nm = findNM(),
         coqpkgsDir: string;
     for (let sp of flag.concat(DEFAULT_PKGS_LOCATION)) {
         if (existsDir(sp)) { coqpkgsDir = sp; break; }
-        var fp = path.join(nm, sp);
-        if (existsDir(fp)) { coqpkgsDir = fp; break; }
     }
     if (!coqpkgsDir) throw {err: "Package bundles (*.coq-pkg) not found"};
 
@@ -76,12 +70,6 @@ async function runCoqC(cfg: {coqlib: string, include: string},
 }
 
 /*- specific helpers -*/
-
-function findNM() {
-    var nm = findUp.sync('node_modules', {type: 'directory'});
-    if (!nm) throw {err: "node_modules directory not found"};
-    return nm;
-}
 
 async function findCoq() {
     var cfg = await chld.exec("coqc -config"),

@@ -13,16 +13,18 @@ class IcoqPod extends EventEmitter {
     intr: WorkerInterrupts
 
     binDir: string
-    nmDir: string
     io: IO
 
-    constructor(binDir?: string, nmDir?: string, fetchMode: FetchMode = DEFAULT_FETCH_MODE) {
+    constructor(binDir?: string, fetchMode: FetchMode = DEFAULT_FETCH_MODE) {
         super();
         binDir = binDir || (fetchMode === 'fs' ? './bin' : '../bin');
         this.binDir = binDir;
-        this.nmDir = nmDir ?? '../node_modules';
 
-        this.core = new OCamlExecutable({stdin: false, tty: false, binDir: `${nmDir}/ocaml-wasm/bin`});
+        this.core = new OCamlExecutable({
+            stdin: false,
+            tty: false,
+            binDir: require("ocaml-wasm").resolve("bin"),
+        });
 
         var utf8 = new TextDecoder();
         this.core.on('stream:out', ev => console.log(utf8.decode(ev.data)));
@@ -44,7 +46,7 @@ class IcoqPod extends EventEmitter {
         //await this.findlibStartup(); /* @todo */
 
         this._preloadStub();
-    
+
         await this.core.run('/lib/icoq.bc', [], ['wacoq_post']);
     }
 
@@ -59,7 +61,7 @@ class IcoqPod extends EventEmitter {
 
     async loadPackages(uris: string | string[], refresh: boolean = true) {
         if (typeof uris == 'string') uris = [uris];
-        
+
         await Promise.all(uris.map(async uri => {
             try {
                 await this.unzip(uri, '/lib');
@@ -126,11 +128,11 @@ class IcoqPod extends EventEmitter {
             answer = wacoq_post(this.core.to_caml_string(json));
         this._answer(answer);
     }
-    
+
     answer(msgs: any[][]) {
         for (let msg of msgs) this.emit('message', msg);
     }
-    
+
     _answer(ptr: number) {
         var cstr = this.core.proc.userGetCString(ptr);
         this.answer(JSON.parse(<any>cstr));
@@ -145,11 +147,21 @@ class IcoqPod extends EventEmitter {
      */
     _preloadStub() {
         this.core.proc.dyld.preload(
-            'dllzarith.so', `${this.nmDir}/@ocaml-wasm/4.12--zarith/bin/dllzarith.wasm`);
+            "dllzarith.so",
+            require("ocaml-wasm").resolve("4.12--zarith/bin/dllzarith.wasm")
+        );
         this.core.proc.dyld.preload(
-            'dllbase_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_stubs.wasm`);
+            "dllbase_stubs.so",
+            require("ocaml-wasm").resolve(
+                "4.12--janestreet-base/bin/dllbase_stubs.wasm"
+            )
+        );
         this.core.proc.dyld.preload(
-            'dllbase_internalhash_types_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm`);
+            "dllbase_internalhash_types_stubs.so",
+            require("ocaml-wasm").resolve(
+                "4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm"
+            )
+        );
         this.core.proc.dyld.preload(
             'dllcoqrun_stubs.so', `${this.binDir}/dllcoqrun_stubs.wasm`);
         this.core.proc.dyld.preload(
@@ -162,7 +174,7 @@ class IcoqPod extends EventEmitter {
                 }
             }
         );
-    }    
+    }
 }
 
 
