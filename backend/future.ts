@@ -31,14 +31,12 @@ export class PromiseFeedbackRoute<A> extends Future<A> {
     atexit: (_ : void) => void;
     messages: RouteMessage[];
     _got_processed: boolean;
-    _done: boolean;
 
     constructor() {
         super();
         this.atexit = () => {};
         this.messages = [];
         this._got_processed = false;
-        this._done = false;
     }
 
     feedMessage(sid, lvl, loc, msg) {

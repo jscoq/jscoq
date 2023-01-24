@@ -15,5 +15,5 @@
     "checkJs": true
     // "noEmit": true
   },
-  "exclude": ["_build", "dist"]
+  "exclude": ["_build", "dist", "backend/wasm/shims"]
 }

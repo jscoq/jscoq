@@ -85,9 +85,11 @@
     "index.html"
   ],
   "scripts": {
-    "webpack": "webpack",
     "esbuild": "node esbuild.mjs",
-    "watch": "node esbuild.mjs --watch"
+    "release": "node esbuild.mjs --minify --sourcemap=no",
+    "typecheck": "tsc -b .",
+    "watch": "node esbuild.mjs --watch",
+    "webpack": "webpack"
   },
   "repository": {
     "type": "git",
