@@ -254,8 +254,8 @@ export class CoqManager {
         try {
             // Setup the Coq worker.
             this.coq = this.options.subproc
-                ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend, this.options.is_npm)
-                : new CoqWorker(this.options.base_path, null, null, this.options.backend, this.options.is_npm);
+                ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend)
+                : new CoqWorker(this.options.base_path, null, null, this.options.backend);
             this.coq.observers.push(this);
 
             if (this.options.debug) {
