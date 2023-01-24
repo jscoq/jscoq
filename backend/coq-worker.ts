@@ -206,7 +206,6 @@ export class CoqWorker {
 
     update(text, version) {
         this.sendCommand(["Update", text, version]);
-        this.interrupt();
     }
 
     loadPkg(url) {
