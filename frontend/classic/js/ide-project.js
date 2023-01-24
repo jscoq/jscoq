@@ -499,7 +499,6 @@ class WacoqBatchWorker extends BatchWorker {
     }
 }
 
-
 class BuildReport {
 
     constructor() {

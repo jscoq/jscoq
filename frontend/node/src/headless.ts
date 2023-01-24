@@ -15,7 +15,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 import { arreq_deep } from '../../common/etc.js';
 
 // Frontend imports, specific to the layout but we should refactor
-import { FormatPrettyPrint } from '../../format-pprint/js/main.js';
+import { FormatPrettyPrint } from '../../format-pprint/js';
 
 // Where to put this?
 //
@@ -42,7 +42,7 @@ class HeadlessCoqWorker extends CoqWorker {
 
     static instance() {
         global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
-        var jscoq = require('../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
+        var jscoq = require('../../../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
             jscoq.onmessage = handler;

@@ -12,16 +12,16 @@
 "use strict";
 
 /**
-  * @typedef { import("../../../dist/backend").Goals } Goals
+  * @typedef { import("../../../backend").Goals } Goals
   */
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../dist/backend.js';
+import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../backend';
 import { CoqIdentifier } from '../../../backend/coq-identifier.js';
 
 // UI imports
-import { $ } from '../../../dist/lib.js';
-import { FormatPrettyPrint } from '../../../dist/format-pprint.js';
+import $ from 'jquery';
+import { FormatPrettyPrint } from '../../format-pprint/js';
 
 // Common imports
 import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';

@@ -14,7 +14,8 @@
 /*    of yet).                                                          */
 /************************************************************************/
 
-import { CodeMirror, $ } from '../../../../dist/lib.js'
+import CodeMirror from 'codemirror';
+import $ from 'jquery';
 
 var Pos = CodeMirror.Pos;
 

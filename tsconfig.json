@@ -13,6 +13,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true
+    // "noEmit": true
   },
   "exclude": ["_build", "dist"]
 }

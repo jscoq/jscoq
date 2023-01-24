@@ -40,7 +40,7 @@
 /*                                                                      */
 /************************************************************************/
 
-import { CodeMirror } from '../../../../dist/lib.js';
+import CodeMirror from 'codemirror';
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS

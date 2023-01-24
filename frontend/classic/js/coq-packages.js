@@ -3,10 +3,11 @@
 
 // Backend imports
 import { ArrayFuncs } from '../../common/etc.js';
-import { CoqWorker } from '../../../dist/backend.js';
+import { CoqWorker } from '../../../backend';
 
 // Frontend imports (not so clear for the package manager
-import { JSZip, $ } from '../../../dist/lib.js';
+import JSZip from 'jszip';
+import $ from 'jquery';
 
 export class PackageManager {
 

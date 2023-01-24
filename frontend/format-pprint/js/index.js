@@ -1,9 +1,9 @@
 //@ts-check
 "use strict";
-import { $ } from '../../../dist/lib.js';
+import $ from 'jquery';
 
 /**
- * @typedef { import('../../../dist/backend').Pp } Pp
+ * @typedef { import('../../../backend').Pp } Pp
  */
 
 /**
@@ -58,7 +58,7 @@ export class FormatPrettyPrint {
             var [nspaces, indent] = pp.slice(1);
             // notice that `n` may be negative (#263) -- not sure how to handle this case
             var spn = (n, c) => $('<span>').text(" ".repeat(Math.max(0, n))).addClass(c);
-            return $('<span>').addClass('Pp_break').attr('data-args', pp.slice(1))
+            return $('<span>').addClass('Pp_break').attr('data-args', [pp[1], pp[2]])
                 .append(spn(nspaces, 'spaces'), $('<br/>'),
                         spn(0, 'prev-indent'), spn(indent, 'indent'));
 

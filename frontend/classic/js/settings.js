@@ -1,7 +1,7 @@
 //@ts-check
 "use strict";
 
-import { $ } from '../../../dist/lib.js';
+import $ from 'jquery';
 
 /**
  * Settings Panel UI element

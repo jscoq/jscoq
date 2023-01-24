@@ -4,14 +4,10 @@
     <title>jsCoq – Use Coq in Your Browser</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
+    <!-- Move to copy with the bundle -->
     <link rel="icon" href="frontend/classic/images/favicon.png">
-
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
-    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="node_modules/katex/dist/katex.min.css">
-    <link rel="stylesheet" type="text/css" href="frontend/classic/css/landing-page.css">
-    <link rel="stylesheet" type="text/css" href="frontend/classic/css/kbd.css">
+    <link rel="stylesheet" type="text/css" href="./dist/frontend/index.css";
   </head>
 
 <body class="jscoq-main">
@@ -246,7 +242,7 @@ Qed.</textarea>
   </div> <!-- /#ide-wrapper -->
 
   <script type="module">
-    import { JsCoq } from './jscoq.js';
+    import { JsCoq } from './dist/frontend/index.js';
 
     var sp = new URLSearchParams(location.search);
 

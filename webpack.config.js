@@ -52,7 +52,7 @@ const
   },
   shims = {
     modules: {
-      path: 'path-browserify',
+      path: 'stream-browserify',
       stream: 'stream-browserify',
       tty: false, url: false, worker_threads: false,
       fs: false, crypto: false
@@ -84,11 +84,13 @@ export default (env, argv) => [
 /**
  * jsCoq CLI
  * (note: the waCoq CLI is located in package `wacoq-bin`)
+ *
+ * EJGA: This is super-slow due to using the bytecode binary, we
+ * should replace it with a native binary.
  */
 {
   name: 'cli',
   target: 'node',
-  dependencies: [ 'format-pprint' ],
   entry: './frontend/cli/cli.ts',
   ...basics(argv),
   module: {
@@ -112,40 +114,6 @@ export default (env, argv) => [
   node: false
 },
 /**
- * Package libs for browser modules.
- */
-{
-  name: 'lib',
-  entry: './frontend/classic/js/lib.js',
-  ...basics(argv),
-  resolve,
-  output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
-  optimization: {
-    minimizer: [
-      new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
-        terserOptions: { keep_fnames: /^CodeMirror$/ }
-      })
-    ]
-  },
-  experiments: {
-    outputModule: true
-  }
-},
-/**
- * Format js library
- */
-{
-  name: 'format-pprint',
-  entry: './frontend/format-pprint/js/main.js',
-  dependencies: [ 'lib' ],
-  ...basics(argv),
-  resolve,
-  output: {...output('dist', 'format-pprint.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
-/**
  * Package backend for wider-comsumption.
  */
  {
@@ -161,108 +129,75 @@ export default (env, argv) => [
   plugins: shims.plugins
 },
 /**
- * Package backend for wider-comsumption.
- */
-{
-  name: 'backend',
-  entry: './backend/index.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve,
-  output: {...output('dist', 'backend.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
-/**
- * Package frontend for wider-comsumption and sanity
- */
-{
-  name: 'frontend',
-  entry: './frontend/classic/js/index.js',
-  dependencies: [ 'lib', 'format-pprint' ],
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve,
-  output: {...output('dist', 'frontend.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
-/**
  * Multi-file Project UI
  */
-{
-  name: 'ide-project',
-  entry: './frontend/classic/js/ide-project.js',
-  ...basics(argv),
-  output: {
-    filename: 'ide-project.browser.js',
-    path: path.join(__dirname, 'dist'),
-    library: 'ideProject',
-    libraryTarget: 'umd'
-  },
-  externals: {
-    fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
-    'wacoq-bin/dist/subproc': 'commonjs2'
-  },
-  module: {
-    rules: [ts, css, scss, imgs, vuesfc]
-  },
-  resolve: {
-    ...resolve,
-    fallback: { "stream": require.resolve("stream-browserify") }
-  },
-  plugins: [new VueLoaderPlugin(),
-            new webpack.ProvidePlugin({process: 'process/browser'})]
-},
+// {
+//   name: 'ide-project',
+//   entry: './frontend/classic/js/ide-project.js',
+//   ...basics(argv),
+//   output: {
+//     filename: 'ide-project.browser.js',
+//     path: path.join(__dirname, 'dist'),
+//     library: 'ideProject',
+//     libraryTarget: 'umd'
+//   },
+//   externals: {
+//     fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
+//     'wacoq-bin/dist/subproc': 'commonjs2'
+//   },
+//   module: {
+//     rules: [ts, css, scss, imgs, vuesfc]
+//   },
+//   resolve: {
+//     ...resolve,
+//     fallback: { "stream": require.resolve("stream-browserify") }
+//   },
+//   plugins: [new VueLoaderPlugin(),
+//             new webpack.ProvidePlugin({process: 'process/browser'})]
+// },
 /**
  * Collaboration plugin
  * (Hastebin)
  */
-{
-  name: 'collab',
-  entry: './frontend/classic/js/addon/collab/index.ts',
-  ...basics(argv),
-  output: {
-    filename: 'collab.browser.js',
-    path: path.join(__dirname, 'dist/addon'),
-    library: 'addonCollab',
-    libraryTarget: 'umd'
-  },
-  externals: {
-    './codemirror6-adapter.js': '{}' /* cm6 (from firepad); not used */
-  },
-  resolve: {
-    ...resolve,
-    fallback: {
-      "fs": false,
-      "constants": require.resolve("constants-browserify"),
-      "path": require.resolve("path-browserify"),
-      "util": require.resolve("util/"),
-      "assert": require.resolve("assert/")
-    }
-  },
-  module: {
-    rules: [ts, css, imgs, vuesfc],
-    unknownContextCritical: false  /* for `randombytes` */
-  },
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        roninVendor: {
-          /* assume all async-import'ed modules are Ronin; there are too many to list */
-          name: 'ronin-p2p'
-        }
-      }
-    }
-  },
-  plugins: shims.plugins
-           //[new webpack.ProvidePlugin({process: 'process/browser.js',
-           //                            Buffer: ['buffer', 'Buffer']})]
-}
+// {
+//   name: 'collab',
+//   entry: './frontend/classic/js/addon/collab/index.ts',
+//   ...basics(argv),
+//   output: {
+//     filename: 'collab.browser.js',
+//     path: path.join(__dirname, 'dist/addon'),
+//     library: 'addonCollab',
+//     libraryTarget: 'umd'
+//   },
+//   externals: {
+//     './codemirror6-adapter.js': '{}' /* cm6 (from firepad); not used */
+//   },
+//   resolve: {
+//     ...resolve,
+//     fallback: {
+//       "fs": false,
+//       "constants": require.resolve("constants-browserify"),
+//       "path": require.resolve("path-browserify"),
+//       "util": require.resolve("util/"),
+//       "assert": require.resolve("assert/")
+//     }
+//   },
+//   module: {
+//     rules: [ts, css, imgs, vuesfc],
+//     unknownContextCritical: false  /* for `randombytes` */
+//   },
+//   optimization: {
+//     splitChunks: {
+//       cacheGroups: {
+//         roninVendor: {
+//           /* assume all async-import'ed modules are Ronin; there are too many to list */
+//           name: 'ronin-p2p'
+//         }
+//       }
+//     }
+//   },
+//   plugins: shims.plugins
+//            //[new webpack.ProvidePlugin({process: 'process/browser.js',
+//            //                            Buffer: ['buffer', 'Buffer']})]
+// }
 ];

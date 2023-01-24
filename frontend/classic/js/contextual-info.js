@@ -2,11 +2,11 @@
 "use strict";
 
 // backend import
-import { CoqWorker } from '../../../dist/backend.js';
+import { CoqWorker } from '../../../backend';
 
 // frontend import
-import { $ } from '../../../dist/lib.js';
-import { FormatPrettyPrint } from '../../../dist/format-pprint.js';
+import $ from 'jquery';
+import { FormatPrettyPrint } from '../../format-pprint/js';
 import { CompanyCoq } from './addon/company-coq.js';
 
 export class CoqContextualInfo {
