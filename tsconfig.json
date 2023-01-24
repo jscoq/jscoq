@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "lib": ["esnext", "dom", "dom.iterable", "webworker"],
+    "skipLibCheck": true,
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
@@ -15,5 +16,5 @@
     "checkJs": true
     // "noEmit": true
   },
-  "exclude": ["_build", "dist", "backend/wasm/shims"]
+  "exclude": ["_build", "dist", "backend/wasm/shims", "vendor"]
 }
