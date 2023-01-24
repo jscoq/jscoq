@@ -58,8 +58,9 @@ let fb_queue = ref []
 
 let lsp_cb =
   Fleche.Io.CallBack.
-    { log_error = (fun cat msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
-    ; send_diagnostics = (fun ~uri:_ ~version:_ _diags -> ())
+    { trace = (fun cat ?extra:_ msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
+    ; send_diagnostics = (fun ~ofmt:_ ~uri:_ ~version:_ _diags -> ())
+    ; send_fileProgress = (fun ~ofmt:_ ~uri:_ ~version:_ _progress -> ())
     }
 
 let coq_init opts =
@@ -113,15 +114,25 @@ let coq_init opts =
   root_state := Coq.Init.(coq_init { fb_handler; load_plugin; load_module; debug });
   ()
 
-let check_doc ~doc =
-  let ofmt = Format.formatter_of_out_channel stdout in
-  Fleche.Doc.check ~ofmt ~doc ~fb_queue
-
 let new_doc opts ~text =
-  let state = !root_state, opts.vo_path, [], 0 in
   let uri = opts.uri in
-  let doc = Fleche.Doc.create ~state ~uri ~version:1 ~contents:text in
-  check_doc ~doc
+  let cmdline = Coq.Workspace.CmdLine.
+      { coqlib = ""
+      ; vo_load_path = opts.vo_path
+      ; ml_include_path = []
+      }
+  in
+  let workspace = Coq.Workspace.guess ~cmdline in
+  match
+    Fleche.Doc.create ~state:!root_state ~uri ~workspace ~version:1 ~contents:text with
+  | Coq.Protect.R.Interrupted ->
+    None
+  | Coq.Protect.R.Completed (Error _) ->
+    None
+  | Coq.Protect.R.Completed (Ok doc) ->
+    let ofmt = Format.std_formatter in
+    let target = Fleche.Doc.Target.End in
+    Some (Fleche.Doc.check ~ofmt ~doc ~target ())
 
 (** [set_debug t] enables/disables debug mode  *)
 let set_debug debug =

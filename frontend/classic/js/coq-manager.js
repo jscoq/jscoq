@@ -10,16 +10,13 @@
 
 "use strict";
 
-/**
-  * @typedef { import("../../../backend").Goals } Goals
-  */
-
 // Backend imports
 import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../backend';
 
 /**
- * @typedef { import("../../../dist/backend").Diagnostic } Diagnostic
- * @typedef { import("../../../dist/backend").Goals } Goals
+ * @typedef { import("../../../backend").Diagnostic } Diagnostic
+ * @typedef { import("../../../backend").Goal } Goal
+ * @typedef { import("../../../backend").Goals } Goals
  */
 import { CoqIdentifier } from '../../../backend/coq-identifier.js';
 
@@ -767,7 +764,7 @@ export class CoqManager {
     /**
      * Formats a single, focused goal.
      * Shows an environment containing hypothesis and goal type.
-     * @param {object} goal current goal record ({name, hyp, ty})
+     * @param {Goal} goal current goal record ({name, hyp, ty})
      */
     goal2DOM(goal) {
         let mklabel = (id) =>
@@ -775,11 +772,11 @@ export class CoqManager {
             mkdef = (pp) =>
                 $('<span>').addClass('def').append(this.pprint.pp2DOM(pp));
 
-        let hyps = goal.hyp.reverse().map(([h_names, h_def, h_type]) =>
-            $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
-                .append(h_names.map(mklabel))
-                .append(h_def && mkdef(h_def))
-                .append($('<div>').append(this.pprint.pp2DOM(h_type))));
+        let hyps = goal.hyps.reverse().map(({ names, def, ty }) =>
+            $('<div>').addClass(['coq-hypothesis', def && 'coq-has-def'])
+                .append(names.map(mklabel))
+                .append(def && mkdef(def))
+                .append($('<div>').append(this.pprint.pp2DOM(ty))));
         let ty = this.pprint.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
     }

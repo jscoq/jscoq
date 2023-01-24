@@ -16,7 +16,7 @@ export interface Point {
 
 export interface Range {
     start: Point
-    _end: Point
+    end_: Point
 }
 
 export interface Diagnostic {
@@ -59,13 +59,18 @@ export type Pp =
   | ['Pp_force_newline']
   | ['Pp_comment', string[]];
 
-type hyp = [any[], any, Pp] // Names.Id.t list * 'a option * 'a
+export interface Hyp {
+    names : string[],
+    def?: Pp,
+    ty: Pp
+}
 
 export interface Goal {
     info: info
     ty: Pp
-    hyp: hyp
+    hyps: Hyp[]
 }
+
 export interface Goals {
     goals: Goal[]
     stack: [Goal[],Goal[]][]
@@ -75,6 +80,7 @@ export interface Goals {
 }
 
 import { InformationEvent } from 'http';
+import { ppid } from 'process';
 import { Future, PromiseFeedbackRoute } from './future';
 
 /**

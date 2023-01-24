@@ -23,7 +23,7 @@ let do_request ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
   | Method.Goals ->
-    let approx = LI.PickPrev in
+    let approx = LI.Prev in
     let goals = LI.O.goals ~doc ~point approx in
     Answer.Goals goals
   | Method.Search _ -> Answer.Void

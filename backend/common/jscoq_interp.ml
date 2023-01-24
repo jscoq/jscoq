@@ -123,7 +123,9 @@ let create_doc (doc_opts : doc_options) =
   in
   Icoq.new_doc opts
 
-let doc = ref (Obj.magic 0)
+let diags_of_doc doc = List.concat_map Fleche.Doc.Node.diags doc.Fleche.Doc.nodes
+
+let rdoc = ref None
 
 (** main interpreter *)
 let jscoq_execute =
@@ -133,21 +135,33 @@ let jscoq_execute =
     exec_init opts; out_fn @@ CoqInfo(coq_info_string ())
 
   | NewDoc (opts, text) ->
-    let ndoc, _st, diags = create_doc opts ~text in
-    doc := ndoc;
-    out_fn @@ Ready ();
-    out_fn (Notification (diags,1))
+    (match create_doc opts ~text with
+     | None -> ()
+     | Some doc ->
+       rdoc := Some doc;
+       let diags = diags_of_doc doc in
+       out_fn @@ Ready ();
+       out_fn (Notification (diags,1)))
 
   | Update (contents, version) ->
-    let ndoc = { !doc with contents } in
-    let ndoc, _state, diags = Icoq.check_doc ~doc:ndoc in
-    doc := ndoc;
-    out_fn (Notification (diags, version))
+    (match !rdoc with
+     | Some doc ->
+       let ofmt = Format.std_formatter in
+       let doc = Fleche.Doc.bump_version ~version ~contents doc in
+       let target = Fleche.Doc.Target.End in
+       let doc = Fleche.Doc.check ~ofmt ~doc ~target () in
+       rdoc := Some doc;
+       let diags = diags_of_doc doc in
+       out_fn (Notification (diags, version))
+     | None -> ())
 
   | Request q ->
-    let f = Request_interp.do_request ~doc:!doc in
-    let res = Request.process ~f q in
-    out_fn (Response res)
+    (match !rdoc with
+     | Some doc ->
+       let f = Request_interp.do_request ~doc in
+       let res = Request.process ~f q in
+       out_fn (Response res)
+     | None -> ())
 
   | Register file_path  ->
     !Callbacks.cb.register_cma ~file_path

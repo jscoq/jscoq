@@ -95,7 +95,7 @@ export class CoqCodeMirror5 extends ProviderContainer {
         }
         // Adjust the mark for the line offset
         diag.range.start.line -= ln;
-        diag.range._end.line -= ln;
+        diag.range.end_.line -= ln;
         in_part.mark(diag);
     }
 
@@ -386,7 +386,7 @@ export class CmCoqProvider {
                         (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
 
         var doc = this.editor.getDoc();
-        let start = tr_loc(diag.range.start), end = tr_loc(diag.range._end);
+        let start = tr_loc(diag.range.start), end = tr_loc(diag.range.end_);
 
         var mark =
             doc.markText(start, end,
