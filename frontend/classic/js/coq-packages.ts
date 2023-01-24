@@ -6,17 +6,27 @@
  * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
  */
 
-"use strict";
-
 // Backend imports
 import { ArrayFuncs } from '../../common/etc.js';
-import { CoqWorker } from '../../../backend';
+import { CoqWorker, backend } from '../../../backend';
 
 // Frontend imports (not so clear for the package manager
 import JSZip from 'jszip';
 import $ from 'jquery';
 
+interface BundleInfo {
+    row : string;
+}
 export class PackageManager {
+    backend : backend;
+    panel : any;
+    bundles : Map<string, BundleInfo>;
+    loaded_pkgs: string[];
+    coq : CoqWorker;
+    packages : CoqPkgInfo[];
+    packages_by_name: any;
+    packages_by_uri: any;
+    index ?: PackageIndex;
 
     /**
      * Creates the packages UI and loading manager.
@@ -29,11 +39,10 @@ export class PackageManager {
      * @param {CoqWorker} coq reference to the `CoqWorker` instance to send
      *   load requests to
      */
-    constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.backend) {
+    constructor(panel_dom, packages: any, pkg_path_aliases: any, coq: CoqWorker) {
 
-        this.backend = backend;
         this.panel         = panel_dom;
-        this.bundles       = {};
+        this.bundles       = new Map();
         this.loaded_pkgs   = [];
         this.coq           = coq;
 
@@ -51,14 +60,14 @@ export class PackageManager {
      * @param {object} packages (see constructor)
      * @param {object} aliases (ditto)
      */
-    initializePackageList(packages, aliases={}) {
+    initializePackageList(packages : string[], aliases={}) {
+        console.log(`init pkgs: `, packages);
         this.packages = [];
         this.packages_by_name = {};
         this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
-        /** @type {(path: string) => string} */
-        let mkpath = path => path && path.replace(/([^/])$/, '$1/');
+        let mkpath = (path : string) => path && path.replace(/([^/])$/, '$1/');
 
         for (let [key, pkg_names] of Object.entries(packages)) {
             let base_uri = mkpath(aliases[key] || key);
@@ -77,7 +86,7 @@ export class PackageManager {
      * @return {string}
      * @memberof PackageManager
      */
-    static defaultPkgPath(base_path) {
+    static defaultPkgPath(base_path: string | URL) {
         return new URL('coq-pkgs', base_path).href;
     }
 
@@ -97,25 +106,25 @@ export class PackageManager {
      * @param {*} pkg
      * @memberof PackageManager
      */
-    addPackage(pkg) {
+    addPackage(pkg: CoqPkgInfo) {
         this.packages.push(pkg);
         this.packages_by_name[pkg.name] = pkg;
         (this.packages_by_uri[pkg.base_uri] = 
             this.packages_by_uri[pkg.base_uri] || []).push(pkg.name);
     }
 
-    getPackage(pkg_name) {
+    getPackage(pkg_name: string) {
         var pkg = this.packages_by_name[pkg_name];
         if (!pkg) throw new Error(`internal error: unrecognized package '${pkg_name}'`);
         return pkg;
     }
 
-    hasPackageInfo(pkg_name) {
+    hasPackageInfo(pkg_name: string | number) {
         var pkg = this.packages_by_name[pkg_name];
         return pkg && pkg.info;
     }
 
-    addRow(bname, desc = bname, parent) {
+    addRow(bname : string, desc = bname, parent?: { row : JQuery<HTMLElement> }) {
         var row = $('<div>').addClass('package-row').attr('data-name', bname)
             .append($('<button>').addClass('download-icon')
                     .attr('title', "Download package")
@@ -147,7 +156,7 @@ export class PackageManager {
         return this.bundles[bname] = { row };
     }
 
-    addBundleInfo(bname, pkg_info, parent) {
+    addBundleInfo(bname : string, pkg_info : CoqPkgInfo, parent? : { row : JQuery<HTMLElement>}) {
 
         var bundle = this.addRow(bname, pkg_info.name, parent);
 
@@ -184,8 +193,9 @@ export class PackageManager {
         this.dispatchEvent(new Event('change'));
     }
 
-    async addBundleZip(bname, resource, pkg_info) {
-        pkg_info = pkg_info || {};
+    async addBundleZip(bname: string, resource: any, pkg_info?: CoqPkgInfo) {
+
+        var pkg_info = pkg_info || {};
 
         var archive = await new CoqPkgArchive(resource).load();
 
@@ -209,14 +219,14 @@ export class PackageManager {
         });
     }
 
-    waitFor(init_pkgs) {
+    waitFor(init_pkgs: string[]) {
         let all_set = () => init_pkgs.every(x => this.hasPackageInfo(x));
 
         return new Promise((resolve, reject) => {
             var observe = () => {
                 if (all_set()) {
                     this.removeEventListener('change', observe);
-                    resolve();
+                    resolve({});
                     return true;
                 }
             };
@@ -231,8 +241,8 @@ export class PackageManager {
     }
 
     getLoadPath() {
-        let prefix = m => m.replace(/[.][^.]+$/, ''),
-            pkgs = ms => [...new Set(ms.map(prefix))].map(pkg => pkg.split('.'));
+        let prefix = (m: string) => m.replace(/[.][^.]+$/, ''),
+            pkgs = (ms: string[]) => [...new Set(ms.map(prefix))].map((pkg : string) => pkg.split('.'));
 
         return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
             let pkg = this.getPackage(pkg_name),
@@ -259,7 +269,7 @@ export class PackageManager {
      * @param {string} bname package bundle name
      * @param {object} info? {loaded: <number>, total: <number>}
      */
-    showPackageProgress(bname, info) {
+    showPackageProgress(bname : string, info) {
         var bundle = this.bundles[bname];
 
         if (!bundle.bar) {
@@ -283,7 +293,7 @@ export class PackageManager {
      * Marks the package download as complete, removing the progress bar.
      * @param {string} bname package bundle name
      */
-    showPackageCompleted(bname) {
+    showPackageCompleted(bname : string) {
         var bundle = this.bundles[bname];
 
         bundle.row.children('.rel-pos').remove();
@@ -295,7 +305,7 @@ export class PackageManager {
         if (pkg.parent) this.showLoadedChunks(pkg.parent);
     }
 
-    showLoadedChunks(pkg) {
+    showLoadedChunks(pkg : CoqPkgInfo) {
         var bundle = this.bundles[pkg.name];
         bundle.row.addClass('has-chunks');
 
@@ -471,11 +481,13 @@ export class PackageManager {
     removeEventListener(type, cb)  { this.panel.removeEventListener(type, cb); }
 }
 
-
 /**
  * Holds list of modules in packages and resolves dependencies.
  */
 class PackageIndex {
+    backend : backend;
+    moduleIndex : Map<any,any>;
+    intrinsicPrefix : string;
 
     constructor(backend) {
         this.backend = backend;
@@ -524,7 +536,6 @@ class PackageIndex {
     
 }
 
-
 // function closure<T>(s: Set<T>, tr: (t: T) => T[]) {
 function closure(s, tr) {
     var wl = [...s];
@@ -536,8 +547,15 @@ function closure(s, tr) {
     return s;
 }
 
-
 class CoqPkgInfo {
+    name: string;
+    base_uri: string;
+    info?: any;
+    archive?: any;
+    chunks?: any;
+    parent?: any;
+    promise?: any;
+
     constructor(name, base_uri) {
         this.name = name;
         this.base_uri = base_uri;
@@ -575,6 +593,10 @@ class CoqPkgInfo {
  * file that has to be downloaded or a local one.
  */
 class CoqPkgArchive {
+    url ?: URL | string;
+    blob : Blob;
+    zip : JSZip;
+    onProgress : ((evt : any) => void);
 
     constructor(resource) {
         if (resource instanceof URL || typeof resource === 'string')
@@ -597,7 +619,7 @@ class CoqPkgArchive {
                     { this.zip = zip; return this; });
     }
 
-    download() {
+    download() : Promise<any> {
         if (this.blob) {
             return this.blob.arrayBuffer();
         }
@@ -666,7 +688,6 @@ class CoqPkgArchive {
         });
         await Promise.all(asyncs);
     }
-
 }
 
 // Local Variables:

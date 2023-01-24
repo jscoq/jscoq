@@ -5,7 +5,7 @@
  * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
  */
 
-type backend = 'js' | 'wa';
+export type backend = 'js' | 'wa';
 
 // Needs to be in sync with jscoq_proto.ml, maybe some day automatically
 export interface Point {

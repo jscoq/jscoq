@@ -18,7 +18,7 @@ import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../backend';
  * @typedef { import("../../../backend").Goal } Goal
  * @typedef { import("../../../backend").Goals } Goals
  */
-import { CoqIdentifier } from '../../../backend/coq-identifier.js';
+import { CoqIdentifier } from '../../../backend/coq-identifier';
 
 // UI imports
 import $ from 'jquery';
@@ -26,7 +26,7 @@ import { FormatPrettyPrint } from '../../format-pprint/js';
 import { throttle } from 'throttle-debounce';
 
 // Common imports
-import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
+import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
 
 // UI Frontend imports
 import { PackageManager } from './coq-packages.js';
@@ -286,8 +286,7 @@ export class CoqManager {
                 this.layout.packages,
                 this.options.all_pkgs,
                 pkg_path_aliases,
-                this.coq,
-                this.options.backend
+                this.coq
             );
 
             this.packages.expand();

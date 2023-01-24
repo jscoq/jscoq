@@ -57,6 +57,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^13.11.1",
     "@types/pako": "^2.0.0",
+    "@types/throttle-debounce": "^5.0.0",
     "assert": "^2.0.0",
     "bootstrap": "^5.2.1",
     "buffer": "^4.9.2",
