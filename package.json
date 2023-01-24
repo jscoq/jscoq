@@ -6,7 +6,12 @@
   "main": "frontend/classic/js/index.js",
   "browser": {
     "path": "path-browserify",
-    "stream": "stream-browserify"
+    "stream": "stream-browserify",
+    "tty": false,
+    "url": false,
+    "worker_threads": false,
+    "fs": false,
+    "crypto": false
   },
   "bin": {
     "jscoq": "./dist/cli/cli.cjs",

@@ -36,7 +36,7 @@ var nodecli = esbuild
     outfile: "dist/cli/cli.cjs",
     ...sourcemap,
     minify,
-    // watch: watch(nodeEntry),
+    // watch: watch(cliEntry),
   })
   .then(() => {
     console.log(`[watch] build finished for ${cliEntry}`);
@@ -44,13 +44,20 @@ var nodecli = esbuild
   .catch(() => process.exit(1));
 
 // Backend build, WASM worker.
-/* var backendEntry = "./backend/wasm/wacoq_worker.ts" 
+var backendEntry = "./backend/wasm/wacoq_worker.ts"
 var backend = esbuild
   .build({
     entryPoints: [backendEntry],
     bundle: true,
     platform: "browser",
+    format: "esm",
     outdir: "dist",
+    inject: ["./backend/wasm/shims/process-shim.js",
+             "./backend/wasm/shims/buffer-shim.js"
+            ],
+    define: {
+      global: "self"
+    },
     ...sourcemap,
     minify,
     // watch: watch(frontEndEntry),
@@ -58,7 +65,7 @@ var backend = esbuild
   .then(() => {
     console.log(`[watch] build finished for ${backendEntry}`);
   })
-  .catch(() => process.exit(1)); */
+  .catch(() => process.exit(1));
 
 // Frontend build, for modern Chrome
 var frontEndEntry = "./frontend/classic/js/index.js"

@@ -37,8 +37,6 @@
  (name wacoq)
  (deps
   (alias shared)
-  dist
-  dist-webpack
   backend/wasm/wacoq_worker.bc
   (glob_files backend/wasm/*.wasm)))
 
@@ -47,6 +45,7 @@
  (deps
   (source_tree examples)
   (source_tree docs)  ; for `quick-help.html`
+  dist
   index.html
   coq-pkgs))
 
@@ -61,18 +60,6 @@
   node_modules)
  (action
   (run npm run esbuild)))
-
-; JavaScript build (webpack, to disappear)
-(rule
- (target (dir dist-webpack))
- (mode (promote (until-clean)))
- (deps
-  (source_tree backend)
-  (source_tree frontend)
-  webpack.config.js
-  node_modules)
- (action
-  (run npm run webpack)))
 
 ; Just the worker
 (alias

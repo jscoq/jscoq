@@ -75,21 +75,6 @@ const
 export default (env, argv) => [
 
 /**
- * Package WA backend
- */
- {
-  name: 'wacoq_worker',
-  target: 'webworker',
-  entry: './backend/wasm/wacoq_worker.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve: {...resolve, fallback: shims.modules},
-  output: output('dist-webpack', 'wacoq_worker.js'),
-  plugins: shims.plugins
-},
-/**
  * Multi-file Project UI
  */
 // {

@@ -27,7 +27,7 @@ type i32 = number;
 
 class OCamlExecutable extends ExecCore {
 
-    opts: OCamlExecutableOptions
+    declare opts: OCamlExecutableOptions
     api: OCamlCAPI
     callbacks: {[name: string]: (arg: i32) => i32}
 

@@ -47,7 +47,7 @@ export class CoqWorkerConfig {
      */
     static determineWorkerPath(basePath: string | URL, backend: backend): URL {
         return new URL({'js': "backend/jsoo/jscoq_worker.bc.cjs",
-                        'wa': "dist-webpack/wacoq_worker.js"
+                        'wa': "dist/wacoq_worker.js"
                        }[backend], basePath);
     }
 
