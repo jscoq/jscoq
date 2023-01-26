@@ -22,27 +22,6 @@ let minify = process.argv.includes("--minify");
 let disable_sourcemap = process.argv.includes("--sourcemap=no");
 let sourcemap = disable_sourcemap ? null : { sourcemap: true };
 
-// Node build
-var cliEntry = "./frontend/cli/cli.ts";
-var nodecli = esbuild
-  .build({
-    entryPoints: [cliEntry],
-    bundle: true,
-    platform: "node",
-    format: "cjs",
-    loader: {
-      '.bc.cjs': 'copy'
-    },
-    outfile: "dist-cli/cli.cjs",
-    ...sourcemap,
-    minify,
-    // watch: watch(cliEntry),
-  })
-  .then(() => {
-    console.log(`[watch] build finished for ${cliEntry}`);
-  })
-  .catch(() => process.exit(1));
-
 // Backend build, WASM worker.
 var backendEntry = "./backend/wasm/wacoq_worker.ts"
 var backend = esbuild
@@ -90,5 +69,4 @@ var frontend = esbuild
   .catch(() => process.exit(1));
 
 // TODO: run serve if --serve was passed.
-// await Promise.all([nodecli, backend, frontend]);
-await Promise.all([frontend])
+await Promise.all([frontend,backend])

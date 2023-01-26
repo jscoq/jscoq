@@ -86,10 +86,11 @@
   ],
   "scripts": {
     "esbuild": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
     "release": "node esbuild.mjs --minify --sourcemap=no",
     "typecheck": "tsc -b .",
-    "watch": "node esbuild.mjs --watch",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "esbuild-cli": "node esbuild-cli.mjs"
   },
   "repository": {
     "type": "git",
