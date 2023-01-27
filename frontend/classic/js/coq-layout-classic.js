@@ -1,14 +1,27 @@
 //@ts-check
+"use strict";
+
 // The CoqLayoutClassic class.
 // Copyright (C) 2015-2017 Mines ParisTech/ARMINES
 //
 // This class provides a plugabble side panel with proof and query
 // buffers.
 
-import { $ } from '../../../dist/lib.js';
+import $ from 'jquery';
 import { SettingsPanel } from './settings.js';
 
-"use strict";
+// Bootstrap
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+// Medias
+import "../css/landing-page.css";
+import "../css/kbd.css";
+import '../css/coq-log.css';
+import '../css/coq-base.css';
+import '../css/coq-light.css';
+import '../css/coq-dark.css';
+import '../css/settings.css';
 
 /***********************************************************************/
 /* The CoqLayout class contains the goal, query, and packages buffer   */
@@ -37,7 +50,7 @@ export class CoqLayoutClassic {
                             c-0.773-0.444-1.043-1.431-0.599-2.206c0.444-0.773,1.43-1.044,2.203-0.6c3.523,2.014,5.711,5.782,5.711,9.831
                             C27.32,22.237,22.243,27.317,16.001,27.317z"/>
       </g>
-    </svg>        
+    </svg>
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">

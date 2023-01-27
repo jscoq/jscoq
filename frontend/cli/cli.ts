@@ -14,6 +14,7 @@ import * as sdk from './build/sdk/toolkit';
 
 // Headless CLI
 import { HeadlessCLI } from '../node/src/coq-cli';  // oops
+import { pathToFileURL } from 'url';
 
 class CLI {
 
@@ -139,8 +140,6 @@ class CLI {
 
 }
 
-
-
 async function main() {
     var progname = path.basename(process.argv[1]);
     // delegate these to SDK
@@ -170,7 +169,10 @@ async function main() {
         .option('--nostdlib',                 'skip loading the standard Coq packages')
         .on('option:load', pkg => loads.push(...pkg.split(',')))
         .action(async opts => { rc = await build(opts, loads); });
-    var headless = new HeadlessCLI();
+
+    // This is to be called from dist/cli so:
+    let base_path = pathToFileURL(path.join(__dirname, '..', '..'));
+    var headless = new HeadlessCLI(base_path);
     headless.installCommand(prog);
 
     sdk.installCommand(prog);
@@ -178,7 +180,6 @@ async function main() {
     await prog.parseAsync(process.argv);
     return rc || headless.rc;
 }
-
 
 async function build(opts: any, loads: string[]) {
     if (opts.args.length > 0) {

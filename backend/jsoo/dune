@@ -16,6 +16,7 @@
 
 (rule
  (target jscoq_worker.bc.cjs)
+ (mode promote)
  (action (copy jscoq_worker.bc.js jscoq_worker.bc.cjs)))
 
 (rule

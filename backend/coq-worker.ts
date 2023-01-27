@@ -77,15 +77,15 @@ export class CoqWorker {
     protected _handler: (msg : any) => void;
 
     // Needs work to move to a standard typed registration mechanism
-    // The protected here is not respected by the {package,coq}-manager(s)
-    protected observers: CoqEventObserver[];
+    // The protected here is not respected by the {package,coq}-manager(s), thus we have commented it out.
+    /* protected */ observers: CoqEventObserver[];
 
     // Private stuff to handle our implementation of requests
     private routes: Map<number,CoqEventObserver[]>;
     private sids: Future<void>[];
     private _gen_rid : number;
 
-    constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend, is_npm : boolean) {
+    constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend) {
 
         this.config = new CoqWorkerConfig(base_path, backend);
         this.config.path = scriptPath || this.config.path;
@@ -249,11 +249,6 @@ export class CoqWorker {
         return rid;
     }
 
-    /**
-     * @param {any} sid
-     * @param {undefined} rid
-     * @param {any} search_query
-     */
     inspect(sid, rid, search_query) {
         if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
         return this.query(sid, rid, ['Inspect', search_query])
@@ -407,7 +402,7 @@ export class CoqWorker {
      * @param {any} rid
      * @param {any} search_query
      */
-    inspectPromise(sid, rid, search_query) {
+    inspectPromise(sid, rid, search_query?) {
         return this._wrapWithPromise(
             this.inspect(sid, rid, search_query));
     }
@@ -529,14 +524,14 @@ export class CoqWorker {
  * available in waCoq through the `subproc` module.
  */
 export class CoqSubprocessAdapter extends CoqWorker {
-    constructor(base_path, backend, is_npm) {
+    constructor(base_path, backend) {
         /* Emilio: the require here fails, this is a fixme!
         const subproc = require('wacoq-bin/dist/subproc'),
               icoq = new subproc.IcoqSubprocess();
         super(base_path, null, icoq, backend, is_npm);
         window.addEventListener('beforeunload', () => icoq.end());
         */
-       super(base_path, null, null, backend, is_npm);
+       super(base_path, null, null, backend);
     }
 
     coq_handler(evt) {

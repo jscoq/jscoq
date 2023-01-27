@@ -1,10 +1,12 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { EventEmitter } from 'events';
+import { inspect } from 'util';
 import mkdirp from 'mkdirp';
-import unzip from 'fflate-unzip';
 import * as find from 'find';
 import glob from 'glob';
+import { unzip } from './my_fflate';
 
 // Backend imports
 import { Future } from '../../../backend/future';
@@ -15,7 +17,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 import { arreq_deep } from '../../common/etc.js';
 
 // Frontend imports, specific to the layout but we should refactor
-import { FormatPrettyPrint } from '../../format-pprint/js/main.js';
+import { FormatPrettyPrint } from '../../format-pprint/js';
 
 // Where to put this?
 //
@@ -29,10 +31,9 @@ import { CoqProject } from '../../cli/build/project';
 
 class HeadlessCoqWorker extends CoqWorker {
 
-    constructor() {
-
-        var backend : 'js' = 'js', is_npm = false, base_path = import.meta.url + '../../../';
-        super(base_path, null, HeadlessCoqWorker.instance(), backend, is_npm);
+    constructor(base_path) {
+        var backend : 'js' = 'js'
+        super(base_path, null, HeadlessCoqWorker.instance(), backend);
         this.when_created.then(() => {
             this.worker.onmessage = this._handler = evt => {
                 process.nextTick(() => this.coq_handler({data: evt}));
@@ -41,8 +42,7 @@ class HeadlessCoqWorker extends CoqWorker {
     }
 
     static instance() {
-        global.FormData = undefined; /* prevent a silly warning about experimental fetch API */
-        var jscoq = require('../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
+        var jscoq = require('../../../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
         jscoq.addEventListener = (_: "message", handler: () => void) =>
             jscoq.onmessage = handler;
@@ -54,7 +54,7 @@ class HeadlessCoqWorker extends CoqWorker {
  * A manager that handles Coq events without a UI.
  */
 class HeadlessCoqManager {
-    coq: any
+    coq: CoqWorker & { options?: any};
     volume: FSInterface
     provider: any
     pprint: FormatPrettyPrint
@@ -68,23 +68,25 @@ class HeadlessCoqManager {
     startup_time: number;
     startup_timeEnd: number;
 
-    constructor(worker=undefined, volume=fsif_native) {
+    constructor(base_path) {
+        let pkg_path = this.findPackageDir();
+
         this.startup_time = Date.now();
-        this.coq = worker || new HeadlessCoqWorker();
+        this.coq = new HeadlessCoqWorker(base_path);
         this.coq.observers.push(this);
-        this.volume = volume;
+        this.volume = fsif_native;
         this.provider = new QueueCoqProvider();
         this.pprint = new FormatPrettyPrint();
-        this.packages = new PackageDirectory('/tmp/jscoq/lib');
+        this.packages = new PackageDirectory(pkg_path);
 
-        this.project = new CoqProject(undefined, volume);
+        this.project = new CoqProject(undefined, this.volume);
 
         this.options = {
             prelude: false,
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
             all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2'],
-            pkg_path: undefined,  /* default: automatic */
+            pkg_path: pkg_path,
             inspect: false,
             log_debug: false,
             warn: true
@@ -102,8 +104,6 @@ class HeadlessCoqManager {
     }
 
     async start() {
-        // Configure load path
-        this.options.pkg_path = this.options.pkg_path || this.findPackageDir();
         await this.packages.loadPackages(this.options.all_pkgs.map(pkg =>
             this.getPackagePath(pkg)));
 
@@ -191,14 +191,6 @@ class HeadlessCoqManager {
         this.provider.enqueue(`Load "${vernac_filename}".`);
     }
 
-    spawn() {
-        var c = new HeadlessCoqManager(this.coq.spawn(), this.volume);
-        c.provider = this.provider.clone();
-        c.project = this.project;
-        Object.assign(c.options, this.options);
-        return c;
-    }
-
     retract() {
         let first_stm = this.doc[0];
         if (first_stm && first_stm.coq_sid)
@@ -220,7 +212,7 @@ class HeadlessCoqManager {
             query_filter = inspect.modules ?
                 (id => inspect.modules.some(m => this._identifierWithin(id, m)))
               : (id => true);
-        this.coq.inspectPromise(0, ["All"]).then(results => {
+        this.coq.inspectPromise(0, ["All"]).then((results : any []) => {
             var symbols = results.map(fp => CoqIdentifier.ofQualifiedName(fp))
                             .filter(query_filter);
             this.volume.fs.writeFileSync(out_fn, JSON.stringify({lemmas: symbols}));
@@ -305,7 +297,7 @@ class HeadlessCoqManager {
     }
 
     findPackageDir(dirname = 'coq-pkgs') {
-        var searchPath = ['.', '..', '../..', '../../..']
+        var searchPath = ['.', '..', '../..']
                          .map(rel => path.join(__dirname, rel));
 
         for (let path_el of searchPath) {
@@ -379,26 +371,29 @@ class PackageDirectory extends EventEmitter {
     packages_by_uri: {[name: string]: PackageManifest}
     _plugins: Promise<void>
 
-    constructor(dir: string) {
+    constructor(dir) {
         super();
+
         this.dir = dir;
         this.packages_by_name = {};
         this.packages_by_uri = {};
     }
 
     async loadPackages(uris: string | string[]) {
+
         await this._plugins;
         if (!Array.isArray(uris)) uris = [uris];
         var loaded = [];
         for (let uri of uris) {
             try {
-                let info = await this.unzip(uri);   // must not run async; no much use of it anyway
+                let info = await this.unzip(uri);  // must not run async; no much use of it anyway
                 this.packages_by_name[info.name] = info;
                 this.packages_by_uri[uri] = info;
                 loaded.push(uri);
                 this.emit('message', {data: ['LibProgress', {uri, done: true}]});
             }
             catch (e) {
+                console.log(`Failed to load pkg uri: ${uri}`);
                 this.emit('message', {data: ['LibError', uri, '' + e]});
             }
         }

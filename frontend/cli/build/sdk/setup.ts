@@ -1,6 +1,5 @@
 // UNTIL THIS IS MERGED INTO THE CLI:
 //   tsc --allowSyntheticDefaultImports --esModuleInterop bin/sdk.ts
-import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import findUp from 'find-up';

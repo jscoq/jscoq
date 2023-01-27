@@ -1,11 +1,8 @@
 import os from 'os';
 import webpack from 'webpack';
-import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
-
 import { VueLoaderPlugin } from 'vue-loader';
-import TerserPlugin from 'terser-webpack-plugin';
 
 const __dirname = path.resolve('.'),
       __tmpdir = path.resolve(os.tmpdir()),
@@ -52,7 +49,7 @@ const
   },
   shims = {
     modules: {
-      path: 'path-browserify',
+      path: 'stream-browserify',
       stream: 'stream-browserify',
       tty: false, url: false, worker_threads: false,
       fs: false, crypto: false
@@ -60,19 +57,9 @@ const
     plugins: [
         new webpack.DefinePlugin({process: {browser: true, env: {}, cwd: () => "/"}}),
         new webpack.ProvidePlugin({Buffer: ['buffer', 'Buffer']})
-        //new webpack.ProvidePlugin({process: 'process/browser.js',
-        //  Buffer: ['buffer', 'Buffer']})]
     ]
   },
-  cliPlugins = (scriptName) => [
-    new webpack.BannerPlugin({banner: '#!/usr/bin/env node', raw: true}),
-    new webpack.optimize.LimitChunkCountPlugin({maxChunks: 1}),
-    function() {
-      this.hooks.afterDone.tap('chmod', () => fs.chmodSync(scriptName, 0o755));
-    }
-  ],
   // resources that only make sense in browser context
-  browserOnly = /\/codemirror\/|(\/dist\/lib.js$)|(coq-mode.js$)|(company-coq.js$)/,
   resolve = {
     extensions: [ '.tsx', '.ts', '.js', '.cjs' ]
   },
@@ -81,118 +68,7 @@ const
   });
 
 export default (env, argv) => [
-/**
- * jsCoq CLI
- * (note: the waCoq CLI is located in package `wacoq-bin`)
- */
-{
-  name: 'cli',
-  target: 'node',
-  dependencies: [ 'format-pprint' ],
-  entry: './frontend/cli/cli.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  externals: [
-    {  /* do not bundle the worker */
-      '../backend/jsoo/jscoq_worker.bc.cjs': 'commonjs2 ../backend/jsoo/jscoq_worker.bc.cjs',
-      'wacoq-bin/dist/subproc': 'undefined',
-      'cross-spawn': 'commonjs2 cross-spawn'
-    },
-    /* filter out browser-only modules */
-    ({context, request}, callback) => {
-      if (request.match(browserOnly)) callback(null, '{}')
-      else callback();
-    }
-  ],
-  resolve,
-  output: output('dist', 'cli.cjs'),
-  plugins: cliPlugins('dist/cli.cjs'),
-  node: false
-},
-/**
- * Package libs for browser modules.
- */
-{
-  name: 'lib',
-  entry: './frontend/classic/js/lib.js',
-  ...basics(argv),
-  resolve,
-  output: {...output('dist', 'lib.js'), libraryTarget: 'module'},
-  optimization: {
-    minimizer: [
-      new TerserPlugin({  /* this is a hack because Ronin's Syncpad checks the class name */
-        terserOptions: { keep_fnames: /^CodeMirror$/ }
-      })
-    ]
-  },
-  experiments: {
-    outputModule: true
-  }
-},
-/**
- * Format js library
- */
-{
-  name: 'format-pprint',
-  entry: './frontend/format-pprint/js/main.js',
-  dependencies: [ 'lib' ],
-  ...basics(argv),
-  resolve,
-  output: {...output('dist', 'format-pprint.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
-/**
- * Package backend for wider-comsumption.
- */
- {
-  name: 'wacoq_worker',
-  target: 'webworker',
-  entry: './backend/wasm/wacoq_worker.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve: {...resolve, fallback: shims.modules},
-  output: output('dist', 'wacoq_worker.js'),
-  plugins: shims.plugins
-},
-/**
- * Package backend for wider-comsumption.
- */
-{
-  name: 'backend',
-  entry: './backend/index.ts',
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve,
-  output: {...output('dist', 'backend.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
-/**
- * Package frontend for wider-comsumption and sanity
- */
-{
-  name: 'frontend',
-  entry: './frontend/classic/js/index.js',
-  dependencies: [ 'lib', 'format-pprint' ],
-  ...basics(argv),
-  module: {
-    rules: [ts]
-  },
-  resolve,
-  output: {...output('dist', 'frontend.js'), libraryTarget: 'module'},
-  experiments: {
-    outputModule: true
-  }
-},
+
 /**
  * Multi-file Project UI
  */
@@ -202,12 +78,13 @@ export default (env, argv) => [
   ...basics(argv),
   output: {
     filename: 'ide-project.browser.js',
-    path: path.join(__dirname, 'dist'),
+    path: path.join(__dirname, 'dist-webpack'),
     library: 'ideProject',
     libraryTarget: 'umd'
   },
   externals: {
-    fs: 'commonjs2 fs', child_process: 'commonjs2 child_process',
+    fs: 'commonjs2 fs',
+    child_process: 'commonjs2 child_process',
     'wacoq-bin/dist/subproc': 'commonjs2'
   },
   module: {
@@ -230,7 +107,7 @@ export default (env, argv) => [
   ...basics(argv),
   output: {
     filename: 'collab.browser.js',
-    path: path.join(__dirname, 'dist/addon'),
+    path: path.join(__dirname, 'dist-webpack/addon'),
     library: 'addonCollab',
     libraryTarget: 'umd'
   },

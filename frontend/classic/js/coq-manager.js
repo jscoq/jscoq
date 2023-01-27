@@ -12,16 +12,16 @@
 "use strict";
 
 /**
-  * @typedef { import("../../../dist/backend").Goals } Goals
+  * @typedef { import("../../../backend").Goals } Goals
   */
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../dist/backend.js';
+import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../backend';
 import { CoqIdentifier } from '../../../backend/coq-identifier.js';
 
 // UI imports
-import { $ } from '../../../dist/lib.js';
-import { FormatPrettyPrint } from '../../../dist/format-pprint.js';
+import $ from 'jquery';
+import { FormatPrettyPrint } from '../../format-pprint/js';
 
 // Common imports
 import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
@@ -276,13 +276,13 @@ export class CoqManager {
 
     async openProject(name) {
         var pane = this.layout.createOutline();
-        await this._load('dist/ide-project.browser.js');
+        await this._load('dist-webpack/ide-project.browser.js');
 
         this.project = ideProject.ProjectPanel.attach(this, pane, name);
     }
 
     async openCollab(documentKey) {
-        await this._load('dist/addon/collab.browser.js');
+        await this._load('dist-webpack/addon/collab.browser.js');
         this.collab = {
             hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
             p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p)

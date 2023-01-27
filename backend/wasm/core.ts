@@ -1,11 +1,8 @@
 import { EventEmitter } from 'events';
 import { unzipSync } from 'fflate';
 import { isBrowser, isWebWorker } from 'browser-or-node';
-
 import { OCamlExecutable, OCamlCAPI } from './ocaml_exec';
 import { WorkerInterrupts } from './interrupt';
-
-
 
 class IcoqPod extends EventEmitter {
 

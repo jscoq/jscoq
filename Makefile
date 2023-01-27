@@ -76,9 +76,13 @@ all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
 	@echo "     jscoq: build jsCoq [JavaScript and libraries]"
-	@echo "     wacoq: build waCoq [JavaScript, frontend only; depends on wacoq-bin]"
+	@echo "     wacoq: build waCoq [JavaScript and libraries]"
+	@echo ""
+	@echo "    bundle: create the core JS bundles using esbuild in dist"
+	@echo " typecheck: typecheck using tsc"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
+	@echo "            [note: jscoq build system auto-promotoes targets so this is obsolete]"
 	@echo ""
 	@echo "      dist: create a distribution suitable for a web server"
 	@echo "  dist-npm: create NPM packages suitable for \`npm install\`"
@@ -115,9 +119,23 @@ links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc \
 	       backend/wasm/dlllib_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
+.PHONY:modules bundle typecheck bundle-webpack
+modules:
+	$(DUNE) build node_modules
+
+bundle:
+	$(DUNE) build dist dist-cli
+
+bundle-webpack:
+	$(DUNE) build dist-webpack --no-buffer
+
+typecheck:
+	$(DUNE) build node_modules
+	$(DUNE) exec --context=$(BUILD_CONTEXT) -- npm run typecheck
+
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
-	@node --max-old-space-size=2048 ./dist/cli.cjs run --require-pkg $* --inspect $@
+	@node --max-old-space-size=2048 ./dist-cli/cli.cjs run --require-pkg $* --inspect $@
 
 libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 

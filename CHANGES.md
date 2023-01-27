@@ -1,7 +1,13 @@
-# jsCoq 0.16.0 "Soupe à l’oignon"
+# jsCoq 0.16.1 "Soupe à l’oignon"
 ---------------------------------
 
- - Split source code in `backend` and `frontend` directories (@ejgallego @corwin-of-amber, # )
+ - Split source code in `backend` and `frontend` directories
+   (@ejgallego @corwin-of-amber, #287 )
+ - wacoq build is not unified in the main repos (@ejgallego
+   @corwin-of-amber, #296 )
+ - jsCoq now uses a streamlined `esbuild` bundling process, this
+   should have quite some advantages w.r.t. loading and distribution
+   (@ejgallego, #316 )
 
 # jsCoq 0.16.0 "Paris-bound"
 ----------------------------

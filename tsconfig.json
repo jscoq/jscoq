@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
@@ -13,6 +13,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "checkJs": true
+    // "noEmit": true
   },
-  "exclude": ["_build", "dist"]
+  "exclude": ["_build", "dist", "backend/wasm/shims"]
 }

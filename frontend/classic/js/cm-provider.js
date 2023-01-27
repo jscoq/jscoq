@@ -5,8 +5,28 @@
 import { copyOptions } from '../../common/etc.js';
 import { JsCoq } from './index.js';
 
+// Misc imports
+import localforage from "localforage";
+import $ from 'jquery';
+
 // CM imports
-import { CodeMirror, localforage, $ } from '../../../dist/lib.js';
+import CodeMirror from "codemirror";
+
+import 'codemirror/addon/hint/show-hint.js';
+import 'codemirror/addon/edit/matchbrackets.js';
+import 'codemirror/keymap/emacs.js';
+import 'codemirror/addon/selection/mark-selection.js';
+import 'codemirror/addon/edit/matchbrackets.js';
+import 'codemirror/addon/dialog/dialog.js';
+
+// CM medias
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/blackboard.css';
+import 'codemirror/theme/darcula.css';
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/addon/dialog/dialog.css';
+
+import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
 import './mode/coq-mode.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
@@ -153,7 +173,7 @@ export class CmCoqProvider {
      */
     createEditor(element, opts, replace) {
         var text = replace && $(element).text(),
-            editor = new CodeMirror(element, opts);
+            editor = CodeMirror(element, opts);
         if (replace) {
             editor.setValue(Deprettify.cleanup(text));
             element.replaceWith(editor.getWrapperElement());
