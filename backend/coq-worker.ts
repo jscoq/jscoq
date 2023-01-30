@@ -1,4 +1,4 @@
-type backend = 'js' | 'wa';
+export type backend = 'js' | 'wa';
 
 import { Future, PromiseFeedbackRoute } from './future';
 
