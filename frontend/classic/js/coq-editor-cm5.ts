@@ -17,23 +17,30 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string|HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
+    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, diagsSource, manager : CoqManager) {
 
         super(eIds, options, manager);
 
         this.onChangeAny = () => {
             let txt = this.getValue();
-            this.onChange(txt);
+            onChange(txt);
         };
+
+        diagsSource.addEventListener('clear', (e) => {
+            this.clearMarks();
+        });
+
+        diagsSource.addEventListener('diags', (e) => {
+            let { diags } = e.detail;
+            for (let d of diags)
+                this.markDiagnostic(d);
+        });
 
         // if (this.options.mode && this.options.mode['company-coq']) {
         //     this.company_coq = new CompanyCoq(this.manager);
         //     this.company_coq.attach(this.editor);
         // }
     }
-
-    // To be overriden by the manager
-    onChange(txt: string) { }
 
     // To be overriden by the manager
     getValue() {

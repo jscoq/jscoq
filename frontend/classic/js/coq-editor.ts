@@ -11,16 +11,27 @@ import { CoqManager, ManagerOptions } from "./coq-manager";
  * Interface for Coq Editor's
  */
 export interface ICoqEditor {
-    // constructor (eIds: string, options: ManagerOptions, manager: CoqManager)
     getValue() : string
-    onChange(newContent : string) : void
-    clearMarks() : void
     markDiagnostic(diag : Diagnostic) : void
     getCursorOffset() : number
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
 }
+
+// Would be great to use, but not enough typing so far...
+export type DiagnosticEvent = {
+    diags : Diagnostic[];
+    version : number;
+}
+
+export interface ICoqEditorConstructor {
+    new(elems : (string | HTMLElement)[],
+        options: ManagerOptions,
+        onChange: (newContent : string) => void,
+        diagsSource: EventTarget,
+        manager: CoqManager) : ICoqEditor;
+    }
 
 // Takes a textArea and will create an empty div to attach an editor
 // to.
@@ -49,7 +60,3 @@ export function editorAppend(eId) : { container, area: HTMLTextAreaElement} {
     }
     return { container, area };
 }
-
-// Local Variables:
-// js-indent-level: 4
-// End:

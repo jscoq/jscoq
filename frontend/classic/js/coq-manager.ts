@@ -22,7 +22,7 @@ import { PackageManager } from './coq-packages';
 import { CoqLayoutClassic } from './coq-layout-classic';
 
 // Editors
-import { ICoqEditor } from './coq-editor';
+import { ICoqEditor, ICoqEditorConstructor } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
@@ -144,17 +144,20 @@ export class CoqManager {
 
         // Setup the Coq editor.
         const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
-        var CoqEditor = eIdx[this.options.frontend];
+        var CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
 
         if (!CoqEditor)
             throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
 
-        this.editor = new CoqEditor(elems, this.options, this);
-        this.editor.onChange = throttle(200, raw => {
+        let onChange = throttle(200, (raw) => {
             this.version++;
             let cooked = this.preprocess(raw);
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
         });
+
+        this.diagsSource = new EventTarget();
+
+        this.editor = new CoqEditor(elems, this.options, onChange, this.diagsSource, this);
 
         /* @ts-ignore */
         this.packages = null;
@@ -388,7 +391,7 @@ export class CoqManager {
     // Coq document diagnostics.
     async coqNotification(diags : Diagnostic[], version : number) {
 
-        this.editor.clearMarks();
+        this.diagsSource.dispatchEvent(new CustomEvent('clear', { }));
 
         console.log("Diags received: " + diags.length.toString());
 
@@ -396,13 +399,14 @@ export class CoqManager {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
+        this.diagsSource.dispatchEvent(new CustomEvent('diags', { detail : { diags, version } }));
 
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
             for (let extra of d.extra ?? []) {
                 if (extra[0] === 'FailedRequire' &&
                         (pending = this.handleRequires(extra))) {
-                    this.editor.markDiagnostic(d);
+                    // this.editor.markDiagnostic({...d, inProgress: true});
                     needRecheck = true;
                     await pending;
                     /** @todo clear the mark? */
@@ -511,7 +515,7 @@ export class CoqManager {
 
     /**
      * Strip off plain text, leaving the Coq text.
-     * @param {string} text 
+     * @param {string} text
      */
     markdownPreprocess(text) {
         let wsfill = s => s.replace(/[^\n]/g, ' ');

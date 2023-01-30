@@ -40,13 +40,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
     view : EditorView;
 
     // element e
-    constructor(eIds : string[]) {
+    constructor(eIds : string[], options, onChange, diagsSource, manager) {
 
-        let { container, area } = editorAppend(eIds[0]);
-
-        var obj_ref = this;
-
-        // this._set_keymap();
+        let { container, area }  = editorAppend(eIds[0]);
 
         var extensions =
             [ diagField,
@@ -56,7 +52,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
                       // Document changed
                       var newText = v.state.doc.toString();
                       area.value = newText;
-                      obj_ref.onChange(newText);
+                      onChange(newText);
                   }})
             ];
 
@@ -67,12 +63,15 @@ export class CoqCodeMirror6 implements ICoqEditor {
               parent: container,
               extensions
             });
+        diagsSource.addEventListener('clear', (e) => {
+            this.clearMarks();
+        });
 
-    }
-
-    // To be overriden by the manager
-    onChange(cm) {
-        return;
+        diagsSource.addEventListener('diags', (e) => {
+            let { diags } = e.detail;
+            for (let d of diags)
+                this.markDiagnostic(d);
+        });
     }
 
     getValue() {
