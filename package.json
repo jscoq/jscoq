@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
-    "@types/codemirror": "^5.60.5",
+    "@types/codemirror": "^5.60.7",
     "@types/find": "^0.2.1",
     "@types/glob": "^8.0.1",
     "@types/jquery": "^3.5.14",

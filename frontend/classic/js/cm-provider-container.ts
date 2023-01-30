@@ -1,15 +1,16 @@
 import { Future } from "../../../backend/future";
 import { CmCoqProvider } from './cm-provider';
+import { CoqManager, ManagerOptions } from "./coq-manager";
 import { Deprettify } from "./deprettify";
 
 /**
  * A Provider Container aggregates several containers, the main deal
  * here is keeping track of focus, as the focused container can be
- * different from the "active" one
+ * different from the "active" one.
  */
 
 export class ProviderContainer {
-    options : any;
+    options : ManagerOptions;
     snippets : CmCoqProvider[];
     onChangeAny : (cm, change ) => void;
     onInvalidate : (evt : any ) => void;
@@ -64,7 +65,7 @@ export class ProviderContainer {
             }
         }
 
-        CmCoqProvider._set_keymap();
+        // CmCoqProvider._set_keymap();
 
         // Create sub-providers.
         //   Do this asynchronously to avoid locking the page when there is
@@ -120,7 +121,7 @@ export class ProviderContainer {
         var elements : HTMLElement[] = [];
         for (let e of elementRefs) {
             var els = (typeof e === 'string') ?
-                [document.getElementById(e), ...document.querySelectorAll(e)] : e;
+                [document.getElementById(e), ...document.querySelectorAll(e)] : [e];
             els = els.filter(x => x);
             if (els.length === 0) {
                 console.warn(`[jsCoq] element(s) not found: '${e}'`);

@@ -1,8 +1,8 @@
 /* jsCoq
  *
  * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
- * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
- * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
+ * Copyright (C) 2018-2023 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
+ * Copyright (C) 2019-2023 Emilio J. Gallego Arias, Inria, Paris
  */
 import { Diagnostic } from "../../../backend";
 import { CoqManager, ManagerOptions } from "./coq-manager";
@@ -21,8 +21,7 @@ export interface ICoqEditor {
 
 // Would be great to use, but not enough typing so far...
 export type DiagnosticEvent = {
-    diags : Diagnostic[];
-    version : number;
+    diags : Diagnostic[]
 }
 
 export interface ICoqEditorConstructor {
@@ -32,18 +31,16 @@ export interface ICoqEditorConstructor {
         diagsSource: EventTarget,
         manager: CoqManager) : ICoqEditor;
     }
-
-// Takes a textArea and will create an empty div to attach an editor
-// to.
-export function editorAppend(eId) : { container, area: HTMLTextAreaElement} {
-
-    // var area = document.getElementById(eId) as HTMLTextAreaElement;
+/**
+ * Takes a textArea and will create an empty div to attach an editor to.
+ */
+export function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTextAreaElement } {
 
     var area : HTMLTextAreaElement =
         (eId instanceof HTMLTextAreaElement ? eId
              : document.getElementById(eId) as HTMLTextAreaElement);
 
-    if (area.tagName !== 'TEXTAREA')
+    if (! (area instanceof HTMLTextAreaElement))
         throw new Error(`not implemented: '${eId}' must be a textarea`);
 
     area.style.display = 'none';

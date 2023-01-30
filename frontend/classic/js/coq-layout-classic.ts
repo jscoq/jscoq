@@ -148,7 +148,7 @@ export class CoqLayoutClassic {
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
         this.menubtn  = this.panel.querySelector('.app-menu-button');
-        this.settings = new SettingsPanel();
+        this.settings = new SettingsPanel(null);
 
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });

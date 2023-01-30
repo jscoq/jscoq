@@ -39,6 +39,10 @@ export class SettingsPanel {
         </div>
         `;
     }
+    el : JQuery<HTMLElement>;
+    model : CoqSettings;
+    active : ReactiveVar<boolean>;
+    onAction : (ev : { action: string }) => void;
 
     constructor(model) {
         this.el = $(this.html());
@@ -47,8 +51,9 @@ export class SettingsPanel {
         /** @type {(ev: {action: string}) => void} */
         this.onAction = () => {};
 
-        this.el.find('#settings--theme').on('change', ev => {
-            this.model.theme.value = ev.target.checked ? 'light' : 'dark';
+        this.el.find('#settings--theme').on('change',
+            (ev) => {
+                this.model.theme.value = ev.target.checked ? 'light' : 'dark';
         });
         this.el.find('#settings--company').on('change', ev => {
             this.model.company.value = ev.target.checked;
@@ -75,7 +80,7 @@ export class SettingsPanel {
             this.el.find('#settings--theme').attr('checked', v == 'light');
         }
         if ((v = options.company) !== undefined) {
-            this.model.theme.company = v;
+            this.model.company.value = v;
             this.el.find('#settings--company').attr('checked', v);
         }
     }
@@ -106,13 +111,19 @@ export class SettingsPanel {
 
 
 class CoqSettings {
+    theme : ReactiveVar<string>;
+    company : ReactiveVar<true>;
+
     constructor() {
         this.theme = new ReactiveVar('light');
         this.company = new ReactiveVar(true);
     }
 }
 
-class ReactiveVar {
+class ReactiveVar<V> {
+    _value : V;
+    observers : ((v : V) => void)[];
+
     constructor(value) {
         this._value = value;
         this.observers = [];

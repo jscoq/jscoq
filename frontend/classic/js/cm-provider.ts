@@ -125,6 +125,7 @@ export class CmCoqProvider {
     hover : any[];
     company_coq ?: CompanyCoq;
     lineCount : number;
+    options : any;
     manager : CoqManager;
 
     /**
@@ -155,6 +156,7 @@ export class CmCoqProvider {
 
         if (options)
             copyOptions(options, cmOpts);
+        this.options = options;
 
         var makeHidden = $(element).is(':hidden') ||
             /* corner case: a div with a single hidden child is considered hidden */
@@ -219,13 +221,11 @@ export class CmCoqProvider {
         this.editor.on('hintOut',       (cm)             => this.onTipOut(cm));
         this.editor.on('endCompletion', (cm)             => this.onTipOut(cm));
 
-        if (options?.mode?.['company-coq']) {
+        if (this.options?.mode?.['company-coq']) {
             this.company_coq = new CompanyCoq(this.manager);
             this.company_coq.attach(this.editor);
         }
     }
-
-
 
     static file_store = null;
 
@@ -263,7 +263,7 @@ export class CmCoqProvider {
     getValue() {
          return this.editor.getValue();
      }
-     
+
     getCursorOffset() {
         return this.editor.getDoc().indexFromPos(this.editor.getCursor());
     }
@@ -383,8 +383,7 @@ export class CmCoqProvider {
 
         var tr_loc = ({character, line}) => { return {line: line, ch: character } };
 
-        // Before the first condition was diag.in_progress , but we don't support that
-        var className = diag.severity === 2 ? 'coq-eval-pending' :
+        var className = diag.extra ? 'coq-eval-pending' :
                         (diag.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
 
         var doc = this.editor.getDoc();

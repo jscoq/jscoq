@@ -16,6 +16,23 @@ export class CoqContextualInfo {
      * @param {FormatPrettyPrint} pprint formatter for Pp data
      * @param {CompanyCoq} company_coq (optional) further beautification
      */
+    container : JQuery<HTMLElement>;
+    coq : CoqWorker;
+    pprint : FormatPrettyPrint;
+    company_coq : CompanyCoq;
+    el : JQuery<HTMLElement>;
+    content : JQuery<HTMLElement>;
+    shadow : JQuery<HTMLElement>;
+    is_visible : boolean;
+    is_sticky : boolean;
+    focus : any;
+    minimal_exposure : Promise<any>;
+    MINIMAL_EXPOSURE_DURATION = 100;
+    _key_bound : boolean;
+    request_hide : boolean;
+    _keyHandler : JQuery.TypeEventHandler<null, null, null, null, null>;
+    contextual_sel : string;
+
     constructor(container, coq, pprint, company_coq) {
         this.container = container;
         this.coq = coq;
@@ -41,7 +58,7 @@ export class CoqContextualInfo {
         this.contextual_sel = sel;
 
         container.on('mouseenter', sel,  evt => this.onMouseEnter(evt));
-        container.on('mousedown',  sel,  evt => this.onMouseDown(evt, true));
+        container.on('mousedown',  sel,  evt => this.onMouseDown(evt));
         container.on('mouseleave', sel,  evt => this.onMouseLeave(evt));
         container.on('mouseleave',       evt => this.onMouseLeave(evt));
         container.on('mousedown',        evt => this.hideReq());

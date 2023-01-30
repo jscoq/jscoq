@@ -42,7 +42,6 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         // }
     }
 
-    // To be overriden by the manager
     getValue() {
         return this.snippets.map(part => part.editor.getValue()).join('\n');
     }

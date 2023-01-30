@@ -86,9 +86,6 @@ export class CoqManager {
 
     /**
      * Creates an instance of CoqManager.
-     * @param {string[]} elems
-     * @param {object} options
-     * @memberof CoqManager
      */
     constructor(elems, options) {
 
@@ -144,12 +141,12 @@ export class CoqManager {
 
         // Setup the Coq editor.
         const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
-        var CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
+        const CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
 
         if (!CoqEditor)
             throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
 
-        let onChange = throttle(200, (raw) => {
+        let onChange = throttle(200, raw => {
             this.version++;
             let cooked = this.preprocess(raw);
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
@@ -250,8 +247,8 @@ export class CoqManager {
                 else if (src[0].file && src[0].file.name.match(/[.]zip$/))
                     (await project()).openZip(src[0].file, src[0].file.name);
                 else
-                    // TODO better check file type and size before
-                    //  opening
+                    // TODO better check file type and size before opening
+                    // @ts-ignore
                     this.editor.openFile(file);
             }
         });
@@ -271,30 +268,21 @@ export class CoqManager {
         });
     }
 
-    async openProject(name) {
+    async openProject(name?) {
         // var pane = this.layout.createOutline();
-        // await this._load('dist-webpack/ide-project.browser.js');
-        // this.project = ideProject.ProjectPanel.attach(this, pane, name);
+        // const { ProjectPanel } = await import ('./ide-project');
+        // this.project = ProjectPanel.attach(this, pane, name);
     }
 
     async openCollab(documentKey?) {
-        // await this._load('dist-webpack/addon/collab.browser.js');
+        // const { Hastebin, CollabP2P } = await import('./addon/collab');
         // this.collab = {
-        //     hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
-        //     p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p),
-        //     gist: addonCollab.Gist.attach(this, documentKey?.gist)
-        // };
-    }
-
-    async _load(...hrefs) {
-        for (let href of hrefs) {
-            var uri = this.options.base_path + href,
-                el = href.endsWith('.css') ?
-                    $('<link>').attr({rel: 'stylesheet', type: 'text/css', href: uri})
-                  : $('<script>').attr({type: 'text/javascript', src: uri});
-            document.head.appendChild(el[0]); // jQuery messes with load event
-            await new Promise(resolve => el.on('load', resolve));
-        }
+        //     hastebin: Hastebin.attach(this, documentKey?.hastebin),
+        //     p2p: CollabP2P.attach(this, documentKey?.p2p),
+        //     /* @ts-ignore */
+        //
+        //     gist: Gist.attach(this, documentKey?.gist)
+        // }
     }
 
     getLoadPath() {
