@@ -10,6 +10,9 @@
    (@ejgallego)
  - Bump minimal OCaml version to 4.14.2 (@ejgallego)
  - Have Docker CI use the PR branch on PR CI (@ejgallego, #321)
+ - Adapt `dist` targets and Docker build to new setup, note this
+   removes the wasm build from Docker as we are now unified.
+   (@ejgallego, #334)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
