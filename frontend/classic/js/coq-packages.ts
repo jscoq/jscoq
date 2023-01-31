@@ -1,13 +1,14 @@
-//@ts-check
-"use strict";
-
 // Backend imports
 import { ArrayFuncs } from '../../common/etc.js';
-import { CoqWorker } from '../../../backend';
+import { CoqWorker, backend } from '../../../backend';
 
 // Frontend imports (not so clear for the package manager
 import JSZip from 'jszip';
 import $ from 'jquery';
+
+interface BundleInfo {
+    row : string;
+}
 
 export class PackageManager {
 
@@ -22,11 +23,21 @@ export class PackageManager {
      * @param {CoqWorker} coq reference to the `CoqWorker` instance to send
      *   load requests to
      */
-    constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.backend) {
+    backend : backend;
+    panel : any;
+    bundles : Map<string, BundleInfo>;
+    loaded_pkgs: string[];
+    coq : CoqWorker;
+    packages : CoqPkgInfo[];
+    packages_by_name: any;
+    packages_by_uri: any;
+    index ?: PackageIndex;
+
+    constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.config.backend) {
 
         this.backend = backend;
         this.panel         = panel_dom;
-        this.bundles       = {};
+        this.bundles       = new Map();
         this.loaded_pkgs   = [];
         this.coq           = coq;
 
@@ -44,7 +55,7 @@ export class PackageManager {
      * @param {object} packages (see constructor)
      * @param {object} aliases (ditto)
      */
-    initializePackageList(packages, aliases={}) {
+    initializePackageList(packages : string[], aliases={}) {
         this.packages = [];
         this.packages_by_name = {};
         this.packages_by_uri = {};
@@ -140,7 +151,7 @@ export class PackageManager {
         return this.bundles[bname] = { row };
     }
 
-    addBundleInfo(bname, pkg_info, parent) {
+    addBundleInfo(bname : string, pkg_info : CoqPkgInfo, parent? : { row : JQuery<HTMLElement>}) {
 
         var bundle = this.addRow(bname, pkg_info.name, parent);
 
@@ -177,8 +188,8 @@ export class PackageManager {
         this.dispatchEvent(new Event('change'));
     }
 
-    async addBundleZip(bname, resource, pkg_info) {
-        pkg_info = pkg_info || {};
+    async addBundleZip(bname: string, resource: any, pkg_info?: CoqPkgInfo) {
+        var pkg_info = pkg_info || {};
 
         var archive = await new CoqPkgArchive(resource).load();
 
@@ -209,7 +220,7 @@ export class PackageManager {
             var observe = () => {
                 if (all_set()) {
                     this.removeEventListener('change', observe);
-                    resolve();
+                    resolve({});
                     return true;
                 }
             };
@@ -225,7 +236,7 @@ export class PackageManager {
 
     getLoadPath() {
         let prefix = m => m.replace(/[.][^.]+$/, ''),
-            pkgs = ms => [...new Set(ms.map(prefix))].map(pkg => pkg.split('.'));
+            pkgs = (ms : string[]) => [...new Set(ms.map(prefix))].map(pkg => pkg.split('.'));
 
         return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
             let pkg = this.getPackage(pkg_name),
@@ -469,6 +480,9 @@ export class PackageManager {
  * Holds list of modules in packages and resolves dependencies.
  */
 class PackageIndex {
+    backend : backend;
+    moduleIndex : Map<any,any>;
+    intrinsicPrefix : string;
 
     constructor(backend) {
         this.backend = backend;
@@ -531,6 +545,14 @@ function closure(s, tr) {
 
 
 class CoqPkgInfo {
+    name: string;
+    base_uri: string;
+    info?: any;
+    archive?: any;
+    chunks?: any;
+    parent?: any;
+    promise?: any;
+
     constructor(name, base_uri) {
         this.name = name;
         this.base_uri = base_uri;
@@ -568,6 +590,10 @@ class CoqPkgInfo {
  * file that has to be downloaded or a local one.
  */
 class CoqPkgArchive {
+    url ?: URL | string;
+    blob : Blob;
+    zip : JSZip;
+    onProgress : ((evt : any) => void);
 
     constructor(resource) {
         if (resource instanceof URL || typeof resource === 'string')
@@ -590,7 +616,7 @@ class CoqPkgArchive {
                     { this.zip = zip; return this; });
     }
 
-    download() {
+    download() : Promise<any> {
         if (this.blob) {
             return this.blob.arrayBuffer();
         }
@@ -659,7 +685,6 @@ class CoqPkgArchive {
         });
         await Promise.all(asyncs);
     }
-
 }
 
 // Local Variables:
