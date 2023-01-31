@@ -29,8 +29,8 @@ import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js'
 // UI imports
 import { PackageManager } from './coq-packages.js';
 import { CoqLayoutClassic } from './coq-layout-classic.js';
-import { CmCoqProvider } from './cm-provider.js';
-import { ProviderContainer } from './cm-provider-container.js';
+import { CmCoqProvider } from './cm-provider';
+import { ProviderContainer } from './cm-provider-container';
 import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
@@ -54,7 +54,7 @@ export class CoqManager {
 
         options = options ? options : {};
 
-        var pkg_path = PackageManager.defaultPkgPath(options.base_path || './', options.backend || 'js');
+        var pkg_path = PackageManager.defaultPkgPath(options.base_path || './');
 
         // Default options
         this.options = {
@@ -315,8 +315,8 @@ export class CoqManager {
         try {
             // Setup the Coq worker.
             this.coq = this.options.subproc
-                ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend, this.options.is_npm)
-                : new CoqWorker(this.options.base_path, null, null, this.options.backend, this.options.is_npm);
+                ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend)
+                : new CoqWorker(this.options.base_path, null, null, this.options.backend);
             this.coq.observers.push(this);
 
             if (this.options.debug) {

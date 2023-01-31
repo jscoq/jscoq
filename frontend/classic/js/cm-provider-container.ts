@@ -1,6 +1,4 @@
-// @ts-check
-"use strict";
-
+import { Future } from "../../../backend/future.js";
 import { CmCoqProvider, Deprettify } from './cm-provider.js';
 
 /**
@@ -11,6 +9,18 @@ import { CmCoqProvider, Deprettify } from './cm-provider.js';
  * @class ProviderContainer
  */
 export class ProviderContainer {
+    options : any;
+    snippets : CmCoqProvider[];
+    onChange : (cm, change ) => void;
+    onInvalidate : (evt : any ) => void;
+    onMouseEnter : (stm, evt : any ) => void;
+    onMouseLeave : (stm, evt : any ) => void;
+    onTipHover : (entrires, zoom : any ) => void;
+    onTipOut : (evt : any ) => void;
+    onResize : (evt : any ) => void;
+    onAction : (evt : any ) => void;
+    wait_for : Future<void>;
+    currentFocus : CmCoqProvider;
 
     /**
      * Creates an instance of ProviderContainer.
@@ -39,6 +49,10 @@ export class ProviderContainer {
         this.wait_for = null;
         
         class WhileScrolling {
+            handler : () => void;
+            active : boolean;
+            to : any;
+
             constructor() {
                 this.handler = () => {
                     this.active = true;
@@ -79,7 +93,7 @@ export class ProviderContainer {
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
 
                 cm.onTipHover = (entries, zoom) => { this.onTipHover(entries, zoom); };
-                cm.onTipOut   = ()              => { this.onTipOut(); }
+                cm.onTipOut   = (cm)            => { this.onTipOut(cm); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
 
