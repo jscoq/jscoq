@@ -1,6 +1,3 @@
-//@ts-check
-"use strict";
-
 // The CoqLayoutClassic class.
 // Copyright (C) 2015-2017 Mines ParisTech/ARMINES
 //
@@ -35,6 +32,21 @@ import '../css/settings.css';
  * @class CoqLayoutClassic
  */
 export class CoqLayoutClassic {
+    options : any;
+    ide : HTMLElement;
+    panel : HTMLDivElement;
+    proof : HTMLDivElement;
+    query : HTMLDivElement;
+    packages : HTMLDivElement;
+    buttons : HTMLSpanElement;
+    menubtn : SVGElement
+    settings : SettingsPanel;
+    onToggle : (evt : any) => void;
+    onAction : (evt : any) => void;
+    log_levels : string[];
+    log_level : number;
+    outline : HTMLDivElement;
+    scrollTimeout? : any; // timeout
 
     html(params) {
         var {base_path, backend, kb} = params;
@@ -120,11 +132,9 @@ export class CoqLayoutClassic {
         this.options = options;
 
         // Our reference to the IDE, goal display & query buffer.
-        /** @type {HTMLElement} */
         this.ide = document.getElementById(options.wrapper_id);
         this.ide.classList.add('jscoq-ide', `layout-${options.layout || 'flex'}`);
 
-        /** @type {HTMLElement} */
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
         this.panel.innerHTML = this.html({base_path: options.base_path,
@@ -133,15 +143,10 @@ export class CoqLayoutClassic {
         this.ide.appendChild(this.panel);
 
         // UI setup.
-        /** @type {HTMLElement} */
         this.proof    = this.panel.querySelector('#goal-text');
-        /** @type {HTMLElement} */
         this.query    = this.panel.querySelector('#query-panel');
-        /** @type {HTMLElement} */
         this.packages = this.panel.querySelector('#packages-panel');
-        /** @type {HTMLElement} */
         this.buttons  = this.panel.querySelector('#buttons');
-        /** @type {HTMLElement} */
         this.menubtn  = this.panel.querySelector('.app-menu-button');
         this.settings = new SettingsPanel();
 
@@ -167,8 +172,8 @@ export class CoqLayoutClassic {
 
         // Configure log
         this.log_levels = ['Error', 'Warning', 'Notice', 'Info', 'Debug']
-        $(this.panel).find('select[name=msg_filter]')
-            .on('change', ev => this.filterLog(parseInt(ev.target.value)));
+        let optionList : JQuery<HTMLSelectElement> = $(this.panel).find('select[name=msg_filter]') as JQuery<HTMLSelectElement>;
+        optionList.on('change', ev => this.filterLog(parseInt(ev.target.value)));
         this.filterLog(3); // Info
 
         this.configure(options);
@@ -187,8 +192,8 @@ export class CoqLayoutClassic {
                 .filter(c => c.startsWith('jscoq-theme-')));
             this.panel.classList.add(`jscoq-theme-${options.theme}`);
             // - configure help which is in an iframe
-            /** @type {HTMLIFrameElement} */ (this.panel.querySelector('#help-panel iframe'))
-                .contentDocument.body.setAttribute('theme', options.theme);
+            let ipanel : HTMLIFrameElement = this.panel.querySelector('#help-panel iframe');
+            ipanel.contentDocument.body.setAttribute('theme', options.theme);
         }
         this.settings.configure({
             theme: options.theme,
@@ -233,8 +238,8 @@ export class CoqLayoutClassic {
     }
 
     splash(version_info, msg, mode='wait') {
-        var above = $(this.proof).find('.splash-above'), 
-            image = $(this.proof).find('.splash-image'), 
+        var above = $(this.proof).find('.splash-above'),
+            image = $(this.proof).find('.splash-image'),
             below = $(this.proof).find('.splash-below');
 
         var overlay = `${this.options.base_path}/frontend/classic/images/${mode}.gif`;
@@ -251,8 +256,8 @@ export class CoqLayoutClassic {
 
         if (version_info) above.text(version_info);
         if (msg)          below.text(msg);
-        
-        image[0].classList = [];
+
+        image[0].className = "";
         image.addClass(['splash-image', mode]);
         var img = image.find('img');
         if (img.attr('src') !== overlay) img.attr('src', overlay);
@@ -283,7 +288,7 @@ export class CoqLayoutClassic {
     }
 
     createOutline() {
-        var outline_pane = $('<div>').attr('id', 'outline-pane');
+        var outline_pane : JQuery<HTMLDivElement> = $('<div>').attr('id', 'outline-pane') as JQuery<HTMLDivElement>;
         $(this.ide).prepend(outline_pane);
         requestAnimationFrame(() => $(this.ide).addClass('outline-active'));
         return this.outline = outline_pane[0];
@@ -299,9 +304,13 @@ export class CoqLayoutClassic {
     }
 
     _setButtons(enabled) {
-        $(this.buttons).find('button').attr('disabled', !enabled);
-        enabled ? this.buttons.classList.remove('disabled') 
-                : this.buttons.classList.add('disabled');
+        if(enabled) {
+            $(this.buttons).find('button').removeAttr('disabled');
+            this.buttons.classList.remove('disabled')
+        } else {
+            $(this.buttons).find('button').attr('disabled');
+            this.buttons.classList.add('disabled');
+        }
     }
 
     toolbarOn() {
@@ -324,8 +333,7 @@ export class CoqLayoutClassic {
     }
 
     // Add a log event received from Coq.
-    log(text, level, attrs={}) {
-        attrs = attrs || {};  // attrs can be `null` as well
+    log(text, level, attrs : any = {}) {
 
         // Levels are taken from Coq itself:
         //   | Debug | Info | Notice | Warning | Error
