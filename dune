@@ -58,7 +58,9 @@
  (targets (dir dist))
  (mode (promote (until-clean)))
  (deps
-  (source_tree backend)
+  (source_tree backend/*.js)
+  (source_tree backend/*.ts)
+  (source_tree backend/wasm)
   (source_tree frontend)
   tsconfig.json
   esbuild.mjs
