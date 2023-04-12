@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.16
+COQ_VERSION := v8.17
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -237,13 +237,13 @@ dist-npm-wacoq:
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.16.0
-COQ_BRANCH_LATEST = v8.16
+COQ_BRANCH = V8.17.0
+COQ_BRANCH_LATEST = v8.17
 COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
-COQ_PATCHES|64 = coerce-32bit
+#COQ_PATCHES|64 = coerce-32bit
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
@@ -253,7 +253,7 @@ coq_configure=./tools/configure/configure.exe
 
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
-	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no -coqide no
+	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

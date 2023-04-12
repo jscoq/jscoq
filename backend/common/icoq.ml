@@ -102,9 +102,6 @@ let new_doc opts =
   in
   let ndoc = { Stm.doc_type
              ; injections = List.map (fun x -> Coqargs.RequireInjection x) opts.require_libs
-             (* ; ml_load_path = []
-              * ; vo_load_path = opts.vo_path *)
-             ; stm_options = Stm.AsyncOpts.default_opts
              } in
   let ndoc, nsid = Stm.new_doc ndoc in
   ndoc, nsid

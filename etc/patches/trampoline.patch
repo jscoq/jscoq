@@ -1,10 +1,10 @@
 diff --git a/engine/logic_monad.ml b/engine/logic_monad.ml
-index 38ec668..6f33890 100644
+index dabe274..2cb5214 100644
 --- a/engine/logic_monad.ml
 +++ b/engine/logic_monad.ml
-@@ -145,6 +145,17 @@ type ('a, 'b, 'e) list_view =
-   | Nil of 'e
-   | Cons of 'a * ('e -> 'b)
+@@ -147,6 +147,16 @@ type ('a, 'b, 'e) list_view_ =
+ 
+ type ('a, 'b, 'e) list_view = ('a, 'e -> 'b, 'e) list_view_
  
 +
 +type 'a thunk =
@@ -16,11 +16,10 @@ index 38ec668..6f33890 100644
 +    | TailCall f -> trampoline (f ())
 +
 +
-+
  module BackState =
  struct
  
-@@ -181,11 +192,11 @@ struct
+@@ -183,11 +193,11 @@ struct
  
    type ('a, 'i, 'o, 'e) t =
        { iolist : 'r. 'i -> ('e -> 'r NonLogical.t) ->
@@ -35,7 +34,7 @@ index 38ec668..6f33890 100644
  
    let (>>=) m f =
      { iolist = fun s nil cons ->
-@@ -199,16 +210,16 @@ struct
+@@ -201,16 +211,16 @@ struct
      { iolist = fun s nil cons -> m.iolist s nil (fun x s next -> cons (f x) s next) }
  
    let zero e =
@@ -55,29 +54,28 @@ index 38ec668..6f33890 100644
  
    (** State related *)
  
-@@ -247,30 +258,31 @@ struct
+@@ -250,30 +260,30 @@ struct
      { iolist = fun s0 nil cons ->
        let next = function
        | Nil e -> nil e
--      | Cons ((x, s), l) -> cons x s (fun e -> (reflect (l e)).iolist s0 nil cons)
-+      | Cons ((x, s), l) -> trampoline @@ cons x s (fun e -> trampoline @@ (reflect (l e)).iolist s0 nil cons)
+-      | Cons ((x, s), {r=l}) -> cons x s (fun e -> (reflect (l e)).iolist s0 nil cons)
++      | Cons ((x, s), {r=l}) -> trampoline @@ cons x s (fun e -> trampoline @@ (reflect (l e)).iolist s0 nil cons)
        in
 -      NonLogical.(m >>= next)
 +      Fin NonLogical.(m >>= next)
      }
  
-   let split m : ((_, _, _) list_view, _, _, _) t =
+   let split m : (_ list_view, _, _, _) t =
      let rnil e = NonLogical.return (Nil e) in
--    let rcons p s l = NonLogical.return (Cons ((p, s), l)) in
-+    let rcons p s l = Fin (NonLogical.return (Cons ((p, s), l))) in
+-    let rcons p s l = NonLogical.return (Cons ((p, s), {r=l})) in
++    let rcons p s l = Fin (NonLogical.return (Cons ((p, s), {r=l}))) in
      { iolist = fun s nil cons ->
        let open NonLogical in
 -      m.iolist s rnil rcons >>= begin function
 -      | Nil e -> cons (Nil e) s nil
-+      Fin ((trampoline @@
-+      m.iolist s rnil rcons) >>= begin function
++      Fin ((trampoline @@ m.iolist s rnil rcons) >>= begin function
 +      | Nil e -> trampoline @@ cons (Nil e) s nil
-       | Cons ((x, s), l) ->
+       | Cons ((x, s), {r=l}) ->
          let l e = reflect (l e) in
 -        cons (Cons (x, l)) s nil
 -      end }
@@ -88,15 +86,15 @@ index 38ec668..6f33890 100644
      let rnil e = NonLogical.return (Nil e) in
      let rcons x s l =
        let p = (x, s) in
--      NonLogical.return (Cons (p, l))
-+      Fin (NonLogical.return (Cons (p, l)))
+-      NonLogical.return (Cons (p, {r=l}))
++      Fin (NonLogical.return (Cons (p, {r=l})))
      in
 -    m.iolist s rnil rcons
 +    trampoline @@ m.iolist s rnil rcons
  
    let repr x = x
  end
-@@ -350,7 +362,7 @@ struct
+@@ -354,7 +364,7 @@ struct
        writer) and efficiency. *)
  
    let get =
@@ -105,12 +103,12 @@ index 38ec668..6f33890 100644
  
    let set (sstate : P.s) =
      { iolist = fun s nil cons -> cons () { s with sstate } nil }
-@@ -379,8 +391,8 @@ struct
+@@ -383,8 +393,8 @@ struct
      let rnil e = NonLogical.return (Nil e) in
      let rcons x s l =
        let p = (x, s.sstate, s.wstate, s.ustate) in
--      NonLogical.return (Cons (p, l))
-+      Fin (NonLogical.return (Cons (p, l)))
+-      NonLogical.return (Cons (p, {r=l}))
++      Fin (NonLogical.return (Cons (p, {r=l})))
      in
 -    m.iolist s rnil rcons
 +    trampoline @@ m.iolist s rnil rcons
