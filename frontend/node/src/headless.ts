@@ -133,7 +133,10 @@ class HeadlessCoqManager {
         for (let d of dirs) {
             for (let fn of filenames) {
                 let fp = path.join(d, fn);
-                if (fs.existsSync(fp)) return fp;
+                try {
+                    if (fs.statSync(fp).isFile()) return fp;
+                }
+                catch { }
             }
         }
         throw new Error(`package not found: '${pkg}'`);
