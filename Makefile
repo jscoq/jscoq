@@ -243,7 +243,7 @@ COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
-#COQ_PATCHES|64 = coerce-32bit
+COQ_PATCHES|64 = coerce-32bit
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
@@ -254,6 +254,9 @@ coq_configure=./tools/configure/configure.exe
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
 	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
+	# Temporarily re-enable Dune for libs (disabled in 8.17)
+	cd $(COQSRC) && cp theories/dune.disabled theories/dune
+	cd $(COQSRC) && cp user-contrib/Ltac2/dune.disabled user-contrib/Ltac2/dune
 
 coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get

@@ -24,10 +24,10 @@ index 183c997..b2af771 100644
 +    let combinesmall x y = (beta * x + y) land 0x3fffffff
  end
 diff --git a/kernel/dune b/kernel/dune
-index 228ea54..83d907f 100644
+index 915c6d7..cdf1ebc 100644
 --- a/kernel/dune
 +++ b/kernel/dune
-@@ -16,12 +16,12 @@
+@@ -17,12 +17,12 @@
  
  (rule
   (targets uint63.ml)
@@ -43,10 +43,10 @@ index 228ea54..83d907f 100644
  
  (documentation
 diff --git a/kernel/nativecode.ml b/kernel/nativecode.ml
-index f9c07d3..9a259ee 100644
+index b001c56..d0cb809 100644
 --- a/kernel/nativecode.ml
 +++ b/kernel/nativecode.ml
-@@ -18,6 +18,8 @@ open Nativevalues
+@@ -19,6 +19,8 @@ open Genlambda
  open Nativelambda
  open Environ
  
@@ -121,7 +121,7 @@ index 268d4bf..30ba948 100644
  
  exception Found
 diff --git a/plugins/ltac/tacentries.ml b/plugins/ltac/tacentries.ml
-index a823f87..3727997 100644
+index 11449dd..2994bb5 100644
 --- a/plugins/ltac/tacentries.ml
 +++ b/plugins/ltac/tacentries.ml
 @@ -243,7 +243,7 @@ let make_fresh_key =
@@ -134,7 +134,7 @@ index a823f87..3727997 100644
      Lib.make_kn lbl
  
 diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
-index ccd5c9c..ce991de 100644
+index a53589d..8b7f4a4 100644
 --- a/plugins/micromega/coq_micromega.ml
 +++ b/plugins/micromega/coq_micromega.ml
 @@ -27,6 +27,8 @@ open Context
@@ -196,25 +196,26 @@ index 9ccf4cc..422e986 100644
 +(* Qed. *) Admitted.
  End TestRing.
 diff --git a/theories/Numbers/Cyclic/Int63/Uint63.v b/theories/Numbers/Cyclic/Int63/Uint63.v
-index 93d34a7..6f98541 100644
+index 82deb1d..bcb106e 100644
 --- a/theories/Numbers/Cyclic/Int63/Uint63.v
 +++ b/theories/Numbers/Cyclic/Int63/Uint63.v
-@@ -1110,8 +1110,8 @@ Proof.
-  apply to_Z_inj.
-  rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
-  pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
-- intros hx hy; revert F; rewrite hx, hy; intros F. generalize (f_equal to_Z F). vm_compute. lia.
+@@ -1122,8 +1122,9 @@ Proof.
+              rewrite add_spec, sub_spec, Zplus_mod_idemp_l, to_Z_1, Zmod_small; auto with zarith.
+           ++ pose proof (to_Z_inj 0 _ Hm); clear Hm; subst m.
+              intros hx hy; revert F; rewrite hx, hy; intros F.
+-             generalize (f_equal to_Z F). vm_compute. lia.
 -Qed.
-+ intros hx hy; revert F; rewrite hx, hy; intros F. generalize (f_equal to_Z F). (* vm_compute. lia. *)
++             generalize (f_equal to_Z F). admit. (*vm_compute. lia.*)
++(*Qed.*)
 +Admitted.
  
  Lemma addmuldiv_spec x y p :
    φ p <= φ digits  ->
 diff --git a/vernac/metasyntax.ml b/vernac/metasyntax.ml
-index 7f80a52..56ad4c1 100644
+index fb0c3cd..c02422d 100644
 --- a/vernac/metasyntax.ml
 +++ b/vernac/metasyntax.ml
-@@ -26,6 +26,8 @@ open Libnames
+@@ -27,6 +27,8 @@ open Libnames
  open Notation
  open Nameops
  
