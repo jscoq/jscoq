@@ -1,3 +1,8 @@
+# jsCoq 0.17.0
+--------------
+
+ - Update to Coq 8.17.0. (@corwin-of-amber)
+
 # jsCoq 0.16.1 "Soupe à l’oignon"
 ---------------------------------
 

@@ -45,7 +45,7 @@ cd jscoq
 of OCaml and Coq.
 For Dune builds, configure the switch in your `dune-workspace`.
 
- 3. Fetch Coq 8.16 sources from the repository and configure it for build.
+ 3. Fetch Coq 8.17 sources from the repository and configure it for build.
 ```sh
 make coq
 ```
