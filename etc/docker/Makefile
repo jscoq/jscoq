@@ -10,6 +10,8 @@ export JSCOQ_BRANCH = $(BRANCH)
 export WACOQ_BIN_REPO = https://github.com/$(WHO)/wacoq-bin.git
 export WACOQ_BIN_BRANCH = $(BRANCH)
 
+export ADDONS_BRANCH = $(BRANCH)
+
 export NJOBS ?= 4
 
 M := ${shell uname -m}
@@ -24,7 +26,8 @@ endif
 export DOCKER_BUILDKIT = 1
 
 BUILD_ARGS = BRANCH SUB_BRANCH NJOBS WORDSIZE \
-             JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH
+             JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH \
+			 ADDONS_BRANCH
 
 ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
        $(addprefix --build-arg , $(BUILD_ARGS))
