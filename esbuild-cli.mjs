@@ -30,9 +30,6 @@ var nodecli = esbuild
     bundle: true,
     platform: "node",
     format: "cjs",
-    loader: {
-      '.bc.cjs': 'copy'
-    },
     outfile: "dist-cli/cli.cjs",
     ...sourcemap,
     minify,

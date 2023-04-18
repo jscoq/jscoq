@@ -26,7 +26,7 @@
     (async () => {
       await JsCoq.load();
 
-      coq = new CoqWorker(new URL('../coq-js/jscoq_worker.bc.cjs', window.location));
+      coq = new CoqWorker(new URL('../coq-js/jscoq_worker.bc.js', window.location));
       pm = new PackageManager(document.createElement('div'),  /* need a div, sry */
                               {'../coq-pkgs/': ['coq']}, {}, coq);
 

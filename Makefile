@@ -110,13 +110,13 @@ install:
 
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
-	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.cjs backend/jsoo/jscoq_worker.bc.cjs
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.js backend/jsoo/jscoq_worker.bc.js
 	ln -sf ../../_build/jscoq+64bit/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
 	ln -sf ../../_build/jscoq+64bit/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
 	ln -sf ../../_build/jscoq+64bit/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 links-clean:
-	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.cjs backend/wasm/wacoq_worker.bc \
+	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.js backend/wasm/wacoq_worker.bc \
 	       backend/wasm/dlllib_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 .PHONY:modules bundle typecheck bundle-webpack

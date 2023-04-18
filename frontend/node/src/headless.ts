@@ -42,11 +42,27 @@ class HeadlessCoqWorker extends CoqWorker {
     }
 
     static instance() {
-        var jscoq = require('../../../backend/jsoo/jscoq_worker.bc.cjs').jsCoq;
+        let workerPath = path.join(__dirname, '../backend/jsoo/jscoq_worker.bc.js'),
+            jsCoq = Require.cjs(workerPath).jsCoq;
         /** @oops monkey-patch to make it look like a Worker instance */
-        jscoq.addEventListener = (_: "message", handler: () => void) =>
-            jscoq.onmessage = handler;
-        return jscoq;
+        jsCoq.addEventListener = (_: "message", handler: () => void) =>
+            jsCoq.onmessage = handler;
+        return jsCoq;
+    }
+}
+
+/** Used to force Node into loading a file as CJS regardless of extension */
+namespace Require {
+
+    export function cjs(filename: string) {
+        return fromString(fs.readFileSync(filename, 'utf-8'), filename);
+    }
+
+    function fromString(content: string, filename: string) {
+        // @ts-ignore
+        let m = new (module.constructor)();
+        m._compile(content, filename);
+        return m.exports;
     }
 }
 
@@ -396,7 +412,7 @@ class PackageDirectory extends EventEmitter {
                 this.emit('message', {data: ['LibProgress', {uri, done: true}]});
             }
             catch (e) {
-                console.log(`Failed to load pkg uri: ${uri}`);
+                console.log(`Failed to load pkg uri: ${uri} (${e})`);
                 this.emit('message', {data: ['LibError', uri, '' + e]});
             }
         }

@@ -1,5 +1,4 @@
-// Build with
-//  parcel watch --target node src/cli.ts
+#!/usr/bin/env node
 
 import path from 'path';
 import commander from 'commander';

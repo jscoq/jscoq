@@ -15,11 +15,6 @@
  (libraries num zarith_stubs_js jscoq_core js_of_ocaml-lwt))
 
 (rule
- (target jscoq_worker.bc.cjs)
- (mode promote)
- (action (copy jscoq_worker.bc.js jscoq_worker.bc.cjs)))
-
-(rule
  (targets marshal-arch.js)
  (action
   (copy js_stub/marshal%{ocaml-config:word_size}.js %{targets})))

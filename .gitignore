@@ -25,7 +25,7 @@ node_modules
 
 # Links for in-place serving
 coq-pkgs
-/backend/jsoo/jscoq_worker.bc.cjs
+/backend/jsoo/jscoq_worker.bc.js
 /backend/wasm/wacoq_worker.bc
 *.wasm
 
