@@ -202,6 +202,9 @@ function coq_set_drawinstr()      { vm_ll('coq_set_drawinstr', arguments); }
 // Provides: coq_tcode_array
 // Requires: vm_ll
 function coq_tcode_array()        { vm_ll('coq_tcode_array', arguments); }
+// Provides: coq_obj_set_tag
+// Requires: vm_ll
+function coq_obj_set_tag()        { vm_ll('coq_obj_set_tag', arguments); }
 
 // Provides: coq_fadd_byte
 function coq_fadd_byte(r1, r2) {
