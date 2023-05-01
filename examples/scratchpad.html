@@ -6,6 +6,7 @@
     <link rel="icon" href="../frontend/classic/images/favicon.png">
 
     <title>jsCoq – The Coq Theorem Prover Online IDE</title>
+    <link rel="stylesheet" type="text/css" href="../dist/frontend/index.css">
     <style>
       /* Allow some extra scroll space at the bottom & to the right */
       .CodeMirror-lines {
@@ -21,7 +22,7 @@
   </div>
 
   <script type="module">
-    import { JsCoq } from "../jscoq.js";
+    import { JsCoq } from "../dist/frontend/index.js";
 
     var sp = new URLSearchParams(location.search),
         panel_theme = sp.has('dark') ? 'dark' : sp.get('theme') || 'light',

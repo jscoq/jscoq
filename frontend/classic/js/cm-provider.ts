@@ -2,7 +2,7 @@
 "use strict";
 
 // Misc imports
-import { copyOptions } from '../../common/etc.js';
+import { copyOptions, isMac } from '../../common/etc.js';
 import { JsCoq } from './index.js';
 
 // Misc imports
@@ -18,6 +18,9 @@ import 'codemirror/keymap/emacs.js';
 import 'codemirror/addon/selection/mark-selection.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/dialog/dialog.js';
+import 'codemirror/addon/search/search.js';
+import 'codemirror/addon/search/searchcursor.js';
+import 'codemirror/addon/search/jump-to-line.js';
 
 // CM medias
 import 'codemirror/lib/codemirror.css';
@@ -869,16 +872,23 @@ export class CmCoqProvider {
 
     static _set_keymap() {
 
+        const Mod = isMac ? 'Cmd' : 'Ctrl',
+              MMod = isMac ? 'Cmd-Option' : 'Shift-Ctrl';
+
         CodeMirror.keyMap['jscoq'] = {
             'Tab': 'indentMore',
             'Shift-Tab': 'indentLess',
             'Ctrl-Space': 'autocomplete',
+            [`${Mod}-F`]: 'findPersistent',  /* non-persistent find is just foolish */
             fallthrough: ["default"]
         };
 
         CodeMirror.keyMap['jscoq-snippet'] = {
-            PageUp: false,
+            PageUp: false,        /* to allow keyboard scrolling through the page */
             PageDown: false,
+            [`${Mod}-F`]: false,  /* sorry, have to disable search because it looks dumb in snippets */
+            [`${MMod}-F`]: false,
+            'Alt-G': false,
             //'Cmd-Up': false,   /** @todo this does not work? */
             //'Cmd-Down': false
         };
