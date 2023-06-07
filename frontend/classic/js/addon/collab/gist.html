@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="dist-webpack/addon/gist.browser.js"></script>
+    <script>
+        function uploadGist() {
+            (gist_save_load.save(document.forms["save"]["contents"].value)).then((value) => {
+                document.forms["save"]["contents"].value = value
+            });
+        }
+        function getGist() {
+            (gist_save_load.load(document.forms["load"]["gid"].value)).then((value) => {
+                document.forms["load"]["gid"].value = value
+            });
+        }
+    </script>
+</head>
+<body>
+    <form name="save">
+        <label for="contents">File contents:</label><br>
+        <input type="textbox" id="contents" name="contents"><br>
+        <input type="button" value="Submit" onclick="uploadGist()">
+    </form>
+    <br>
+    <form name="load">
+        <label for="contents">Gist ID:</label><br>
+        <input type="textbox" id="gid" name="gid"><br>
+        <input type="button" value="Submit" onclick="getGist()">
+    </form>
+</body>
+</html>
