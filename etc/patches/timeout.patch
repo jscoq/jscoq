@@ -64,7 +64,7 @@ index 43ee8f7..ac82c4e 100644
 + (foreign_stubs
 +  (language c)
 +  (names jscoq_extern)
-+  (flags (:include %{project_root}/config/dune.c_flags)))
++  (flags :standard (:include %{project_root}/config/dune.c_flags)))
   (libraries coq-core.boot coq-core.clib coq-core.config))
 diff --git a/lib/jscoq_extern.c b/lib/jscoq_extern.c
 new file mode 100644
