@@ -283,9 +283,11 @@ export class CoqManager {
 
     async openCollab(documentKey) {
         await this._load('dist-webpack/addon/collab.browser.js');
+        await this._load('dist-webpack/addon/gist.browser.js'); // todo: integrate with collab.browser.js
         this.collab = {
             hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
-            p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p)
+            p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p),
+            gist: await gist_save_load.Gist.attach(this, documentKey?.gist)
         };
     }
 
@@ -1171,6 +1173,7 @@ export class CoqManager {
         switch (action.type) {
         case 'share-hastebin':   this.actionShareHastebin(); break;
         case 'share-p2p':        this.actionShareP2P();      break;
+        case 'share-gist':       this.actionShareGist();      break;
         }
     }
 
@@ -1182,6 +1185,11 @@ export class CoqManager {
     async actionShareP2P() {
         if (!this.collab) await this.openCollab();
         this.collab.p2p.save();
+    }
+
+    async actionShareGist() {
+        if (!this.collab) await this.openCollab();
+        this.collab.gist.save();
     }
 
     /**

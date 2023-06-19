@@ -6,36 +6,49 @@ function getGithubToken() {
     return tokens[Math.floor(Math.random() * tokens.length)];
 }
 
-export async function save(contents) {
-
-    const octokit = new Octokit({
-        auth: getGithubToken()
-    })
-    const promise = octokit.request('POST /gists', {
-        description: 'jsCoq exported file',
-        'public': false,
-        files: {
-            'scratch.v': {
-                content: contents
+export class Gist {
+    withCoqManager(coq) {
+        this.editor = coq.provider.snippets[0];
+        return this;
+    }
+    async save() {
+        const octokit = new Octokit({
+            auth: getGithubToken()
+        });
+        const promise = octokit.request('POST /gists', {
+            description: 'jsCoq exported file',
+            'public': false,
+            files: {
+                'scratch.v': {
+                    content: this.editor.editor.getValue()
+                }
+            },
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
             }
-        },
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-    const result = await promise
-    return result['data']['id']
-}
-export async function load(id) {
-    const octokit = new Octokit({
-        auth: getGithubToken()
-    })
+        });
+        const result = await promise;
+        return result.data.id;
+    }
+    async load(key) {
+        const octokit = new Octokit({
+            auth: getGithubToken()
+        });
 
-    const raw_url = (await octokit.request('GET /gists/' + id, {
-        gist_id: id,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    }))['data']['files']['scratch.v']['raw_url']
-    return (await fetch(raw_url)).text()
+        const raw_url = (await octokit.request('GET /gists/' + key, {
+            gist_id: key,
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
+            }
+        })).data.files['scratch.v'].raw_url;
+        const text = (await fetch(raw_url)).text();
+        this.editor.load(text, 'from gist');
+        return text;
+    }
+
+    static async attach(coq, key) {
+        const collab = new Gist().withCoqManager(coq);
+        if (key) await collab.load(key);
+        return collab;
+    }
 }
