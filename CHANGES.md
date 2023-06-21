@@ -1,3 +1,8 @@
+# jsCoq 0.17.1
+--------------
+
+- Add support for saving and loading scratchpad snippets using Gist (@Eladkay)
+
 # jsCoq 0.17.0
 --------------
 
