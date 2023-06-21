@@ -283,11 +283,10 @@ export class CoqManager {
 
     async openCollab(documentKey) {
         await this._load('dist-webpack/addon/collab.browser.js');
-        await this._load('dist-webpack/addon/gist.browser.js'); // todo: integrate with collab.browser.js
         this.collab = {
             hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
             p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p),
-            gist: await gist_save_load.Gist.attach(this, documentKey?.gist)
+            gist: addonCollab.Gist.attach(this, documentKey?.gist)
         };
     }
 

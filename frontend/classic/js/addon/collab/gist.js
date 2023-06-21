@@ -6,7 +6,7 @@ function getGithubToken() {
     return tokens[Math.floor(Math.random() * tokens.length)];
 }
 
-export class Gist {
+class Gist {
     withCoqManager(coq) {
         this.editor = coq.provider.snippets[0];
         return this;
@@ -28,7 +28,10 @@ export class Gist {
             }
         });
         const result = await promise;
-        return result.data.id;
+        const id = result.data.id;
+        const url = new URL(location);
+        url.searchParams.set("gist", id);
+        history.pushState({}, "", url);
     }
     async load(key) {
         const octokit = new Octokit({
@@ -41,14 +44,15 @@ export class Gist {
                 'X-GitHub-Api-Version': '2022-11-28'
             }
         })).data.files['scratch.v'].raw_url;
-        const text = (await fetch(raw_url)).text();
+        const text = await (await fetch(raw_url)).text();
         this.editor.load(text, 'from gist');
         return text;
     }
 
-    static async attach(coq, key) {
+    static attach(coq, key) {
         const collab = new Gist().withCoqManager(coq);
-        if (key) await collab.load(key);
+        if (key) collab.load(key);
         return collab;
     }
 }
+export { Gist };

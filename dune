@@ -48,6 +48,7 @@
   (source_tree examples)
   (source_tree docs)  ; for `quick-help.html`
   dist
+  dist-webpack
   index.html
   coq-pkgs))
 

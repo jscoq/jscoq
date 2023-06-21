@@ -81,7 +81,7 @@ class Workspace {
             manifest: {name, deps: [], pkgs: [], chunks: []},
             filename,
             save() {
-                fs.writeFileSync(this.filename, neatJSON(this.manifest));
+                fs.writeFileSync(this.filename, neatJSON(this.manifest, null));
             }
         };
     }
