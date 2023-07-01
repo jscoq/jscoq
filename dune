@@ -27,7 +27,7 @@
    package.json
    package-lock.json)
  (action
-  (run npm install --no-save)))
+  (run npm install --no-progress --no-save)))
 
 (alias
  (name jscoq)
@@ -48,6 +48,7 @@
   (source_tree examples)
   (source_tree docs)  ; for `quick-help.html`
   dist
+  jscoq.js
   index.html
   coq-pkgs))
 
