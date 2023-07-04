@@ -74,7 +74,7 @@
     "frontend",
     "backend/*.js",
     "backend/*.ts",
-    "backend/jsoo/*.bc.cjs",
+    "backend/jsoo/*.bc.js",
     "backend/wasm/*.bc",
     "backend/wasm/*.wasm",
     "coq-pkgs",

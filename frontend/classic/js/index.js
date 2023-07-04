@@ -15,7 +15,7 @@ const JsCoq = {
     backend: 'js',  /* 'js' or 'wa' */
 
     // js worker path, to be replaced soon
-    base_path: scriptDir ? `${scriptDir}../../../` : "./",
+    base_path: scriptDir ? `${scriptDir}../../` : "./",
 
     // Main entry point
     async start(...args) {
