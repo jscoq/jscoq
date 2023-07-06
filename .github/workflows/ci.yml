@@ -49,9 +49,10 @@ jobs:
           submodules: 'true'
       - name: Install apt dependencies
         run: |
+          sudo apt-get install aptitude
           sudo dpkg --add-architecture i386
-          sudo apt-get -o Acquire::Retries=30 update -q
-          sudo apt-get -o Acquire::Retries=30 install gcc-multilib g++-multilib libgmp-dev:i386 -y --allow-unauthenticated
+          sudo aptitude -o Acquire::Retries=30 update -q
+          sudo aptitude -o Acquire::Retries=30 install gcc-multilib g++-multilib libgmp-dev:i386 -y
       - uses: actions/setup-node@v3
         with:
           node-version: '16'
