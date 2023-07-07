@@ -790,9 +790,10 @@ export class CmCoqProvider {
                     .append($('<img>').attr('src', JsCoq.base_path + 'frontend/classic/images/share.svg')),
             a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
             a3 = betaOnly(() =>
-                 this._makeDialogLink('P2P', () => this.shareP2P()));
+                 this._makeDialogLink('P2P', () => this.shareP2P())),
+            a4 = this._makeDialogLink('Gist', () => this.shareGist());
 
-        span.append(a1, share.append(a2, a3));
+        span.append(a1, share.append(a2, a3, a4));
 
         this.editor.openDialog(span[0], (sel) => this.saveLocal(sel), 
                                {value: this.filename});
@@ -811,6 +812,10 @@ export class CmCoqProvider {
 
     shareP2P() {
         this.onAction({type: 'share-p2p'});
+    }
+
+    shareGist() {
+        this.onAction({type: 'share-gist'});
     }
 
     /**

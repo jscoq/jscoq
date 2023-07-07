@@ -189,6 +189,7 @@ export class PackageManager {
     }
 
     async addBundleZip(bname: string, resource: any, pkg_info?: CoqPkgInfo) {
+        // @ts-expect-error
         var pkg_info = pkg_info || {};
 
         var archive = await new CoqPkgArchive(resource).load();
