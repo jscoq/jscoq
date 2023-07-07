@@ -27,7 +27,7 @@ BUILD_ARGS = BRANCH SUB_BRANCH NJOBS WORDSIZE \
              JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH
 
 ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
-       $(addprefix --build-arg , $(BUILD_ARGS))
+       $(addprefix --build-arg , $(BUILD_ARGS) BUILDKIT_INLINE_CACHE=1)
 
 -include _config.mk
 
@@ -64,7 +64,7 @@ wa-build-core:
 wa-build-addons: wa-build-core
 	docker build . --target wacoq-addons     $(ARGS)  -t wacoq:addons
 
-dist: js-dist wa-dist
+dist: js-dist
 
 clean-dist:
 	rm -rf ./dist
@@ -72,8 +72,8 @@ clean-dist:
 js-dist: clean-dist
 	docker run --name jscoq-get-dist jscoq:addons \
 		sh -c 'mkdir -p dist && cp _build/jscoq+*/*.tgz dist'
-	docker cp jscoq-get-dist:/root/jscoq/dist .
-	docker cp jscoq-get-dist:/root/jscoq-addons/dist .
+	docker cp --quiet jscoq-get-dist:/root/jscoq/dist .
+	docker cp --quiet jscoq-get-dist:/root/jscoq-addons/dist .
 	docker rm jscoq-get-dist
 
 wa-dist: clean-dist
@@ -86,7 +86,7 @@ wa-dist: clean-dist
 # For getting just the jsCoq package, w/o addons
 js-dist-core: clean-dist
 	docker run --name jscoq-get-dist jscoq
-	docker cp jscoq-get-dist:/root/jscoq/dist .
+	docker cp --quiet jscoq-get-dist:/root/jscoq/dist .
 	docker rm jscoq-get-dist
 
 # For updating the dist with the result of incremental build
@@ -146,4 +146,4 @@ dist-serve:
 	npx http-server -p 8080 dist
 
 ci:
-	make clean && make js-build wa-build && make dist
+	make clean && make js-build && make dist

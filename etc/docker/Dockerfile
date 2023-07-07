@@ -90,7 +90,7 @@ RUN eval $(opam env) && make jscoq
 RUN eval $(opam env) && make wacoq
 
 # - dist tarballs
-RUN eval $(opam env) && make dist \
+RUN eval $(opam env) && make dist && make dist-npm \
         && mkdir -p dist && mv _build/dist/*.tgz dist
 
 # --------------
@@ -117,7 +117,7 @@ RUN git clone --recursive -b ${ADDONS_BRANCH} ${ADDONS_REPO} jscoq-addons
 
 WORKDIR jscoq-addons
 RUN make set-ver VER=`jscoq --version`
-RUN eval $(opam env) && make CONTEXT=${SWITCH}
+RUN eval $(opam env) && git pull && git submodule update && make CONTEXT=${SWITCH}
 
 # Private repos: re-enable SSH
 COPY Dockerfile _ssh* /root/_ssh/
