@@ -12,7 +12,8 @@ Fixpoint nonzeros (l : natlist) :=
   end.
 
 Check nonzeros.
-Compute nonzeros [5;6;0;7;0;9;8].
+(* Compute nonzeros [5;6;0;7;0;9;8]. *)
+Eval cbv in nonzeros [5;6;0;7;0;9;8].
 
 Arguments nonzeros l : simpl nomatch.
 
