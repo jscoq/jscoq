@@ -44,15 +44,16 @@
         set_filename = fn => document.getElementById('ide-wrapper')
                                      .setAttribute('data-filename', fn);
 
-
     if (sp.has('code')) set_filename('');
     else if (last_filename) set_filename(last_filename);
 
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
+      window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));
       if (sp.has('share'))       coq.openCollab({hastebin: sp.get('share')});
       if (sp.has('p2p'))         coq.openCollab({p2p: sp.get('p2p')});
+      if (sp.has('gist'))        coq.openCollab({gist: sp.get('gist')});
       if (sp.has('code'))        coq.provider.load(sp.get('code'), sp.get('fn') || 'playground');
     });
 

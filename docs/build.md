@@ -57,7 +57,7 @@ make jscoq
 
 This will create a working distribution under `_build/jscoq+32bit/` (or `_build/jscoq+64bit`).
 
-Now serve the files from the distribution directory via HTTP (`make server`), and
+Now serve the files from the distribution directory via HTTP (`make serve`), and
 navigate your browser to `http://localhost/index.html`, or run them locally:
 ```sh
  google-chrome --allow-file-access-from-files --js-flags="--harmony-tailcalls" --js-flags="--stack-size=65536" _build/jscoq+32bit

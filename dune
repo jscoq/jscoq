@@ -49,6 +49,7 @@
   (source_tree docs)  ; for `quick-help.html`
   dist
   jscoq.js
+  dist-webpack
   index.html
   coq-pkgs))
 

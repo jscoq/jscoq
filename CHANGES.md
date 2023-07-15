@@ -2,6 +2,7 @@
 --------------
 
  - Update to Coq 8.17.0. (@corwin-of-amber)
+ - Add support for saving and loading scratchpad snippets using Gist (@Eladkay)
 
 # jsCoq 0.16.1 "Soupe à l’oignon"
 ---------------------------------
