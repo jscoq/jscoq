@@ -6,10 +6,19 @@ on a Unix-like system. The required packages can be obtained using
 
 ## Prerequisites
 
- * OPAM 2 (you can get the installer from https://opam.ocaml.org/doc/Install.html)
+We recommend looking at our [Dockerfile](../etc/Docker/Dockerfile)
+which contains detailed package lists for Debian (and please feel free
+to contribute a OSX CI job).
+
+To build jsCoq you will need a modern Unix system (Linux or macOS), and:
+
+ * OPAM 2.1 (you can get the installer from https://opam.ocaml.org/doc/Install.html)
    - `bubblewrap` is a dependency of OPAM, you can either install it (`apt install bubblewrap`),
      or skip it by running `opam init --disable-sandboxing`
- * m4 (`apt install m4`)
+ * Coq dependencies system dependencies, currently `libgmp`
+   + `apt install libgmp-dev`
+   + or `apt install libgmp-dev:i386` if you are using the 32 bit
+   OCaml version (see below)
  * Node.js 16.x or above + NPM
    - Default versions from `apt` are typically too old; follow the
      [Node.js installation instructions](https://nodejs.org/en/download/package-manager/) to get a newer version.

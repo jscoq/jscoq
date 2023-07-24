@@ -41,7 +41,7 @@ shortcuts:
 | Alt-Enter or Alt-→ | Go to cursor     |
 
 You can open a blank editor and experiment with your own Coq developments using the
-[scratchpad](https://jscoq.github.io/node_modules/jscoq/examples/scratchpad.html).
+[scratchpad](https://coq.vercel.app/scratchpad.html).
 The same keyboard shortcuts apply here.
 
 The scratchpad's contents are saved in your browser's local storage (IndexedDB, specifically),
