@@ -1,6 +1,6 @@
-import { Future } from "../../../backend/future.js";
-import { CmCoqProvider } from './cm-provider.js';
-import { Deprettify } from "./deprettify.js";
+import { Future } from "../../../backend/future";
+import { CmCoqProvider } from './cm-provider';
+import { Deprettify } from "./deprettify";
 
 /**
  * A Provider Container aggregates several containers, the main deal

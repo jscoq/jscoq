@@ -133,12 +133,14 @@ export class CoqWorker {
 
     intvec: Int32Array;
 
-    private load_progress: (ratio: number, ev: ProgressEvent) => void;
+    // Should be private
+    load_progress: (ratio: number, ev: ProgressEvent) => void;
 
     // Misc
     private _boot : Future<void>;
-    protected when_created: Promise<void>;
     protected _handler: (msg : any) => void;
+
+    when_created: Promise<void>;
 
     // Needs work to move to a standard typed registration mechanism
     // The protected here is not respected by the {package,coq}-manager(s), thus we have commented it out.

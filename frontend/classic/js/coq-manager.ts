@@ -1,32 +1,20 @@
-//@ts-check
-
-// The CoqManager class.
-// Copyright (C) 2015-2017 Mines ParisTech/ARMINES
+// The jsCoq Manager class.
+// Copyright (C) 2015-2019 Mines ParisTech/ARMINES
+// Copyright (C) 2019-2023 Inria
+// Copyright (C) 2017-2023 Technion Institute of Tecnology
 //
-// CoqManager manages a document composed of several coq snippets,
-// allowing the user to send/retract indivual coq sentences throu
-// them. The Coq snippets can be provided by several sources, we just
-// require them to be able to list parts and implement marks.
-
-"use strict";
-
-/**
-  * @typedef { import("../../../backend").Goals } Goals
-  * @typedef { import("../../../backend").Diagnostic } Diagnostic
-  * @typedef { import("../../../backend").DocumentParams } DocumentParams
-  * @typedef { import("../../../backend").CoqInitOptions } CoqInitOptions
-  */
+// CoqManager coordinates an editor window, a Coq worker for checking,
+// and the goal / information panel.
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter } from '../../../backend';
-import { CoqIdentifier } from '../../../backend/coq-identifier.js';
+import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams, Diagnostic, Goal, Goals } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
 import { FormatPrettyPrint } from '../../format-pprint/js';
 
 // Common imports
-import { copyOptions, isMac, ArrayFuncs, arreq_deep } from '../../common/etc.js';
+import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
 
 // UI Frontend imports
 import { PackageManager } from './coq-packages.js';
@@ -43,10 +31,24 @@ import { CoqCodeMirror5 } from './coq-editor-cm5';
  *
  * CoqManager coordinates the coq code objects, the panel, and the Coq
  * worker.
- *
- * @class CoqManager
  */
 export class CoqManager {
+    options : any;
+    coq : CoqWorker;
+    diagsSource : EventTarget;
+    editor : any;
+    uri : string;
+    version : number;
+    layout : CoqLayoutClassic;
+    packages : PackageManager;
+    navEnabled : boolean;
+    preprocess : (text : string) => string;
+    contextual_info : any;
+    pprint : FormatPrettyPrint;
+    when_ready : Future<void>;
+    project : any;
+    version_info : string;
+    collab : any;
 
     /**
      * Creates an instance of CoqManager.
@@ -124,8 +126,8 @@ export class CoqManager {
         this.pprint = new FormatPrettyPrint();
 
         // Setup company-coq
-        if (this.options.editor.mode && this.options.editor.mode['company-coq'])
-            this.company_coq = new CompanyCoq();
+        // if (this.options.editor.mode && this.options.editor.mode['company-coq'])
+        //    this.company_coq = new CompanyCoq();
 
         // Keybindings setup
         // XXX: This should go in the panel init.
@@ -154,8 +156,8 @@ export class CoqManager {
         });
         this.layout.settings.model.company.observe(enable => {
             this.editor.configure({mode: {'company-coq': enable}});
-            this.company_coq = this.contextual_info.company_coq =
-                enable ? new CompanyCoq() : undefined;
+            // this.company_coq = this.contextual_info.company_coq =
+            //    enable ? new CompanyCoq() : undefined;
         });
     }
 
@@ -177,7 +179,7 @@ export class CoqManager {
             }
             // Turn to source files
             let project = () => this.project ||
-                                this.openProject().then(() => this.project);
+                                this.openProject("").then(() => this.project);
             if (src.length > 0) {
                 if (src.length > 1 || src[0].entry && src[0].entry.isDirectory)
                     (await project()).openDirectory(
@@ -206,19 +208,18 @@ export class CoqManager {
     }
 
     async openProject(name) {
-        var pane = this.layout.createOutline();
-        await this._load('dist-webpack/ide-project.browser.js');
-
-        this.project = ideProject.ProjectPanel.attach(this, pane, name);
+        // var pane = this.layout.createOutline();
+        // await this._load('dist-webpack/ide-project.browser.js');
+        // this.project = ideProject.ProjectPanel.attach(this, pane, name);
     }
 
-    async openCollab(documentKey) {
-        await this._load('dist-webpack/addon/collab.browser.js');
-        this.collab = {
-            hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
-            p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p),
-            gist: addonCollab.Gist.attach(this, documentKey?.gist)
-        };
+    async openCollab(documentKey?) {
+        // await this._load('dist-webpack/addon/collab.browser.js');
+        // this.collab = {
+        //     hastebin: addonCollab.Hastebin.attach(this, documentKey?.hastebin),
+        //     p2p: addonCollab.CollabP2P.attach(this, documentKey?.p2p),
+        //     gist: addonCollab.Gist.attach(this, documentKey?.gist)
+        // };
     }
 
     async _load(...hrefs) {
@@ -284,8 +285,8 @@ export class CoqManager {
                 this.loadSymbolsFrom(`${this.options.pkg_path}/${pkg}.symb.json`);
 
             // Setup contextual info bar
-            this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
-                                                        this.coq, this.pprint, this.company_coq);
+            // this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
+            //                                            this.coq, this.pprint, this.company_coq);
 
             if (this.options.backend !== 'wa') {
                 await this.coq.when_created;
@@ -315,7 +316,7 @@ export class CoqManager {
     coqReady() {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
-        this.when_ready.resolve();
+        this.when_ready.resolve(null);
 
         // Create the first document
         let dp = { uri: this.uri, version: this.version, raw: this.editor.getValue() };
@@ -393,10 +394,7 @@ export class CoqManager {
             `===> Loaded packages [${this.options.init_pkgs.join(', ')}]`);
 
         // Set startup parameters
-        /**
-         * @type { CoqInitOptions } init_opts
-         */
-        let init_opts = {
+        let init_opts : CoqInitOptions = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
                 debug: true,
@@ -416,7 +414,7 @@ export class CoqManager {
      * E.g. {'Default Timeout': 10}  -->  [[['Default', 'Timeout'], ['IntValue', 10]]]
      * @param {object} coq_options option name to value dictionary
      */
-    _parseOptions(coq_options) {
+    _parseOptions(coq_options) : [string[],any[]][] {
         function makeValue(value) {
             if      (Array.isArray(value))       return value;
             else if (typeof value === 'number')  return ['IntValue', value];
@@ -602,9 +600,8 @@ export class CoqManager {
 
     /**
      * Formats the current proof state.
-     * @param {Goals} goals
      */
-    goals2DOM(goals) {
+    goals2DOM(goals : Goals) {
         var ngoals = goals.goals.length,
             on_stack = this.flatLength(goals.stack),
             on_shelf = goals.shelf.length,
@@ -653,19 +650,18 @@ export class CoqManager {
     /**
      * Formats a single, focused goal.
      * Shows an environment containing hypothesis and goal type.
-     * @param {object} goal current goal record ({name, hyp, ty})
      */
-    goal2DOM(goal) {
+    goal2DOM(goal : Goal) {
         let mklabel = (id) =>
                 $('<label>').text(FormatPrettyPrint._idToString(id)),
             mkdef = (pp) =>
                 $('<span>').addClass('def').append(this.pprint.pp2DOM(pp));
 
-        let hyps = goal.hyp.reverse().map(([h_names, h_def, h_type]) =>
-            $('<div>').addClass(['coq-hypothesis', h_def && 'coq-has-def'])
-                .append(h_names.map(mklabel))
-                .append(h_def && mkdef(h_def))
-                .append($('<div>').append(this.pprint.pp2DOM(h_type))));
+        let hyps = goal.hyps.reverse().map(({names, def, ty}) =>
+            $('<div>').addClass(['coq-hypothesis', def && 'coq-has-def'])
+                .append(names.map(mklabel))
+                .append(def && mkdef(def))
+                .append($('<div>').append(this.pprint.pp2DOM(ty))));
         let ty = this.pprint.pp2DOM(goal.ty);
         return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
     }
