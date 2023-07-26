@@ -149,7 +149,7 @@ end
 module Answer = struct
 
   type t =
-  | Goals of (Pp.t reified_goal, Pp.t) goals option
+  | Goals of Pp.t Lsp.JFleche.GoalsAnswer.t
   | Completion of string list
   | Void
   [@@deriving to_yojson]

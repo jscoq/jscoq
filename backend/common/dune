@@ -7,7 +7,8 @@
    yojson ppx_deriving_yojson.runtime
    coq-core.stm coq-core.toplevel
    coq-serapi.serlib
-   coq-lsp.fleche))
+   coq-lsp.fleche
+   coq-lsp.lsp))
 
 (rule
  (target jscoq_version.ml)

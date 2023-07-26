@@ -19,12 +19,35 @@ let pr_extref gr =
   | Globnames.TrueGlobal gr -> Printer.pr_global gr
   | Globnames.Abbrev kn -> Names.KerName.print kn
 
+let mk_message (range, level, text) = Lsp.JFleche.Message.{ range; level; text }
+
+let mk_messages node =
+  Option.map Fleche.Doc.Node.messages node
+  |> Option.cata (List.map mk_message) []
+
+let mk_error node =
+  let open Fleche in
+  let open Lang in
+  match
+    List.filter (fun d -> d.Diagnostic.severity < 2) node.Doc.Node.diags
+  with
+  | [] -> None
+  | e :: _ -> Some e.Diagnostic.message
+
 let do_request ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
   | Method.Goals ->
-    let approx = LI.Prev in
-    let goals = LI.O.goals ~doc ~point approx in
+    let uri, version = doc.Fleche.Doc.uri, doc.version in
+    let textDocument = Lsp.Doc.VersionedTextDocumentIdentifier.{ uri; version } in
+    let position = Lang.Point.{ line = -1; character = -1; offset = point } in
+    let goals_mode = LI.Prev in
+    let goals = LI.O.goals ~doc ~point goals_mode in
+    let program = LI.O.program ~doc ~point goals_mode in
+    let node = LI.O.node ~doc ~point Exact in
+    let messages = mk_messages node in
+    let error = Option.bind node mk_error in
+    let goals = Lsp.JFleche.GoalsAnswer.{ textDocument; position; goals; program; messages; error } in
     Answer.Goals goals
   | Method.Search _ -> Answer.Void
   | Method.TypeAtPoint -> Answer.Void

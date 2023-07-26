@@ -35,7 +35,8 @@ export class CoqLayoutClassic {
     options : any;
     ide : HTMLElement;
     panel : HTMLDivElement;
-    proof : HTMLDivElement;
+    private proof : HTMLDivElement;
+    private goals : HTMLIFrameElement
     query : HTMLDivElement;
     packages : HTMLDivElement;
     buttons : HTMLSpanElement;
@@ -89,6 +90,8 @@ export class CoqLayoutClassic {
       <div id="goal-panel" class="flex-panel">
         <div class="caption">Goals</div>
         <div class="content" id="goal-text" data-lang="coq">
+          <iframe src="${this._url('dist/frontend/vendor/coq-lsp/editor/code/views/info/iframe.html')}"
+                  style="width: 100%; height: 100%"></iframe>
         </div>
       </div>
       <div id="help-panel" class="flex-panel">
@@ -144,6 +147,7 @@ export class CoqLayoutClassic {
 
         // UI setup.
         this.proof    = this.panel.querySelector('#goal-text');
+        this.goals    = this.panel.querySelector('#goal-text iframe');
         this.query    = this.panel.querySelector('#query-panel');
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
@@ -238,6 +242,7 @@ export class CoqLayoutClassic {
     }
 
     splash(version_info, msg, mode='wait') {
+        return;
         var above = $(this.proof).find('.splash-above'),
             image = $(this.proof).find('.splash-image'),
             below = $(this.proof).find('.splash-below');
@@ -300,7 +305,8 @@ export class CoqLayoutClassic {
      * @param {string} msg message text
      */
     systemNotification(msg) {
-        $(this.proof).append($('<p>').addClass('system').text(msg));
+        console.log("System notification: " + msg);
+        // $(this.proof).append($('<p>').addClass('system').text(msg));
     }
 
     _setButtons(enabled) {
@@ -326,10 +332,13 @@ export class CoqLayoutClassic {
     }
 
     // This is still not optimal.
-    update_goals(content) {
-        // TODO: Add diff/history of goals.
-        // XXX: should send a message.
-        $(this.proof).html(content);
+    update_goals(goals) {
+        this.goals.contentWindow?.postMessage( { method: "renderGoals", params: goals });
+    }
+
+    // XXX: This should be properly typed.
+    waiting_for_goals(offset) {
+        this.goals.contentWindow?.postMessage( { method : "waitingForInfo", params: offset });
     }
 
     // Add a log event received from Coq.

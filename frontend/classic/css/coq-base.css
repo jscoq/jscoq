@@ -312,7 +312,8 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #goal-text {
   border: 0;
-  white-space: pre;
+  /* We don't need this with the new info panel */
+  /* white-space: pre; */
 }
 
 /* Help panel (when shown, replaces Goal) */
