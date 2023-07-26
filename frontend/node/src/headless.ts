@@ -1,3 +1,8 @@
+// @ts-nocheck
+/**
+ * The headless manager is broken with coq-lsp backend.
+ * All the calls need to be readjusted to the new document model.
+ */
 import fs from 'fs';
 import os from 'os';
 import path from 'path';

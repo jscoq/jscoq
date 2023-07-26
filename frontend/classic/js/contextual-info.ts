@@ -156,7 +156,9 @@ export class CoqContextualInfo {
     }
 
     async _query(command, title) {
+        /** @todo how do you execute queries in coq-lsp? */
         try {
+            // @ts-ignore
             var result = await this.coq.queryPromise(0, ['Vernac', command]);
             return {pp: this.formatMessages(result), status: 'ok'}
         }

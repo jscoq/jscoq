@@ -44,19 +44,20 @@ export class SettingsPanel {
     active : ReactiveVar<boolean>;
     onAction : (ev : { action: string }) => void;
 
-    constructor(model) {
+    constructor(model?: CoqSettings) {
         this.el = $(this.html());
-        this.model = model || new CoqSettings();
+        this.model = model ?? new CoqSettings();
         this.active = new ReactiveVar(false);
         /** @type {(ev: {action: string}) => void} */
         this.onAction = () => {};
 
         this.el.find('#settings--theme').on('change',
-            (ev) => {
+            (ev: JQuery.ChangeEvent<HTMLInputElement>) => {
                 this.model.theme.value = ev.target.checked ? 'light' : 'dark';
         });
-        this.el.find('#settings--company').on('change', ev => {
-            this.model.company.value = ev.target.checked;
+        this.el.find('#settings--company').on('change', 
+            (ev: JQuery.ChangeEvent<HTMLInputElement>) => {
+                this.model.company.value = ev.target.checked;
         });
         this.el.find('.link-to-quick-help').on('click', (/** @type {MouseEvent} */ ev) => {
             this.onAction({action: 'quick-help'});
@@ -65,7 +66,7 @@ export class SettingsPanel {
         });
         // clickaway trick
         this.el.on('blur', ev => {
-            if (this.el.has(ev.originalEvent.relatedTarget).length)
+            if (this.el.has(ev.originalEvent.relatedTarget as Element).length)
                 setTimeout(() => this.el[0].focus(), 1);
             else
                 this.hide();
@@ -73,15 +74,15 @@ export class SettingsPanel {
     }
 
     configure(options) {
-        var v;
+        var v: any;
         if (v = options.theme) {
             this.el.attr('data-theme', v);
             this.model.theme.value = v;
-            this.el.find('#settings--theme').attr('checked', v == 'light');
+            this.el.find('#settings--theme').prop('checked', v == 'light');
         }
         if ((v = options.company) !== undefined) {
             this.model.company.value = v;
-            this.el.find('#settings--company').attr('checked', v);
+            this.el.find('#settings--company').prop('checked', v);
         }
     }
 
