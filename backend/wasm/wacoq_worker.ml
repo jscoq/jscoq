@@ -19,6 +19,12 @@ let handleRequest json_str =
   in
   serialize resp
 
+(* We do this hack as to use the Coq default loading mechanism that
+   works with findlib, but cannot intrument plugin loading *)
+let handleRequest json_str =
+  if (Mltop.is_ocaml_top ()) then Mltop.remove ();
+  handleRequest json_str
+
 let handleRequestsFromStdin () =
   try
     while true do
@@ -28,7 +34,16 @@ let handleRequestsFromStdin () =
 
 (* Used only for native-compute, so not relevant *)
 let load_module = Dynlink.loadfile
-let load_plugin = Coq.Loader.plugin_handler None
+
+(* Findlib ready, but needs the setup *)
+(* let load_plugin = Coq.Loader.plugin_handler None *)
+
+let load_plugin pg =
+  let legacy, pkg = Mltop.PluginSpec.repr pg in
+  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
+  match Mltop.PluginSpec.repr pg with
+  | None, _pkg -> ()             (* Findlib; not implemented *)
+  | Some cma, _ -> load_module cma  (* Legacy loading method *)
 
 let wasm_cb =
   Jscoq_interp.Callbacks.

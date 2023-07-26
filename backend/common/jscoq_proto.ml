@@ -51,19 +51,52 @@ module Range = struct
 end
 
 module LUri = struct
+  type _kv = (string * string list) list
+
+  type _query =
+    | KV of _kv
+    | Raw of string option * _kv Lazy.t
+
+  type _t = {
+    scheme: string option;
+    userinfo: (string * string option) option;
+    host: string option;
+    port: int option;
+    path: string list;
+    query: _query;
+    fragment: string option
+  }
+
   module File = struct
     type t = Lang.LUri.File.t
 
-    let to_yojson uri = `String (Lang.LUri.File.to_string_uri uri)
+    type nonrec _t =
+      { uri : _t
+      ; file : string
+      }
+
+    (* let to_yojson uri = `String (Lang.LUri.File.to_string_uri uri) *)
+    let to_yojson uri = `String ("file://"^(Obj.magic uri).file)
     let invalid_uri msg obj = raise (Yojson.Safe.Util.Type_error (msg, obj))
 
     let of_yojson uri =
       match uri with
-      | `String uri as obj -> (
-        let uri = Lang.LUri.of_string uri in
-        match Lang.LUri.File.of_uri uri with
-        | Result.Ok t -> Result.Ok t
-        | Result.Error msg -> invalid_uri ("failed to parse uri: " ^ msg) obj)
+      | `String uri as _obj -> (
+          let fl = String.length "file:///" - 1 in
+          let file = String.(sub uri fl (length uri - fl)) in
+          let uri = { scheme = None
+                    ; userinfo = None;
+                      host = None;
+                      port = None;
+                      path = [];
+                      query = KV [];
+                      fragment = None }
+          in
+          Ok (Obj.magic { uri; file }))
+        (* let uri = Lang.LUri.of_string uri in *)
+        (* match Lang.LUri.File.of_uri uri with *)
+        (* | Result.Ok t -> Result.Ok t *)
+        (* | Result.Error msg -> invalid_uri ("failed to parse uri: " ^ msg) obj) *)
       | obj -> invalid_uri "expected uri string, got json object" obj
   end
 end

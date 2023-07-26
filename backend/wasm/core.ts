@@ -31,14 +31,14 @@ class IcoqPod extends EventEmitter {
     async findlibStartup() {
         this.putFile('/lib/findlib.conf', `path="/lib/ocaml"`);
 
-        await this.unzip('/scratch/lib.zip', '/lib/ocaml');
+        // await this.unzip('/scratch/lib.zip', '/lib/ocaml');
     }
 
     get fs() { return this.core.fs; }
 
     async boot() {
         await this.upload(`../backend/wasm/wacoq_worker.bc`, '/lib/icoq.bc');
-        //await this.findlibStartup(); /* @todo */
+        await this.findlibStartup(); /* @todo */
 
         this._preloadStub();
     
