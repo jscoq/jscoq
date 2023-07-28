@@ -13,7 +13,7 @@
   (progn
    (run
      node
-     %{dep:dist-cli}/cli.cjs
+     %{dep:dist-pkg}/mk-pkg.cjs
      %{dep:etc/pkg-metadata/coq-pkgs.json}
      --rootdir %{env:COQBUILDDIR_REL=????}
      --nostdlib))))
@@ -78,6 +78,19 @@
  (action
   ; Set JSCOQ_BUNDLE_TARGET=release to generate minimized dist files
   (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild})))
+
+(rule
+ (targets (dir dist-pkg))
+ (mode (promote (until-clean)))
+ (deps
+  etc/pkg-metadata/coq-pkgs.json
+  (source_tree backend)
+  (source_tree frontend)
+  tsconfig.json
+  esbuild-pkg.mjs
+  node_modules)
+ (action
+  (run npm run esbuild-pkg)))
 
 (rule
  (targets (dir dist-cli))

@@ -8,10 +8,13 @@ import { neatJSON } from 'neatjson';
 import DEFLATE from 'jszip/lib/compressions';
 import { inflateRaw } from 'pako';
 import child_process from 'child_process';
-import { inspect } from 'util';
+
 const mkdirp = require('mkdirp').sync;
 const fs = fsif_native.fs;
 
+import { Package } from '../../../lib/pkg/types';
+
+// Corresponds to a (coq.theory ...)
 class CoqProject {
 
     volume: FSInterface
@@ -130,7 +133,7 @@ class CoqProject {
             exts ? [...this.modulesByExts(exts)] : this.modules());
     }
 
-    createManifest() {
+    createManifest() : Package.Manifest {
         var mdeps = this.computeDeps().depsToJson(),
             modules:any = {};
         for (let k of this.listModules())
@@ -220,15 +223,15 @@ class Zipped {
 
 class PackageResult {
     pkg:      {filename: string, zip: Zipped}
-    manifest: {filename: string, json: string, object: any}
+    manifest: {filename: string, json: string, object: Package.Manifest}
 
     constructor(pkg:      {filename: string, zip: Zipped},
-                manifest: {filename: string, json: string, object: any}) {
+                manifest: {filename: string, json: string, object: Package.Manifest}) {
         this.pkg = pkg;
         this.manifest = manifest;
     }
 
-    async save(bundle?: {chunks?: any[]}): Promise<PackageResult> {
+    async save(bundle?: {chunks?: Package.Manifest[]}): Promise<PackageResult> {
         mkdirp(path.dirname(this.pkg.filename));
         if (bundle) {
             if (!bundle.chunks) bundle.chunks = [];
@@ -485,7 +488,6 @@ abstract class StoreVolume implements FSInterface {
     }
 
 }
-
 
 class InMemoryVolume extends StoreVolume {
 

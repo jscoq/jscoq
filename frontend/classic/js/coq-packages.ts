@@ -13,6 +13,8 @@ import { CoqWorker, backend } from '../../../backend';
 import JSZip from 'jszip';
 import $ from 'jquery';
 
+import { Bundle, Package } from '../../../lib/pkg/types.js';
+
 interface BundleInfo {
     row : string;
 }
@@ -31,13 +33,12 @@ export class PackageManager {
      *   load requests to
      */
     backend : backend;
-    panel : any;
+    panel : HTMLElement;
     bundles : Map<string, BundleInfo>;
     loaded_pkgs: string[];
     coq : CoqWorker;
-    packages : CoqPkgInfo[];
-    packages_by_name: any;
-    packages_by_uri: any;
+    packages : CoqPkg[];
+    packages_by_name: { [name: string]: CoqPkg };
     index ?: PackageIndex;
 
     constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.config.backend) {
@@ -51,7 +52,6 @@ export class PackageManager {
         this.coq.observers.push(this);
         this.packages = [];
         this.packages_by_name = {};
-        this.packages_by_uri = {};
 
         this.initializePackageList(packages, pkg_path_aliases);
     }
@@ -59,13 +59,10 @@ export class PackageManager {
     /**
      * Creates CoqPkgInfo objects according to the paths in names in the given
      * `packages` object.
-     * @param {object} packages (see constructor)
-     * @param {object} aliases (ditto)
      */
     initializePackageList(packages : string[], aliases={}) {
         this.packages = [];
         this.packages_by_name = {};
-        this.packages_by_uri = {};
 
         // normalize all URI paths to end with a slash
         /** @type {(path: string) => string} */
@@ -76,7 +73,7 @@ export class PackageManager {
 
             for (let pkg of pkg_names) {
                 var uri = mkpath(aliases[`${key}/${pkg}`]) || base_uri;
-                this.addPackage(new CoqPkgInfo(pkg, uri));
+                this.addPackage(new CoqPkg(pkg, uri));
             }
         }
     }
@@ -104,18 +101,13 @@ export class PackageManager {
 
     /**
      * Adds a package
-     *
-     * @param {*} pkg
-     * @memberof PackageManager
      */
-    addPackage(pkg) {
+    addPackage(pkg : CoqPkg) {
         this.packages.push(pkg);
         this.packages_by_name[pkg.name] = pkg;
-        (this.packages_by_uri[pkg.base_uri] = 
-            this.packages_by_uri[pkg.base_uri] || []).push(pkg.name);
     }
 
-    getPackage(pkg_name) {
+    getPackage(pkg_name : string) : CoqPkg {
         var pkg = this.packages_by_name[pkg_name];
         if (!pkg) throw new Error(`internal error: unrecognized package '${pkg_name}'`);
         return pkg;
@@ -158,7 +150,7 @@ export class PackageManager {
         return this.bundles[bname] = { row };
     }
 
-    addBundleInfo(bname : string, pkg_info : CoqPkgInfo, parent? : { row : JQuery<HTMLElement>}) {
+    addBundleInfo(bname : string, pkg_info : CoqBundleInfo | CoqPkgInfo, parent? : { row : JQuery<HTMLElement>}) {
 
         var bundle = this.addRow(bname, pkg_info.name, parent);
 
@@ -169,7 +161,7 @@ export class PackageManager {
             pkg.chunks = [];
 
             for (let chunk of pkg_info.chunks) {
-                var subpkg = new CoqPkgInfo(chunk.name, pkg.base_uri);
+                var subpkg = new CoqPkg(chunk.name, pkg.base_uri);
                 subpkg.info = chunk;
                 this.addPackage(subpkg);
                 this.addBundleInfo(subpkg.name, chunk, bundle);
@@ -195,9 +187,9 @@ export class PackageManager {
         this.dispatchEvent(new Event('change'));
     }
 
-    async addBundleZip(bname: string, resource: any, pkg_info?: CoqPkgInfo) {
+    async addBundleZip(bname: string, resource: any, pkg_info?: CoqBundleInfo) {
         // @ts-expect-error
-        var pkg_infoo : CoqPkgInfo = pkg_info || {};
+        var pkg_infoo : CoqBundleInfo = pkg_info || {};
 
         var archive = await new CoqPkgArchive(resource).load();
 
@@ -211,7 +203,7 @@ export class PackageManager {
             for (let k in pi)
                 if (!pkg_infoo[k]) pkg_infoo[k] = pi[k];
 
-            var pkg = new CoqPkgInfo(bname, '');
+            var pkg = new CoqPkg(bname, '');
             this.packages.push(pkg);
             this.packages_by_name[bname] = pkg;
 
@@ -342,7 +334,7 @@ export class PackageManager {
         .catch(err => { alert(`${file.name}: ${err}`); });
     }
 
-    _packageByURL(url) {
+    _packageByURL(url) : string {
         var s = this._absoluteURL(url);
         for (let pkg of this.packages) {
             if (pkg.archive && s == pkg.archive.url) return pkg.name;
@@ -361,8 +353,8 @@ export class PackageManager {
         }
     }
 
-    coqLibLoaded(pkg) {
-        var pkg_name = this._packageByURL(pkg) || pkg;
+    coqLibLoaded(pkg_l) {
+        var pkg_name = this._packageByURL(pkg_l) || pkg_l;
         this.loaded_pkgs.push(pkg_name);
 
         try {
@@ -375,8 +367,8 @@ export class PackageManager {
         catch(e) { console.warn(e); }
     }
 
-    coqLibError(pkg) {
-        var pkg_name = this._packageByURL(pkg) || pkg;
+    coqLibError(pkg_l) {
+        var pkg_name = this._packageByURL(pkg_l) || pkg_l;
 
         try {
             var pkg = this.getPackage(pkg_name),
@@ -489,16 +481,16 @@ export class PackageManager {
  */
 class PackageIndex {
     backend : backend;
-    moduleIndex : Map<any,any>;
+    moduleIndex : Map<string, { name: string, modules?: { [module: string]: { deps?: string[] } } } >;
     intrinsicPrefix : string;
 
-    constructor(backend) {
+    constructor(backend: backend) {
         this.backend = backend;
         this.moduleIndex = new Map();
         this.intrinsicPrefix = "Coq";
     }
 
-    add(pkgInfo) {
+    add(pkgInfo : CoqBundleInfo | CoqPkgInfo) {
         for (let mod in pkgInfo.modules || {})
             this.moduleIndex.set(mod, pkgInfo);
     }
@@ -525,7 +517,7 @@ class PackageIndex {
     findPackageDeps(prefix, suffix, exact=false) {
         var pdeps = new Set();
         for (let m of this.alldeps(this.findModules(prefix, suffix, exact)))
-            pdeps.add(this.moduleIndex.get(m).name);
+            pdeps.add(this.moduleIndex.get(m));
         return pdeps;
     }
 
@@ -551,17 +543,43 @@ function closure(s, tr) {
     return s;
 }
 
-
+// Info in the json of a single coq-pkg file
 class CoqPkgInfo {
     name: string;
-    base_uri: string;
-    info?: any;
-    archive?: any;
-    chunks?: any;
-    parent?: any;
-    promise?: any;
+    deps: string[];
+    modules: { [module: string]: { deps?: string[] } };
+    archive?: string;
+    
+    // Wrongly added, until we can separate the two codepaths (from .coq-pkg and from .json)
+    pkgs?: string[];
+    chunks?: CoqPkgInfo[]
+ }
 
-    constructor(name, base_uri) {
+// Info in the json file for a package chunk
+class CoqBundleInfo {
+    name: string;
+    deps: string[];
+    pkgs: string[];
+    chunks: CoqPkgInfo[];
+    archive?: string;
+
+    // Wrongly added, until we can separate the two codepaths (from .coq-pkg and from .json)
+    modules?: { [module: string]: { deps?: string[] } }
+}
+
+class CoqPkg {
+    name: string;
+    base_uri: string;
+    info?: CoqPkgInfo | CoqBundleInfo;
+    archive?: CoqPkgArchive;
+    chunks?: CoqPkg[];
+    parent?: CoqPkg;
+    promise?: Promise<void>;
+    status?: 'loaded';
+    _resolve: () => void;
+    _reject: ( err: {msg: string} ) => void;
+
+    constructor(name : string, base_uri: string) {
         this.name = name;
         this.base_uri = base_uri;
 
@@ -581,7 +599,7 @@ class CoqPkgInfo {
         return this.archive && this.archive.url;
     }
 
-    async fetchInfo(resource = `${this.name}.json`) {
+    async fetchInfo(resource = `${this.name}.json`) : Promise<Bundle.Manifest> {
         var req = await fetch(this.getUrl(resource));
         if (req.status == 200)
             return await req.json();
@@ -591,7 +609,6 @@ class CoqPkgInfo {
         this.archive = new CoqPkgArchive(this.getUrl(resource));
     }
 }
-
 
 /**
  * Represents a bundle stored in a Zip archive; either a remote
@@ -617,7 +634,7 @@ class CoqPkgArchive {
         this.onProgress = () => {};
     }
 
-    load() {
+    load() : Promise<CoqPkgArchive> {
         return this.zip ? Promise.resolve(this) :
             this.download().then(data =>
                 JSZip.loadAsync(data)).then(zip =>
@@ -642,7 +659,7 @@ class CoqPkgArchive {
         }
     }
 
-    readManifest() {
+    readManifest() : Promise<Package.Manifest> {
         var manifest = this.zip.file('coq-pkg.json');
         return manifest ?
                 manifest.async('text').then(data => JSON.parse(data))
@@ -653,10 +670,10 @@ class CoqPkgArchive {
               : Promise.resolve({});
     }
 
-    getPackageInfo() {
-        return this.readManifest().then(pkg_info => {
+    getPackageInfo() : Promise<CoqPkgInfo> {
+        return this.readManifest().then(pkg_manifest => {
 
-            var entries_by_dir = {};
+            var entries_by_dir : { [dir: string]: string[] } = {};
 
             this.zip.forEach((rel_path, entry) => {
                 var mo = /^(?:(.*)[/])(.*[.](?:vo|vio|cm[ao]))$/.exec(rel_path);
@@ -666,14 +683,15 @@ class CoqPkgArchive {
                 }
             });
 
-            var pkgs = [];
+            var pkgs : { pkg_id: string[], vo_files: string[][] }[] = [];
             for (let dir in entries_by_dir) {
                 pkgs.push({
                     pkg_id: dir.split('/'),
                     vo_files: entries_by_dir[dir].map(x => [x])
                 });
             }
-
+            var pkg_info : CoqPkgInfo = pkg_manifest;
+            // @ts-ignore
             pkg_info.pkgs = pkgs;
             return pkg_info;
         });
