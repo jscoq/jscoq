@@ -574,8 +574,9 @@ export class CoqManager {
         this.disable();
         this.packages.expand();
         let loaded = await this.packages.loadDeps(pkgs);
-        this.layout.systemNotification(
-            `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
+        // Requires discerning failed from non-failed pkgs
+        // this.layout.systemNotification(
+        //     `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
         this.enable();
         setTimeout(() => this.packages.collapse(), 500);
     }

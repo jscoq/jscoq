@@ -89,7 +89,7 @@ export class PackageManager {
         return new URL('coq-pkgs', base_path).href;
     }
 
-    populate() {
+    populate() : Promise<void[]> {
         this.index = new PackageIndex(this.backend);
 
         return Promise.all(this.packages.map(async pkg => {
@@ -373,6 +373,9 @@ export class PackageManager {
         try {
             var pkg = this.getPackage(pkg_name),
                 err = {msg: `error loading package '${pkg_name}'`};
+            // To avoid deadlock due to waitFor > all_set not being
+            // true in case of a missing package
+            pkg.info = pkg.info || { name: pkg.name, deps: [], pkgs: [], chunks: []};
             if (pkg._reject) pkg._reject(err);
             else pkg.promise = Promise.reject(err);
         }
@@ -383,7 +386,7 @@ export class PackageManager {
      * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
      * @param {boolean} show if `true`, the package is exposed in the list
      */
-    loadPkg(pkg_name, show=true) {
+    loadPkg(pkg_name, show=true) : Promise<void> {
         var pkg = this.getPackage(pkg_name), promise;
 
         if (pkg.promise) return pkg.promise;  /* load issued already */
@@ -402,9 +405,9 @@ export class PackageManager {
         return promise.then(() => pkg);
     }
 
-    async loadDeps(deps, show=true) {
+    async loadDeps(deps, show=true) : Promise<PromiseSettledResult<CoqPkg>[]> {
         await this.waitFor(deps);
-        return Promise.all(
+        return Promise.allSettled(
             deps.map(pkg => this.loadPkg(pkg, show)));
     }
 
