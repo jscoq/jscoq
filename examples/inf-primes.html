@@ -4,17 +4,60 @@
     <title>jsCoq – Infinitude of Primes</title>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta name="description" content="An Online IDE for the Coq Theorem Prover" />
+    <!-- Move to copy with the bundle -->
     <link rel="icon" href="../frontend/classic/images/favicon.png">
-
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
-    <link rel="stylesheet" type="text/css" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="../frontend/classic/css/landing-page.css">
+    <link rel="stylesheet" type="text/css" href="../dist/frontend/index.css">
   </head>
 
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
   <div id="code-wrapper">
   <div id="document-wrapper">
+    <!------------------------------->
+    <!--   N A V   B A R           -->
+    <!------------------------------->
+    <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand"><img src="frontend/classic/images/favicon.png"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarAbout" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                About
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="#team">jsCoq Dev Team</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="https://coq.inria.fr">Coq Proof Assistant</a></li>
+                <li><a class="dropdown-item" href="https://github.com/cpitclaudel/company-coq">company-coq</a></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" id="navbarExamples" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Examples
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="examples/inf-primes.html">Infinitude of Primes</a></li>
+                <li><a class="dropdown-item" href="examples/sqrt_2.html">Irrationality of <span class="math"><img class="symbol-sqrt" src="../frontend/classic/images/sqrt.svg">2</span></a></li>
+                <!-- these are only available from the full website -->
+                <li><a class="dropdown-item" href="/fun/coqoban.html">🎡 Çoqoban</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/ext/sf"><img class="symbol-book" src="../frontend/classic/images/book.svg">Software Foundations</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <a id="scratchpad" href="examples/scratchpad.html" title="Open scratchpad">
+        <span class="newcomer scratchpad-tip">open the scratchpad<br/>to start editing</span>
+      </a>
+    </nav>
+    <!------------------------------->
+
   <div id="document">
   <div>
     <h3>Welcome to the <span class="jscoq-name">jsCoq</span> Interactive Online System!</h3>
@@ -26,7 +69,7 @@ infinitude of primes in Coq.
 
 The proof relies on the [Mathematical Components](https://math-comp.github.io) library from the [MSR Inria team](http://ssr.msr-inria.inria.fr/) team led by Georges Gonthier, so our first step will be to load it:
 
-```
+```coq
 From Coq Require Import ssreflect ssrfun ssrbool.
 From mathcomp Require Import eqtype ssrnat div prime.
 ```
@@ -35,7 +78,7 @@ From mathcomp Require Import eqtype ssrnat div prime.
 
 Once the basic environment has been set up, we can proceed to the proof:
 
-```
+```coq
 (* A nice proof of the infinitude of primes, by Georges Gonthier *)
 Lemma prime_above m : {p | m < p & prime p}.
 Proof.
@@ -49,7 +92,7 @@ In this case, we need to find a prime number `p` that is greater than `m`. What 
 
 Choosing `p` to be the first prime divisor of `m! + 1` works. As we will shortly see, properties of divisibility will imply that `p` must be greater than `m`.
 
-```
+```coq
 have /pdivP[p pr_p p_dv_m1]: 1 < m`! + 1 by rewrite addn1 ltnS fact_gt0.
 ```
 
@@ -57,13 +100,13 @@ Our first step is thus to use the library-provided lemma `pdivP`, which states t
 
 The ssreflect tactic `have` provides a convenient way to instantiate this lemma and discard the side proof obligation `1 < m! + 1`.
 
-```
+```coq
 exists p => //; rewrite ltnNge; apply: contraL p_dv_m1 => p_le_m.
 ```
 
 It remains to prove that `p` is greater than `m`. We reason by contraposition with the divisibility hypothesis, which gives us the goal "if `p ≤ m` then `p` is not a prime divisor of  `m! + 1`".
 
-```
+```coq
 by rewrite dvdn_addr ?dvdn_fact ?prime_gt0 // gtnNdvd ?prime_gt1.
 Qed.
 ```
@@ -72,6 +115,7 @@ The goal follows from basic properties of divisibility, plus from the fact that 
 
 <i>¡Salut!</i>
 </textarea>
+  </div> <!-- /#subdiv -->
   </div> <!-- /#document -->
   </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
@@ -81,8 +125,13 @@ The goal follows from basic properties of divisibility, plus from the fact that 
 
     import { JsCoq } from '../jscoq.js';
 
-    var jscoq_ids  = ['coqCode' ];
+    var sp = new URLSearchParams(location.search);
+
+    var jscoq_ids  = ['coqCode'];
     var jscoq_opts = {
+        backend:   sp.get('backend'),
+        frontend: sp.get('frontend') || 'cm5',
+        content_type: sp.get('content_type') || 'markdown',
         implicit_libs: false,
         focus: false,
         debug: true,
@@ -91,7 +140,10 @@ The goal follows from basic properties of divisibility, plus from the fact that 
         all_pkgs: ['coq', 'mathcomp']
     };
 
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => window.coq = res);
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+        /* Global reference */
+        window.coq = res;
+    });
   </script>
 </body>
 </html>
