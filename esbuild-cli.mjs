@@ -33,8 +33,6 @@ var nodecli = esbuild
     outfile: "dist-cli/cli.cjs",
     ...sourcemap,
     minify,
-    // There is some ESM/CommonJS incompatibility quirk in this pkg
-    external: ["fflate-unzip"]
     // watch: watch(cliEntry),
   })
   .then(() => {

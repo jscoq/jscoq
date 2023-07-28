@@ -4,7 +4,8 @@ import path from 'path';
 import mkdirp from 'mkdirp';
 import findUp from 'find-up';
 import glob from 'glob';
-import unzip from 'fflate-unzip';
+// There is some esbuild issue with this package
+import unzip from 'fflate-unzip/src/index';
 import chld from 'child-process-promise';
 import type commander from 'commander';
 import { cas, dirstamp, ln_sf, existsDir } from './shutil';

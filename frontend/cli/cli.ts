@@ -169,8 +169,8 @@ async function main() {
         .on('option:load', pkg => loads.push(...pkg.split(',')))
         .action(async opts => { rc = await build(opts, loads); });
 
-    // This is to be called from dist/cli so:
-    let base_path = pathToFileURL(path.join(__dirname, '..', '..'));
+    // This is to be called from dist-cli so:
+    let base_path = pathToFileURL(path.join(__dirname, '..'));
     var headless = new HeadlessCLI(base_path);
     headless.installCommand(prog);
 

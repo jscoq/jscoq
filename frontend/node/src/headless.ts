@@ -85,12 +85,12 @@ class HeadlessCoqManager {
     startup_timeEnd: number;
 
     constructor(base_path) {
+        this.volume = fsif_native;
         let pkg_path = this.findPackageDir();
 
         this.startup_time = Date.now();
         this.coq = new HeadlessCoqWorker(base_path);
         this.coq.observers.push(this);
-        this.volume = fsif_native;
         this.provider = new QueueCoqProvider();
         this.pprint = new FormatPrettyPrint();
         this.packages = new PackageDirectory(pkg_path);
