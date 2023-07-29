@@ -71,7 +71,9 @@ export interface ManagerOptions {
 class CoqDocument {
     uri : string;
     version : number;
-    preprocess : (text : string) => string;
+    content_type : 'plain' | 'markdown';
+
+    private preprocess : (text : string) => string;
 
     /**
      * Strip off plain text, leaving the Coq text.
@@ -81,16 +83,17 @@ class CoqDocument {
         return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
                    .join('');
     }
-    constructor(uri, frontend, content_type) {
-        let markdown = (frontend !== 'pm' && content_type === 'markdown');
+
+    constructor(uri, content_type) {
+
+        this.content_type = content_type;
+        let markdown = (content_type === 'markdown');
         this.uri = uri + (markdown ? ".mv" : ".v");
         this.version = 0;
 
         // Setup preprocess method for markdown, if needed
         var preprocessFunc = { 'plain': x => x, 'markdown': this.markdownPreprocess };
-        var contentType = content_type ??  /* oddly specific */
-            (frontend === 'pm' ? 'markdown' : 'plain');
-
+        
         // For now we disable it and use instead the server logic.
         this.preprocess = preprocessFunc['plain'];
     }
@@ -100,13 +103,66 @@ class CoqDocument {
         let raw = this.preprocess(text);
         coq.update({ uri: this.uri, version: this.version, raw });
     }
+
+    newDoc(text, coq) {
+        let raw = this.preprocess(text);
+        let dp = { uri: this.uri, version: this.version, raw };
+        coq.newDoc(dp)
+    }
+}
+
+class ManagerEditor {
+    editor : ICoqEditor;
+    doc: CoqDocument;
+    options: ManagerOptions;
+    onCursorUpdated : (doc : CoqDocument, offset : number) => void;
+
+    constructor(options : ManagerOptions) {
+
+        this.options = options;
+        
+    }
+
+    // Connect to an HTML element
+    connect(elems, onChange: (doc: CoqDocument, raw: string) => void,
+            onCursorUpdated: (doc: CoqDocument, offset: number) => void) {
+
+        let content_type = this.options.frontend === 'pm' ? 'plain' : this.options.content_type;
+        this.doc = new CoqDocument("file:///src/browser", content_type);
+
+        // Setup the Coq editor.
+        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
+        const CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
+
+        if (!CoqEditor)
+            throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
+
+        let onChangeDoc = debouncePend(raw => {
+            onChange(this.doc, raw);
+        }, 200);
+
+        this.onCursorUpdated = onCursorUpdated;
+        let onCursorUpdatedDoc = debouncePend(offset => {
+            console.log('cursor updated: ' + offset);
+            this.onCursorUpdated(this.doc, offset);
+        }, 200);
+        this.editor = new CoqEditor(elems, this.options, onChangeDoc, onCursorUpdatedDoc);
+    }
+    disconnect() {
+        this.editor.destroy();
+        this.editor = null;
+    }
+
+    updateCursor() {
+        this.onCursorUpdated(this.doc, this.editor.getCursorOffset());
+    }
 }
 
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
-    editor : ICoqEditor;
-    doc: CoqDocument;
+    editor : ManagerEditor;
+    // doc: CoqDocument;
     layout : CoqLayoutClassic;
     packages : PackageManager;
     navEnabled : boolean;
@@ -153,43 +209,46 @@ export class CoqManager {
 
         this.options = copyOptions(options, this.options);
 
-        // Create new document
-        this.doc = new CoqDocument("file:///src/browser", this.options.frontend, this.options.content_type);
- 
+        // Create new editor
+        this.editor = new ManagerEditor(this.options);
+
+        let onChange = (doc: CoqDocument, raw) => {
+            if(this.coq)
+                doc.update(raw, this.coq);
+        };
+
+        let onCursorUpdated = (doc: CoqDocument, offset) => {
+            if(this.coq)
+                this.setGoalCursor(doc, offset, this.coq);
+        };
+
+        this.editor.connect(elems, onChange, onCursorUpdated);
+
+        // This is just a poor-man test, remove before merging!!
+        setTimeout(() => {
+            this.editor.disconnect();
+            this.editor.options.frontend = 'cm6';
+            this.editor.connect(elems, onChange, onCursorUpdated);
+         }, 6000);
+
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
-        // Setup the Coq editor.
-        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
-        const CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
-
-        if (!CoqEditor)
-            throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
-
-        /* Document processing */
-        let onChange = debouncePend((raw: string) => {
-            this.doc.update(raw, this.coq);
-        }, 200);
-
-        let onCursorUpdated = _.throttle(offset => {
-            console.log('cursor updated: ' + offset);
-            if (!onChange.pending) this.setGoalCursor(offset);
-        }, 200);
-
-        this.editor = new CoqEditor(elems, this.options, onChange, onCursorUpdated, this);
-
-        /* @ts-ignore */
+        /* package manager */
         this.packages = null;
 
+        // contextual info
         this.contextual_info = null;
 
-        /* @ts-ignore */
+        /* worker */
         this.coq = null;
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
+
+        // Move actions to layout constructor.
         this.layout.splash(undefined, undefined, 'wait');
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
@@ -397,9 +456,7 @@ export class CoqManager {
         this.when_ready.resolve(null);
 
         // Send the document creation request.
-        let raw = this.doc.preprocess(this.editor.getValue());
-        let dp = { uri: this.doc.uri, version: this.doc.version, raw };
-        this.coq.newDoc(dp)
+        this.editor.doc.newDoc(this.editor.editor.getValue(), this.coq);
     }
 
     // Coq document diagnostics.
@@ -407,12 +464,12 @@ export class CoqManager {
 
         console.log("Diags received: " + diags.length.toString());
 
-        if (this.doc.version > version) {
+        if (this.editor.doc.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
 
-        this.editor.clearDiagnostics();
+        this.editor.editor.clearDiagnostics();
 
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
@@ -420,7 +477,7 @@ export class CoqManager {
                 /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
                         (pending = this.handleRequires(extra))) {
-                    this.editor.markDiagnostic(d);
+                    this.editor.editor.markDiagnostic(d);
 
                     needRecheck = true;
                     await pending;
@@ -428,7 +485,7 @@ export class CoqManager {
                 }
             }
             if (d.severity < 4 && !needRecheck) {
-                this.editor.markDiagnostic(d);
+                this.editor.editor.markDiagnostic(d);
             }
         }
 
@@ -437,7 +494,7 @@ export class CoqManager {
         if (needRecheck) this.refreshWorkspace();
 
         /* Refresh goals at cursor */
-        this.setGoalCursor(this.editor.getCursorOffset());
+        this.setGoalCursor(this.editor.doc, this.editor.editor.getCursorOffset(), this.coq);
     }
 
     coqLog(level, msg) {
@@ -629,10 +686,9 @@ export class CoqManager {
      * Shows the goal at a given location.
      * @param {number?} offset document offset (defaults to current cursor position).
      */
-    async setGoalCursor(offset = undefined) {
-        offset ??= this.editor.getCursorOffset();
+    async setGoalCursor(doc, offset, coq) {
         this.layout.waiting_for_goals(offset);
-        let resp = await this.coq.sendRequest(this.doc.uri, offset, ['Goals']);
+        let resp = await coq.sendRequest(doc.uri, offset, ['Goals']);
         if (resp[1])
             this.layout.update_goals(resp[1]);
     }
@@ -657,7 +713,7 @@ export class CoqManager {
               help   = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
 
-        const toCursor  = () => this.setGoalCursor();
+        const toCursor  = () => this.editor.updateCursor();
         const nav_bindings = {
             '_Enter':     toCursor, '_NumpadEnter': toCursor,
             '^Enter':     toCursor, '^NumpadEnter': toCursor,

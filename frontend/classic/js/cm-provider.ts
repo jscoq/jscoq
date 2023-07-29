@@ -140,11 +140,14 @@ export class CmCoqProvider {
      * @param {number} idx index of this snippet within a ProviderContainer
      * @memberof CmCoqProvider
      */
-    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
+// <<<<<<< HEAD
+/*    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
 
         this.options = options;
         this.idx = idx;
         this.manager = manager;
+*/
+    constructor(element, options : CM5Options, replace : boolean, idx : number) {
 
         CmCoqProvider._config();
 

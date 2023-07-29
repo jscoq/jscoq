@@ -15,6 +15,7 @@ export interface ICoqEditor {
     clearDiagnostics() : void
     markDiagnostic(diag : Diagnostic) : void
     getCursorOffset() : number
+    destroy() : void
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
@@ -25,8 +26,7 @@ export interface ICoqEditorConstructor {
     new(elems : (string | HTMLElement)[],
         options: ManagerOptions,
         onChange: (newContent : string) => void,
-        onCursorUpdated: (offset : number) => void,
-        manager: CoqManager) : ICoqEditor;
+        onCursorUpdated: (offset : number) => void) : ICoqEditor;
     }
 /**
  * Takes a textArea and will create an empty div to attach an editor to.
