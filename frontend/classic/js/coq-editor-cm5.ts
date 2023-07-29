@@ -4,7 +4,7 @@
 // CodeMirror implementation
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
-import { CoqManager, ManagerOptions } from './coq-manager';
+import { ManagerOptions } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
 
 interface CM5Options {
@@ -17,9 +17,9 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager) {
+    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate) {
 
-        super(eIds, options, manager);
+        super(eIds, options);
 
         this.onChangeAny = () => {
             let txt = this.getValue();

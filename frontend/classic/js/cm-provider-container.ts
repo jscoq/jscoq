@@ -1,3 +1,4 @@
+import CodeMirror from "codemirror";
 import { Future } from "../../../backend/future";
 import { CmCoqProvider } from './cm-provider';
 import { CoqManager, ManagerOptions } from "./coq-manager";
@@ -23,12 +24,11 @@ export class ProviderContainer {
     onAction : (evt : any ) => void;
     wait_for : Future<void>;
     currentFocus : CmCoqProvider;
-    manager : any;
 
     /**
      * Creates an instance of ProviderContainer.
      */
-    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
+    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions) {
 
         this.options = options;
 
@@ -81,7 +81,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx);
 
                 this.snippets.push(cm);
 
@@ -157,6 +157,15 @@ export class ProviderContainer {
     configure(options) {
         for (let snippet of this.snippets)
             snippet.configure(options);
+    }
+
+    destroy() {
+        for (let snippet of this.snippets) {
+            snippet.editor.setOption("mode", "text/x-csrc");
+            snippet.editor.getWrapperElement().parentNode.
+                removeChild(snippet.editor.getWrapperElement());
+            snippet.editor = null;
+        }
     }
 
     retract() {

@@ -39,7 +39,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
     // element e
-    constructor(eIds : string[], options, onChange, onCursorUpdated, manager) {
+    constructor(eIds : string[], options, onChange, onCursorUpdated) {
         if (eIds.length != 1)
             throw new Error('not implemented: `cm6` frontend requires a single element')
 
@@ -102,6 +102,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
         return this.view.state.selection.main.head;
     }
 
+    destroy() {
+        this.view.destroy();
+    }
     configure() {}
     openFile() {}
     focus() {}
