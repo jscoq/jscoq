@@ -111,23 +111,23 @@ class CoqDocument {
 }
 
 class ManagerEditor {
+    elems: (string|HTMLElement)[];
     editor : ICoqEditor;
     doc: CoqDocument;
     options: ManagerOptions;
     onCursorUpdated : (doc : CoqDocument, offset : number) => void;
 
-    constructor(options : ManagerOptions) {
-
+    constructor(elems, options : ManagerOptions) {
+        this.elems = elems;
         this.options = options;
-        
-    }
-
-    // Connect to an HTML element
-    connect(elems, onChange: (doc: CoqDocument, raw: string) => void,
-            onCursorUpdated: (doc: CoqDocument, offset: number) => void) {
 
         let content_type = this.options.frontend === 'pm' ? 'plain' : this.options.content_type;
         this.doc = new CoqDocument("file:///src/browser", content_type);
+    }
+
+    // Connect to an HTML element
+    connect(onChange: (doc: CoqDocument, raw: string) => void,
+            onCursorUpdated: (doc: CoqDocument, offset: number) => void) {
 
         // Setup the Coq editor.
         const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
@@ -145,8 +145,10 @@ class ManagerEditor {
             console.log('cursor updated: ' + offset);
             this.onCursorUpdated(this.doc, offset);
         }, 200);
-        this.editor = new CoqEditor(elems, this.options, onChangeDoc, onCursorUpdatedDoc);
+
+        this.editor = new CoqEditor(this.elems, this.options, onChangeDoc, onCursorUpdatedDoc);
     }
+
     disconnect() {
         this.editor.destroy();
         this.editor = null;
@@ -209,7 +211,7 @@ export class CoqManager {
         this.options = copyOptions(options, this.options);
 
         // Create new editor
-        this.editor = new ManagerEditor(this.options);
+        this.editor = new ManagerEditor(elems, this.options);
 
         let onChange = (doc: CoqDocument, raw) => {
             if(this.coq)
@@ -221,14 +223,8 @@ export class CoqManager {
                 this.setGoalCursor(doc, offset, this.coq);
         };
 
-        this.editor.connect(elems, onChange, onCursorUpdated);
+        this.editor.connect(onChange, onCursorUpdated);
 
-        // This is just a poor-man test, remove before merging!!
-        setTimeout(() => {
-            this.editor.disconnect();
-            this.editor.options.frontend = 'cm6';
-            this.editor.connect(elems, onChange, onCursorUpdated);
-         }, 6000);
 
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
@@ -245,16 +241,15 @@ export class CoqManager {
         this.coq = null;
 
         // Setup the Panel UI.
-        this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
+        this.layout = new CoqLayoutClassic(this.options, 
+            { kb: this.keyTooltips() },
+            { onAction: this.toolbarClickHandler.bind(this),
+              onToggle: (ev) => {
+                if (ev.shown && !this.coq) this.launch();
+                if (this.coq) this.layout.onToggle = () => {};
+              }  });
 
-        // Move actions to layout constructor.
         this.layout.splash(undefined, undefined, 'wait');
-        this.layout.onAction = this.toolbarClickHandler.bind(this);
-
-        this.layout.onToggle = ev => {
-            if (ev.shown && !this.coq) this.launch();
-            if (this.coq) this.layout.onToggle = () => {};
-        };
 
         // this._setupSettings();
         this._setupDragDrop();
@@ -379,7 +374,7 @@ export class CoqManager {
      */
     async launch() {
         try {
-            // Setup the Coq worker.
+            // Setup the Coq worker language client.
             this.coq = this.options.subproc
                 ? new CoqSubprocessAdapter(this.options.base_path, this.options.backend)
                 : new CoqWorker(this.options.base_path, null, null, this.options.backend);
@@ -775,8 +770,7 @@ export class CoqManager {
 
     toolbarClickHandler(evt) {
         
-        /* @ts-ignore */
-        this.editor.focus();
+        this.editor.editor.focus();
 
         switch (evt.target.name) {
         case 'to-cursor' :
@@ -797,6 +791,21 @@ export class CoqManager {
 
         case 'reset':
             this.reset();
+            break;
+
+        case 'editor':
+            this.editor.options.frontend = (this.editor.options.frontend === 'cm5') ? 'cm6' : 'cm5';
+            this.editor.disconnect();
+            let onChange = (doc: CoqDocument, raw) => {
+                if(this.coq)
+                    doc.update(raw, this.coq);
+            };
+    
+            let onCursorUpdated = (doc: CoqDocument, offset) => {
+                if(this.coq)
+                    this.setGoalCursor(doc, offset, this.coq);
+            };
+            this.editor.connect(onChange, onCursorUpdated);
             break;
         }
     }
