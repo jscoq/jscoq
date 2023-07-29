@@ -105,8 +105,8 @@ let lsp_cb =
   Fleche.Io.CallBack.
     { trace = (fun cat ?extra:_ msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
     ; message = (fun ~lvl:_ ~message:_ -> ())
-    ; diagnostics = (fun ~uri:_ ~version diags ->
-          out_fn (Notification (diags,version)))
+    ; diagnostics = (fun ~uri ~version diagnostic ->
+          out_fn (Notification { uri; version; diagnostic }))
     ; fileProgress = (fun ~uri:_ ~version:_ _progress -> ())
     }
 
@@ -180,16 +180,16 @@ let jscoq_execute =
     try_check ();
     ()
 
-  | Request { uri; method_ } ->
-    let { Request.id; loc = _; v = _ } = method_ in
+  | Request { id; method_ } ->
+    let { Request.uri; loc = _; v = _ } = method_ in
     (* XXX Fix to use position *)
     let r = Fleche.Theory.Request.{ id; request = FullDoc { uri } } in
     (* XXX Fix to postpone requests *)
     let () = match Fleche.Theory.Request.add r with
       | Now doc ->
-        let f = Request_interp.do_request ~doc in
+        let f _uri = Request_interp.do_request ~doc in
         let res = Request.process ~f method_ in
-        out_fn (Response res)
+        out_fn (Response { id; res })
       | Postpone -> ()
       | Cancel -> () in
     try_check ()

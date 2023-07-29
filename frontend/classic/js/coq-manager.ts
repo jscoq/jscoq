@@ -9,8 +9,7 @@
 import _ from 'lodash';
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
-         Diagnostic, backend } from '../../../backend';
+import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, backend, PublishDiagnosticParams } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
@@ -460,9 +459,10 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    async coqNotification(diags : Diagnostic[], version : number) {
+    async coqNotification( params : PublishDiagnosticParams ) {
+        let { uri, version, diagnostic }  = params;
 
-        console.log("Diags received: " + diags.length.toString());
+        console.log("Diags received: " + diagnostic.length.toString());
 
         if (this.editor.doc.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
@@ -472,7 +472,7 @@ export class CoqManager {
         this.editor.editor.clearDiagnostics();
 
         let needRecheck = false, pending;
-        for (let d of diags.reverse()) {
+        for (let d of diagnostic.reverse()) {
             for (let extra of d.extra ?? []) {
                 /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
