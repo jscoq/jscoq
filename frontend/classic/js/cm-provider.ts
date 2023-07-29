@@ -275,7 +275,7 @@ export class CmCoqProvider {
         this.editor.getWrapperElement().setAttribute('style', 'display: none;');
     }
 
-    close() {
+    destroy() {
         this.editor.getWrapperElement().remove();
     }
     

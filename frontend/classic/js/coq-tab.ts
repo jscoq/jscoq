@@ -85,6 +85,6 @@ export class CoqTab {
     close() {
         this.container.remove();
         this.tab.remove();
-        this.editor.close();
+        this.editor.destroy();
     }
 }

@@ -11,9 +11,9 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
-import { ICoqEditor } from './coq-editor';
 import { CoqManager, ManagerOptions } from './coq-manager';
 import { CoqDocument } from './coq-document';
+import { ICoqEditor } from './coq-editor';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
@@ -145,10 +145,13 @@ export class CoqProseMirror implements ICoqEditor {
         return this.view.state.selection.head;
     }
 
+    destroy() {
+        this.view.destroy();
+    }
+
     configure() {}
     openFile() {}
     focus() {}
-    close() {}
 
     static process_node(acc) {
         return (node, pos, parent, index) => {

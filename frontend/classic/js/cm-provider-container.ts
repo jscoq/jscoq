@@ -150,6 +150,15 @@ export class ProviderContainer {
             snippet.configure(options);
     }
 
+    destroy() {
+        for (let snippet of this.snippets) {
+            snippet.editor.setOption("mode", "text/x-csrc");
+            snippet.editor.getWrapperElement().parentNode.
+                removeChild(snippet.editor.getWrapperElement());
+            snippet.editor = null;
+        }
+    }
+
     retract() {
         for (let sp of this.snippets) sp.retract();
     }
@@ -196,3 +205,6 @@ export class ProviderContainer {
     openLocal(filename)          { this._delegate(sp => sp.openLocal(filename)); }
 
 }
+// Local Variables:
+// typescript-indent-level: 4
+// End:

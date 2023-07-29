@@ -116,10 +116,14 @@ export class CoqCodeMirror6 implements ICoqEditor {
         return this.view.state.selection.main.head;
     }
 
+    destroy() {
+        this.view.destroy();
+    }
+
     configure() {}
     openFile() {}
     focus() {}
-    close() {}
+
 }
 
 // Local Variables:
