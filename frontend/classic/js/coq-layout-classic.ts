@@ -19,33 +19,42 @@ import '../css/coq-light.css';
 import '../css/coq-dark.css';
 import '../css/settings.css';
 import '../css/split.scss';
+import { backend } from '../../../backend/coq-worker.js';
 
 /***********************************************************************/
 /* The CoqLayout class contains the goal, query, and packages buffer   */
 /***********************************************************************/
 
+export interface CoqLayoutOptions {
+    base_path: string,
+    wrapper_id: string;
+    backend: backend;
+    layout?: string;
+    links?: any;
+}
+export interface LayoutProps {
+    onAction: (evt : MouseEvent) => void;
+    onToggle: (evt : any) => void;
+}
 /**
  * Classical layout: a right panel containing a toolbar with buttons at the 
  * top, and a main area divided vertically into three collapsible panes.
  * Also shows a power button that hides or shows the panel.
- *
- * @class CoqLayoutClassic
  */
 export class CoqLayoutClassic {
-    options : any;
+    options : CoqLayoutOptions;
     ide : HTMLElement;
     split: SplitHelper;
     panel : HTMLDivElement;
     private proof : HTMLDivElement;
     private goals : HTMLIFrameElement
     private sysmsg : HTMLDivElement;
+    onToggle: (evt : any) => void;
     query : HTMLDivElement;
     packages : HTMLDivElement;
     buttons : HTMLSpanElement;
     menubtn : SVGElement
     settings : SettingsPanel;
-    onToggle : (evt : any) => void;
-    onAction : (evt : any) => void;
     log_levels : string[];
     log_level : number;
     outline : HTMLDivElement;
@@ -79,6 +88,7 @@ export class CoqLayoutClassic {
         <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
         <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
+        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
       </span>
       <div class="exits right">
         <svg class="app-menu-button" viewBox="0 0 80 80">
@@ -133,7 +143,7 @@ export class CoqLayoutClassic {
      * @param {object} params HTML template parameters; used keys are:
      *   - kb: key-binding tooltips for actions {up, down, cursor}
      */
-    constructor(options, params) {
+    constructor(options : CoqLayoutOptions, params, props : LayoutProps) {
 
         this.options = options;
 
@@ -162,14 +172,13 @@ export class CoqLayoutClassic {
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
 
-        this.onToggle = evt => {};
+        this.onToggle = props.onToggle;
         this.panel.querySelector('#hide-panel')
-            .addEventListener('click', evt => this.toggle() );
+            .addEventListener('click', evt => props.onToggle(evt) );
 
         this._setButtons(false); // starts disabled
 
-        this.onAction = evt => {};
-        this.buttons.addEventListener('click', evt => this.onAction(evt));
+        this.buttons.addEventListener('click', evt => props.onAction(evt));
 
         this.menubtn.addEventListener('mousedown', () =>
             this.settings.toggle());

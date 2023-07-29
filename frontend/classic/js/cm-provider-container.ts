@@ -89,7 +89,6 @@ export class ProviderContainer {
                 cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
                 // Track invalidate
-                cm.onChange     = (cm, evt) => { this.onChangeAny(cm, evt); };
                 cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };
                 cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
@@ -98,7 +97,7 @@ export class ProviderContainer {
                 cm.onTipOut   = (cm)            => { this.onTipOut(cm); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
-                cm.onChange = (cm, evt) => { this.onChangeAny(cm,evt); };
+                cm.onChange = (cm, evt) => { this.onChangeAny(cm, evt); };
                 cm.onCursorUpdate = (cm) => { this.onCursorUpdate(cm); };
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
