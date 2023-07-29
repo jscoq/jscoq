@@ -400,9 +400,9 @@ export class CoqManager {
                     /** @todo clear the mark? */
                 }
             }
-            if (d.severity < 4 && !needRecheck) {
-                this.editor.markDiagnostic(d);
-            }
+            // if (d.severity < 4 && !needRecheck) {
+            //     this.editor.markDiagnostic(d);
+            // }
         }
 
         /* if packages were loaded, need to re-create the document
@@ -814,8 +814,9 @@ export class CoqManager {
      */
     goal2DOM(goal : Goal) {
         let mklabel = (id) =>
-                $('<label>').text(FormatPrettyPrint._idToString(id)),
-            mkdef = (pp) =>
+                $('<label>').text(id),
+//                $('<label>').text(FormatPrettyPrint._idToString(id)),
+           mkdef = (pp) =>
                 $('<span>').addClass('def').append(this.pprint.pp2DOM(pp));
 
         let hyps = goal.hyps.reverse().map(({names, def, ty}) =>

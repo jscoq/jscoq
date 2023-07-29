@@ -64,6 +64,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
               parent: container,
               extensions
             });
+
         diagsSource.addEventListener('clear', (e) => {
             this.clearMarks();
         });

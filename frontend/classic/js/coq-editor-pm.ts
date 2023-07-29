@@ -12,6 +12,7 @@ import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
 import { ICoqEditor, editorAppend } from './coq-editor';
+import { CoqManager, ManagerOptions } from './coq-manager';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
@@ -62,13 +63,22 @@ export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
     // eId must be a textarea
-    constructor(eIds) {
+    constructor(eIds, options: ManagerOptions, onChange, diagsSource: EventTarget, manager: CoqManager) {
 
         let { container, area } = editorAppend(eIds[0]);
 
         var doc = defaultMarkdownParser.parse(area.value);
-        var obj_ref = this;
 
+        diagsSource.addEventListener('diags', evt => {
+            let { diags } = evt.detail;
+            for (let d of diags)
+                this.markDiagnostic(d);
+        });
+
+        diagsSource.addEventListener('clear', evt => {
+            this.clearMarks();
+        });
+        
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
@@ -81,7 +91,7 @@ export class CoqProseMirror implements ICoqEditor {
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        obj_ref.onChange(newDoc);
+                        onChange(newDoc);
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
                         area.value = newMarkdown;
                     }
@@ -102,10 +112,6 @@ export class CoqProseMirror implements ICoqEditor {
 
     getValue() {
         return CoqProseMirror.serializeDoc(this.view.state.doc);
-    }
-
-    onChange(newText : string) {
-        return;
     }
 
     clearMarks() {
