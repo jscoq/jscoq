@@ -16,6 +16,7 @@ export interface ICoqEditor {
     clearDiagnostics() : void
     markDiagnostic(diag : Diagnostic) : void
     getCursorOffset() : number
+    destroy() : void
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
@@ -25,16 +26,6 @@ export interface ICoqEditor {
     connectWorker() : void;
     close() : void
 }
-
-// Would be great to use, but not enough typing so far...
-/* export interface ICoqEditorConstructor {
-    new(elems : (string | HTMLElement)[],
-        options: ManagerOptions,
-        onChange: (newContent : string) => void,
-        onCursorUpdated: (offset : number) => void,
-        manager: CoqManager,
-        doc : CoqDocument) : ICoqEditor;
-} */
 
 export interface ICoqEditorConstructor {
     new(doc : CoqDocument,
@@ -47,7 +38,7 @@ export interface ICoqEditorConstructor {
 /**
  * Takes a textArea and will create an empty div to attach an editor to.
  */
-/* export */ function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTextAreaElement } {
+function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTextAreaElement } {
 
     var area : HTMLTextAreaElement =
         (eId instanceof HTMLTextAreaElement ? eId

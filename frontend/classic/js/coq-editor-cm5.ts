@@ -4,7 +4,7 @@
 // CodeMirror implementation
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
-import { CoqManager, ManagerOptions } from './coq-manager';
+import { CoqManager } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
 import { CoqDocument } from './coq-document';
 
@@ -27,12 +27,12 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
                 onCursorUpdated: (offset : number) => void) {
 
         super([container], manager, doc);
-        
+
         this.doc = doc;
         this.manager = manager;
         if (this.getValue())
             this.doc.update(this.getValue());
-        
+
         this.onChangeAny = () => {
             let txt = this.getValue();
             this.doc.update(txt)

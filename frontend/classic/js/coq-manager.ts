@@ -136,16 +136,19 @@ export class CoqManager {
         this.doc_manager = new CoqDocumentManager(this, elems);
         this.initTabManager();
 
-        /* @ts-ignore */
+        /* package manager */
         this.packages = null;
 
+        // contextual info
         this.contextual_info = null;
 
-        /* @ts-ignore */
+        /* worker */
         this.coq = null;
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
+
+        // Move actions to layout constructor.
         this.layout.splash(undefined, undefined, 'wait');
         this.layout.onAction = this.toolbarClickHandler.bind(this);
 
@@ -564,7 +567,7 @@ export class CoqManager {
 
     /**
      * Handles a `FailedRequire` diagnostic by looking for missing modules in
-     * the package index. 
+     * the package index.
      * @param info the reported diagnostic
      * @return if additional packages are being loaded, a promise that's resolved
      *   when loading is done; otherwise, `undefined`.
