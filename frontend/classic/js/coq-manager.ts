@@ -68,16 +68,48 @@ export interface ManagerOptions {
     subproc?: CoqWorker
 }
 
+class CoqDocument {
+    uri : string;
+    version : number;
+    preprocess : (text : string) => string;
+
+    /**
+     * Strip off plain text, leaving the Coq text.
+     */
+    private markdownPreprocess(text : string) {
+        let wsfill = s => s.replace(/[^\n]/g, ' ');
+        return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
+                   .join('');
+    }
+    constructor(uri, frontend, content_type) {
+        let markdown = (frontend !== 'pm' && content_type === 'markdown');
+        this.uri = uri + (markdown ? ".mv" : ".v");
+        this.version = 0;
+
+        // Setup preprocess method for markdown, if needed
+        var preprocessFunc = { 'plain': x => x, 'markdown': this.markdownPreprocess };
+        var contentType = content_type ??  /* oddly specific */
+            (frontend === 'pm' ? 'markdown' : 'plain');
+
+        // For now we disable it and use instead the server logic.
+        this.preprocess = preprocessFunc['plain'];
+    }
+
+    update(text, coq) {
+        this.version++;
+        let raw = this.preprocess(text);
+        coq.update({ uri: this.uri, version: this.version, raw });
+    }
+}
+
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
     editor : ICoqEditor;
-    uri : string;
-    version : number;
+    doc: CoqDocument;
     layout : CoqLayoutClassic;
     packages : PackageManager;
     navEnabled : boolean;
-    preprocess : (text : string) => string;
     contextual_info : any;
     pprint : FormatPrettyPrint;
     when_ready : Future<void>;
@@ -122,19 +154,8 @@ export class CoqManager {
         this.options = copyOptions(options, this.options);
 
         // Create new document
-        let markdown =
-            (this.options.frontend !== 'pm' && this.options.content_type === 'markdown');
-        this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
-        this.version = 0;
-
-        // Setup preprocess method for markdown, if needed
-        var preprocessFunc = { 'plain': x => x, 'markdown': this.markdownPreprocess };
-        var contentType = this.options.content_type ??  /* oddly specific */
-                          (this.options.frontend === 'pm' ? 'markdown' : 'plain');
-
-        // For now we disable it and use instead the server logic.
-        this.preprocess = preprocessFunc['plain'];
-
+        this.doc = new CoqDocument("file:///src/browser", this.options.frontend, this.options.content_type);
+ 
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
@@ -149,9 +170,7 @@ export class CoqManager {
 
         /* Document processing */
         let onChange = debouncePend((raw: string) => {
-            this.version++;
-            let cooked = this.preprocess(raw);
-            this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
+            this.doc.update(raw, this.coq);
         }, 200);
 
         let onCursorUpdated = _.throttle(offset => {
@@ -378,8 +397,8 @@ export class CoqManager {
         this.when_ready.resolve(null);
 
         // Send the document creation request.
-        let raw = this.preprocess(this.editor.getValue());
-        let dp = { uri: this.uri, version: this.version, raw };
+        let raw = this.doc.preprocess(this.editor.getValue());
+        let dp = { uri: this.doc.uri, version: this.doc.version, raw };
         this.coq.newDoc(dp)
     }
 
@@ -388,7 +407,7 @@ export class CoqManager {
 
         console.log("Diags received: " + diags.length.toString());
 
-        if (this.version > version) {
+        if (this.doc.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
@@ -511,17 +530,6 @@ export class CoqManager {
                      .map(([k, v]) => [k.split(/\s+/), makeValue(v)]);
     }
 
-
-    /**
-     * Strip off plain text, leaving the Coq text.
-     * @param {string} text
-     */
-    markdownPreprocess(text) {
-        let wsfill = s => s.replace(/[^\n]/g, ' ');
-        return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
-                   .join('');
-    }
-
     interruptRequest() {
         // Emilio: this needs tweaking in the LSP backend
         this.coq.interrupt();
@@ -624,7 +632,7 @@ export class CoqManager {
     async setGoalCursor(offset = undefined) {
         offset ??= this.editor.getCursorOffset();
         this.layout.waiting_for_goals(offset);
-        let resp = await this.coq.sendRequest(this.uri, offset, ['Goals']);
+        let resp = await this.coq.sendRequest(this.doc.uri, offset, ['Goals']);
         if (resp[1])
             this.layout.update_goals(resp[1]);
     }
