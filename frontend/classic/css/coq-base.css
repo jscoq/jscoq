@@ -515,6 +515,9 @@ body.jscoq-main .CodeMirror-linenumber {
 #buttons button[name=reset] {
   background-image: url(../images/reset.png);
 }
+#buttons button[name=editor] {
+  background-image: url(../images/editor.png);
+}
 
 
 /* Proper  */
