@@ -12,6 +12,7 @@ import { CoqManager, ManagerOptions } from "./coq-manager";
  */
 export interface ICoqEditor {
     getValue() : string
+    clearDiagnostics() : void
     markDiagnostic(diag : Diagnostic) : void
     getCursorOffset() : number
     configure(opts: any) : void
@@ -20,15 +21,11 @@ export interface ICoqEditor {
 }
 
 // Would be great to use, but not enough typing so far...
-export type DiagnosticEvent = {
-    diags : Diagnostic[]
-}
-
 export interface ICoqEditorConstructor {
     new(elems : (string | HTMLElement)[],
         options: ManagerOptions,
         onChange: (newContent : string) => void,
-        diagsSource: EventTarget,
+        onCursorUpdated: (offset : number) => void,
         manager: CoqManager) : ICoqEditor;
     }
 /**

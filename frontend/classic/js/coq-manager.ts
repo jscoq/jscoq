@@ -69,7 +69,6 @@ export interface ManagerOptions {
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
-    diagsSource : EventTarget;
     editor : ICoqEditor;
     uri : string;
     version : number;
@@ -152,9 +151,12 @@ export class CoqManager {
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
         });
 
-        this.diagsSource = new EventTarget();
+        let onCursorUpdated = throttle(200, offset => {
+            console.log('cursor updated: ' + offset);
+            this.setGoalCursor(offset)
+        });
 
-        this.editor = new CoqEditor(elems, this.options, onChange, this.diagsSource, this);
+        this.editor = new CoqEditor(elems, this.options, onChange, onCursorUpdated, this);
 
         /* @ts-ignore */
         this.packages = null;
@@ -379,15 +381,14 @@ export class CoqManager {
     // Coq document diagnostics.
     async coqNotification(diags : Diagnostic[], version : number) {
 
-        this.diagsSource.dispatchEvent(new CustomEvent('clear', { }));
-
         console.log("Diags received: " + diags.length.toString());
 
         if (this.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
-        this.diagsSource.dispatchEvent(new CustomEvent('diags', { detail : { diags, version } }));
+
+        this.editor.clearDiagnostics();
 
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
@@ -400,9 +401,9 @@ export class CoqManager {
                     /** @todo clear the mark? */
                 }
             }
-            // if (d.severity < 4 && !needRecheck) {
-            //     this.editor.markDiagnostic(d);
-            // }
+            if (d.severity < 4 && !needRecheck) {
+                this.editor.markDiagnostic(d);
+            }
         }
 
         /* if packages were loaded, need to re-create the document

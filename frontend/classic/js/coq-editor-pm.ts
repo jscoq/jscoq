@@ -63,22 +63,12 @@ export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
     // eId must be a textarea
-    constructor(eIds, options: ManagerOptions, onChange, diagsSource: EventTarget, manager: CoqManager) {
+    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated, manager: CoqManager) {
 
         let { container, area } = editorAppend(eIds[0]);
 
         var doc = defaultMarkdownParser.parse(area.value);
 
-        diagsSource.addEventListener('diags', evt => {
-            let { diags } = evt.detail;
-            for (let d of diags)
-                this.markDiagnostic(d);
-        });
-
-        diagsSource.addEventListener('clear', evt => {
-            this.clearMarks();
-        });
-        
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
@@ -87,7 +77,6 @@ export class CoqProseMirror implements ICoqEditor {
                 }),
                 // We update the text area
                 dispatchTransaction(tr) {
-
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
@@ -96,6 +85,11 @@ export class CoqProseMirror implements ICoqEditor {
                         area.value = newMarkdown;
                     }
                     const { state } = this.state.applyTransaction(tr);
+
+                    if(tr.selectionSet) {
+                        onCursorUpdated(state.selection.head);
+                    }
+
                     this.updateState(state);
                 },
             });
@@ -114,7 +108,7 @@ export class CoqProseMirror implements ICoqEditor {
         return CoqProseMirror.serializeDoc(this.view.state.doc);
     }
 
-    clearMarks() {
+    clearDiagnostics() {
         var tr = this.view.state.tr;
         tr.setMeta(coqDiags, "clear");
         this.view.dispatch(tr);

@@ -17,7 +17,7 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, diagsSource, manager : CoqManager) {
+    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager) {
 
         super(eIds, options, manager);
 
@@ -25,17 +25,9 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
             let txt = this.getValue();
             onChange(txt);
         };
-
-        diagsSource.addEventListener('clear', (e) => {
-            this.clearMarks();
-        });
-
-        diagsSource.addEventListener('diags', (e) => {
-            let { diags } = e.detail;
-            for (let d of diags)
-                this.markDiagnostic(d);
-        });
-
+        this.onCursorUpdate = (cm) => {
+            onCursorUpdate(this.getCursorOffset());
+        }
         // if (this.options.mode && this.options.mode['company-coq']) {
         //     this.company_coq = new CompanyCoq(this.manager);
         //     this.company_coq.attach(this.editor);
@@ -46,7 +38,7 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         return this.snippets.map(part => part.editor.getValue()).join('\n');
     }
 
-    clearMarks() {
+    clearDiagnostics() {
         for (let part of this.snippets)
             part.retract();
     }

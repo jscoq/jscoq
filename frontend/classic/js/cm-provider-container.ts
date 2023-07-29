@@ -13,6 +13,7 @@ export class ProviderContainer {
     options : ManagerOptions;
     snippets : CmCoqProvider[];
     onChangeAny : (cm, change ) => void;
+    onCursorUpdate : (cm : CodeMirror.Editor) => void;
     onInvalidate : (evt : any ) => void;
     onMouseEnter : (stm, evt : any ) => void;
     onMouseLeave : (stm, evt : any ) => void;
@@ -27,9 +28,9 @@ export class ProviderContainer {
     /**
      * Creates an instance of ProviderContainer.
      */
-    constructor(elementRefs : (string | HTMLElement)[], options, manager) {
+    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
 
-        this.options = options ? options : {};
+        this.options = options;
 
         /**
          * @name ProviderContainer#snippets
@@ -39,6 +40,7 @@ export class ProviderContainer {
 
         // Event handlers (to be overridden by CoqManager)
         this.onChangeAny = (cm, ev) => {};
+        this.onCursorUpdate = (cm) => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
@@ -97,6 +99,7 @@ export class ProviderContainer {
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
                 cm.onChange = (cm, evt) => { this.onChangeAny(cm,evt); };
+                cm.onCursorUpdate = (cm) => { this.onCursorUpdate(cm); };
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
                     if (idx > 0) this.renumber(idx - 1);

@@ -113,6 +113,7 @@ export class CmCoqProvider {
     autosave_interval : number;
     editor : Editor;
     onChange : (cm : Editor, change) => void;
+    onCursorUpdate : (cm : Editor) => void;
     onInvalidate : (evt : any ) => void;
     onMouseEnter : (stm, evt : any ) => void;
     onMouseLeave : (stm, evt : any ) => void;
@@ -184,6 +185,7 @@ export class CmCoqProvider {
 
         // Event handlers (to be overridden by ProviderContainer)
         this.onChange = (nt) => {};
+        this.onCursorUpdate = (cm) => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
@@ -194,8 +196,10 @@ export class CmCoqProvider {
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
         this.editor.on('change', (cm, evt) => this.onChange(cm, evt));
-        this.editor.on('cursorActivity', (/** @type {{ operation: (arg0: () => void) => any; }} */ cm) => 
-            cm.operation(() => this._adjustWidgetsInSelection()));
+        this.editor.on('cursorActivity', (cm) => {
+            this.onCursorUpdate(cm);
+            cm.operation(() => this._adjustWidgetsInSelection())
+        });
 
         this.trackLineCount();
 

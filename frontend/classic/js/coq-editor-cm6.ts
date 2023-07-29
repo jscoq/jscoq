@@ -39,7 +39,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
     // element e
-    constructor(eIds : string[], options, onChange, diagsSource, manager) {
+    constructor(eIds : string[], options, onChange, onCursorUpdated, manager) {
         if (eIds.length != 1)
             throw new Error('not implemented: `cm6` frontend requires a single element')
 
@@ -49,6 +49,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
             [ diagField,
               lineNumbers(),
               EditorView.updateListener.of(v => {
+                  if(v.selectionSet) {
+                    onCursorUpdated(v.state.selection.main.head);
+                  }
                   if (v.docChanged) {
                       // Document changed
                       var newText = v.state.doc.toString();
@@ -64,23 +67,13 @@ export class CoqCodeMirror6 implements ICoqEditor {
               parent: container,
               extensions
             });
-
-        diagsSource.addEventListener('clear', (e) => {
-            this.clearMarks();
-        });
-
-        diagsSource.addEventListener('diags', (e) => {
-            let { diags } = e.detail;
-            for (let d of diags)
-                this.markDiagnostic(d);
-        });
     }
 
     getValue() {
         return this.view.state.doc.toString();
     }
 
-    clearMarks() {
+    clearDiagnostics() {
         var tr = { effects: clearDiag.of({}) };
         this.view.dispatch(tr);
     }
@@ -103,10 +96,6 @@ export class CoqCodeMirror6 implements ICoqEditor {
             console.log(`mark from (${from.line},${from.ch}) to (${to.line},${to.ch}) class: ${mclass}`);
             if (d.extra) console.log('extra: ', d.extra);
         }
-
-        // var d = new Decoration(from, to);
-        // var doc = this.editor.getDoc();
-        // doc.markText(from, to, {className: mclass});
     }
 
     getCursorOffset(): number {
