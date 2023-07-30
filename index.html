@@ -73,6 +73,14 @@
 - Coq will recognize the code snippets as Coq
 - You will be able to save the document and link to other documents soon
 
+We can also add some random math:
+
+$$
+\sum_i a_i * b_i
+$$
+
+I *love* random math $x \cdot y \approx y \cdot x$.
+
 ```coq
 From Coq Require Import List.
 Import ListNotations.
@@ -121,12 +129,12 @@ Please edit your code here!
 
     var jscoq_ids  = ['coqCode'];
     var jscoq_opts = {
-        backend:   sp.get('backend') ?? ifHas('wa'),
+        backend:   (sp.get('backend') ?? ifHas('wa')) || 'wa',
         frontend:  sp.get('frontend'),
         content_type:  sp.get('content_type'),
         implicit_libs: false,
         focus: false,
-        debug: true,
+        debug: false,
         editor: { mode: { 'company-coq': false } },
         init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
         all_pkgs: ['coq', 'mathcomp']

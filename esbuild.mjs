@@ -67,7 +67,10 @@ var frontend = esbuild
     format: "esm",
     loader: {
       '.png': 'binary',
-      '.svg': 'dataurl'
+      '.svg': 'dataurl',
+      '.ttf': 'dataurl',
+      '.woff': 'dataurl',
+      '.woff2': 'dataurl',
     },
     metafile: enableMeta,
     outdir: "dist/frontend",

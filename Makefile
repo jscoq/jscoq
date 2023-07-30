@@ -179,7 +179,8 @@ distclean: clean
 dist: dist-npm dist-tarball
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	jscoq.js coq-pkgs frontend backend dist examples docs}
+	jscoq.js coq-pkgs frontend backend dist examples docs \
+	node_modules/ocaml-wasm node_modules/@ocaml-wasm }
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -233,6 +234,9 @@ dist-npm-wacoq:
 # The need to maintain and update `package.json.wacoq` alongside `package.json`
 # is absolutely bothersome. I could not conjure a more sustainable way to emit
 # two separate NPM packages from the same source tree, though.
+
+# I think in our case makes sense to have a single package, that
+# includes both workers build, and is selectable, as for editors.
 
 ########################################################################
 # Externals

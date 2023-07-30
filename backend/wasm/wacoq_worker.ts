@@ -9,7 +9,7 @@ function postMessage(msg) {
 
 async function main() {
     /** @note when serving from source tree, the `node_modules` ref works by chance */
-    var icoq = new IcoqPod('../backend/wasm', '../../../node_modules');
+    var icoq = new IcoqPod('../backend/wasm', '../node_modules');
 
     postMessage(['Starting']);
     icoq.on('message', postMessage);
