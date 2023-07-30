@@ -23,7 +23,7 @@ import { PackageManager } from './coq-packages';
 import { CoqLayoutClassic } from './coq-layout-classic';
 
 // Editors
-import { ICoqEditor, ICoqEditorConstructor } from './coq-editor';
+import { ICoqEditor, ICoqEditorConstructor, editorAppend } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
@@ -67,10 +67,15 @@ export interface ManagerOptions {
     subproc?: CoqWorker
 }
 
-class CoqDocument {
+// Document backed by a text-area.
+export class CoqDocument {
     uri : string;
     version : number;
     content_type : 'plain' | 'markdown';
+    area : HTMLTextAreaElement;
+    container : HTMLElement;
+    coq?: CoqWorker;
+    onCursorUpdate: (uri: string, offset : number) => void;
 
     private preprocess : (text : string) => string;
 
@@ -83,7 +88,13 @@ class CoqDocument {
                    .join('');
     }
 
-    constructor(uri, content_type) {
+    constructor(uri: string, content_type, elem : (string|HTMLElement), 
+            onCursorUpdate : (uri: string, offset : number) => void) {
+        
+        this.onCursorUpdate = onCursorUpdate;
+        let { container, area } = editorAppend(elem);
+        this.area = area;
+        this.container = container;
 
         this.content_type = content_type;
         let markdown = (content_type === 'markdown');
@@ -97,16 +108,45 @@ class CoqDocument {
         this.preprocess = preprocessFunc['plain'];
     }
 
-    update(text, coq) {
+    change(text) {
         this.version++;
+        this.area.value = text;
         let raw = this.preprocess(text);
-        coq.update({ uri: this.uri, version: this.version, raw });
+        this.coq?.update({ uri: this.uri, version: this.version, raw });
     }
 
-    newDoc(text, coq) {
-        let raw = this.preprocess(text);
+    // For some reason this doesn't work :/
+    // change(text) {
+    //     debouncePend(this._change, 200)(text);
+    // }
+
+    changeSpecial(coqContent, docContent) {
+        this.version++;
+        this.area.value = docContent;
+        let raw = this.preprocess(coqContent);
+        this.coq?.update({ uri: this.uri, version: this.version, raw });
+    }
+
+    // changeSpecial(c,d) {
+    //     debouncePend(this._changeSpecial, 200)(c,d);
+    // }
+    
+    updateCursor(offset) {
+        this.onCursorUpdate(this.uri, offset);
+    }
+
+    // updateCursor(o) {
+    //     debouncePend(this._updateCursor, 200)(o);
+    // }
+
+    open() {
+        let raw = this.preprocess(this.area.value);
         let dp = { uri: this.uri, version: this.version, raw };
-        coq.newDoc(dp)
+        this?.coq.newDoc(dp)
+    }
+
+    getValue() {
+        return this.area.value;
     }
 }
 
@@ -115,19 +155,21 @@ class ManagerEditor {
     editor : ICoqEditor;
     doc: CoqDocument;
     options: ManagerOptions;
-    onCursorUpdated : (doc : CoqDocument, offset : number) => void;
 
-    constructor(elems, options : ManagerOptions) {
+    constructor(elems, options : ManagerOptions, onCursorUpdate) {
         this.elems = elems;
         this.options = options;
 
         let content_type = this.options.frontend === 'pm' ? 'plain' : this.options.content_type;
-        this.doc = new CoqDocument("file:///src/browser", content_type);
+
+        if (this.elems.length != 1)
+            throw new Error('not implemented: `cm6` frontend requires a single element')
+
+        this.doc = new CoqDocument("file:///src/browser", content_type, this.elems[0], onCursorUpdate);
     }
 
     // Connect to an HTML element
-    connect(onChange: (doc: CoqDocument, raw: string) => void,
-            onCursorUpdated: (doc: CoqDocument, offset: number) => void) {
+    connect() {
 
         // Setup the Coq editor.
         const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
@@ -136,17 +178,7 @@ class ManagerEditor {
         if (!CoqEditor)
             throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
 
-        let onChangeDoc = debouncePend(raw => {
-            onChange(this.doc, raw);
-        }, 200);
-
-        this.onCursorUpdated = onCursorUpdated;
-        let onCursorUpdatedDoc = debouncePend(offset => {
-            console.log('cursor updated: ' + offset);
-            this.onCursorUpdated(this.doc, offset);
-        }, 200);
-
-        this.editor = new CoqEditor(this.elems, this.options, onChangeDoc, onCursorUpdatedDoc);
+        this.editor = new CoqEditor(this.doc, this.options);
     }
 
     disconnect() {
@@ -155,7 +187,7 @@ class ManagerEditor {
     }
 
     updateCursor() {
-        this.onCursorUpdated(this.doc, this.editor.getCursorOffset());
+        this.doc.updateCursor(this.editor.getCursorOffset());
     }
 }
 
@@ -211,19 +243,13 @@ export class CoqManager {
         this.options = copyOptions(options, this.options);
 
         // Create new editor
-        this.editor = new ManagerEditor(elems, this.options);
-
-        let onChange = (doc: CoqDocument, raw) => {
+        let onCursorUpdate = (uri: string, offset: number) => {
             if(this.coq)
-                doc.update(raw, this.coq);
+                this.setGoalCursor(uri, offset, this.coq);
         };
+        this.editor = new ManagerEditor(elems, this.options, onCursorUpdate);
 
-        let onCursorUpdated = (doc: CoqDocument, offset) => {
-            if(this.coq)
-                this.setGoalCursor(doc, offset, this.coq);
-        };
-
-        this.editor.connect(onChange, onCursorUpdated);
+        this.editor.connect();
 
 
         // Packages
@@ -449,8 +475,9 @@ export class CoqManager {
         this.enable();
         this.when_ready.resolve(null);
 
+        this.editor.doc.coq = this.coq;
         // Send the document creation request.
-        this.editor.doc.newDoc(this.editor.editor.getValue(), this.coq);
+        this.editor.doc.open();
     }
 
     // Coq document diagnostics.
@@ -489,7 +516,7 @@ export class CoqManager {
         if (needRecheck) this.refreshWorkspace();
 
         /* Refresh goals at cursor */
-        this.setGoalCursor(this.editor.doc, this.editor.editor.getCursorOffset(), this.coq);
+        this.setGoalCursor(this.editor.doc.uri, this.editor.editor.getCursorOffset(), this.coq);
     }
 
     coqLog(level, msg) {
@@ -679,11 +706,10 @@ export class CoqManager {
 
     /**
      * Shows the goal at a given location.
-     * @param {number?} offset document offset (defaults to current cursor position).
      */
-    async setGoalCursor(doc, offset, coq) {
+    async setGoalCursor(uri : string, offset : number, coq) {
         this.layout.waiting_for_goals(offset);
-        let resp = await coq.sendRequest(doc.uri, offset, ['Goals']);
+        let resp = await coq.sendRequest(uri, offset, ['Goals']);
         if (resp[1])
             this.layout.update_goals(resp[1]);
     }
@@ -794,18 +820,9 @@ export class CoqManager {
             break;
 
         case 'editor':
-            this.editor.options.frontend = (this.editor.options.frontend === 'cm5') ? 'cm6' : 'cm5';
             this.editor.disconnect();
-            let onChange = (doc: CoqDocument, raw) => {
-                if(this.coq)
-                    doc.update(raw, this.coq);
-            };
-    
-            let onCursorUpdated = (doc: CoqDocument, offset) => {
-                if(this.coq)
-                    this.setGoalCursor(doc, offset, this.coq);
-            };
-            this.editor.connect(onChange, onCursorUpdated);
+            this.editor.options.frontend = (this.editor.options.frontend === 'cm5') ? 'cm6' : 'cm5';
+            this.editor.connect();
             break;
         }
     }

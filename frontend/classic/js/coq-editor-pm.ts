@@ -12,7 +12,7 @@ import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
 import { ICoqEditor, editorAppend } from './coq-editor';
-import { ManagerOptions } from './coq-manager';
+import { CoqDocument, ManagerOptions } from './coq-manager';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
@@ -63,16 +63,14 @@ export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
     // eId must be a textarea
-    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated) {
+    constructor(doc : CoqDocument, options: ManagerOptions) {
 
-        let { container, area } = editorAppend(eIds[0]);
-
-        var doc = defaultMarkdownParser.parse(area.value);
+        var text = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
-            new EditorView(container, {
+            new EditorView(doc.container, {
                 state: EditorState.create({
-                    doc: doc || undefined,
+                    doc: text || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
                 }),
                 // We update the text area
@@ -80,14 +78,13 @@ export class CoqProseMirror implements ICoqEditor {
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        onChange(newDoc);
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
-                        area.value = newMarkdown;
+                        doc.changeSpecial(newDoc, newMarkdown);
                     }
                     const { state } = this.state.applyTransaction(tr);
 
                     if(tr.selectionSet) {
-                        onCursorUpdated(state.selection.head);
+                        doc.updateCursor(state.selection.head);
                     }
 
                     this.updateState(state);

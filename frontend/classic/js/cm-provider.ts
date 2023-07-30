@@ -130,7 +130,6 @@ export class CmCoqProvider {
     lineCount : number;
     options : any;
     manager : CoqManager;
-    area?: HTMLTextAreaElement;
 
     /**
      * Creates an instance of CmCoqProvider.
@@ -179,7 +178,6 @@ export class CmCoqProvider {
             /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
             element.value ||= element.textContent;
             /** @todo desirable, but causes a lot of errors: @ type {CodeMirror.Editor} */
-            this.area = element;
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
@@ -205,10 +203,8 @@ export class CmCoqProvider {
         this.onAction = (action) => {};
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
-        this.editor.on('change', (cm, evt) => {
-            this.area.value = cm.getValue();
-            this.onChange(cm, evt);
-        });
+        this.editor.on('change', (cm, evt) => this.onChange(cm, evt));
+
         this.editor.on('cursorActivity', (cm) => {
             this.onCursorUpdate(cm);
             cm.operation(() => this._adjustWidgetsInSelection())
