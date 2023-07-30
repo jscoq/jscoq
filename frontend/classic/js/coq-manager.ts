@@ -37,8 +37,9 @@ import { CoqDocumentManager } from './coq-document-manager';
 import { CoqDocument, ICoqDocumentConstructor, initDocument, content } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { CoqTabManager } from './coq-tab-manager';
+import { CoqMdViewEditor } from './coq-editor-mdview';
 
-type frontend = "pm" | "cm5" | "cm6"
+type frontend = "pm" | "cm5" | "cm6" | 'mdview'
 
 /**
  * Coq Document Manager, client-side.
@@ -106,7 +107,7 @@ export class CoqManager {
             content_type: 'markdown',
             prelaunch:  false,
             prelude:    true,
-            debug:      true,
+            debug:      false,
             show:       true,
             replace:    false,
             wrapper_id: 'ide-wrapper',
@@ -723,7 +724,7 @@ export class CoqManager {
     }
 
     toolbarClickHandler(evt) {
-        
+
         // this.tab_manager.current_tab.focus();
 
         switch (evt.target.name) {
@@ -754,7 +755,7 @@ export class CoqManager {
                 if(this.coq)
                     doc.update(raw, this.coq);
             };
-    
+
             let onCursorUpdated = (doc: CoqDocument, offset) => {
                 if(this.coq)
                     this.setGoalCursor(doc, offset, this.coq);

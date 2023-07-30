@@ -71,6 +71,7 @@
     "@types/pako": "^2.0.4",
     "@types/react": "^18.3.24",
     "@types/react-dom": "^18.3.7",
+    "@uiw/react-markdown-preview": "^4.1.13",
     "@vscode/webview-ui-toolkit": "^1.4.0"
   },
   "files": [
