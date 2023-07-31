@@ -81,20 +81,20 @@ class HeadlessCoqManager {
     doc: any[]
     when_done: Future<void>
 
-    startup_time: number;
-    startup_timeEnd: number;
+    startup_time: number
+    startup_timeEnd: number
 
-    constructor(base_path) {
-        this.volume = fsif_native;
-        let pkg_path = this.findPackageDir();
+    static SDK_DIR = '/tmp/jscoq'
 
+    constructor(basePath: string, sdkDir = HeadlessCoqManager.SDK_DIR) {
         this.startup_time = Date.now();
-        this.coq = new HeadlessCoqWorker(base_path);
+        this.volume = fsif_native;
+
+        this.coq = new HeadlessCoqWorker(basePath);
         this.coq.observers.push(this);
         this.provider = new QueueCoqProvider();
         this.pprint = new FormatPrettyPrint();
-        this.packages = new PackageDirectory(pkg_path);
-
+        this.packages = new PackageDirectory(sdkDir);
         this.project = new CoqProject(undefined, this.volume);
 
         this.options = {
@@ -102,7 +102,7 @@ class HeadlessCoqManager {
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
             all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2'],
-            pkg_path: pkg_path,
+            pkg_path: this.findPackageDir(),
             inspect: false,
             log_debug: false,
             warn: true
