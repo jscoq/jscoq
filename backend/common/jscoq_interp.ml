@@ -102,6 +102,13 @@ let root_state =
   let st = Vernacstate.freeze_full_state () in
   ref (Coq.State.of_coq st)
 
+let lvl_to_fb = function
+  | Fleche.Io.Level.Error -> Feedback.Error
+  | Warning -> Feedback.Warning
+  | Info -> Feedback.Notice
+  | Log-> Feedback.Info
+  | Debug -> Feedback.Debug
+
 let lsp_cb =
   let perfData ~uri:_ ~version:_ { Fleche.Perf.summary = _; _ } = () in
     (* Format.(eprintf "[perfdata]@\n@[%s@]@\n%!" summary) in *)
@@ -112,7 +119,7 @@ let lsp_cb =
   let out_fn = post_answer in
   Fleche.Io.CallBack.
     { trace = (fun cat ?extra:_ msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
-    ; message = (fun ~lvl:_ ~message:_ -> ())
+    ; message = (fun ~lvl ~message -> out_fn (Log (lvl_to_fb lvl, Pp.str message)))
     ; diagnostics = (fun ~uri ~version diagnostic ->
           out_fn (Notification { uri; version; diagnostic }))
     ; fileProgress = (fun ~uri:_ ~version:_ _progress -> ())
