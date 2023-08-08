@@ -244,14 +244,15 @@ Qed.</textarea>
   <script type="module">
     import { JsCoq } from './jscoq.js';
 
-    var sp = new URLSearchParams(location.search);
+    var sp = new URLSearchParams(location.search),
+        ifHas = x => sp.has(x) ? x : undefined;
 
     if (!localStorage['scratchpad.last_filename'])
         setTimeout(() => document.body.classList.add('welcome'), 1500);
 
     var jscoq_ids  = ['.snippet'];
     var jscoq_opts = {
-        backend:   sp.get('backend'),
+        backend:   sp.get('backend') ?? ifHas('wa'),
         implicit_libs: false,
         focus: false,
         editor: { mode: { 'company-coq': true } },

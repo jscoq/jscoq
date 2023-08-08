@@ -25,12 +25,13 @@
     import { JsCoq } from "../jscoq.js";
 
     var sp = new URLSearchParams(location.search),
-        panel_theme = sp.has('dark') ? 'dark' : sp.get('theme') || 'light',
-        editor_theme = sp.get('editor_theme') || (panel_theme == 'dark' ? 'blackboard' : 'default');
+        ifHas = x => sp.has(x) ? x : undefined,
+        panel_theme = ifHas('dark') ?? sp.get('theme') ?? 'light',
+        editor_theme = sp.get('editor_theme') ?? (panel_theme == 'dark' ? 'blackboard' : 'default');
 
 
     var jscoq_opts = {
-        backend: sp.get('backend'),
+        backend: sp.get('backend') ?? ifHas('wa'),
         subproc: sp.has('app'),
         node_modules_path: '../node_modules/',
         file_dialog: true,
