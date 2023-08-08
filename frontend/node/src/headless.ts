@@ -18,6 +18,7 @@ import { arreq_deep } from '../../common/etc.js';
 
 // Frontend imports, specific to the layout but we should refactor
 import { FormatPrettyPrint } from '../../format-pprint/js';
+import { existsDir } from './../../cli/build/sdk/shutil';
 
 // Where to put this?
 //
@@ -400,8 +401,10 @@ class PackageDirectory extends EventEmitter {
     }
 
     clear() {
-        fs.rmSync(this.dir, {recursive: true});
-        fs.mkdirSync(this.dir, {recursive: true});
+        if (existsDir(this.dir)) {
+            fs.rmSync(this.dir, {recursive: true});
+            fs.mkdirSync(this.dir, {recursive: true});
+        }
     }
 
     async loadPackages(uris: string | string[]) {
