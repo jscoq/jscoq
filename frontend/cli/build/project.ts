@@ -591,13 +591,19 @@ class JsCoqCompat {
      */
     static transpilePluginsJs(mod: SearchPathElement) {
         if (mod.physical.endsWith('.cma')) {
-            const infile = mod.physical, outfile = `${infile}.js`;
+            const infile = mod.physical, outfile = `${infile}.js`,
+                  flags = JsCoqCompat.flags();
             // assumes volume is fsif_native...
-            child_process.execSync(`js_of_ocaml --wrap-with-fun= -o ${outfile} ${infile}`);
+            child_process.execSync(`js_of_ocaml ${flags} --wrap-with-fun= -o ${outfile} ${infile}`);
             return [mod, /*{...mod, payload: new Uint8Array(*empty*)},*/
                     {...mod, physical: outfile, ext: '.cma.js'}];
         }
         else return [mod];
+    }
+
+    static flags() {
+        return (process.env['JSCOQ_DEBUG'] !== undefined) ?
+            '--pretty --noinline --disable shortvar --debug-info' : '';
     }
 
     /**
