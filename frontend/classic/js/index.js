@@ -8,6 +8,7 @@ import { CoqManager } from './coq-manager.js';
 export { CoqWorker } from '../../../backend';
 export { PackageManager } from './coq-packages.js';
 export { CmCoqProvider, Deprettify } from './cm-provider.js';
+export { FormatPrettyPrint } from '../../format-pprint/js/index.js';
 
 const scriptDir = import.meta.url.replace(/[^/]*$/, '');
 
@@ -21,6 +22,7 @@ const JsCoq = {
     async start(...args) {
         let { jscoq_ids, jscoq_opts } = this._getopts('start', ...args);
         this.base_path = jscoq_opts.base_path;
+        //@ts-ignore
         window.JsCoq = this; // atm this is still needed by UI addons
         return new CoqManager(jscoq_ids, jscoq_opts);
     },
