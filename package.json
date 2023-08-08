@@ -46,7 +46,7 @@
     "@types/jquery": "^3.5.14",
     "@types/mkdirp": "^1.0.1",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^13.11.1",
+    "@types/node": "^20.4.8",
     "@types/pako": "^2.0.0",
     "assert": "^2.0.0",
     "bootstrap": "^5.2.1",

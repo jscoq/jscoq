@@ -120,6 +120,7 @@ class HeadlessCoqManager {
     }
 
     async start() {
+        this.packages.clear();
         await this.packages.loadPackages(this.options.all_pkgs.map(pkg =>
             this.getPackagePath(pkg)));
 
@@ -396,6 +397,11 @@ class PackageDirectory extends EventEmitter {
         this.dir = dir;
         this.packages_by_name = {};
         this.packages_by_uri = {};
+    }
+
+    clear() {
+        fs.rmSync(this.dir, {recursive: true});
+        fs.mkdirSync(this.dir, {recursive: true});
     }
 
     async loadPackages(uris: string | string[]) {
