@@ -194,10 +194,13 @@ export class CoqLayoutClassic {
      */
     configure(options) {
         if (options.theme) {
-            this.panel.classList.remove(...[...this.panel.classList]
-                .filter(c => c.startsWith('jscoq-theme-')));
-            this.panel.classList.add(`jscoq-theme-${options.theme}`);
-            // - configure help which is in an iframe
+            // - configure panel and goal view (which is in an iframe)
+            for (let el of [this.panel, this.goals.contentDocument.body]) {
+                el.classList.remove(...[...el.classList]
+                    .filter(c => c.startsWith('jscoq-theme-')));
+                el.classList.add(`jscoq-theme-${options.theme}`);
+            }
+            // - configure help screen (which is also in an iframe)
             let ipanel : HTMLIFrameElement = this.panel.querySelector('#help-panel iframe');
             ipanel.contentDocument.body.setAttribute('theme', options.theme);
         }

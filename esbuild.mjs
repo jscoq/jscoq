@@ -92,6 +92,10 @@ function viewBuild(name, dir, file) {
       outdir: path.join("dist/frontend", name),
       outbase: dir,
       minify,
+      loader: {
+        '.png': 'binary',
+        '.svg': 'dataurl'
+      },
       metafile: enableMeta,
       // watch: watch(file),
     })
@@ -107,6 +111,7 @@ function viewBuild(name, dir, file) {
 }
 
 var infoView = viewBuild("info-view", "./vendor/coq-lsp/editor/code/views/info/", "index.tsx");
+var infoViewCss = viewBuild("info-view", "./frontend/views/info/", "iframe.css");
 
 // TODO: run serve if --serve was passed.
-await Promise.all([frontend, backend, infoView])
+await Promise.all([frontend, backend, infoView, infoViewCss])

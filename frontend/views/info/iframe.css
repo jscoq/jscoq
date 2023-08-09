@@ -1,0 +1,15 @@
+@import url(../../classic/css/coq-light.css);
+@import url(../../classic/css/coq-dark.css);
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: monospace;
+}
+
+body.jscoq-theme-dark {
+    color: white;
+}
