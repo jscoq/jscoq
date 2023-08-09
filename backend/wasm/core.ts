@@ -31,14 +31,14 @@ class IcoqPod extends EventEmitter {
     async findlibStartup() {
         this.putFile('/lib/findlib.conf', `path="/lib/ocaml"`);
 
-        await this.unzip('/scratch/lib.zip', '/lib/ocaml');
+        // await this.unzip('/scratch/lib.zip', '/lib/ocaml');
     }
 
     get fs() { return this.core.fs; }
 
     async boot() {
         await this.upload(`../backend/wasm/wacoq_worker.bc`, '/lib/icoq.bc');
-        //await this.findlibStartup(); /* @todo */
+        await this.findlibStartup(); /* @todo */
 
         this._preloadStub();
     
@@ -149,6 +149,19 @@ class IcoqPod extends EventEmitter {
             'dllbase_internalhash_types_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm`);
         this.core.proc.dyld.preload(
             'dllcoqrun_stubs.so', `${this.binDir}/dllcoqrun_stubs.wasm`);
+        /** @ouch these null stubs are needed because of some spurious dependency */
+        this.core.proc.dyld.preload(
+            'dllbigstringaf_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
+            {
+                js: {
+                    bigstringaf_blit_to_bytes: (vsrc, vsrc_off, vdst, vdst_off, vlen) => { },
+                    bigstringaf_blit_to_bigstring: (vsrc, vsrc_off, vdst, vdst_off, vlen) => {},
+                    bigstringaf_blit_from_bytes: (vsrc, vsrc_off, vdst, vdst_off, vlen) => {},
+                    bigstringaf_memcmp_bigstring: (vba1, vba1_off, vba2, vba2_off, vlen) => {},
+                    bigstringaf_memcmp_string: (vba, vba_off, vstr, vstr_off, vlen) => {},
+                    bigstringaf_memchr: (vba, vba_off, vchr, vlen) => {},
+                }
+            });
         this.core.proc.dyld.preload(
             'dlllib_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
             {

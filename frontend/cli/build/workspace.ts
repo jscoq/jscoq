@@ -4,6 +4,17 @@ import { neatJSON } from 'neatjson';
 import { CoqProject, SearchPath, SearchPathElement, ZipVolume } from './project';
 import { BuildError } from './batch';
 
+// Input metadata for coq-pkg
+interface PDirManifest {
+    [dir: string]: { prefix: string, dirpaths: string[] }
+}
+interface Manifest {
+    builddir: string;
+    bundle: string; // Bundle name
+    projects: { [name: string]: PDirManifest }; 
+    rootdir?: string;
+}
+
 class Workspace {
 
     projs: {[name: string]: CoqProject} = {}
@@ -14,7 +25,7 @@ class Workspace {
 
     open(jsonFilename: string, rootdir?: string, opts: Workspace.Options = {}) {
         try {
-            var json = JSON.parse(<any>fs.readFileSync(jsonFilename));
+            var json : Manifest = JSON.parse(<any>fs.readFileSync(jsonFilename));
             if (json.builddir) this.outDir = json.builddir;
             if (json.bundle) this.bundleName = json.bundle
             this.openProjects(json.projects, rootdir || json.rootdir, opts);
@@ -42,7 +53,7 @@ class Workspace {
         proj.searchPath = this.searchPath;
     }
 
-    openProjects(pkgs: any, baseDir: string, opts: Workspace.Options = {}) {
+    openProjects(pkgs: { [name: string]: PDirManifest }, baseDir: string, opts: Workspace.Options = {}) {
         var errs = [], ok = false;;
         for (let pkg in pkgs) {
             try {

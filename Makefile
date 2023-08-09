@@ -1,6 +1,6 @@
 .PHONY: all clean force
-.PHONY: jscoq jscoq_worker links links-clean
-.PHONY: dist dist-upload dist-release serve
+.PHONY: jscoq jscoq-static jscoq_worker links links-clean
+.PHONY: dist serve
 
 -include ./config.inc
 
@@ -89,6 +89,9 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
+jscoq-static: force
+	$(DUNE) build @jscoq-static $(DUNE_FLAGS)
+
 jscoq: force
 	$(DUNE) build @jscoq $(DUNE_FLAGS)
 
@@ -111,9 +114,9 @@ install:
 links:
 	ln -sf _build/$(BUILD_CONTEXT)/coq-pkgs .
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/jsoo/jscoq_worker.bc.js backend/jsoo/jscoq_worker.bc.js
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
-	ln -sf ../../_build/jscoq+64bit/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
 links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.js backend/wasm/wacoq_worker.bc \

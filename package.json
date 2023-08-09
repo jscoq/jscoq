@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@octokit/core": "^4.2.1",
+    "@codemirror/state": "^6.1.1",
+    "@codemirror/view": "^6.2.4",
     "array-equal": "^1.0.0",
     "browser-or-node": "^2.0.0",
     "child-process-promise": "^2.2.1",
@@ -33,14 +35,22 @@
     "lodash": "^4.17.20",
     "mkdirp": "^1.0.4",
     "neatjson": "^0.10.5",
+    "path": "^0.12.7",
     "proper-lockfile": "^4.1.2",
+    "prosemirror-example-setup": "^1.2.1",
+    "prosemirror-highlightjs": "0.9.1",
+    "prosemirror-markdown": "^1.9.3",
+    "prosemirror-schema-basic": "^1.2.0",
+    "prosemirror-state": "^1.4.1",
+    "prosemirror-view": "^1.27.0",
+    "throttle-debounce": "^5.0.0",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
     "wacoq-deps": "^0.1.0"
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
-    "@types/codemirror": "^5.60.5",
+    "@types/codemirror": "^5.60.7",
     "@types/find": "^0.2.1",
     "@types/glob": "^8.0.1",
     "@types/jquery": "^3.5.14",
@@ -91,7 +101,8 @@
     "release": "node esbuild.mjs --minify --sourcemap=no",
     "typecheck": "tsc -b .",
     "webpack": "webpack",
-    "esbuild-cli": "node esbuild-cli.mjs"
+    "esbuild-cli": "node esbuild-cli.mjs",
+    "esbuild-pkg": "node esbuild-pkg.mjs"
   },
   "repository": {
     "type": "git",

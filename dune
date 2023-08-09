@@ -13,12 +13,12 @@
   (progn
    (run
      node
-     %{dep:dist-cli}/cli.cjs
+     %{dep:dist-pkg}/mk-pkg.cjs
      %{dep:etc/pkg-metadata/coq-pkgs.json}
      --rootdir %{env:COQBUILDDIR_REL=????}
-     --nostdlib)
+     --nostdlib))))
    ; building symbols using Make because Dune has no pattern rules T.T
-   (run make libs-symb))))
+   ; (run make libs-symb))))
 
 (rule
  (targets (dir node_modules))
@@ -28,6 +28,15 @@
    package-lock.json)
  (action
   (run npm install --no-progress --no-save)))
+
+(alias
+ (name jscoq-static)
+ (deps
+   (source_tree frontend)
+   (source_tree backend)
+   (source_tree examples)
+  index.html
+  jscoq.install))
 
 (alias
  (name jscoq)
@@ -49,7 +58,8 @@
   (source_tree docs)  ; for `quick-help.html`
   dist
   jscoq.js
-  dist-webpack
+; Disabled in the lsp / esbuild branch
+; dist-webpack
   index.html
   coq-pkgs))
 
@@ -58,7 +68,9 @@
  (targets (dir dist))
  (mode (promote (until-clean)))
  (deps
-  (source_tree backend)
+  (source_tree backend/*.js)
+  (source_tree backend/*.ts)
+  (source_tree backend/wasm)
   (source_tree frontend)
   tsconfig.json
   esbuild.mjs
@@ -66,6 +78,19 @@
  (action
   ; Set JSCOQ_BUNDLE_TARGET=release to generate minimized dist files
   (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild})))
+
+(rule
+ (targets (dir dist-pkg))
+ (mode (promote (until-clean)))
+ (deps
+  etc/pkg-metadata/coq-pkgs.json
+  (source_tree backend)
+  (source_tree frontend)
+  tsconfig.json
+  esbuild-pkg.mjs
+  node_modules)
+ (action
+  (run npm run esbuild-pkg)))
 
 (rule
  (targets (dir dist-cli))

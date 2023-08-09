@@ -3,12 +3,12 @@ import type { Editor } from 'codemirror';
 import { DocumentClient, SyncPad } from './p2p-chunk';
 import './collab.css';
 
-
 class CollabP2P {
     client: DocumentClient
     ui: CollabP2PUI
     provider: {
-        editor: Editor, filename: string,
+        editor: Editor,
+        filename: string,
         getText: () => string,
         openLocal: (filename: string) => Promise<any>
     }

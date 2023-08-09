@@ -4,3 +4,6 @@
 [submodule "vendor/coq-serapi"]
 	path = vendor/coq-serapi
 	url = https://github.com/ejgallego/coq-serapi.git
+[submodule "vendor/coq-lsp"]
+	path = vendor/coq-lsp
+	url = https://github.com/ejgallego/coq-lsp.git

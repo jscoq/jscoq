@@ -22,142 +22,191 @@ module Seq = struct
 end
 
 type 'a hyp =
-  [%import: 'a Serapi.Serapi_goals.hyp]
+  [%import: 'a Coq.Goals.hyp]
   [@@deriving to_yojson]
 
 type info =
-  [%import: Serapi.Serapi_goals.info]
+  [%import: Coq.Goals.info]
   [@@deriving to_yojson]
 
 type 'a reified_goal =
-  [%import: 'a Serapi.Serapi_goals.reified_goal]
+  [%import: 'a Coq.Goals.reified_goal]
   [@@deriving to_yojson]
 
-type 'a ser_goals =
-  [%import: 'a Serapi.Serapi_goals.ser_goals]
+type ('a, 'pp) goals =
+  [%import: ('a, 'pp) Coq.Goals.goals]
   [@@deriving to_yojson]
 
 module Proto = struct
 
+module Lang = struct
+module Point = struct
+  type t = [%import: Lang.Point.t]
+  [@@deriving yojson]
+end
+
+module Range = struct
+  type t = [%import: (Lang.Range.t[@with Lang.Point.t := Point.t])]
+  [@@deriving yojson]
+end
+
+module LUri = struct
+  type _kv = (string * string list) list
+
+  type _query =
+    | KV of _kv
+    | Raw of string option * _kv Lazy.t
+
+  type _t = {
+    scheme: string option;
+    userinfo: (string * string option) option;
+    host: string option;
+    port: int option;
+    path: string list;
+    query: _query;
+    fragment: string option
+  }
+
+  module File = struct
+    type t = Lang.LUri.File.t
+
+    type nonrec _t =
+      { uri : _t
+      ; file : string
+      }
+
+    (* let to_yojson uri = `String (Lang.LUri.File.to_string_uri uri) *)
+    let to_yojson uri = `String ("file://"^(Obj.magic uri).file)
+    let invalid_uri msg obj = raise (Yojson.Safe.Util.Type_error (msg, obj))
+
+    let of_yojson uri =
+      match uri with
+      | `String uri as _obj -> (
+          let fl = String.length "file:///" - 1 in
+          let file = String.(sub uri fl (length uri - fl)) in
+          let uri = { scheme = None
+                    ; userinfo = None;
+                      host = None;
+                      port = None;
+                      path = [];
+                      query = KV [];
+                      fragment = None }
+          in
+          Ok (Obj.magic { uri; file }))
+        (* let uri = Lang.LUri.of_string uri in *)
+        (* match Lang.LUri.File.of_uri uri with *)
+        (* | Result.Ok t -> Result.Ok t *)
+        (* | Result.Error msg -> invalid_uri ("failed to parse uri: " ^ msg) obj) *)
+      | obj -> invalid_uri "expected uri string, got json object" obj
+  end
+end
+
+module Diagnostic = struct
+
+  module Extra = struct
+    type t =
+      [%import: Lang.Diagnostic.Extra.t]
+      [@@deriving yojson]
+  end
+
+  type t =
+    [%import: (Lang.Diagnostic.t [@with Lang.Range.t := Range.t; Lang.LUri.File.t:=LUri.File.t])]
+    [@@deriving yojson]
+
+end
+end
+
 type coq_options = (string list * Goptions.option_value) list [@@deriving yojson]
 type lib_path = (string list * string list) list [@@deriving yojson]
-type debug_config =
-  { coq: bool                    [@default false]
-  ; stm: bool                    [@default false]
-  }
-  [@@deriving yojson]
 
-type jscoq_options =
+type init_options =
   { implicit_libs: bool          [@default true]
-  ; coq_options: coq_options     [@default []]  (* @todo this has to be set during init in 8.13 and older; in 8.14, move to doc_options *)
-  ; debug: debug_config          [@default {coq=false; stm=false}]
+  ; coq_options: coq_options     [@default []]
+  (* @todo allow to be set in NewDoc too *)
+  ; debug: bool                  [@default false]
   ; lib_path: lib_path           [@default []]
-  }
-  [@@deriving yojson]
-
-type top_mode =
-  [%import: Icoq.top_mode]
-  [@@deriving yojson]
-
-type doc_options =
-  { top_name: string             [@default "JsCoq"]
   ; lib_init: string list        [@default ["Coq.Init.Prelude"]]
-  ; mode: top_mode               [@default Interactive]
-  }
-  [@@deriving yojson]
-
-type in_mode = Icoq.in_mode
-let in_mode_to_yojson = function Icoq.Proof -> `String "Proof" | General -> `Null
-
-module Qualified_object_prefix = struct
-  type t = [%import: Code_info.Qualified_object_prefix.t]
-  [@@deriving yojson]
-end
-
-module Qualified_name = struct
-  type t = [%import: Code_info.Qualified_name.t]
-  [@@deriving yojson]
-end
+  } [@@deriving yojson]
 
 type search_query =
   [%import: Code_info.Query.t]
   [@@deriving yojson]
 
-type query =
-  | Mode
-  | Goals
-  | Vernac of string
-  | Inspect of search_query
+module Method = struct
+
+  type t =
+    | Mode
+    | Goals
+    | Search of string
+    | TypeAtPoint
+    | TypeOfId of string
+    | Inspect of search_query
+    | Completion of string
   [@@deriving yojson]
+
+end
+
+module Answer = struct
+
+  type t =
+  | Goals of (Pp.t reified_goal, Pp.t) goals option
+  | Completion of string list
+  | Void
+  [@@deriving to_yojson]
+
+end
 
 type opaque
 let opaque_to_yojson _x = `Null
 let opaque_of_yojson _x = Result.Error "opaque value"
 
+module Request = struct
+
+  type 'a t =
+    { id : int
+    ; loc : int
+    (* In fact, we should use Lsp.Base.point instead of int for
+       location, however ProseMirror and CM6 use offsets *)
+    ; v : 'a
+    }
+  [@@deriving yojson]
+
+  let make ~id ~loc v = { id; loc; v }
+
+  type 'a answer =
+    { id : int
+    ; res : 'a
+    }
+  [@@deriving yojson]
+
+  let process { id; loc; v } ~f =
+    { id; res = f loc v }
+
+end
+
 (* Main RPC calls *)
 type jscoq_cmd =
+  | Init    of init_options
+  | NewDoc  of { uri : Lang.LUri.File.t; version : int; raw : string }
+  | Update  of { uri : Lang.LUri.File.t; version : int; raw : string }
+
+  | Request of { uri : Lang.LUri.File.t; method_ : Method.t Request.t [@key "method"]}
+
   | InfoPkg of string * string list
   | LoadPkg of string * string
-
-  | Init    of jscoq_options
-  | NewDoc  of doc_options
-
-  (*           ontop       new         sentence                *)
-  | Add     of Stateid.t * Stateid.t * string * bool
-  | Cancel  of Stateid.t
-  | Exec    of Stateid.t
-
-  | Query   of Stateid.t * Feedback.route_id * query
-  | Ast     of Stateid.t
 
   (*            filename content *)
   | Register of string
   | Put      of string * string
-
-  (* XXX: Not well founded... *)
-  | GetOpt  of string list
-
   | InterruptSetup of opaque
-
-  | ReassureLoadPath of lib_path
-  | Load    of string
-  | Compile of string
   [@@deriving yojson]
 
 type jscoq_answer =
   | CoqInfo   of string
-
-  | Ready     of Stateid.t
-
-  (* Merely Informative now *)
-  | Added     of Stateid.t * Loc.t option
-
-  (* Requires pkg(s)         prefix        module names    *)
-  | Pending   of Stateid.t * string list * string list list
-
-  (* Main feedback *)
-  | Cancelled of Stateid.t list
-
-  (* Query responses *)
-  | ModeInfo  of Stateid.t * in_mode
-  | GoalInfo  of Stateid.t * Pp.t reified_goal ser_goals option
-
-  | Ast       of Vernacexpr.vernac_control option
-  | CoqOpt    of string list * Goptions.option_value
+  | Ready     of unit
+  | Notification of Lang.Diagnostic.t list * int
+  | Response  of Answer.t Request.answer
   | Log       of Feedback.level * Pp.t
-  | Feedback  of Feedback.feedback
-
-  | SearchResults of Feedback.route_id * Qualified_name.t Seq.t
-
-  | Loaded    of string * Stateid.t
-  | Compiled  of string
-
-  (* Low-level *)
-  | CoqExn    of { loc : Loc.t option
-                 ; sid : (Stateid.t * Stateid.t) option
-                 ; msg : string
-                 ; pp : Pp.t
-                 }
   | JsonExn   of string
   [@@deriving to_yojson]
 end

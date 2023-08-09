@@ -1,14 +1,52 @@
+/* jsCoq
+ *
+ * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
+ * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
+ * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
+ */
+
 export type backend = 'js' | 'wa';
 
-import { Future, PromiseFeedbackRoute } from './future';
+// Needs to be in sync with jscoq_proto.ml, maybe some day automatically
+export interface Point {
+    line : number,
+    character : number,
+    offset : number
+}
 
-type Block_type = 
+export interface Range {
+    start: Point
+    end: Point
+}
+
+export interface Diagnostic {
+    range: Range
+    severity: number
+    message: string
+    extra?: any[]
+}
+
+export interface CoqInitOptions {
+  implicit_libs?: boolean,
+  coq_options?: [string[], any[]][],
+  debug?: boolean,
+  lib_path?: [string[], string[]][],
+  lib_init?: string[]
+}
+
+export interface DocumentParams {
+  uri: string,
+  version: number,
+  raw: string
+}
+
+type Block_type =
     ['Pp_hbox']
   | ['Pp_vbox', number]
   | ['Pp_hvbox', number]
   | ['Pp_hovbox', number];
 
-  export type Pp =
+export type Pp =
     ['Pp_empty']
   | ['Pp_string', string]
   | ['Pp_glue', Pp[]]
@@ -17,6 +55,33 @@ type Block_type =
   | ['Pp_print_break', number, number]
   | ['Pp_force_newline']
   | ['Pp_comment', string[]];
+
+export interface Hyp {
+    names : string[],
+    def?: Pp,
+    ty: Pp
+}
+
+export interface info {
+    evar: number
+    name?: any // Id.t option
+}
+
+export interface Goal {
+    info: info
+    ty: Pp
+    hyps: Hyp[]
+}
+
+export interface Goals {
+    goals: Goal[]
+    stack: [Goal[],Goal[]][]
+    bullet?: Pp
+    shelf: Goal[]
+    given_up: Goal[]
+}
+
+import { Future, PromiseFeedbackRoute } from './future';
 
 /**
  * Main Coq Worker Class
@@ -69,30 +134,29 @@ export class CoqWorker {
 
     intvec: Int32Array;
 
-    private load_progress: (ratio: number, ev: ProgressEvent) => void;
+    // Should be private
+    load_progress: (ratio: number | undefined, ev: ProgressEvent) => void;
 
     // Misc
     private _boot : Future<void>;
-    protected when_created: Promise<void>;
     protected _handler: (msg : any) => void;
+
+    when_created: Promise<void>;
 
     // Needs work to move to a standard typed registration mechanism
     // The protected here is not respected by the {package,coq}-manager(s), thus we have commented it out.
     /* protected */ observers: CoqEventObserver[];
 
     // Private stuff to handle our implementation of requests
-    private routes: Map<number,CoqEventObserver[]>;
-    private sids: Future<void>[];
-    private _gen_rid : number;
+    private request_pending: Future<object>[] = [];
+    private request_nextid = 0;
 
-    constructor(base_path : (string | URL), scriptPath : URL, worker, backend : backend) {
+    constructor(base_path : (string | URL), scriptPath : URL | null, worker, backend : backend) {
 
         this.config = new CoqWorkerConfig(base_path, backend);
         this.config.path = scriptPath || this.config.path;
 
         this.observers = [this];
-        this.routes = new Map([[0,this.observers]]);
-        this.sids = [, new Future()];
 
         this.load_progress = (ratio, ev) => {};
 
@@ -176,96 +240,39 @@ export class CoqWorker {
         this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
+    sendRequest(uri: string, loc: number, req: object) {
+        let id = this.request_nextid++,
+            fut = this.request_pending[id] = new Future;
+        this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
+        this.interrupt();
+        return fut.promise;
+    }
+
+    coqResponse(resp: {id: number, res: object}) {
+        console.warn(resp);
+        let fut = this.request_pending[resp.id];
+        delete this.request_pending[resp.id];
+        fut?.resolve(resp.res);
+    }
+
+    /*--- jsCoq Protocol Commands ---*/
     /**
      * Send Init Command to Coq
      *
-     * @param {object} coq_opts
-     * @param {object} doc_opts
-     * @memberof CoqWorker
      */
-    init(coq_opts, doc_opts) {
-        this.sendCommand(["Init", coq_opts]);
-        if (doc_opts)
-            this.sendCommand(["NewDoc", doc_opts]);
+    init(opts : CoqInitOptions) {
+        this.sendCommand(["Init", opts]);
     }
 
-    getInfo() {
-        this.sendCommand(["GetInfo"]);
+    newDoc(docp : DocumentParams) {
+        this.sendCommand(["NewDoc", docp])
     }
 
-    /**
-     * @param {any} ontop_sid
-     * @param {string | number} new_sid
-     * @param {any} stm_text
-     * @param {boolean} resolve
-     */
-    add(ontop_sid, new_sid, stm_text, resolve = false) {
-        this.sids[new_sid] = new Future();
-        this.sendCommand(["Add", ontop_sid, new_sid, stm_text, resolve]);
+    update(docp : DocumentParams) {
+        this.sendCommand(["Update", docp]);
+        this.interrupt();
     }
 
-    /**
-     * @param {any} ontop_sid
-     * @param {any} new_sid
-     * @param {any} stm_text
-     */
-    resolve(ontop_sid, new_sid, stm_text) {
-        this.add(ontop_sid, new_sid, stm_text, true);
-    }
-
-    /**
-     * @param {any} sid
-     */
-    exec(sid) {
-        this.sendCommand(["Exec", sid]);
-    }
-
-    /**
-     * @param {number} sid
-     */
-    cancel(sid) {
-        for (let i in this.sids)
-            if (+i >= sid && this.sids[i]) { this.sids[i]?.reject(); delete this.sids[i]; }
-        this.sendCommand(["Cancel", sid]);
-    }
-
-    /**
-     * @param {any} sid
-     */
-    goals(sid) {
-        this.sendCommand(["Query", sid, 0, ["Goals"]]);
-    }
-
-    /**
-     * @param {number} sid
-     * @param {any} rid
-     * @param {any[]} query
-     */
-    query(sid, rid, query) {
-        if (typeof query == 'undefined') { query = rid; rid = undefined; }
-        if (typeof rid == 'undefined')
-            rid = this._gen_rid = (this._gen_rid || 0) + 1;
-        this.sendCommand(["Query", sid, rid, query]);
-        return rid;
-    }
-
-    inspect(sid, rid, search_query) {
-        if (typeof search_query == 'undefined') { search_query = rid; rid = undefined; }
-        return this.query(sid, rid, ['Inspect', search_query])
-    }
-
-    /**
-     * @param {string | string[]} option_name
-     */
-    getOpt(option_name) {
-        if (typeof option_name === 'string')
-            option_name = option_name.split(/\s+/);
-        this.sendCommand(["GetOpt", option_name]);
-    }
-
-    /**
-     * @param {{base_path: string, pkg: string} | string} url
-     */
     loadPkg(url) {
         switch (this.config.backend) {
         case 'js':
@@ -357,7 +364,6 @@ export class CoqWorker {
     }
 
     async restart() {
-        this.sids = [, new Future()];
 
         this.end();  // kill!
 
@@ -368,53 +374,9 @@ export class CoqWorker {
         if (this.worker) {
             this.worker.removeEventListener('message', this._handler);
             this.worker.terminate();
+            /* @ts-ignore */
             this.worker = undefined;
         }
-    }
-
-    // Promise-based APIs
-
-    /**
-     * @param {string | number} sid
-     */
-    execPromise(sid) {
-        this.exec(sid);
-
-        if (!this.sids[sid]) {
-            console.warn(`exec'd sid=${sid} that was not added (or was cancelled)`);
-            this.sids[sid] = new Future();
-        }
-        return this.sids[sid].promise;
-    }
-
-    /**
-     * @param {any} sid
-     * @param {any} rid
-     * @param {any} query
-     */
-    queryPromise(sid, rid, query) {
-        return this._wrapWithPromise(
-            rid = this.query(sid, rid, query));
-    }
-
-    /**
-     * @param {any} sid
-     * @param {any} rid
-     * @param {any} search_query
-     */
-    inspectPromise(sid, rid, search_query?) {
-        return this._wrapWithPromise(
-            this.inspect(sid, rid, search_query));
-    }
-
-    /**
-     * @param {string | number} rid
-     */
-    _wrapWithPromise(rid) {
-        let pfr = new PromiseFeedbackRoute();
-        this.routes.set(rid, [pfr]);
-        pfr.atexit = () => { this.routes.delete(rid); };
-        return pfr.promise;
     }
 
     join(child) {
@@ -459,64 +421,6 @@ export class CoqWorker {
         if (this._boot)
             this._boot.resolve(null);
     }
-
-    /**
-     * @param {{ contents: string | any[]; route: number; span_id: any; }} fb_msg
-     * @param {any} in_mode
-     */
-    coqFeedback(fb_msg, in_mode) {
-
-        var feed_tag = fb_msg.contents[0];
-        var feed_route = fb_msg.route || 0;
-        var feed_args = [fb_msg.span_id, ...fb_msg.contents.slice(1), in_mode];
-        var handled = false;
-
-        if(this.config.debug)
-            console.log('Coq Feedback message', fb_msg.span_id, fb_msg.contents);
-
-        // We call the corresponding method feed$feed_tag(sid, msg[1]..msg[n])
-        const routes = this.routes.get(feed_route) || [];
-        for (let o of routes) {
-            let handler = o['feed'+feed_tag];
-            if (handler) {
-                handler.apply(o, feed_args);
-                handled = true;
-            }
-        }
-
-        if (!handled && this.config.warn) {
-            console.warn(`Feedback type ${feed_tag} not handled (route ${feed_route})`);
-        }
-    }
-
-    /**
-     * @param {string | number} rid
-     * @param {any} bunch
-     */
-    coqSearchResults(rid, bunch) {
-
-        var handled = false;
-
-        for (let o of this.routes.get(rid) || []) {
-            var handler = o['feedSearchResults'];
-            if (handler) {
-                handler.call(o, bunch);
-                handled = true;
-            }
-        }
-
-        if (!handled && this.config.warn) {
-            console.warn(`SearchResults not handled (route ${rid})`);
-        }
-    }
-
-    /**
-     * @param {string | number} sid
-     */
-    feedProcessed(sid) {
-        var fut = this.sids[sid];
-        if (fut) { fut.resolve(null); }
-    }
 }
 
 /**
@@ -540,7 +444,7 @@ export class CoqSubprocessAdapter extends CoqWorker {
 }
 
 // some boilerplate from https://stackoverflow.com/questions/51734372/how-to-prefetch-video-in-a-react-application
-function prefetchResource(url, progress = (pc:number,ev:ProgressEvent)=>{}) {
+function prefetchResource(url, progress = (pc:number|undefined,ev:ProgressEvent)=>{}) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "blob";

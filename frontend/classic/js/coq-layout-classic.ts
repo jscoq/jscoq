@@ -66,8 +66,8 @@ export class CoqLayoutClassic {
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">
-          <img class="${backend}-logo" src="${base_path}/frontend/classic/images/${backend}-logo.svg" alt="js"><i>+</i><!--
-            --><img class="coq-logo" src="${base_path}/frontend/classic/images/coq-logo.png" alt="Coq">
+          <img class="${backend}-logo" src="${this._url(`frontend/classic/images/${backend}-logo.svg`)}" alt="js"><i>+</i><!--
+            --><img class="coq-logo" src="${this._url('frontend/classic/images/coq-logo.png')}" alt="Coq">
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
@@ -95,7 +95,7 @@ export class CoqLayoutClassic {
         <div class="caption">Help</div>
         <div class="content" id="help-text">
             <button class="btn-close" alt="Hide help (${kb.help})" title="Hide help (${kb.help})"></button>
-            <iframe src="${base_path}docs/quick-help.html"></iframe>
+            <iframe src="${this._url('docs/quick-help.html')}"></iframe>
         </div>
       </div>
       <div class="msg-area flex-panel">
@@ -137,7 +137,7 @@ export class CoqLayoutClassic {
 
         this.panel = document.createElement('div');
         this.panel.id = 'panel-wrapper';
-        this.panel.innerHTML = this.html({base_path: options.base_path,
+        this.panel.innerHTML = this.html({
             backend: this.options.backend, ...params});
 
         this.ide.appendChild(this.panel);
@@ -148,7 +148,7 @@ export class CoqLayoutClassic {
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
         this.menubtn  = this.panel.querySelector('.app-menu-button');
-        this.settings = new SettingsPanel();
+        this.settings = new SettingsPanel(null);
 
         var flex_container = this.panel.getElementsByClassName('flex-container')[0];
         flex_container.addEventListener('click', evt => { this.panelClickHandler(evt); });
@@ -242,7 +242,7 @@ export class CoqLayoutClassic {
             image = $(this.proof).find('.splash-image'),
             below = $(this.proof).find('.splash-below');
 
-        var overlay = `${this.options.base_path}/frontend/classic/images/${mode}.gif`;
+        var overlay = this._url(`frontend/classic/images/${mode}.gif`).toString();
 
         if (!(above.length && image.length && below.length)) {
             $(this.proof).empty().append(
@@ -272,7 +272,7 @@ export class CoqLayoutClassic {
                 <a href="#scratchpad"><img>Scratchpad</a>
             </p>`);
         // Set icons
-        let icon = fn => `${this.options.base_path}/frontend/classic/images/${fn}`;
+        let icon = fn => this._url(`frontend/classic/images/${fn}`).toString();
         bar.find('a[href="#quick-help"] img').attr('src', icon('help.svg')).height("1em");
         bar.find('a[href="#scratchpad"] img').attr('src', icon('scratchpad.png')).height("1em");
         // Set quick-help action
@@ -282,7 +282,7 @@ export class CoqLayoutClassic {
         // Set scratchpad action
         bar.find('a[href="#scratchpad"]').attr('href',
             this.options.links?.scratchpad ??
-            `${this.options.base_path}/examples/scratchpad.html`);
+            `${this._url('examples/scratchpad.html')}`);
         // Ship it
         bar.prependTo($(this.proof).find('.splash-below'));
     }
@@ -453,15 +453,19 @@ export class CoqLayoutClassic {
         }
     }
 
+    _url(relative: string) {
+        return new URL(relative, this.options.base_path);
+    }
+
     /**
      * Auxiliary function to improve UX by preloading images.
      */
     _preloadImages() {
-        var imgs_dir = `${this.options.base_path}/frontend/classic/images`,
+        let img = fn => this._url(`frontend/classic/images/${fn}`).toString(),
             img_fns = ['jscoq-splash.png', 'egg.png'];
 
         for (let fn of img_fns) {
-            new Image().src = `${imgs_dir}/${fn}`;
+            new Image().src = img(fn);
         }
     }
 }

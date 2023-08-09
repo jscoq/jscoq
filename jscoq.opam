@@ -20,11 +20,14 @@ depends: [
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.8.0"            }
   "lwt_ppx"             { >= "2.0.1"            }
-  # We should just rely on OPAM's serlib but this is still early
+  # We should just rely on OPAM's coq-lsp but this is still early
   "sexplib"             { >= "v0.14.0"          }
   "ppx_sexp_conv"       { >= "v0.14.1" & < "v0.17" }
   "ppx_hash"            { >= "v0.14.0" & < "v0.17" }
   "ppx_compare"         { >= "v0.14.0" & < "v0.17" }
+  "uri"                 { >= "4.2.0" }
+  "dune-build-info"     { >= "3.2.0" }
+
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
   # "coq"                 { >= "8.13.0" & < "8.14" }

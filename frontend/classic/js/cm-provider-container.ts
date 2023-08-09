@@ -1,17 +1,19 @@
-import { Future } from "../../../backend/future.js";
-import { CmCoqProvider, Deprettify } from './cm-provider.js';
+import { Future } from "../../../backend/future";
+import { CmCoqProvider } from './cm-provider';
+import { CoqManager, ManagerOptions } from "./coq-manager";
+import { Deprettify } from "./deprettify";
 
 /**
  * A Provider Container aggregates several containers, the main deal
  * here is keeping track of focus, as the focused container can be
- * different from the "active" one
- *
- * @class ProviderContainer
+ * different from the "active" one.
  */
+
 export class ProviderContainer {
-    options : any;
+    options : ManagerOptions;
     snippets : CmCoqProvider[];
-    onChange : (cm, change ) => void;
+    onChangeAny : (cm, change ) => void;
+    onCursorUpdate : (cm : CodeMirror.Editor) => void;
     onInvalidate : (evt : any ) => void;
     onMouseEnter : (stm, evt : any ) => void;
     onMouseLeave : (stm, evt : any ) => void;
@@ -21,17 +23,14 @@ export class ProviderContainer {
     onAction : (evt : any ) => void;
     wait_for : Future<void>;
     currentFocus : CmCoqProvider;
+    manager : any;
 
     /**
      * Creates an instance of ProviderContainer.
-     * 
-     * @param {string} elementRefs
-     * @param {object} options
-     * @memberof ProviderContainer
      */
-    constructor(elementRefs, options) {
+    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
 
-        this.options = options ? options : {};
+        this.options = options;
 
         /**
          * @name ProviderContainer#snippets
@@ -40,6 +39,8 @@ export class ProviderContainer {
         this.snippets = [];
 
         // Event handlers (to be overridden by CoqManager)
+        this.onChangeAny = (cm, ev) => {};
+        this.onCursorUpdate = (cm) => {};
         this.onInvalidate = (mark) => {};
         this.onMouseEnter = (stm, ev) => {};
         this.onMouseLeave = (stm, ev) => {};
@@ -47,7 +48,7 @@ export class ProviderContainer {
         this.onTipOut = () => {};
         this.onAction = (action) => {};
         this.wait_for = null;
-        
+
         class WhileScrolling {
             handler : () => void;
             active : boolean;
@@ -80,7 +81,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
 
                 this.snippets.push(cm);
 
@@ -88,6 +89,7 @@ export class ProviderContainer {
                 cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
                 // Track invalidate
+                cm.onChange     = (cm, evt) => { this.onChangeAny(cm, evt); };
                 cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };
                 cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
@@ -96,7 +98,8 @@ export class ProviderContainer {
                 cm.onTipOut   = (cm)            => { this.onTipOut(cm); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
-
+                cm.onChange = (cm, evt) => { this.onChangeAny(cm,evt); };
+                cm.onCursorUpdate = (cm) => { this.onCursorUpdate(cm); };
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
                     if (idx > 0) this.renumber(idx - 1);
@@ -113,15 +116,15 @@ export class ProviderContainer {
     /**
      * Find elements in the page
      *
-     * @param {*} elementRefs
+     * @param {(string | HTMLElement)[]} elementRefs
      * @return {HTMLElement[]}
      * @memberof ProviderContainer
      */
-    findElements(elementRefs) {
-        var elements = [];
+    findElements(elementRefs) : HTMLElement[] {
+        var elements : HTMLElement[] = [];
         for (let e of elementRefs) {
             var els = (typeof e === 'string') ?
-                [document.getElementById(e), ...document.querySelectorAll(e)] : e;
+                [document.getElementById(e), ...document.querySelectorAll(e)] : [e];
             els = els.filter(x => x);
             if (els.length === 0) {
                 console.warn(`[jsCoq] element(s) not found: '${e}'`);
@@ -137,7 +140,7 @@ export class ProviderContainer {
      */
     async renumber(startIndex) {
         let snippet = this.snippets[startIndex],
-            line = snippet.editor.getOption('firstLineNumber') + snippet.lineCount;
+            line = snippet.editor.getOption('firstLineNumber') ?? 0 + snippet.lineCount;
 
         for (let index = startIndex + 1; index < this.snippets.length; index++) {
             let snippet = this.snippets[index];
@@ -154,50 +157,6 @@ export class ProviderContainer {
     configure(options) {
         for (let snippet of this.snippets)
             snippet.configure(options);
-    }
-
-    // Get the next candidate and mark it.
-    getNext(prev, until) {
-
-        // If we have no previous element start with the first
-        // snippet, else continue with the current one.
-        var spr = prev ? prev.sp : this.snippets[0];
-
-        if (until && this.snippets.indexOf(spr) > this.snippets.indexOf(until.sp))
-            return null;
-
-        var next = spr.getNext(prev, (until && until.sp === spr) ? until.pos : null);
-
-        // We got a snippet!
-        if (next) {
-            next.sp = spr;
-            return next;
-        } else if (until && until.sp === spr) {
-            return null;
-        } else {
-            // Try the next snippet.
-            var idx = this.snippets.indexOf(spr);
-            while (idx < this.snippets.length - 1) {
-                spr  = this.snippets[idx+1];
-                next = spr.getNext(null);
-                if (next) {
-                    next.sp = spr;
-                    return next;
-                } else {
-                    idx = this.snippets.indexOf(spr);
-                }
-            } // while
-            // No next snippet :( !
-            return null;
-        }
-    }
-
-    mark(stm, mark, loc_focus) {
-        stm.sp.mark(stm, mark, loc_focus);
-    }
-
-    highlight(stm, flag) {
-        stm.sp.highlight(stm, flag);
     }
 
     retract() {

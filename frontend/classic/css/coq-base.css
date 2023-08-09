@@ -847,3 +847,7 @@ div.hint-package {
   }
 
 }
+
+.ProseMirror-example-setup-style {
+    padding: 1em;
+}

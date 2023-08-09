@@ -486,7 +486,8 @@ class WacoqBatchWorker extends BatchWorker {
 
     docOpts(mod, outfn) {
         return { top_name: outfn, mode: ['Vo'],
-                 lib_init: ["Coq.Init.Prelude"], lib_path: this.loadpath };
+                 lib_init: ["Coq.Init.Prelude"],
+                 lib_path: this.loadpath };
     }
 
     async install(mod, volume, root, outfn, compiledfn, content) {

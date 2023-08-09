@@ -15,5 +15,6 @@
     "checkJs": true
     // "noEmit": true
   },
-  "exclude": ["_build", "dist", "backend/wasm/shims"]
+  "include": [ "frontend/**/*.ts", "backend/**/*.ts", "lib/**/*.ts"],
+  "exclude": [".git", "_build", "_vendor+v8.16+32bit", "dist", "dist-cli", "dist-pkg", "node_modules", "backend/wasm/shims", "vendor"]
 }

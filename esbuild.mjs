@@ -20,7 +20,7 @@ let watchConfig = (entry) => {
 let watch = process.argv.includes("--watch") ? watchConfig : (entry) => false;
 let minify = process.argv.includes("--minify");
 let disable_sourcemap = process.argv.includes("--sourcemap=no");
-let sourcemap = disable_sourcemap ? null : { sourcemap: true };
+let sourcemap = disable_sourcemap ? null : { sourcemap: "inline" };
 
 // Backend build, WASM worker.
 var backendEntry = "./backend/wasm/wacoq_worker.ts"
