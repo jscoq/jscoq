@@ -1,7 +1,8 @@
 #!/usr/bin/env node
+import fs from 'fs';
+import path from 'path';
 import process from "process";
 import * as esbuild from "esbuild";
-import fs from 'fs';
 
 let watchConfig = (entry) => {
   return {
@@ -81,15 +82,15 @@ var frontend = esbuild
     process.exit(1)}
   );
 
-function viewBuild(name, file) {
+function viewBuild(name, dir, file) {
   return esbuild
     .build({
-      entryPoints: [file],
+      entryPoints: [path.join(dir, file)],
       bundle: true,
       ...sourcemap_view,
       platform: "browser",
-      outdir: "dist/frontend",
-      outbase: ".",
+      outdir: path.join("dist/frontend", name),
+      outbase: dir,
       minify,
       metafile: enableMeta,
       // watch: watch(file),
@@ -105,7 +106,7 @@ function viewBuild(name, file) {
           );
 }
 
-var infoView = viewBuild("infoView", "./vendor/coq-lsp/editor/code/views/info/index.tsx");
+var infoView = viewBuild("info-view", "./vendor/coq-lsp/editor/code/views/info/", "index.tsx");
 
 // TODO: run serve if --serve was passed.
 await Promise.all([frontend, backend, infoView])

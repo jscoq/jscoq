@@ -12,6 +12,7 @@ Object.defineProperty(Array.prototype, "flatten",  {enumerable: false});
 
 /* @todo use `merge-options` */
 function copyOptions(obj, target) {
+    if (obj === undefined || obj === null) return target;
     if (typeof obj !== 'object' || obj instanceof Array) return obj;
     if (typeof target !== 'object' || target instanceof Array) target = {};
     for (var prop in obj) {

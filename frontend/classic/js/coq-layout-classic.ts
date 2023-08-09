@@ -12,7 +12,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 // Medias
-import "../css/landing-page.css";
 import "../css/kbd.css";
 import '../css/coq-log.css';
 import '../css/coq-base.css';
@@ -37,6 +36,7 @@ export class CoqLayoutClassic {
     panel : HTMLDivElement;
     private proof : HTMLDivElement;
     private goals : HTMLIFrameElement
+    private sysmsg : HTMLDivElement;
     query : HTMLDivElement;
     packages : HTMLDivElement;
     buttons : HTMLSpanElement;
@@ -89,9 +89,10 @@ export class CoqLayoutClassic {
     <div class="flex-container">
       <div id="goal-panel" class="flex-panel">
         <div class="caption">Goals</div>
-        <div class="content" id="goal-text" data-lang="coq">
-          <iframe src="${this._url('dist/frontend/vendor/coq-lsp/editor/code/views/info/iframe.html')}"
-                  style="width: 100%; height: 100%"></iframe>
+        <div class="content" id="goal-text" data-lang="coq" data-mode="system-notices"><!--
+          --><div id="system-notices"></div><!--
+          --><iframe src="${this._url('dist/frontend/info-view/iframe.html')}"
+                     id="info-view"></iframe>
         </div>
       </div>
       <div id="help-panel" class="flex-panel">
@@ -147,7 +148,8 @@ export class CoqLayoutClassic {
 
         // UI setup.
         this.proof    = this.panel.querySelector('#goal-text');
-        this.goals    = this.panel.querySelector('#goal-text iframe');
+        this.goals    = this.panel.querySelector('#goal-text #info-view');
+        this.sysmsg   = this.panel.querySelector('#goal-text #system-notices');
         this.query    = this.panel.querySelector('#query-panel');
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
@@ -241,16 +243,15 @@ export class CoqLayoutClassic {
             this.panel.querySelector('#help-panel').classList.remove('collapsed');
     }
 
-    splash(version_info, msg, mode='wait') {
-        return;
-        var above = $(this.proof).find('.splash-above'),
-            image = $(this.proof).find('.splash-image'),
-            below = $(this.proof).find('.splash-below');
+    splash(version_info: string, msg: string, mode='wait') {
+        var above = $(this.sysmsg).find('.splash-above'),
+            image = $(this.sysmsg).find('.splash-image'),
+            below = $(this.sysmsg).find('.splash-below');
 
         var overlay = this._url(`frontend/classic/images/${mode}.gif`).toString();
 
         if (!(above.length && image.length && below.length)) {
-            $(this.proof).empty().append(
+            $(this.sysmsg).empty().append(
                 above = $('<p>').addClass('splash-above'),
                 $('<div>').addClass('splash-middle').append(
                     image = $('<div>').append($('<img>'))
@@ -306,13 +307,13 @@ export class CoqLayoutClassic {
      */
     systemNotification(msg) {
         console.log("System notification: " + msg);
-        // $(this.proof).append($('<p>').addClass('system').text(msg));
+        $(this.sysmsg).append($('<p>').addClass('system').text(msg));
     }
 
     _setButtons(enabled) {
         if(enabled) {
             $(this.buttons).find('button').removeAttr('disabled');
-            this.buttons.classList.remove('disabled')
+            this.buttons.classList.remove('disabled');
         } else {
             $(this.buttons).find('button').attr('disabled');
             this.buttons.classList.add('disabled');
@@ -334,6 +335,7 @@ export class CoqLayoutClassic {
     // This is still not optimal.
     update_goals(goals) {
         this.goals.contentWindow?.postMessage( { method: "renderGoals", params: goals });
+        this.proof.setAttribute('data-mode', 'info-view');
     }
 
     // XXX: This should be properly typed.

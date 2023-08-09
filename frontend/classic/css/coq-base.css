@@ -312,8 +312,21 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #goal-text {
   border: 0;
-  /* We don't need this with the new info panel */
-  /* white-space: pre; */
+  position: relative; /* the info-view iframe is positioned absolutely */
+}
+
+#goal-text > * { display: none; }
+
+#goal-text[data-mode="system-notices"] #system-notices { display: block; }
+#goal-text[data-mode="info-view"] #info-view { display: block; }
+
+#goal-text #system-notices {
+  white-space: pre;
+}
+
+#goal-text #info-view {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
 }
 
 /* Help panel (when shown, replaces Goal) */

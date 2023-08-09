@@ -82,7 +82,7 @@
   ; Set JSCOQ_BUNDLE_TARGET=release to generate minimized dist files
   (progn
    (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild})
-   (run cp -a frontend/views/info/iframe.html dist/frontend/vendor/coq-lsp/editor/code/views/info))))
+   (run cp -a frontend/views/info/iframe.html dist/frontend/info-view))))
 
 (rule
  (targets (dir dist-pkg))
