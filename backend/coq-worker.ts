@@ -8,7 +8,7 @@ type Block_type =
   | ['Pp_hvbox', number]
   | ['Pp_hovbox', number];
 
-  export type Pp =
+export type Pp =
     ['Pp_empty']
   | ['Pp_string', string]
   | ['Pp_glue', Pp[]]

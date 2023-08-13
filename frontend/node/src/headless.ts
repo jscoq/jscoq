@@ -6,7 +6,8 @@ import { inspect } from 'util';
 import mkdirp from 'mkdirp';
 import * as find from 'find';
 import glob from 'glob';
-import { unzip } from './my_fflate';
+// There is some esbuild issue with this package
+import unzip from 'fflate-unzip/src/index';
 
 // Backend imports
 import { Future } from '../../../backend/future';
