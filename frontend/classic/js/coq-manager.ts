@@ -6,8 +6,11 @@
 // CoqManager coordinates an editor window, a Coq worker for checking,
 // and the goal / information panel.
 
+import _ from 'lodash';
+
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams, Diagnostic, Goal, Goals, backend } from '../../../backend';
+import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
+         Diagnostic, backend } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
@@ -393,9 +396,11 @@ export class CoqManager {
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
             for (let extra of d.extra ?? []) {
+                /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
                         (pending = this.handleRequires(extra))) {
-                    // this.editor.markDiagnostic({...d, inProgress: true});
+                    this.editor.markDiagnostic(d);
+
                     needRecheck = true;
                     await pending;
                     /** @todo clear the mark? */
@@ -546,17 +551,18 @@ export class CoqManager {
     /**
      * Handles a `FailedRequire` diagnostic by looking for missing modules in
      * the package index. 
-     * @param {['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]} info 
-     * @return {Promise<void>} whether additional packages are being loaded
+     * @param info the reported diagnostic
+     * @return if additional packages are being loaded, a promise that's resolved
+     *   when loading is done; otherwise, `undefined`.
      */
-    handleRequires(info) {
+    handleRequires(info: ['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]): Promise<void> {
         let op = qid => CoqIdentifier.ofQualid(qid).toStrings(),
             prefix = info[1].prefix ? op(info[1].prefix.v) : [],
-            pkgDeps = new Set();
+            pkgDeps = new Set<string>();
 
         for (let suffix of info[1].refs.map(r => op(r.v))) {
             for (let dep of this.packages.index.findPackageDeps(prefix, suffix))
-                pkgDeps.add(dep);
+                pkgDeps.add(dep.name);
         }
 
         for (let d of this.packages.loaded_pkgs) pkgDeps.delete(d);
@@ -569,15 +575,22 @@ export class CoqManager {
 
     /**
      * Loads some packages and re-checks the document.
-     * @param {string[]} pkgs packages to load
+     * @param pkgs packages to load
      */
-    async handleMissingDeps(pkgs) {
+    async handleMissingDeps(pkgs: string[]) {
         this.disable();
         this.packages.expand();
-        let loaded = await this.packages.loadDeps(pkgs);
-        // Requires discerning failed from non-failed pkgs
-        // this.layout.systemNotification(
-        //     `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
+
+        let res = await this.packages.loadDeps(pkgs),
+            {loaded, failed} = _.groupBy(res, ([_, s]) =>
+                s.status === 'fulfilled' ? 'loaded' : 'failed');
+
+        let notify = (msg: string, pkgs: [string, any][]) =>
+            this.layout.systemNotification(
+                `===> ${msg} [${pkgs.map(p => p[0]).join(', ')}]`);
+        if (loaded) notify('Loaded packages', loaded);
+        if (failed) notify('Some pacakges failed to load:', failed);
+
         this.enable();
         setTimeout(() => this.packages.collapse(), 500);
     }

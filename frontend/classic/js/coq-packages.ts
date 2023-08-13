@@ -5,8 +5,9 @@
  * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
  */
 
+import _ from 'lodash';
+
 // Backend imports
-import { ArrayFuncs } from '../../common/etc.js';
 import { CoqWorker, backend } from '../../../backend';
 
 // Frontend imports (not so clear for the package manager
@@ -113,7 +114,7 @@ export class PackageManager {
         return pkg;
     }
 
-    hasPackageInfo(pkg_name) {
+    hasPackageInfo(pkg_name: string) {
         var pkg = this.packages_by_name[pkg_name];
         return pkg && pkg.info;
     }
@@ -213,8 +214,8 @@ export class PackageManager {
         });
     }
 
-    waitFor(init_pkgs) {
-        let all_set = () => init_pkgs.every(x => this.hasPackageInfo(x));
+    waitFor(pkgs: string[]) {
+        let all_set = () => pkgs.every(x => this.hasPackageInfo(x));
 
         return new Promise((resolve, reject) => {
             var observe = () => {
@@ -238,14 +239,14 @@ export class PackageManager {
         let prefix = m => m.replace(/[.][^.]+$/, ''),
             pkgs = (ms : string[]) => [...new Set(ms.map(prefix))].map(pkg => pkg.split('.'));
 
-        return ArrayFuncs.flatten(this.loaded_pkgs.map(pkg_name => {
+        return _.flatten(this.loaded_pkgs.map(pkg_name => {
             let pkg = this.getPackage(pkg_name),
                 phys = pkg.archive ? ['/lib'] : [];
             return pkgs(Object.keys(pkg.info.modules)).map(pkg => [pkg, phys]);
         }));
     }
 
-    showPackage(bname) {
+    revealPackage(bname: string) {
         var bundle = this.bundles[bname];
         if (bundle && bundle.row) {
             bundle.row.parents('div.package-row').addClass('expanded');
@@ -253,7 +254,8 @@ export class PackageManager {
         }
     }
 
-    _scrollTo(el) {
+    _scrollTo(el: HTMLElement) {
+        // @ts-ignore  missing prototype?
         if (el.scrollIntoViewIfNeeded) el.scrollIntoViewIfNeeded();
         else el.scrollIntoView();
     }
@@ -383,11 +385,11 @@ export class PackageManager {
     }
     /**
      * Loads a package from the preconfigured path.
-     * @param {string} pkg_name name of package (e.g., 'init', 'mathcomp')
-     * @param {boolean} show if `true`, the package is exposed in the list
+     * @param pkg_name name of package (e.g., 'init', 'mathcomp')
+     * @param show if `true`, the package is revealed in the list
      */
-    loadPkg(pkg_name, show=true) : Promise<void> {
-        var pkg = this.getPackage(pkg_name), promise;
+    async loadPkg(pkg_name: string, show=true) : Promise<void> {
+        var pkg = this.getPackage(pkg_name), promise: Promise<unknown>;
 
         if (pkg.promise) return pkg.promise;  /* load issued already */
 
@@ -399,16 +401,15 @@ export class PackageManager {
                                    this.loadArchive(pkg)]);
         }
 
-        if (show) this.showPackage(pkg_name);
+        if (show) this.revealPackage(pkg_name);
 
-        pkg.promise = promise;
-        return promise.then(() => pkg);
+        return pkg.promise = promise.then(() => {});
     }
 
-    async loadDeps(deps, show=true) : Promise<PromiseSettledResult<CoqPkg>[]> {
+    async loadDeps(deps: string[], show=true) : Promise<[string, PromiseSettledResult<void>][]> {
         await this.waitFor(deps);
-        return Promise.allSettled(
-            deps.map(pkg => this.loadPkg(pkg, show)));
+        return _.zip(deps, await Promise.allSettled(
+            deps.map(pkg => this.loadPkg(pkg, show))));
     }
 
     loadArchive(pkg) {
@@ -484,7 +485,7 @@ export class PackageManager {
  */
 class PackageIndex {
     backend : backend;
-    moduleIndex : Map<string, { name: string, modules?: { [module: string]: { deps?: string[] } } } >;
+    moduleIndex : Map<string, CoqPkgTOC>;
     intrinsicPrefix : string;
 
     constructor(backend: backend) {
@@ -498,7 +499,7 @@ class PackageIndex {
             this.moduleIndex.set(mod, pkgInfo);
     }
 
-    *findModules(prefix, suffix, exact=false) {
+    *findModules(prefix: string | string[], suffix: string | string[], exact=false): Generator<string> {
         if (Array.isArray(prefix)) prefix = prefix.join('.');
         if (Array.isArray(suffix)) suffix = suffix.join('.');
 
@@ -517,14 +518,14 @@ class PackageIndex {
         }
     }
 
-    findPackageDeps(prefix, suffix, exact=false) {
-        var pdeps = new Set();
+    findPackageDeps(prefix: string | string[], suffix: string | string[], exact=false) {
+        var pdeps = new Set<CoqPkgTOC>();
         for (let m of this.alldeps(this.findModules(prefix, suffix, exact)))
             pdeps.add(this.moduleIndex.get(m));
         return pdeps;
     }
 
-    alldeps(mods) {
+    alldeps(mods: Iterable<string>): Set<string> {
         return closure(new Set(mods), mod => {
             let pkg = this.moduleIndex.get(mod),
                 o = (pkg && pkg.modules || {})[mod];
@@ -535,8 +536,7 @@ class PackageIndex {
 }
 
 
-// function closure<T>(s: Set<T>, tr: (t: T) => T[]) {
-function closure(s, tr) {
+function closure<T>(s: Set<T>, tr: (t: T) => T[]) {
     var wl = [...s];
     while (wl.length > 0) {
         var u = wl.shift();
@@ -547,7 +547,7 @@ function closure(s, tr) {
 }
 
 // Info in the json of a single coq-pkg file
-class CoqPkgInfo {
+type CoqPkgInfo = {
     name: string;
     deps: string[];
     modules: { [module: string]: { deps?: string[] } };
@@ -558,8 +558,8 @@ class CoqPkgInfo {
     chunks?: CoqPkgInfo[]
  }
 
-// Info in the json file for a package chunk
-class CoqBundleInfo {
+// Info in the json file for a package with multiple chunks
+type CoqBundleInfo = {
     name: string;
     deps: string[];
     pkgs: string[];
@@ -568,6 +568,12 @@ class CoqBundleInfo {
 
     // Wrongly added, until we can separate the two codepaths (from .coq-pkg and from .json)
     modules?: { [module: string]: { deps?: string[] } }
+}
+
+/** Smaller version of `CoqPkgInfo` for use in `PackageIndex` */
+type CoqPkgTOC = {
+    name: string
+    modules?: { [module: string]: { deps?: string[] } };
 }
 
 class CoqPkg {

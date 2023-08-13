@@ -33,6 +33,7 @@
     var jscoq_opts = {
         backend: sp.get('backend') ?? ifHas('wa'),
         subproc: sp.has('app'),
+        content_type: 'plain',
         node_modules_path: '../node_modules/',
         file_dialog: true,
         implicit_libs: true,
