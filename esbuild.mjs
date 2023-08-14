@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import process from "process";
 import * as esbuild from "esbuild";
+import { sassPlugin } from "esbuild-sass-plugin";
 
 let watchConfig = (entry) => {
   return {
@@ -72,6 +73,7 @@ var frontend = esbuild
     outdir: "dist/frontend",
     minify,
     // watch: watch(frontEndEntry),
+    plugins: [sassPlugin()]
   })
   .then((res) => {
     if(enableMeta) fs.writeFileSync('frontend-meta.json', JSON.stringify(res.metafile));

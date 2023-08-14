@@ -5,11 +5,11 @@
 // buffers.
 
 import $ from 'jquery';
+import Split from 'split.js';
+
 import { SettingsPanel } from './settings.js';
 
-// Bootstrap
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import type { backend } from '../../../backend/coq-worker.js';
 
 // Medias
 import "../css/kbd.css";
@@ -18,6 +18,7 @@ import '../css/coq-base.css';
 import '../css/coq-light.css';
 import '../css/coq-dark.css';
 import '../css/settings.css';
+import '../css/split.scss';
 
 /***********************************************************************/
 /* The CoqLayout class contains the goal, query, and packages buffer   */
@@ -33,6 +34,7 @@ import '../css/settings.css';
 export class CoqLayoutClassic {
     options : any;
     ide : HTMLElement;
+    split: SplitHelper;
     panel : HTMLDivElement;
     private proof : HTMLDivElement;
     private goals : HTMLIFrameElement
@@ -49,8 +51,8 @@ export class CoqLayoutClassic {
     outline : HTMLDivElement;
     scrollTimeout? : any; // timeout
 
-    html(params) {
-        var {base_path, backend, kb} = params;
+    html(params: {backend: backend, kb: {[op: string]: string}}) {
+        var {backend, kb} = params;
         return `
     <svg id="hide-panel" viewBox="0 0 32 32" title="Toggle panel (F8)">
       <path d="M16.001,0C7.165,0,0,7.164,0,16.001S7.162,32,16.001,32C24.838,32,32,24.835,32,15.999S24.838,0,16.001,0L16.001,0z"/>
@@ -145,6 +147,7 @@ export class CoqLayoutClassic {
             backend: this.options.backend, ...params});
 
         this.ide.appendChild(this.panel);
+        this.split = new SplitHelper(this.ide);
 
         // UI setup.
         this.proof    = this.panel.querySelector('#goal-text');
@@ -214,12 +217,14 @@ export class CoqLayoutClassic {
     show() {
         this.ide.classList.add('goals-active');
         this.ide.classList.remove('toggled');
+        this.split.expand();
         this.onToggle({target: this, shown: true});
     }
 
     hide() {
         this.ide.classList.remove('goals-active');
         this.ide.classList.add('toggled');
+        this.split.collapse();
         this.onToggle({target: this, shown: false});
     }
 
@@ -291,7 +296,7 @@ export class CoqLayoutClassic {
         // Set scratchpad action
         bar.find('a[href="#scratchpad"]').attr('href',
             this.options.links?.scratchpad ??
-            `${this._url('examples/scratchpad.html')}`);
+            this._url('examples/scratchpad.html') + window.location.search);
         // Ship it
         bar.prependTo($(this.proof).find('.splash-below'));
     }
@@ -481,6 +486,33 @@ export class CoqLayoutClassic {
         for (let fn of img_fns) {
             new Image().src = img(fn);
         }
+    }
+}
+
+/**
+ * Configures Split.js properly, persists split percentage and
+ * manages panel toggle.
+ */
+class SplitHelper {
+    split: Split.Instance
+    _sizes: number[] = [55, 45]
+
+    constructor(ide: HTMLElement) {
+        this.split = Split([...ide.children] as HTMLElement[], {
+            gutterSize: 0,  /* our gutter has negative margin (`split.scss`) */
+            minSize: 0,
+            onDragStart() { ide.classList.add('dragging'); },
+            onDragEnd()   { ide.classList.remove('dragging'); }
+        });
+    }
+
+    collapse() {
+        let sizes = this._sizes = this.split.getSizes();
+        this.split.collapse(sizes.length - 1);
+    }
+
+    expand() {
+        this.split.setSizes(this._sizes);
     }
 }
 
