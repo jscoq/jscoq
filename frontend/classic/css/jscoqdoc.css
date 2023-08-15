@@ -17,18 +17,18 @@ body {
     transition: padding 0.1s ease;
     transition-delay: 0.5s;
   }
-  .terse#ide-wrapper:not(.toggled) #page {
+  .terse#ide-wrapper.goals-active #page {
     padding-left: 0;
   }
   #ide-wrapper #main {
     transition: padding 0.1s ease;
     transition-delay: 0.3s;
   }
-  .full#ide-wrapper:not(.toggled) #main {
+  .full#ide-wrapper.goals-active #main {
     padding-right: 10px;
     transition: padding 0.1s ease;
   }
-  #ide-wrapper:not(.toggled) #page {
+  #ide-wrapper.goals-active #page {
     transition-delay: 0s;
   }
   .terse#ide-wrapper #panel-wrapper {

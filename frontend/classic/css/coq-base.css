@@ -42,7 +42,7 @@ a, a:link, a:visited, a:active {
   align-items: flex-start;
 }
 
-#ide-wrapper.layout-fixed.toggled {
+#ide-wrapper.layout-fixed:not(.goals-active) {
   padding-right: 0px;
 }
 
@@ -181,7 +181,7 @@ body.jscoq-main .CodeMirror-linenumber {
   flex-grow: 0;
 }
 
-#ide-wrapper.toggled #panel-wrapper {
+#ide-wrapper:not(.goals-active) #panel-wrapper {
   width: 0px;
   /* overflow: auto; */
 }
@@ -396,7 +396,7 @@ body.jscoq-main .CodeMirror-linenumber {
   fill: #00a806;
 }
 
-#ide-wrapper.toggled #hide-panel g path {
+#ide-wrapper:not(.goals-active) #hide-panel g path {
   fill: #f20000
 }
 
@@ -440,7 +440,7 @@ body.jscoq-main .CodeMirror-linenumber {
   transition: opacity 620ms ease-in;
 }
 
-#ide-wrapper.toggled #toolbar .exits.right {
+#ide-wrapper:not(.goals-active) #toolbar .exits.right {
   opacity: 0;
   transition: opacity 120ms linear;
 }
@@ -850,7 +850,7 @@ div.hint-package {
     transition: none;
   }
 
-  #ide-wrapper.toggled {
+  #ide-wrapper:not(.goals-active) {
     padding-right: 0;
   }
 
