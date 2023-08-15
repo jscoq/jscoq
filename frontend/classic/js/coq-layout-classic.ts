@@ -215,21 +215,17 @@ export class CoqLayoutClassic {
     }
 
     show() {
-        this.ide.classList.add('goals-active');
-        this.ide.classList.remove('toggled');
         this.split.expand();
         this.onToggle({target: this, shown: true});
     }
 
     hide() {
-        this.ide.classList.remove('goals-active');
-        this.ide.classList.add('toggled');
         this.split.collapse();
         this.onToggle({target: this, shown: false});
     }
 
     isVisible() {
-        return !this.ide.classList.contains('toggled');
+        return this.ide.classList.contains('goals-active');
     }
 
     toggle() {
@@ -494,24 +490,51 @@ export class CoqLayoutClassic {
  * manages panel toggle.
  */
 class SplitHelper {
+    ide: HTMLElement
     split: Split.Instance
     _sizes: number[] = [55, 45]
 
+    _lskey = 'jscoq:split'
+
     constructor(ide: HTMLElement) {
+        this.ide = ide;
         this.split = Split([...ide.children] as HTMLElement[], {
             gutterSize: 0,  /* our gutter has negative margin (`split.scss`) */
             minSize: 0,
             onDragStart() { ide.classList.add('dragging'); },
             onDragEnd()   { ide.classList.remove('dragging'); }
         });
+
+        this.restore();
+        window.addEventListener('beforeunload', () => this.store());
+    }
+
+    restore() {
+        let ls = localStorage[this._lskey],
+            sizes = ls ? JSON.parse(ls) : undefined;
+        if (Array.isArray(sizes) && sizes.length === this.split.getSizes().length
+            && sizes.every(x => typeof x === 'number'))
+            this._sizes = sizes;
+    }
+
+    store() {
+        let sizes = this.ide.classList.contains('goals-active') ?
+                    this.split.getSizes() : this._sizes;
+        localStorage[this._lskey] = JSON.stringify(sizes);
     }
 
     collapse() {
+        this.ide.classList.remove('goals-active');
         let sizes = this._sizes = this.split.getSizes();
         this.split.collapse(sizes.length - 1);
     }
 
     expand() {
+        this.ide.classList.add('goals-active');
+        /* safety measure */
+        if (this._sizes[this._sizes.length - 1] < 1) {
+            this._sizes[this._sizes.length - 1] = 10;
+        }
         this.split.setSizes(this._sizes);
     }
 }
