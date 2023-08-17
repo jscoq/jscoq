@@ -1,0 +1,31 @@
+@import url(../../classic/css/coq-light.css);
+@import url(../../classic/css/coq-dark.css);
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: monospace;
+}
+
+body.jscoq-theme-dark {
+  color: white;
+}
+
+div.info-panel {
+  flex-basis: 0;
+  flex-grow: 1;
+  white-space: nowrap;  /* needed for proper drawer transition */
+}
+
+div.error-browser {
+    flex: unset;
+    max-height: 50%;
+    overflow: auto;
+    border-top: 1px solid #844;
+}
+
+div.error-browser header { font-size: 80%; color: #800; }
+div.error-browser vscode-divider { display: none; }

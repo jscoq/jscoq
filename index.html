@@ -8,10 +8,15 @@
     <link rel="icon" href="frontend/classic/images/favicon.png">
     <style>body { visibility: hidden; } /* FOUC avoidance */</style>
     <link rel="stylesheet" type="text/css" href="./dist/frontend/index.css">
+    <link rel="stylesheet" type="text/css" href="./frontend/classic/css/landing-page.css">
+
+    <!-- These may be bundled as part of landing-page, but anyway should not be in the main bundle -->
+    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
   </head>
 
 <body class="jscoq-main">
-  <div id="ide-wrapper" class="toggled">
+  <div id="ide-wrapper" class="toggled split">
   <div id="code-wrapper">
   <div id="document-wrapper">
     <!------------------------------->
@@ -111,6 +116,8 @@ Please edit your code here!
 
     if (!localStorage['scratchpad.last_filename'])
         setTimeout(() => document.body.classList.add('welcome'), 1500);
+
+    document.querySelector('#scratchpad').href += location.search;
 
     var jscoq_ids  = ['coqCode'];
     var jscoq_opts = {

@@ -72,12 +72,17 @@
   (source_tree backend/*.ts)
   (source_tree backend/wasm)
   (source_tree frontend)
+  vendor/coq-lsp/editor/code/tsconfig-base.json
+  (source_tree vendor/coq-lsp/editor/code/lib)
+  (source_tree vendor/coq-lsp/editor/code/views/info)
   tsconfig.json
   esbuild.mjs
   node_modules)
  (action
   ; Set JSCOQ_BUNDLE_TARGET=release to generate minimized dist files
-  (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild})))
+  (progn
+   (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild})
+   (run cp -a frontend/views/info/iframe.html dist/frontend/info-view))))
 
 (rule
  (targets (dir dist-pkg))

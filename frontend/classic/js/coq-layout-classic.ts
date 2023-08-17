@@ -5,20 +5,20 @@
 // buffers.
 
 import $ from 'jquery';
+import Split from 'split.js';
+
 import { SettingsPanel } from './settings.js';
 
-// Bootstrap
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import type { backend } from '../../../backend/coq-worker.js';
 
 // Medias
-import "../css/landing-page.css";
 import "../css/kbd.css";
 import '../css/coq-log.css';
 import '../css/coq-base.css';
 import '../css/coq-light.css';
 import '../css/coq-dark.css';
 import '../css/settings.css';
+import '../css/split.scss';
 
 /***********************************************************************/
 /* The CoqLayout class contains the goal, query, and packages buffer   */
@@ -34,8 +34,11 @@ import '../css/settings.css';
 export class CoqLayoutClassic {
     options : any;
     ide : HTMLElement;
+    split: SplitHelper;
     panel : HTMLDivElement;
-    proof : HTMLDivElement;
+    private proof : HTMLDivElement;
+    private goals : HTMLIFrameElement
+    private sysmsg : HTMLDivElement;
     query : HTMLDivElement;
     packages : HTMLDivElement;
     buttons : HTMLSpanElement;
@@ -48,8 +51,8 @@ export class CoqLayoutClassic {
     outline : HTMLDivElement;
     scrollTimeout? : any; // timeout
 
-    html(params) {
-        var {base_path, backend, kb} = params;
+    html(params: {backend: backend, kb: {[op: string]: string}}) {
+        var {backend, kb} = params;
         return `
     <svg id="hide-panel" viewBox="0 0 32 32" title="Toggle panel (F8)">
       <path d="M16.001,0C7.165,0,0,7.164,0,16.001S7.162,32,16.001,32C24.838,32,32,24.835,32,15.999S24.838,0,16.001,0L16.001,0z"/>
@@ -88,7 +91,10 @@ export class CoqLayoutClassic {
     <div class="flex-container">
       <div id="goal-panel" class="flex-panel">
         <div class="caption">Goals</div>
-        <div class="content" id="goal-text" data-lang="coq">
+        <div class="content" id="goal-text" data-lang="coq" data-mode="system-notices"><!--
+          --><div id="system-notices"></div><!--
+          --><iframe src="${this._url('dist/frontend/info-view/iframe.html')}"
+                     id="info-view"></iframe>
         </div>
       </div>
       <div id="help-panel" class="flex-panel">
@@ -141,9 +147,12 @@ export class CoqLayoutClassic {
             backend: this.options.backend, ...params});
 
         this.ide.appendChild(this.panel);
+        this.split = new SplitHelper(this.ide);
 
         // UI setup.
         this.proof    = this.panel.querySelector('#goal-text');
+        this.goals    = this.panel.querySelector('#goal-text #info-view');
+        this.sysmsg   = this.panel.querySelector('#goal-text #system-notices');
         this.query    = this.panel.querySelector('#query-panel');
         this.packages = this.panel.querySelector('#packages-panel');
         this.buttons  = this.panel.querySelector('#buttons');
@@ -188,10 +197,13 @@ export class CoqLayoutClassic {
      */
     configure(options) {
         if (options.theme) {
-            this.panel.classList.remove(...[...this.panel.classList]
-                .filter(c => c.startsWith('jscoq-theme-')));
-            this.panel.classList.add(`jscoq-theme-${options.theme}`);
-            // - configure help which is in an iframe
+            // - configure panel and goal view (which is in an iframe)
+            for (let el of [this.panel, this.goals.contentDocument.body]) {
+                el.classList.remove(...[...el.classList]
+                    .filter(c => c.startsWith('jscoq-theme-')));
+                el.classList.add(`jscoq-theme-${options.theme}`);
+            }
+            // - configure help screen (which is also in an iframe)
             let ipanel : HTMLIFrameElement = this.panel.querySelector('#help-panel iframe');
             ipanel.contentDocument.body.setAttribute('theme', options.theme);
         }
@@ -203,19 +215,17 @@ export class CoqLayoutClassic {
     }
 
     show() {
-        this.ide.classList.add('goals-active');
-        this.ide.classList.remove('toggled');
+        this.split.expand();
         this.onToggle({target: this, shown: true});
     }
 
     hide() {
-        this.ide.classList.remove('goals-active');
-        this.ide.classList.add('toggled');
+        this.split.collapse();
         this.onToggle({target: this, shown: false});
     }
 
     isVisible() {
-        return !this.ide.classList.contains('toggled');
+        return this.ide.classList.contains('goals-active');
     }
 
     toggle() {
@@ -237,15 +247,15 @@ export class CoqLayoutClassic {
             this.panel.querySelector('#help-panel').classList.remove('collapsed');
     }
 
-    splash(version_info, msg, mode='wait') {
-        var above = $(this.proof).find('.splash-above'),
-            image = $(this.proof).find('.splash-image'),
-            below = $(this.proof).find('.splash-below');
+    splash(version_info: string, msg: string, mode='wait') {
+        var above = $(this.sysmsg).find('.splash-above'),
+            image = $(this.sysmsg).find('.splash-image'),
+            below = $(this.sysmsg).find('.splash-below');
 
         var overlay = this._url(`frontend/classic/images/${mode}.gif`).toString();
 
         if (!(above.length && image.length && below.length)) {
-            $(this.proof).empty().append(
+            $(this.sysmsg).empty().append(
                 above = $('<p>').addClass('splash-above'),
                 $('<div>').addClass('splash-middle').append(
                     image = $('<div>').append($('<img>'))
@@ -282,7 +292,7 @@ export class CoqLayoutClassic {
         // Set scratchpad action
         bar.find('a[href="#scratchpad"]').attr('href',
             this.options.links?.scratchpad ??
-            `${this._url('examples/scratchpad.html')}`);
+            this._url('examples/scratchpad.html') + window.location.search);
         // Ship it
         bar.prependTo($(this.proof).find('.splash-below'));
     }
@@ -300,13 +310,14 @@ export class CoqLayoutClassic {
      * @param {string} msg message text
      */
     systemNotification(msg) {
-        $(this.proof).append($('<p>').addClass('system').text(msg));
+        console.log("System notification: " + msg);
+        $(this.sysmsg).append($('<p>').addClass('system').text(msg));
     }
 
     _setButtons(enabled) {
         if(enabled) {
             $(this.buttons).find('button').removeAttr('disabled');
-            this.buttons.classList.remove('disabled')
+            this.buttons.classList.remove('disabled');
         } else {
             $(this.buttons).find('button').attr('disabled');
             this.buttons.classList.add('disabled');
@@ -326,10 +337,14 @@ export class CoqLayoutClassic {
     }
 
     // This is still not optimal.
-    update_goals(content) {
-        // TODO: Add diff/history of goals.
-        // XXX: should send a message.
-        $(this.proof).html(content);
+    update_goals(goals) {
+        this.goals.contentWindow?.postMessage( { method: "renderGoals", params: goals });
+        this.proof.setAttribute('data-mode', 'info-view');
+    }
+
+    // XXX: This should be properly typed.
+    waiting_for_goals(offset) {
+        this.goals.contentWindow?.postMessage( { method : "waitingForInfo", params: offset });
     }
 
     // Add a log event received from Coq.
@@ -467,6 +482,60 @@ export class CoqLayoutClassic {
         for (let fn of img_fns) {
             new Image().src = img(fn);
         }
+    }
+}
+
+/**
+ * Configures Split.js properly, persists split percentage and
+ * manages panel toggle.
+ */
+class SplitHelper {
+    ide: HTMLElement
+    split: Split.Instance
+    _sizes: number[] = [55, 45]
+
+    _lskey = 'jscoq:split'
+
+    constructor(ide: HTMLElement) {
+        this.ide = ide;
+        this.split = Split([...ide.children] as HTMLElement[], {
+            gutterSize: 0,  /* our gutter has negative margin (`split.scss`) */
+            minSize: 0,
+            onDragStart() { ide.classList.add('dragging'); },
+            onDragEnd()   { ide.classList.remove('dragging'); }
+        });
+
+        this.restore();
+        window.addEventListener('beforeunload', () => this.store());
+    }
+
+    restore() {
+        let ls = localStorage[this._lskey],
+            sizes = ls ? JSON.parse(ls) : undefined;
+        if (Array.isArray(sizes) && sizes.length === this.split.getSizes().length
+            && sizes.every(x => typeof x === 'number'))
+            this._sizes = sizes;
+    }
+
+    store() {
+        let sizes = this.ide.classList.contains('goals-active') ?
+                    this.split.getSizes() : this._sizes;
+        localStorage[this._lskey] = JSON.stringify(sizes);
+    }
+
+    collapse() {
+        this.ide.classList.remove('goals-active');
+        let sizes = this._sizes = this.split.getSizes();
+        this.split.collapse(sizes.length - 1);
+    }
+
+    expand() {
+        this.ide.classList.add('goals-active');
+        /* safety measure */
+        if (this._sizes[this._sizes.length - 1] < 1) {
+            this._sizes[this._sizes.length - 1] = 10;
+        }
+        this.split.setSizes(this._sizes);
     }
 }
 

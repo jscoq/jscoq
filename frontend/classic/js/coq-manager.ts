@@ -6,8 +6,11 @@
 // CoqManager coordinates an editor window, a Coq worker for checking,
 // and the goal / information panel.
 
+import _ from 'lodash';
+
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions, DocumentParams, Diagnostic, Goal, Goals, backend } from '../../../backend';
+import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
+         Diagnostic, backend } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
@@ -393,9 +396,11 @@ export class CoqManager {
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
             for (let extra of d.extra ?? []) {
+                /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
                         (pending = this.handleRequires(extra))) {
-                    // this.editor.markDiagnostic({...d, inProgress: true});
+                    this.editor.markDiagnostic(d);
+
                     needRecheck = true;
                     await pending;
                     /** @todo clear the mark? */
@@ -546,17 +551,18 @@ export class CoqManager {
     /**
      * Handles a `FailedRequire` diagnostic by looking for missing modules in
      * the package index. 
-     * @param {['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]} info 
-     * @return {Promise<void>} whether additional packages are being loaded
+     * @param info the reported diagnostic
+     * @return if additional packages are being loaded, a promise that's resolved
+     *   when loading is done; otherwise, `undefined`.
      */
-    handleRequires(info) {
+    handleRequires(info: ['FailedRequire', {prefix: {v: any[]}, refs: {v: any[]}[]}]): Promise<void> {
         let op = qid => CoqIdentifier.ofQualid(qid).toStrings(),
             prefix = info[1].prefix ? op(info[1].prefix.v) : [],
-            pkgDeps = new Set();
+            pkgDeps = new Set<string>();
 
         for (let suffix of info[1].refs.map(r => op(r.v))) {
             for (let dep of this.packages.index.findPackageDeps(prefix, suffix))
-                pkgDeps.add(dep);
+                pkgDeps.add(dep.name);
         }
 
         for (let d of this.packages.loaded_pkgs) pkgDeps.delete(d);
@@ -569,15 +575,22 @@ export class CoqManager {
 
     /**
      * Loads some packages and re-checks the document.
-     * @param {string[]} pkgs packages to load
+     * @param pkgs packages to load
      */
-    async handleMissingDeps(pkgs) {
+    async handleMissingDeps(pkgs: string[]) {
         this.disable();
         this.packages.expand();
-        let loaded = await this.packages.loadDeps(pkgs);
-        // Requires discerning failed from non-failed pkgs
-        // this.layout.systemNotification(
-        //     `===> Loaded packages [${loaded.map(p => p.name).join(', ')}]`);
+
+        let res = await this.packages.loadDeps(pkgs),
+            {loaded, failed} = _.groupBy(res, ([_, s]) =>
+                s.status === 'fulfilled' ? 'loaded' : 'failed');
+
+        let notify = (msg: string, pkgs: [string, any][]) =>
+            this.layout.systemNotification(
+                `===> ${msg} [${pkgs.map(p => p[0]).join(', ')}]`);
+        if (loaded) notify('Loaded packages', loaded);
+        if (failed) notify('Some pacakges failed to load:', failed);
+
         this.enable();
         setTimeout(() => this.packages.collapse(), 500);
     }
@@ -605,21 +618,10 @@ export class CoqManager {
      */
     async setGoalCursor(offset = undefined) {
         offset ??= this.editor.getCursorOffset();
+        this.layout.waiting_for_goals(offset);
         let resp = await this.coq.sendRequest(this.uri, offset, ['Goals']);
         if (resp[1])
-            this.updateGoals(resp[1]);
-    }
-
-    updateGoals(goals : Goals) {
-        var hgoals = this.goals2DOM(goals);
-
-        if (hgoals) {
-            this.layout.update_goals(hgoals);
-            this.pprint.adjustBreaks($(this.layout.proof));
-            /* Notice: in Pp-formatted text, line breaks are handled by
-             * FormatPrettyPrint rather than by the layout.
-             */
-        }
+            this.layout.update_goals(resp[1]);
     }
 
     keyTooltips() {
@@ -759,76 +761,6 @@ export class CoqManager {
             ? l.map(x => this.flatLength(x)).reduce((x,y) => x + y, 0)
             : 1;
     }
-
-    /**
-     * Formats the current proof state.
-     */
-    goals2DOM(goals : Goals) {
-        var ngoals = goals.goals.length,
-            on_stack = this.flatLength(goals.stack),
-            on_shelf = goals.shelf.length,
-            given_up = goals.given_up.length;
-
-        function aside(msg) {
-            var p = $('<p>').addClass('aside');
-            return (typeof msg === 'string') ? p.text(msg) : p.append(msg);
-        }
-
-        if (ngoals === 0) {
-            /* Empty goals; choose the appropriate message to display */
-            let msg = on_stack ? "This subproof is complete, but there are some unfocused goals."
-                    : (on_shelf ? "All the remaining goals are on the shelf."
-                        : "No more goals."),
-                bullet_notice = goals.bullet ? [this.pprint.pp2DOM(goals.bullet)] : [],
-                given_up_notice = given_up ?
-                    [`(${given_up} goal${given_up > 1 ? 's were' : ' was'} admitted.)`] : [],
-                notices = bullet_notice.concat(given_up_notice);
-
-            return $('<div>').append(
-                $('<p>').addClass('no-goals').text(msg),
-                notices.map(aside)
-            );
-        }
-        else {
-            /* Construct a display of all the subgoals (first is focused) */
-            let head = ngoals === 1 ? `1 goal` : `${ngoals} goals`,
-                notices = on_shelf ? [`(shelved: ${on_shelf})`] : [];
-
-            let focused_goal = this.goal2DOM(goals.goals[0]);
-
-            let pending_goals = goals.goals.slice(1).map((goal, i) =>
-                $('<div>').addClass('coq-subgoal-pending')
-                    .append($('<label>').text(i + 2))
-                    .append(this.pprint.pp2DOM(goal.ty)));
-
-            return $('<div>').append(
-                $('<p>').addClass('num-goals').text(head),
-                notices.map(aside),
-                focused_goal, pending_goals
-            );
-        }
-    }
-
-    /**
-     * Formats a single, focused goal.
-     * Shows an environment containing hypothesis and goal type.
-     */
-    goal2DOM(goal : Goal) {
-        let mklabel = (id) =>
-                $('<label>').text(id),
-//                $('<label>').text(FormatPrettyPrint._idToString(id)),
-           mkdef = (pp) =>
-                $('<span>').addClass('def').append(this.pprint.pp2DOM(pp));
-
-        let hyps = goal.hyps.reverse().map(({names, def, ty}) =>
-            $('<div>').addClass(['coq-hypothesis', def && 'coq-has-def'])
-                .append(names.map(mklabel))
-                .append(def && mkdef(def))
-                .append($('<div>').append(this.pprint.pp2DOM(ty))));
-        let ty = this.pprint.pp2DOM(goal.ty);
-        return $('<div>').addClass('coq-env').append(hyps, $('<hr/>'), ty);
-    }
-
 }
 
 const PKG_ALIASES = {
