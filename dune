@@ -68,8 +68,8 @@
  (targets (dir dist))
  (mode (promote (until-clean)))
  (deps
-  (source_tree backend/*.js)
-  (source_tree backend/*.ts)
+  (glob_files backend/*.js)
+  (glob_files backend/*.ts)
   (source_tree backend/wasm)
   (source_tree frontend)
   vendor/coq-lsp/editor/code/tsconfig-base.json

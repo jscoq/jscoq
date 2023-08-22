@@ -15,7 +15,6 @@ import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
 // UI imports
 import $ from 'jquery';
 import { FormatPrettyPrint } from '../../format-pprint/js';
-import { throttle } from 'throttle-debounce';
 
 // Common imports
 import { copyOptions, isMac, ArrayFuncs } from '../../common/etc.js';
@@ -148,16 +147,17 @@ export class CoqManager {
         if (!CoqEditor)
             throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
 
-        let onChange = throttle(200, raw => {
+        /* Document processing */
+        let onChange = debouncePend((raw: string) => {
             this.version++;
             let cooked = this.preprocess(raw);
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
-        });
+        }, 200);
 
-        let onCursorUpdated = throttle(200, offset => {
+        let onCursorUpdated = _.throttle(offset => {
             console.log('cursor updated: ' + offset);
-            this.setGoalCursor(offset)
-        });
+            if (!onChange.pending) this.setGoalCursor(offset);
+        }, 200);
 
         this.editor = new CoqEditor(elems, this.options, onChange, onCursorUpdated, this);
 
@@ -338,10 +338,12 @@ export class CoqManager {
             this.packages.populate();
 
             // Setup autocomplete
-            for (let pkg of ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'])
-                this.loadSymbolsFrom(`${this.options.pkg_path}/${pkg}.symb.json`);
+            /** @todo symbols are currently not generated during build */
+            // for (let pkg of ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals'])
+            //    this.loadSymbolsFrom(`${this.options.pkg_path}/${pkg}.symb.json`);
 
             // Setup contextual info bar
+            /** @todo add a query command to the worker to reenable this */
             // this.contextual_info = new CoqContextualInfo($(this.layout.proof).parent(),
             //                                            this.coq, this.pprint, this.company_coq);
 
@@ -414,6 +416,9 @@ export class CoqManager {
         /* if packages were loaded, need to re-create the document
          * because the loadpath has changed */
         if (needRecheck) this.refreshWorkspace();
+
+        /* Refresh goals at cursor */
+        this.setGoalCursor(this.editor.getCursorOffset());
     }
 
     coqLog(level, msg) {
@@ -762,6 +767,22 @@ export class CoqManager {
             : 1;
     }
 }
+
+/**
+ * A small utility wrapper for `_.debounce` that also stores a flag indicating
+ * whether the call is currently pending.
+ */
+function debouncePend<T extends (...args: any) => any>
+            (func: T, wait?: number, options?: _.DebounceSettings): T & {pending: boolean} {
+    let d = _.debounce((...args) => { try { return func(...args); }
+                                            finally { wrap.pending = false; } },
+                       wait, options),
+    wrap = ((...args: any) => { wrap.pending = true;
+                                return d(...args); }) as T & {pending: boolean};
+
+    return wrap;
+}
+
 
 const PKG_ALIASES = {
     prelude: "Coq.Init.Prelude",

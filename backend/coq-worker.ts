@@ -244,7 +244,10 @@ export class CoqWorker {
         let id = this.request_nextid++,
             fut = this.request_pending[id] = new Future;
         this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
-        this.interrupt();
+        /** @todo would be desirable to interrupt a previously started document re-check. */
+        /**   unfortunately this interrupts the new request as well! so yeah, */
+        /**   this woudl involve some backend work  */
+        //this.interrupt();
         return fut.promise;
     }
 

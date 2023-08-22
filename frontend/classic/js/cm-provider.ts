@@ -1,14 +1,9 @@
-// Misc imports
-import { copyOptions, isMac } from '../../common/etc.js';
-import { JsCoq } from './index.js';
-
-import { CoqManager } from './coq-manager';
-
-// Misc imports
-import localforage from "localforage";
 import $ from 'jquery';
+import localforage from "localforage";
 
-import { Deprettify } from './deprettify';
+function assert(value: boolean, message?: string): asserts value {
+    if (!value) throw new Error(message);
+}
 
 // CM imports
 import CodeMirror, { Editor } from "codemirror";
@@ -29,6 +24,13 @@ import 'codemirror/theme/blackboard.css';
 import 'codemirror/theme/darcula.css';
 import 'codemirror/addon/hint/show-hint.css';
 import 'codemirror/addon/dialog/dialog.css';
+
+// Project imports
+import { copyOptions, isMac } from '../../common/etc.js';
+import { JsCoq } from './index.js';
+
+import { CoqManager } from './coq-manager';
+import { Deprettify } from './deprettify';
 
 import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
 import './mode/coq-mode.js';
@@ -131,13 +133,18 @@ export class CmCoqProvider {
 
     /**
      * Creates an instance of CmCoqProvider.
-     * @param {*} element
-     * @param {*} options
-     * @param {*} replace
-     * @param {number} idx
+     * @param element DOM element to place the editor in
+     * @param options CodeMirror options object
+     * @param replace if `true`, `element` is *replaced* by the editor, and
+     *   whatever text was contained in it is placed in the editor.
+     * @param {number} idx index of this snippet within a ProviderContainer
      * @memberof CmCoqProvider
      */
-    constructor(element, options : CM5Options, replace : boolean, idx : number, manager) {
+    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
+
+        this.options = options;
+        this.idx = idx;
+        this.manager = manager;
 
         CmCoqProvider._config();
 
@@ -155,26 +162,21 @@ export class CmCoqProvider {
               className         : "jscoq"
             });
 
-        if (options)
-            copyOptions(options, cmOpts);
-        this.options = options;
+        copyOptions(options, cmOpts);
 
         var makeHidden = $(element).is(':hidden') ||
             /* corner case: a div with a single hidden child is considered hidden */
             element.children.length == 1 && $(element.children[0]).is(':hidden');
 
         if (element.tagName === 'TEXTAREA') {
+            assert(element instanceof HTMLTextAreaElement);
             /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
             element.value ||= element.textContent;
-            /** @todo desirable, but causes a lot of errors: @ type {CodeMirror.Editor} */
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
-
-        // Index of this particular provider
-        this.idx = idx;
 
         if (replace) this.editor.addKeyMap('jscoq-snippet');
 

@@ -284,21 +284,12 @@ class AutoComplete {
     hint(cm, _options, family) {
         var cur = cm.getCursor(), 
             [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
-            match = token.string.trim();
+            query = token.string.trim();
 
         // Build completion list
-        var matching = this._matches(match, family);
+        var matching = this._matches(query, family);
 
-        if (matching.length === 0) {
-            cm.closeHint();
-            return;
-        }
-
-        for (let m of matching) {
-            m.render = (el, self, data) => this._render(el, data, match, cm)
-        }
-
-        var data = { list: matching, from: token_start, to: token_end };
+        var data = { list: matching, from: token_start, to: token_end, query };
 
         // Emit 'hintHover' to allow context-sensitive info to be displayed by the IDE
         CodeMirror.on(data, "select",
@@ -323,8 +314,8 @@ class AutoComplete {
      * Called on 'change' event; relies on coq-mode to recover context.
      * Hint completion is invoked when typing an identifier token of three or
      * more characters.
-     * @param {CodeMirror} cm editor instance
-     * @param {ChangeEvent} evt document modification object
+     * @param {CodeMirror.Editor} cm editor instance
+     * @param {CodeMirror.EditorChange} evt document modification object
      *   (if omitted, shows hints unconditionally)
      */
     senseContext(cm, evt) {
@@ -335,25 +326,38 @@ class AutoComplete {
 
             if (!evt || ((is_head || kind === 'tactic' || kind === 'terminator') &&
                          /^[a-zA-Z_]../.exec(token.string))) {
-                var hint = is_head ? this.tacticHint : this.lemmaHint;
-
-                // let completions = await this.getCompletionsServer(cm, {});
                 cm.showHint({
-                    hint: (cm, options) => this.getCompletionsServer(cm, options),
+                    hint: (cm, options) => this.getCompletions(cm, options),
                     completeSingle: false
                 });
             }
         }
     }
 
+    async getCompletions(cm, options) {
+        let comp = this.getCompletionsLocal(cm, options);
+        if (this.manager) {
+            let more = await this.getCompletionsServer(cm, options);
+            if (!comp) comp = more
+            else if (more?.list)
+                comp.list.push(...more.list);
+
+            if (comp.query)
+                comp.list = this._withRender(
+                    this._sortedMatches(comp.list, comp.query), comp.query);
+        }
+        console.warn(comp);
+        return comp;
+    }
+
     /**
      * Called by 'showHint' on 'autocomplete' command.
      * (There is some overlap with senseContext functionality, but seems
      * unavoidable.)
-     * @param {CodeMirror} cm editor instance
+     * @param {CodeMirror.Editor} cm editor instance
      * @param {object} options showHint options object
      */
-    getCompletions(cm, options) {
+    getCompletionsLocal(cm, options) {
         var cur = cm.getCursor(), token = cm.getTokenAt(cur),
             is_head = token.state.is_head || token.state.begin_sentence;
 
@@ -361,7 +365,10 @@ class AutoComplete {
         return hint.call(this, cm, options);
     }
 
-    // Async version of getCompletions
+    /**
+     * coq-lsp version of `getCompletions`.
+     * Must be async because it gets the completions from the worker.
+     */
     async getCompletionsServer(cm, options) {
         const cur = cm.getCursor(),
               [token, token_start, token_end] = this._adjustToken(cur, cm.getTokenAt(cur)),
@@ -369,7 +376,7 @@ class AutoComplete {
               is_head = token.state.is_head || token.state.begin_sentence;
 
         const point = cm.getDoc().indexFromPos(cur);
-        const res = await this.manager.coq.sendRequest(point, ["Completion", match]);
+        const res = await this.manager.coq.sendRequest(this.manager.uri, point, ["Completion", match]);
 
         const matches = res[1];
         const matching = matches.map((id) => ({ text: id, label: id, kind: "Lemma", prefix: "" }));
@@ -395,7 +402,12 @@ class AutoComplete {
         return [token, tokenStart, tokenEnd];
     }
 
-    _matches(match, families) {
+    /**
+     * 
+     * @param {string} query what to look for
+     * @param {*} families 
+     */
+    _matches(query, families) {
         var matching = []
 
         for (let family of families) {
@@ -404,7 +416,7 @@ class AutoComplete {
             for (let scope of Object.values(this.vocab)) {
                 for (let entry of scope[family] || []) {
                     var name = entry.label || entry;
-                    if ( name.indexOf(match) > -1 ) {
+                    if ( name.indexOf(query) > -1 ) {
                         matching.push({
                             text: name, label: name, kind, prefix: entry.prefix || []
                         });
@@ -414,11 +426,33 @@ class AutoComplete {
             }
         }
 
-        matching.sort((x, y) => (x.text.indexOf(match) - y.text.indexOf(match)) ||
+        return matching;
+    }
+
+    /**
+     * 
+     * @param {MatchItem[]} matches 
+     * @param {string} query the part that was searched
+     */
+    _sortedMatches(matches, query) {
+        matches.sort((x, y) => (x.text.indexOf(query) - y.text.indexOf(query)) ||
                                 (x.text.length - y.text.length) ||
                                 (this._modulePref(x.prefix) - this._modulePref(y.prefix)));
 
-        return matching;
+        return matches;
+    }
+
+    /**
+     * 
+     * @param {MatchItem[]} matches 
+     * @param {string} query the part that was searched
+     * @returns 
+     */
+    _withRender(matches, query) {
+        for (let m of matches) {
+            m.render = (el, self, data) => this._render(el, data, query, this.cm)
+        }
+        return matches;
     }
 
     /**
@@ -453,6 +487,12 @@ class AutoComplete {
         });
     }
 }
+
+/**
+ * @typedef {{text: string, label: string, kind: string, prefix: string, 
+ *            render?: (el: any) => any}} MatchItem
+ */
+
 
 class ObserveIdentifier {
 
@@ -544,8 +584,8 @@ const vocab = {
             'discriminate',
             'easy',
             'exact',
+            'lia',
             'now',
-            'omega',
             'reflexivity',
             'tauto',
             /* Other tactics */
