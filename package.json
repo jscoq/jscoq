@@ -80,6 +80,8 @@
     "backend/wasm/*.wasm",
     "coq-pkgs",
     "dist",
+    "dist-cli",
+    "dist-webpack",
     "examples",
     "docs",
     "jscoq.js",
