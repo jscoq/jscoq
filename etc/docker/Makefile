@@ -131,15 +131,16 @@ wa-clean-slate:
 	docker system prune $(CLEAN_FLAGS)
 
 js-upload:
-	docker tag jscoq:sdk jscoq/jscoq:sdk-${M}
-	docker push jscoq/jscoq:sdk-${M}
+	docker tag jscoq:sdk jscoq/jscoq:$(BRANCH)-sdk-${M}
+	docker push jscoq/jscoq:$(BRANCH)-sdk-${M}
 
 # Update the multi-arch manifest
 MANIFEST_ARCHS = x86_64 arm64
+MANIFEST_TAG = $(BRANCH)-sdk
 js-upload-manifest:
-	docker manifest create --amend jscoq/jscoq:sdk \
-	       $(addprefix jscoq/jscoq:sdk-, ${MANIFEST_ARCHS})
-	docker manifest push jscoq/jscoq:sdk
+	docker manifest create --amend jscoq/jscoq:$(MANIFEST_TAG) \
+	       $(addprefix jscoq/jscoq:$(BRANCH)-sdk-, ${MANIFEST_ARCHS})
+	docker manifest push jscoq/jscoq:$(MANIFEST_TAG)
 
 serve:
 	docker run --publish 8080:8080 --rm -it jscoq \

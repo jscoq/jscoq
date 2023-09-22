@@ -90,7 +90,7 @@ RUN eval $(opam env) && make jscoq
 RUN eval $(opam env) && make wacoq
 
 # - dist tarballs
-RUN eval $(opam env) && make dist \
+RUN eval $(opam env) && make dist && make dist-npm \
         && mkdir -p dist && mv _build/dist/*.tgz dist
 
 # --------------
