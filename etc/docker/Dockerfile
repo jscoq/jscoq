@@ -11,6 +11,8 @@ FROM debian:11-slim as opam
 
 ARG WORDSIZE
 
+RUN echo "hello from the branch $BRANCH"
+
 RUN if [ ${WORDSIZE} = 32 ] ; then dpkg --add-architecture i386 ; fi
 
 RUN apt-get update && apt-get upgrade -y apt && \
