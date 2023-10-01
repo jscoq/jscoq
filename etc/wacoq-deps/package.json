@@ -1,0 +1,17 @@
+{
+  "name": "wacoq-deps",
+  "description": "meta-package for waCoq binary dependencies",
+  "version": "0.1.1",
+  "dependencies": {
+    "@ocaml-wasm/4.12--janestreet-base": "^0.16.0-0",
+    "@ocaml-wasm/4.12--num": "^1.4.0-0",
+    "@ocaml-wasm/4.12--zarith": "^1.13.0-0",
+    "ocaml-wasm": "^4.12.0-0",
+    "wasi-kernel": "^0.1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jscoq/jscoq.git"
+  },
+  "files": []
+}
