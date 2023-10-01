@@ -1,5 +1,12 @@
-# jsCoq 0.17.0
---------------
+# jsCoq 0.17.1 "Night slip"
+---------------------------
+
+ - Update to Coq 8.17.1. (@ejgallego)
+ - Fix some dist mishaps - missing CLI, zarith version change
+   (@corwin-of-amber)
+
+# jsCoq 0.17.0 "Rocker style"
+-----------------------------
 
  - Update to Coq 8.17.0. (@corwin-of-amber)
  - Add support for saving and loading scratchpad snippets using Gist (@Eladkay)
