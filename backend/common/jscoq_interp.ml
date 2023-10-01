@@ -133,7 +133,7 @@ let exec_init (set_opts : init_options) =
   root_state := st
 
 (* opts  : workspace initialization options *)
-let init_workspace ~debug ~dir opts =
+let init_workspace ~dir opts =
   let vo_load_path = mk_vo_path opts.lib_path in
   let cmdline = Coq.Workspace.CmdLine.
       { coqlib = "/lib"
@@ -144,7 +144,7 @@ let init_workspace ~debug ~dir opts =
       ; ml_include_path = []
       }
   in
-  Coq.Workspace.guess ~debug ~dir ~cmdline
+  Coq.Workspace.guess ~debug:opts.debug ~dir ~cmdline
 
 (** XXX Error better when the workspace was not initialized *)
 let get_ws () = Option.get !cur_workspace
@@ -161,9 +161,8 @@ let jscoq_execute =
   | Init opts ->
     exec_init opts;
     out_fn @@ CoqInfo(coq_info_string ());
-    let debug = false in
     let dir = "/src" in
-    let workspace = init_workspace ~debug ~dir opts in
+    let workspace = init_workspace ~dir opts in
     cur_workspace := Some workspace;
     out_fn @@ Ready ()
 
