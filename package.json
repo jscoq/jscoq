@@ -51,7 +51,7 @@
     "throttle-debounce": "^5.0.0",
     "vue": "^2.6.12",
     "vue-context-menu": "^2.0.6",
-    "wacoq-deps": "^0.1.0"
+    "wacoq-deps": "0.1.1"
   },
   "devDependencies": {
     "@corwin.amber/hastebin": "^0.1.2",
