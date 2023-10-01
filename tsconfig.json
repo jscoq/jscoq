@@ -12,6 +12,9 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
+    // "strict": true,
+    // "strictNullChecks": true,
+    // "strictPropertyInitialization": true,
     "checkJs": true
     // "noEmit": true
   },

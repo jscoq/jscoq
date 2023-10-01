@@ -140,11 +140,14 @@ export class CmCoqProvider {
      * @param {number} idx index of this snippet within a ProviderContainer
      * @memberof CmCoqProvider
      */
-    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
+// <<<<<<< HEAD
+/*    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
 
         this.options = options;
         this.idx = idx;
         this.manager = manager;
+*/
+    constructor(element, options : CM5Options, replace : boolean, idx : number) {
 
         CmCoqProvider._config();
 
@@ -164,6 +167,8 @@ export class CmCoqProvider {
 
         copyOptions(options, cmOpts);
 
+        // We test for :hidden custom attribute, as to assume less shared attribute
+        // state, this is useful when replacing editors.
         var makeHidden = $(element).is(':hidden') ||
             /* corner case: a div with a single hidden child is considered hidden */
             element.children.length == 1 && $(element.children[0]).is(':hidden');
@@ -172,6 +177,7 @@ export class CmCoqProvider {
             assert(element instanceof HTMLTextAreaElement);
             /* workaround: `value` sometimes gets messed up after forward/backwarn nav in Chrome */
             element.value ||= element.textContent;
+            /** @todo desirable, but causes a lot of errors: @ type {CodeMirror.Editor} */
             this.editor = CodeMirror.fromTextArea(element, cmOpts);
             replace = true;
         } else {
@@ -198,6 +204,7 @@ export class CmCoqProvider {
 
         this.editor.on('beforeChange', (cm, evt) => this.onCMChange(cm, evt) );
         this.editor.on('change', (cm, evt) => this.onChange(cm, evt));
+
         this.editor.on('cursorActivity', (cm) => {
             this.onCursorUpdate(cm);
             cm.operation(() => this._adjustWidgetsInSelection())
@@ -209,7 +216,9 @@ export class CmCoqProvider {
         var editor_element = $(this.editor.getWrapperElement());
         editor_element.on('mousemove', ev => this.onCMMouseMove(ev));
         editor_element.on('mouseleave', ev => this.onCMMouseLeave(ev));
-        if (makeHidden && !editor_element.is(':hidden'))
+
+        // EJGA: Don't make hidden editors for now
+        if (false && makeHidden && !editor_element.is(':hidden'))
             editor_element.css({display: "none"});
 
         // Some hack to prevent CodeMirror from consuming PageUp/PageDn

@@ -100,13 +100,21 @@ let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 let cur_workspace = ref None
 let root_state = ref (Coq.State.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
 
+let lvl_to_fb = function
+  | 0 -> Feedback.Error
+  | 1 -> Feedback.Warning
+  | 2 -> Feedback.Notice
+  | 3 -> Feedback.Info
+  | 4 -> Feedback.Debug
+  | _ -> Feedback.Debug
+
 let lsp_cb =
   let out_fn = post_answer in
   Fleche.Io.CallBack.
     { trace = (fun cat ?extra:_ msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
-    ; message = (fun ~lvl:_ ~message:_ -> ())
-    ; diagnostics = (fun ~uri:_ ~version diags ->
-          out_fn (Notification (diags,version)))
+    ; message = (fun ~lvl ~message -> out_fn (Log (lvl_to_fb lvl, Pp.str message)))
+    ; diagnostics = (fun ~uri ~version diagnostic ->
+          out_fn (Notification { uri; version; diagnostic }))
     ; fileProgress = (fun ~uri:_ ~version:_ _progress -> ())
     }
 
@@ -180,16 +188,16 @@ let jscoq_execute =
     try_check ();
     ()
 
-  | Request { uri; method_ } ->
-    let { Request.id; loc = _; v = _ } = method_ in
+  | Request { id; method_ } ->
+    let { Request.uri; loc = _; v = _ } = method_ in
     (* XXX Fix to use position *)
     let r = Fleche.Theory.Request.{ id; request = FullDoc { uri } } in
     (* XXX Fix to postpone requests *)
     let () = match Fleche.Theory.Request.add r with
       | Now doc ->
-        let f = Request_interp.do_request ~doc in
+        let f _uri = Request_interp.do_request ~doc in
         let res = Request.process ~f method_ in
-        out_fn (Response res)
+        out_fn (Response { id; res })
       | Postpone -> ()
       | Cancel -> () in
     try_check ()

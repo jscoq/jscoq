@@ -26,6 +26,12 @@ export interface Diagnostic {
     extra?: any[]
 }
 
+export interface PublishDiagnosticParams {
+    uri: string,
+    version: number,
+    diagnostic: Diagnostic[]
+}
+
 export interface CoqInitOptions {
   implicit_libs?: boolean,
   coq_options?: [string[], any[]][],
@@ -243,7 +249,7 @@ export class CoqWorker {
     sendRequest(uri: string, loc: number, req: object) {
         let id = this.request_nextid++,
             fut = this.request_pending[id] = new Future;
-        this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
+        this.sendCommand(["Request", { id, method: {uri, loc, v: req} }]);
         /** @todo would be desirable to interrupt a previously started document re-check. */
         /**   unfortunately this interrupts the new request as well! so yeah, */
         /**   this woudl involve some backend work  */

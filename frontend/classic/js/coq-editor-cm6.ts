@@ -3,6 +3,7 @@ import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirr
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 import { Diagnostic } from "../../../backend/coq-worker";
 import { ICoqEditor, editorAppend } from "./coq-editor";
+import { CoqDocument } from "./coq-manager";
 
 // import './mode/coq-mode.js';
 
@@ -39,32 +40,29 @@ export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
     // element e
-    constructor(eIds : string[], options, onChange, onCursorUpdated, manager) {
-        if (eIds.length != 1)
-            throw new Error('not implemented: `cm6` frontend requires a single element')
-
-        let { container, area }  = editorAppend(eIds[0]);
+    constructor(doc: CoqDocument, options) {
 
         var extensions =
-            [ diagField,
-              lineNumbers(),
-              EditorView.updateListener.of(v => {
-                  if(v.selectionSet) {
-                    onCursorUpdated(v.state.selection.main.head);
-                  }
-                  if (v.docChanged) {
-                      // Document changed
-                      var newText = v.state.doc.toString();
-                      area.value = newText;
-                      onChange(newText);
-                  }})
+            [diagField,
+                lineNumbers(),
+                EditorView.updateListener.of(v => {
+                    if (v.docChanged) {
+                        // Document changed
+                        var newText = v.state.doc.toString();
+                        doc.change(newText);
+                    }
+                    // Careful to run this _after_ doc is changed in the model
+                    if (v.selectionSet) {
+                        doc.updateCursor(v.state.selection.main.head);
+                    }
+                })
             ];
 
-        var state = EditorState.create( { doc: area.value, extensions } );
+        var state = EditorState.create( { doc: doc.getValue(), extensions } );
 
         this.view = new EditorView(
             { state,
-              parent: container,
+              parent: doc.container,
               extensions
             });
     }
@@ -102,6 +100,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
         return this.view.state.selection.main.head;
     }
 
+    destroy() {
+        this.view.destroy();
+    }
     configure() {}
     openFile() {}
     focus() {}
