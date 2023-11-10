@@ -68,7 +68,7 @@ add jsCoq to webpage with Coq code is:
 
 ```html
   <script type="module">
-    import { JsCoq } from './node_modules/jscoq/jscoq.js';  /* path to installed package */
+    import { JsCoq } from './node_modules/jscoq/dist/frontend/index.js';  /* path to installed package */
     JsCoq.start($path, $list_of_ids, {$options});
   </script>
 ```

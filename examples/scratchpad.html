@@ -22,7 +22,7 @@
   </div>
 
   <script type="module">
-    import { JsCoq } from "../jscoq.js";
+    import { JsCoq } from './node_modules/jscoq/dist/frontend/index.js'
 
     var sp = new URLSearchParams(location.search),
         ifHas = x => sp.has(x) ? x : undefined,
