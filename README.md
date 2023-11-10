@@ -22,7 +22,7 @@ jsCoq is community-developed by a [team of contributors](#Credits).
 The following template allows you to get quickly started with jsCoq, while the
 necessary resources are loaded from an external content delivery network (jsDelivr):
 
-```
+```html
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
