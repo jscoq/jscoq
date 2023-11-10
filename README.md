@@ -17,6 +17,52 @@ See the [Troubleshooting](#Troubleshooting) section if you have problems.
 
 jsCoq is community-developed by a [team of contributors](#Credits).
 
+## Quick start
+
+The following template allows you to get quickly started with jsCoq, while the
+necessary resources are loaded from an external content delivery network (jsDelivr):
+
+```
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <title>Getting started with jsCoq</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jscoq@0.17.2/dist/frontend/index.css">
+</head>
+<body class="jscoq-main">
+  <div id="ide-wrapper" class="toggled">
+    <div id="code-wrapper">
+      <div id="document">
+        <h1>Welcome to your own jsCoq development</h1>
+        <p>
+            Want to create a document like this one?
+            Copy <tt>node_modules/jscoq/examples/npm-template.html</tt>
+            and start editing.
+        </p>
+        <textarea class="coq-code">
+(* Your document can embed Coq snippets! *)
+Inductive and_they_run := too(*!*).
+</textarea>
+      </div>
+    </div>
+  </div>
+  <!-- jsCoq configuration part -->
+  <script type="module">
+    import { JsCoq } from 'https://cdn.jsdelivr.net/npm/jscoq@0.17.2/jscoq.js';
+    var jscoq_ids  = ['.coq-code'];
+    var jscoq_opts = {
+        prelude:       true,
+        implicit_libs: true,
+        editor:        { mode: { 'company-coq': true } },
+        init_pkgs:     ['init'],
+        all_pkgs:      ['coq']
+    };
+    JsCoq.start(jscoq_ids, jscoq_opts);
+  </script>
+</body>
+```
+
 ## Are you a jsCoq user?
 
 Have you developed or taught a course **using jsCoq**? Do you have some feedback for us?
