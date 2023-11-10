@@ -147,7 +147,8 @@ export class CoqWorker {
         // BUG #352: Ensure that the Web Worker construction does not lead to a SecurityError,
         // even when the url is not same-origin, but cross-origin (e.g. jsCoq is hosted by a CDN).
         // See also: https://stackoverflow.com/questions/21913673/execute-web-worker-from-different-origin
-        const content = `importScripts("${JSON.stringify(url)}");`;
+        const content = `importScripts("${JSON.stringify(url.toString())}");`;
+        console.log(content);
         const url_blob = URL.createObjectURL(new Blob([content], {type: "text/javascript"}));
         return new Worker(url_blob);
         URL.revokeObjectURL(url_blob);
