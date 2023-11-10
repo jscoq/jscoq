@@ -3,7 +3,8 @@
   "version": "0.17.1",
   "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
-  "main": "jscoq.js",
+  "main": "dist/frontend/index.js",
+  "style": "dist/frontend/index.css",
   "browser": {
     "path": "path-browserify",
     "stream": "stream-browserify",
