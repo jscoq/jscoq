@@ -72,8 +72,8 @@ clean-dist:
 js-dist: clean-dist
 	docker run --name jscoq-get-dist jscoq:addons \
 		sh -c 'mkdir -p dist && cp _build/jscoq+*/*.tgz dist'
-	docker cp --quiet jscoq-get-dist:/root/jscoq/dist .
-	docker cp --quiet jscoq-get-dist:/root/jscoq-addons/dist .
+	docker cp jscoq-get-dist:/root/jscoq/dist .
+	docker cp jscoq-get-dist:/root/jscoq-addons/dist .
 	docker rm jscoq-get-dist
 
 wa-dist: clean-dist
@@ -86,7 +86,7 @@ wa-dist: clean-dist
 # For getting just the jsCoq package, w/o addons
 js-dist-core: clean-dist
 	docker run --name jscoq-get-dist jscoq
-	docker cp --quiet jscoq-get-dist:/root/jscoq/dist .
+	docker cp jscoq-get-dist:/root/jscoq/dist .
 	docker rm jscoq-get-dist
 
 # For updating the dist with the result of incremental build
