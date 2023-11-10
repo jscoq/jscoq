@@ -64,7 +64,7 @@ FROM jscoq-preinstall as jscoq-prereq
 
 ARG BRANCH
 ARG WORDSIZE
-ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
+ARG JSCOQ_REPO=https://github.com/praalhans/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
 
 WORKDIR /root
