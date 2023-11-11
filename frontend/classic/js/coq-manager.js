@@ -88,7 +88,13 @@ export class CoqManager {
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
+        
+        // Dynamically attach stylesheet to document
+        this._load('dist/frontend/index.css')then(() => this._create(elems));
+    }
 
+    // Create all elements (CodeMirror, Panel UI) and launch
+    _create(elems) {
         // Setup the Coq statement provider.
         this.provider = this._setupProvider(elems);
 
@@ -100,9 +106,6 @@ export class CoqManager {
 
         /** @type {CoqWorker} */
         this.coq = null;
-        
-        // Dynamically attach stylesheet to document
-        await this._load('dist/frontend/index.css');
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
