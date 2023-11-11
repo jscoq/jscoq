@@ -102,12 +102,7 @@ export class CoqManager {
         this.coq = null;
         
         // Dynamically attach stylesheet to document
-        var styles = document.createElement('link');
-        styles.rel = 'stylesheet';
-        styles.type = 'text/css';
-        styles.media = 'screen';
-        styles.href = this.options.base_path + 'dist/frontend/index.css';
-        document.getElementsByTagName('head')[0].appendChild(styles);
+        await this._load('dist/frontend/index.css');
 
         // Setup the Panel UI.
         this.layout = new CoqLayoutClassic(this.options, {kb: this.keyTooltips()});
