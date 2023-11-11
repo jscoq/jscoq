@@ -150,8 +150,9 @@ export class CoqWorker {
         const content = `importScripts(${JSON.stringify(url.toString())});`;
         console.log(content);
         const url_blob = URL.createObjectURL(new Blob([content], {type: "text/javascript"}));
-        return new Worker(url_blob);
+        const result = new Worker(url_blob);
         URL.revokeObjectURL(url_blob);
+        return result;
     }
 
     /**
