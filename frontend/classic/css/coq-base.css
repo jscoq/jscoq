@@ -18,8 +18,12 @@ body.jscoq-main {
   overscroll-behavior-y: none;
 }
 
-a, a:link, a:visited, a:active {
+#panel-wrapper a, a:link, a:visited, a:active {
   text-decoration: none;
+}
+
+#panel-wrapper img {
+  display: inline;
 }
 
 #ide-wrapper {
