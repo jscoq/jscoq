@@ -28,18 +28,12 @@ necessary resources are loaded from an external content delivery network (jsDeli
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
   <title>Getting started with jsCoq</title>
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jscoq@0.17.2/dist/frontend/index.css">
 </head>
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
     <div id="code-wrapper">
       <div id="document">
         <h1>Welcome to your own jsCoq development</h1>
-        <p>
-            Want to create a document like this one?
-            Copy <tt>node_modules/jscoq/examples/npm-template.html</tt>
-            and start editing.
-        </p>
         <textarea class="coq-code">
 (* Your document can embed Coq snippets! *)
 Inductive and_they_run := too(*!*).
@@ -48,7 +42,7 @@ Inductive and_they_run := too(*!*).
     </div>
   </div>
   <!-- jsCoq configuration part -->
-  <script type="module">
+  <script type="module" crossorigin="anonymous">
     import { JsCoq } from 'https://cdn.jsdelivr.net/npm/jscoq@0.17.2/jscoq.js';
     var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {
