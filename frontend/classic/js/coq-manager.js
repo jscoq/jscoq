@@ -90,7 +90,7 @@ export class CoqManager {
         }
         
         // Dynamically attach stylesheet to document
-        this._load('dist/frontend/index.css')then(() => this._create(elems));
+        this._load('dist/frontend/index.css').then(() => this._create(elems));
     }
 
     // Create all elements (CodeMirror, Panel UI) and launch
