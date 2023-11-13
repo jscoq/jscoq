@@ -89,8 +89,10 @@ export class CoqManager {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
         
-        // Dynamically attach stylesheet to document
-        this._load('dist/frontend/index.css').then(() => this._create(elems));
+        // Dynamically attach stylesheet to document (see #354)
+        // this._load('dist/frontend/index.css').then(() => this._create(elems));
+        // No stylesheet is automatically attached: the user should add the stylesheet to the page
+        this._create(elems);
     }
 
     // Create all elements (CodeMirror, Panel UI) and launch

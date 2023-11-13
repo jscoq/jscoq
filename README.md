@@ -28,6 +28,7 @@ necessary resources are loaded from an external content delivery network (jsDeli
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8" />
   <title>Getting started with jsCoq</title>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jscoq@0.17.2/dist/frontend/index.css">
 </head>
 <body class="jscoq-main">
   <div id="ide-wrapper" class="toggled">
@@ -43,7 +44,7 @@ Inductive and_they_run := too(*!*).
   </div>
   <!-- jsCoq configuration part -->
   <script type="module" crossorigin="anonymous">
-    import { JsCoq } from 'https://cdn.jsdelivr.net/npm/jscoq@0.17.2/jscoq.js';
+    import { JsCoq } from 'https://cdn.jsdelivr.net/npm/jscoq@0.17.2/dist/frontend/index.js';
     var jscoq_ids  = ['.coq-code'];
     var jscoq_opts = {
         prelude:       true,
