@@ -21,6 +21,9 @@ const JsCoq = {
     // Main entry point
     async start(...args) {
         let { jscoq_ids, jscoq_opts } = this._getopts('start', ...args);
+        // Ensure base_path ends with a slash
+        if (!jscoq_opts.base_path.endsWith('/'))
+            jscoq_opts.base_path = jscoq_opts.base_path + '/';
         this.base_path = jscoq_opts.base_path;
         //@ts-ignore
         window.JsCoq = this; // atm this is still needed by UI addons
