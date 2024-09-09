@@ -1,4 +1,3 @@
-
 // Provides: interrupt_setup
 function interrupt_setup(shmem) {
     var Int32Array = joo_global_object.Int32Array,

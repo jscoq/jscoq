@@ -157,6 +157,29 @@ function coq_tcode_of_code() {
   return [];
 }
 
+// Provides: coq_accumulate
+// Requires: vm_ll
+function coq_accumulate() {
+  // This is called on init, so let's be more lenient
+  // vm_ll('coq_accumulate', arguments);
+  return [];
+}
+
+// Provides: coq_obj_set_tag
+// Requires: vm_ll
+function coq_obj_set_tag() {
+  vm_ll('coq_obj_set_tag', arguments);
+  return [];
+}
+
+// Provides: coq_uint63_to_float_byte
+// Requires: vm_ll
+function coq_uint63_to_float_byte() {
+  // First element of the array is the length!
+  vm_ll('coq_uint63_to_float_byte', arguments);
+  return [0];
+}
+
 // Provides: get_coq_atom_tbl
 // Requires: vm_ll
 function get_coq_atom_tbl() {
@@ -202,9 +225,6 @@ function coq_set_drawinstr()      { vm_ll('coq_set_drawinstr', arguments); }
 // Provides: coq_tcode_array
 // Requires: vm_ll
 function coq_tcode_array()        { vm_ll('coq_tcode_array', arguments); }
-// Provides: coq_obj_set_tag
-// Requires: vm_ll
-function coq_obj_set_tag()        { vm_ll('coq_obj_set_tag', arguments); }
 
 // Provides: coq_fadd_byte
 function coq_fadd_byte(r1, r2) {
