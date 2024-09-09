@@ -4,6 +4,7 @@
  (preprocess (staged_pps lwt_ppx js_of_ocaml-ppx ppx_import ppx_deriving_yojson))
  (js_of_ocaml
   (javascript_files
+    js_stub/coq_perf.js
     js_stub/mutex.js
     js_stub/unix.js
     js_stub/coq_vm.js

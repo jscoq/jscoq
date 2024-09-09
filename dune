@@ -22,7 +22,8 @@
 
 (rule
  (targets (dir node_modules))
- (mode (promote (until-clean)))
+ ; This doesn't work due to Dune bug https://github.com/ocaml/dune/issues/10609
+ ; (mode (promote (until-clean)))
  (deps
    package.json
    package-lock.json)

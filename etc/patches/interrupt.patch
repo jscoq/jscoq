@@ -1,5 +1,5 @@
 diff --git a/lib/control.ml b/lib/control.ml
-index 2480821c61..49ddb6e7e3 100644
+index 2480821..49ddb6e 100644
 --- a/lib/control.ml
 +++ b/lib/control.ml
 @@ -18,7 +18,14 @@ let enable_thread_delay = ref false
@@ -17,3 +17,28 @@ index 2480821c61..49ddb6e7e3 100644
    if !interrupt then begin interrupt := false; raise Sys.Break end;
    if !enable_thread_delay then begin
      incr steps;
+diff --git a/lib/dune b/lib/dune
+index e7b1418..f23338c 100644
+--- a/lib/dune
++++ b/lib/dune
+@@ -4,6 +4,10 @@
+  (public_name coq-core.lib)
+  (wrapped false)
+  (modules_without_implementation xml_datatype)
++ (foreign_stubs
++  (language c)
++  (names jscoq_extern)
++  (flags :standard (:include %{project_root}/config/dune.c_flags)))
+  (libraries
+   coq-core.boot coq-core.clib coq-core.config
+   (select instr.ml from
+diff --git a/lib/jscoq_extern.c b/lib/jscoq_extern.c
+new file mode 100644
+index 0000000..7d0bb8c
+--- /dev/null
++++ b/lib/jscoq_extern.c
+@@ -0,0 +1,4 @@
++#include <caml/mlvalues.h>
++
++// jsCoq Stub; actual implementation is in backend/jsoo/js_stub/interrupt.js
++value interrupt_pending() { return Val_false; }
