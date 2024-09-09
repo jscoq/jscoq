@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.17
+COQ_VERSION := v8.20
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -240,8 +240,8 @@ dist-npm-wacoq:
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.17.1
-COQ_BRANCH_LATEST = v8.17
+COQ_BRANCH = V8.20.0
+COQ_BRANCH_LATEST = v8.20
 COQ_REPOS = https://github.com/coq/coq.git
 
 COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
@@ -250,14 +250,14 @@ COQ_PATCHES|64 = coerce-32bit
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+#	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq_configure=./tools/configure/configure.exe
 
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
 	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
-	# Temporarily re-enable Dune for libs (disabled in 8.17)
+	# Temporarily re-enable Dune for libs (disabled in 8.20)
 	cd $(COQSRC) && cp theories/dune.disabled theories/dune
 	cd $(COQSRC) && cp user-contrib/Ltac2/dune.disabled user-contrib/Ltac2/dune
 
@@ -265,3 +265,20 @@ coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get
 
 coq: coq-get
+
+# Submodules setup
+
+# Initialise submodules
+.PHONY: submodules-init
+submodules-init:
+	git submodule update --init
+
+# Deinitialize submodules
+.PHONY: submodules-deinit
+submodules-deinit:
+	git submodule deinit -f --all
+
+# Update submodules from upstream
+.PHONY: submodules-update
+submodules-update:
+	(cd vendor/coq && git checkout master && git pull upstream master)

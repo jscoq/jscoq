@@ -11,30 +11,30 @@ license:      "AGPL-3.0-or-later"
 doc:          "https://github.com/jscoq/jscoq#readme"
 
 depends: [
-  "ocaml"               { >= "4.12.0"           }
-  "dune"                { >= "3.5.0" & < "3.8"  }
-  "js_of_ocaml"         { >= "4.0.0" & < "4.1"  }
-  "js_of_ocaml-ppx"     { >= "4.0.0" & < "4.1"  }
-  "js_of_ocaml-lwt"     { >= "4.0.0" & < "4.1"  }
+  "ocaml"               { >= "4.14.2"           }
+  "dune"                { >= "3.16"             }
+  "js_of_ocaml"         { >= "5.8.0" & < "6.0"  }
+  "js_of_ocaml-ppx"     { >= "5.8.0" & < "6.0"  }
+  "js_of_ocaml-lwt"     { >= "5.8.0" & < "6.0"  }
   "yojson"              { >= "2.0.2"            }
   "ppx_deriving_yojson" { >= "3.5.3"            }
-  "ppx_import"          { >= "1.8.0"            }
+  "ppx_import"          { >= "1.11.0"           }
   "lwt_ppx"             { >= "2.0.1"            }
   # We should just rely on OPAM's coq-lsp but this is still early
-  "sexplib"             { >= "v0.14.0"          }
-  "ppx_sexp_conv"       { >= "v0.14.1" & < "v0.17" }
-  "ppx_hash"            { >= "v0.14.0" & < "v0.17" }
-  "ppx_compare"         { >= "v0.14.0" & < "v0.17" }
+  "sexplib"             { >= "v0.15.0"          }
+  "ppx_sexp_conv"       { >= "v0.15.1" & < "v0.18" }
+  "ppx_hash"            { >= "v0.15.0" & < "v0.18" }
+  "ppx_compare"         { >= "v0.15.0" & < "v0.18" }
   "uri"                 { >= "4.2.0" }
-  "dune-build-info"     { >= "3.2.0" }
+  "dune-build-info"     { >= "3.16.0" }
 
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
-  # "coq"                 { >= "8.13.0" & < "8.14" }
+  # "coq"                 { >= "8.20.0" & < "8.21" }
   # This is a dependency of Coq itself.
-  "zarith"              { >= "1.11"    }
+  "zarith"              { >= "1.14"    }
   # (plus stubs for building with jsoo)
-  "zarith_stubs_js"     { >= "v0.14.0" }
+  "zarith_stubs_js"     { >= "v0.16.0" }
 ]
 
 build: [ "dune" "build" "-p" name "-j" jobs ]

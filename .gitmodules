@@ -1,9 +1,6 @@
 [submodule "CodeMirror-TeX-input"]
 	path = frontend/classic/external/CodeMirror-TeX-input
 	url = https://github.com/ejgallego/CodeMirror-TeX-input.git
-[submodule "vendor/coq-serapi"]
-	path = vendor/coq-serapi
-	url = https://github.com/ejgallego/coq-serapi.git
 [submodule "vendor/coq-lsp"]
 	path = vendor/coq-lsp
 	url = https://github.com/ejgallego/coq-lsp.git
