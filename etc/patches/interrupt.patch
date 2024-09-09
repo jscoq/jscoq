@@ -1,0 +1,19 @@
+diff --git a/lib/control.ml b/lib/control.ml
+index 2480821c61..49ddb6e7e3 100644
+--- a/lib/control.ml
++++ b/lib/control.ml
+@@ -18,7 +18,14 @@ let enable_thread_delay = ref false
+ 
+ exception Timeout
+ 
++(* implemented in backend/jsoo/js_stub/interrupt.js *)
++external interrupt_pending : unit -> bool = "interrupt_pending"
++
++let jscoq_event_yield () =
++  if interrupt_pending () then interrupt := true
++
+ let check_for_interrupt () =
++  jscoq_event_yield ();
+   if !interrupt then begin interrupt := false; raise Sys.Break end;
+   if !enable_thread_delay then begin
+     incr steps;

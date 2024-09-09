@@ -244,13 +244,13 @@ COQ_BRANCH = V8.20.0
 COQ_BRANCH_LATEST = v8.20
 COQ_REPOS = https://github.com/coq/coq.git
 
-COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+COQ_PATCHES = interrupt # trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
 
 $(COQSRC):
 	git -c advice.detachedHead=false clone --depth=1 -b $(COQ_BRANCH) $(COQ_REPOS) $@
-#	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
+	cd $@ && git apply ${foreach p,$(COQ_PATCHES),$(current_dir)/etc/patches/$p.patch}
 
 coq_configure=./tools/configure/configure.exe
 
