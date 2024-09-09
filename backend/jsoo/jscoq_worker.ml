@@ -219,8 +219,9 @@ let rec process_queue () =
     Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);
     let cmd, rest = filter_queue (cmd, []) rest in
     event_queue := rest;
+    let token = Coq.Limits.Token.create () in
     jscoq_protect (fun () ->
-        Jscoq_interp.jscoq_execute cmd);
+        Jscoq_interp.jscoq_execute ~token cmd);
     (* Give a chance to receive pending messages *)
     ignore(setTimeout process_queue 0.1)
 

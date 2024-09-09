@@ -101,6 +101,12 @@ let cur_workspace = ref None
 let root_state = ref (Coq.State.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
 
 let lsp_cb =
+  let perfData ~uri:_ ~version:_ { Fleche.Perf.summary = _; _ } = () in
+    (* Format.(eprintf "[perfdata]@\n@[%s@]@\n%!" summary) in *)
+
+  let serverVersion _ = () in
+  let serverStatus _ = () in
+
   let out_fn = post_answer in
   Fleche.Io.CallBack.
     { trace = (fun cat ?extra:_ msg -> Format.eprintf "[%s] %s@\n%!" cat msg)
@@ -108,6 +114,9 @@ let lsp_cb =
     ; diagnostics = (fun ~uri:_ ~version diags ->
           out_fn (Notification (diags,version)))
     ; fileProgress = (fun ~uri:_ ~version:_ _progress -> ())
+    ; perfData
+    ; serverVersion
+    ; serverStatus
     }
 
 (* set_opts  : general Coq initialization options *)
@@ -133,66 +142,72 @@ let exec_init (set_opts : init_options) =
   root_state := st
 
 (* opts  : workspace initialization options *)
-let init_workspace ~dir opts =
+let init_workspace ~token ~dir opts =
   let vo_load_path = mk_vo_path opts.lib_path in
   let cmdline = Coq.Workspace.CmdLine.
       { coqlib = "/lib"
       ; coqcorelib = "/lib"
       ; ocamlpath = Some "/lib"
       ; args = ["-boot"]
+      ; require_libraries = []
       ; vo_load_path
       ; ml_include_path = []
       }
   in
-  Coq.Workspace.guess ~debug:opts.debug ~dir ~cmdline
+  Coq.Workspace.guess ~token ~debug:opts.debug ~dir ~cmdline
 
 (** XXX Error better when the workspace was not initialized *)
 let get_ws () = Option.get !cur_workspace
 
-let try_check () =
+let try_check ~token =
   let io = lsp_cb in
-  match Fleche.Theory.Check.maybe_check ~io with
+  match Fleche.Theory.Check.maybe_check ~token ~io with
   | None -> ()
   | Some (_wake_up, _doc) -> ()
 
 (** main interpreter *)
 let jscoq_execute =
-  let out_fn = post_answer in function
+  let out_fn = post_answer in fun ~token -> function
   | Init opts ->
     exec_init opts;
     out_fn @@ CoqInfo(coq_info_string ());
     let dir = "/src" in
-    let workspace = init_workspace ~dir opts in
-    cur_workspace := Some workspace;
-    out_fn @@ Ready ()
+    (match init_workspace ~token ~dir opts with
+    | Ok workspace ->
+      cur_workspace := Some workspace;
+      out_fn @@ Ready ()
+    | Error _ -> ())
 
   | NewDoc { uri; version; raw } ->
     let io = lsp_cb in
     let workspace = get_ws () in
-    let root_state = !root_state in
-    Fleche.Theory.create ~io ~root_state ~workspace ~uri ~version ~raw;
-    try_check ();
+    let init = !root_state in
+    let files = Coq.Files.make () in
+    let env = Fleche.Doc.Env.make ~init ~workspace ~files in
+    Fleche.Theory.create ~io ~token ~env ~uri ~version ~raw;
+    try_check ~token;
     ()
 
   | Update { uri; version; raw } ->
     let io = lsp_cb in
-    let _stale_request = Fleche.Theory.change ~io ~uri ~version ~raw in
-    try_check ();
+    let _stale_request : Int.Set.t = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
+    try_check ~token;
     ()
 
   | Request { uri; method_ } ->
     let { Request.id; loc = _; v = _ } = method_ in
     (* XXX Fix to use position *)
-    let r = Fleche.Theory.Request.{ id; request = FullDoc { uri } } in
+    let postpone = true in
+    let r = Fleche.Theory.Request.{ id; uri; postpone; request = FullDoc } in
     (* XXX Fix to postpone requests *)
     let () = match Fleche.Theory.Request.add r with
       | Now doc ->
-        let f = Request_interp.do_request ~doc in
+        let f = Request_interp.do_request ~token ~doc in
         let res = Request.process ~f method_ in
         out_fn (Response res)
       | Postpone -> ()
       | Cancel -> () in
-    try_check ()
+    try_check ~token
 
   | Register file_path  ->
     !Callbacks.cb.register_cma ~file_path

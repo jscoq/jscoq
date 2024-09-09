@@ -21,20 +21,21 @@ module Seq = struct
   let to_yojson f s = `List (Seq.fold_left (fun l x -> f x :: l) [] s |> List.rev)
 end
 
+(* XXX: This is already done in coq-lsp lsp library *)
 type 'a hyp =
-  [%import: 'a Coq.Goals.hyp]
+  [%import: 'a Coq.Goals.Reified_goal.hyp]
   [@@deriving to_yojson]
 
 type info =
-  [%import: Coq.Goals.info]
+  [%import: Coq.Goals.Reified_goal.info]
   [@@deriving to_yojson]
 
 type 'a reified_goal =
-  [%import: 'a Coq.Goals.reified_goal]
+  [%import: 'a Coq.Goals.Reified_goal.t]
   [@@deriving to_yojson]
 
 type ('a, 'pp) goals =
-  [%import: ('a, 'pp) Coq.Goals.goals]
+  [%import: ('a, 'pp) Coq.Goals.t]
   [@@deriving to_yojson]
 
 module Proto = struct
@@ -46,7 +47,7 @@ module Point = struct
 end
 
 module Range = struct
-  type t = [%import: (Lang.Range.t[@with Lang.Point.t := Point.t])]
+  type t = [%import: Lang.Range.t [@with Lang.Point.t := Point.t]]
   [@@deriving yojson]
 end
 
@@ -103,16 +104,29 @@ end
 
 module Diagnostic = struct
 
-  module Extra = struct
+  module Data = struct
     type t =
-      [%import: Lang.Diagnostic.Extra.t]
+      [%import: Lang.Diagnostic.Data.t [@with Lang.Range.t := Range.t]]
       [@@deriving yojson]
   end
 
+  module Severity = struct
+    type t = Lang.Diagnostic.Severity.t
+    type _t = int
+      [@@deriving yojson]
+
+    let to_int = Lang.Diagnostic.Severity.to_int
+    (* XXX *)
+    let of_yojson j = Obj.magic (_t_of_yojson j)
+    let to_yojson s = _t_to_yojson (Obj.magic s)
+
+  end
+
   type t =
-    [%import: (Lang.Diagnostic.t [@with Lang.Range.t := Range.t; Lang.LUri.File.t:=LUri.File.t])]
+    [%import: Lang.Diagnostic.t [@with Lang.Range.t := Range.t; Lang.Diagnostic.Data.t := Data.t; Lang.Diagnostic.Severity.t := Serverity.t]]
     [@@deriving yojson]
 
+  let is_error = Lang.Diagnostic.is_error
 end
 end
 

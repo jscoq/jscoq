@@ -35,5 +35,6 @@ end
 
 (** Main execution point *)
 val jscoq_execute
-  : Jscoq_proto.Proto.jscoq_cmd
+  : token:Coq.Limits.Token.t
+  -> Jscoq_proto.Proto.jscoq_cmd
   -> unit

@@ -15,7 +15,9 @@ let handleRequest json_str =
     let cmd = deserialize json_str                     in
     match cmd with
     | Result.Error e -> [JsonExn e]
-    | Result.Ok cmd -> jscoq_execute cmd; []
+    | Result.Ok cmd ->
+      let token = Coq.Limits.Token.create () in
+      jscoq_execute ~token cmd; []
   in
   serialize resp
 

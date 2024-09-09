@@ -6,7 +6,7 @@
  (libraries
    yojson ppx_deriving_yojson.runtime
    coq-core.stm coq-core.toplevel
-   coq-serapi.serlib
+   coq-lsp.serlib
    coq-lsp.fleche
    coq-lsp.lsp))
 

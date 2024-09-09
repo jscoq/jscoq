@@ -265,3 +265,20 @@ coq-get-latest: COQ_BRANCH = $(COQ_BRANCH_LATEST)
 coq-get-latest: coq-get
 
 coq: coq-get
+
+# Submodules setup
+
+# Initialise submodules
+.PHONY: submodules-init
+submodules-init:
+	git submodule update --init
+
+# Deinitialize submodules
+.PHONY: submodules-deinit
+submodules-deinit:
+	git submodule deinit -f --all
+
+# Update submodules from upstream
+.PHONY: submodules-update
+submodules-update:
+	(cd vendor/coq && git checkout master && git pull upstream master)

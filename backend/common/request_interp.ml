@@ -19,7 +19,9 @@ let pr_extref gr =
   | Globnames.TrueGlobal gr -> Printer.pr_global gr
   | Globnames.Abbrev kn -> Names.KerName.print kn
 
-let mk_message (range, level, text) = Lsp.JFleche.Message.{ range; level; text }
+let mk_message (range, level, text) =
+  let level = Lang.Diagnostic.Severity.to_int level in
+  Lsp.JFleche.Message.{ range; level; text }
 
 let mk_messages node =
   Option.map Fleche.Doc.Node.messages node
@@ -29,12 +31,18 @@ let mk_error node =
   let open Fleche in
   let open Lang in
   match
-    List.filter (fun d -> d.Diagnostic.severity < 2) node.Doc.Node.diags
+    List.filter Lang.Diagnostic.is_error node.Doc.Node.diags
   with
   | [] -> None
   | e :: _ -> Some e.Diagnostic.message
 
-let do_request ~doc point (r : Method.t) =
+let from_execution (res : _ Coq.Protect.E.t) =
+  match res with
+  | { r = Coq.Protect.R.Completed (Ok goals); feedback = _ } -> goals
+  | { r = Coq.Protect.R.Completed (Error _); feedback = _ } -> None
+  | { r = Coq.Protect.R.Interrupted; feedback = _ } -> None
+
+let do_request ~token ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
   | Method.Goals ->
@@ -42,8 +50,13 @@ let do_request ~doc point (r : Method.t) =
     let textDocument = Lsp.Doc.VersionedTextDocumentIdentifier.{ uri; version } in
     let position = Lang.Point.{ line = -1; character = -1; offset = point } in
     let goals_mode = LI.Prev in
-    let goals = LI.O.goals ~doc ~point goals_mode in
-    let program = LI.O.program ~doc ~point goals_mode in
+    let goals =
+      LI.O.node ~doc ~point goals_mode |> Option.map (fun (node : Fleche.Doc.Node.t) ->
+          LI.Goals.goals ~token ~st:node.state) in
+    let goals = Option.bind goals from_execution in
+    let program =
+      LI.O.node ~doc ~point goals_mode |> Option.map (fun (node : Fleche.Doc.Node.t) ->
+          LI.Goals.program ~st:node.state) in
     let node = LI.O.node ~doc ~point Exact in
     let messages = mk_messages node in
     let error = Option.bind node mk_error in
