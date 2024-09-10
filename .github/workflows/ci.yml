@@ -3,31 +3,9 @@ name: JsCoq's CI Action
 on:
   push:
     branches:
-    - v8.8
-    - v8.9
-    - v8.10
-    - v8.11
-    - v8.12
-    - v8.13
-    - v8.14
-    - v8.15
-    - v8.16
-    - v8.17
-    - v8.17+lsp
     - v8.20+lsp
   pull_request:
     branches:
-    - v8.8
-    - v8.9
-    - v8.10
-    - v8.11
-    - v8.12
-    - v8.13
-    - v8.14
-    - v8.15
-    - v8.16
-    - v8.17
-    - v8.17+lsp
     - v8.20+lsp
 
   # Allows you to run this workflow manually from the Actions tab
