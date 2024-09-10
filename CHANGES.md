@@ -1,3 +1,12 @@
+# jsCoq 1.99.1
+--------------
+
+ - Port jsCoq backend to Flèche (@ejgallego, @corwin-of-amber)
+ - Port jsCoq frontend to TypeScript (@ejgallego, @corwin-of-amber)
+ - Use coq-lsp info view (which in turn descends from jsCoq's)
+   (@ejgallego, @corwin-of-amber)
+ - Update to Coq 8.20.0 (@ejgallego, @corwin-of-amber, @herbelin)
+
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
 
