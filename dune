@@ -6,6 +6,7 @@
  (targets (dir coq-pkgs))
  (mode (promote (until-clean)))
  (deps
+   %{bin:js_of_ocaml}
   (package coq-core)
   (package coq-stdlib)
   Makefile)
