@@ -17,7 +17,7 @@ RUN apt-get update && apt-get upgrade -y apt && \
     apt-get install --no-install-recommends -y \
     wget ca-certificates \
     m4 bubblewrap gcc libc6-dev binutils make patch unzip \
-    opam
+    opam libgmp-dev pkg-config
 
 RUN if [ ${WORDSIZE} = 32 ] ; then \
     apt install --no-install-recommends -y gcc-multilib libgmp-dev:i386; fi
@@ -66,6 +66,8 @@ ARG BRANCH
 ARG WORDSIZE
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
+
+RUN echo "hello from the branch" ${JSCOQ_BRANCH}
 
 WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}

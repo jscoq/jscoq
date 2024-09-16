@@ -73,6 +73,8 @@ jobs:
           # make test
           # echo -en 'travis_fold:end:jscoq.build\\r'
   docker:
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -93,5 +95,6 @@ jobs:
           target: jscoq-addons
           push: false
           tags: jscoq/jscoq:latest
+          build-args: BRANCH=${{ env.BRANCH_NAME }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
