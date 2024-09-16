@@ -6,67 +6,63 @@ ARG BRANCH=v8.20
 ARG WORDSIZE=32
 ARG SWITCH=jscoq+${WORDSIZE}bit
 
-FROM debian:11-slim AS opam
+FROM debian:11-slim AS coq-base
 
-# ------------
-#   Get OPAM
-# ------------
+# -------------------------------------------- #
+# Setup WASI, OPAM, and Coq's System build env #
+# -------------------------------------------- #
 
+ARG NJOBS=2
 ARG WORDSIZE
+ARG WASI_SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz"
 
 RUN if [ ${WORDSIZE} = 32 ] ; then dpkg --add-architecture i386 ; fi
 
 RUN apt-get update -qq && apt-get upgrade -y -qq apt && \
     apt-get install --no-install-recommends -y -qq \
-    wget ca-certificates \
+    wget curl rsync git bzip2 ca-certificates \
     m4 bubblewrap gcc libc6-dev binutils make patch unzip \
     opam libgmp-dev pkg-config
 
 RUN if [ ${WORDSIZE} = 32 ] ; then \
     apt install --no-install-recommends -y -qq gcc-multilib libgmp-dev:i386; fi
 
+# Updated node, cannot be before due to lack of wget
+RUN wget -O- https://deb.nodesource.com/setup_22.x | bash -
+RUN apt-get update -qq && apt-get install --no-install-recommends -y -qq nodejs
+
+# wasi-sdk (for waCoq)
+# ^ https://github.com/nodesource/distributions/blob/master/README.md
+RUN wget --quiet -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
+RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
+
 # Basic OPAM setup
-ARG NJOBS=2
 ENV OPAMJOBS=${NJOBS}          \
     OPAMROOT=/root/.opamcache  \
     OPAMROOTISOK=true
 
 RUN opam init -a --bare --disable-sandboxing
 
+RUN apt-get clean
+
 # ----------------------------------------------------------
 #
-#       j s C o q   (JavaScript backend)
+#       j s C o q   (JavaScript and WebAssembly backend)
 #
 # ----------------------------------------------------------
 
-# -----------------
-# jsCoq pre-install
-# -----------------
-FROM opam AS jscoq-preinstall
+# ------------------------------------------ #
+# jsCoq OCaml-level dependencies pre-install #
+# ------------------------------------------ #
+FROM coq-base AS jscoq-base
 
 ARG SWITCH
 ARG WORDSIZE
+ARG BRANCH
+
 RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.14.2 ; fi
 RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.14.2+options,ocaml-option-32bit" ; fi
 
-# Other deps: Git, Node.js, GMP
-ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
-RUN wget -O- https://deb.nodesource.com/setup_22.x | bash -
-# ^ https://github.com/nodesource/distributions/blob/master/README.md
-RUN apt install --no-install-recommends -y $APT_PACKAGES
-
-# wasi-sdk (for waCoq)
-ARG WASI_SDK_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz"
-RUN wget -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
-RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
-
-# ---------------------
-# jsCoq toolchain setup
-# ---------------------
-FROM jscoq-preinstall AS jscoq-prereq
-
-ARG BRANCH
-ARG WORDSIZE
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
 
@@ -81,7 +77,7 @@ RUN opam list
 # -----------
 # jsCoq build
 # -----------
-FROM jscoq-prereq AS jscoq
+FROM jscoq-base AS jscoq
 
 ARG SUB_BRANCH
 ARG NJOBS=4
