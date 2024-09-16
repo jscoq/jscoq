@@ -1,14 +1,11 @@
-.PHONY: default build dist serve clean clean-% wa-% js-%
+.PHONY: default build dist serve clean clean-% js-%
 
 WHO = jscoq
 
-BRANCH = v8.17
+BRANCH = v8.20
 
 export JSCOQ_REPO = https://github.com/$(WHO)/jscoq.git
 export JSCOQ_BRANCH = $(BRANCH)
-
-export WACOQ_BIN_REPO = https://github.com/$(WHO)/wacoq-bin.git
-export WACOQ_BIN_BRANCH = $(BRANCH)
 
 export NJOBS ?= 4
 
@@ -20,11 +17,10 @@ export WORDSIZE = 64
 endif
 
 # Use BuildKit.
-# This is needed for jscoq/wacoq branching in Dockerfile
+# This is needed for jscoq branching in Dockerfile
 export DOCKER_BUILDKIT = 1
 
-BUILD_ARGS = BRANCH SUB_BRANCH NJOBS WORDSIZE \
-             JSCOQ_REPO JSCOQ_BRANCH WACOQ_BIN_REPO WACOQ_BIN_BRANCH
+BUILD_ARGS = BRANCH SUB_BRANCH NJOBS WORDSIZE JSCOQ_REPO JSCOQ_BRANCH
 
 ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
        $(addprefix --build-arg , $(BUILD_ARGS) BUILDKIT_INLINE_CACHE=1)
@@ -34,7 +30,6 @@ ARGS = $(addprefix --platform , $(firstword ${ARCH})) \
 #uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
 
 JS_EXISTING_IMAGES = ${shell docker images --filter=reference="jscoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/jscoq -q}
-WA_EXISTING_IMAGES = ${shell docker images --filter=reference="wacoq:*" --format '{{.Repository}}:{{.Tag}}'} ${shell docker images jscoq/wacoq -q}
 
 default: js-build
 
@@ -54,16 +49,6 @@ js-build-inc: js-clean-inc
 js-build-sdk: js-build-core
 	docker build . --target jscoq-sdk        $(ARGS)  -t jscoq:sdk
 
-wa-build: wa-build-core wa-build-addons
-
-wa-build-core:
-	docker build . --target wacoq-preinstall $(ARGS)  -t wacoq:preinstall
-	docker build . --target wacoq-prereq     $(ARGS)  -t wacoq:prereq
-	docker build . --target wacoq            $(ARGS)  -t wacoq
-
-wa-build-addons: wa-build-core
-	docker build . --target wacoq-addons     $(ARGS)  -t wacoq:addons
-
 dist: js-dist
 
 clean-dist:
@@ -75,13 +60,6 @@ js-dist: clean-dist
 	docker cp --quiet jscoq-get-dist:/root/jscoq/dist .
 	docker cp --quiet jscoq-get-dist:/root/jscoq-addons/dist .
 	docker rm jscoq-get-dist
-
-wa-dist: clean-dist
-	docker run --name wacoq-get-dist wacoq:addons \
-		sh -c 'mkdir -p dist && cp _build/wacoq/*.tgz dist'
-	docker cp wacoq-get-dist:/root/jscoq+wacoq/dist .
-	docker cp wacoq-get-dist:/root/jscoq-addons/dist .
-	docker rm wacoq-get-dist
 
 # For getting just the jsCoq package, w/o addons
 js-dist-core: clean-dist
@@ -97,19 +75,14 @@ js-dist-inc:
 
 
 JS_CLEAN = ${filter-out jscoq:pre%, $(JS_EXISTING_IMAGES)}
-WA_CLEAN = ${filter-out wacoq:pre%, $(WA_EXISTING_IMAGES)}
 
 CLEAN_FLAGS = ${if $(JSCOQ_DEV)$(FORCE), -f,}
 
-clean: js-clean wa-clean
+clean: js-clean
 
 js-clean:
 	${if $(JS_CLEAN), docker image rm $(CLEAN_FLAGS) $(JS_CLEAN)}
 	docker system prune $(CLEAN_FLAGS)   # this seems to be required with BuildKit
-
-wa-clean:
-	${if $(WA_CLEAN), docker image rm $(CLEAN_FLAGS) $(WA_CLEAN)}
-	docker system prune $(CLEAN_FLAGS)
 
 JS_CLEAN_INC = ${filter jscoq:inc, $(JS_EXISTING_IMAGES)}
 
@@ -117,14 +90,10 @@ js-clean-inc:
 	${if $(JS_CLEAN_INC), docker image rm $(CLEAN_FLAGS) $(JS_CLEAN_INC)}
 	docker system prune $(CLEAN_FLAGS)
 
-clean-slate: js-clean-slate wa-clean-slate
+clean-slate: js-clean-slate
 
 js-clean-slate:
 	${if $(JS_EXISTING_IMAGES), docker image rm $(CLEAN_FLAGS) $(JS_EXISTING_IMAGES)}
-	docker system prune $(CLEAN_FLAGS)
-
-wa-clean-slate:
-	${if $(WA_EXISTING_IMAGES), docker image rm $(CLEAN_FLAGS) $(WA_EXISTING_IMAGES)}
 	docker system prune $(CLEAN_FLAGS)
 
 js-upload:

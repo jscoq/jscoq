@@ -80,6 +80,7 @@ all:
 	@echo ""
 	@echo "    bundle: create the core JS bundles using esbuild in dist"
 	@echo " typecheck: typecheck using tsc"
+	@echo "   release: create the core JS bundles using release mode"
 	@echo ""
 	@echo "     links: create links that allow to serve pages from the source tree"
 	@echo "            [note: jscoq build system auto-promotoes targets so this is obsolete]"
@@ -136,6 +137,10 @@ typecheck:
 	$(DUNE) build node_modules
 	$(DUNE) exec --context=$(BUILD_CONTEXT) -- npm run typecheck
 
+release:
+	JSCOQ_BUNDLE_TARGET=release $(DUNE) build dist
+	JSCOQ_BUNDLE_TARGET=release-cli $(DUNE) build dist-cli
+
 # Build symbol database files for autocomplete
 coq-pkgs/%.symb.json: coq-pkgs/%.coq-pkg
 	@node --max-old-space-size=2048 ./dist-cli/cli.cjs run --require-pkg $* --inspect $@
@@ -178,8 +183,7 @@ distclean: clean
 
 dist: dist-npm dist-tarball
 
-BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
-	jscoq.js coq-pkgs frontend backend dist examples docs}
+BUILDOBJ = ${addprefix $(BUILDDIR)/./,jscoq.js coq-pkgs frontend backend dist examples docs}
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
@@ -215,27 +219,8 @@ dist-npm:
 	cd $(DISTDIR) && npm pack $(PWD)/$(NPMSTAGEDIR)
 	@echo ">" $(DISTDIR)/jscoq-$(PACKAGE_VERSION).tgz
 
-#
-# The following needs to be changed if we want to create separate `jscoq` and `wacoq` packages
-#
-WACOQ_NPMOBJ = README.md \
-	jscoq.js frontend backend examples dist docs
-# ^ plus `package.json` and `docs/npm-landing.html` that have separate treatment
-
-dist-npm-wacoq:
-	mkdir -p $(NPMSTAGEDIR) $(DISTDIR)
-	rm -rf ${add-prefix $(NPMSTAGEDIR)/, backend coq-pkgs}  # in case these were created by jsCoq :/
-	rsync -apR --delete $(NPMEXCLUDE) $(WACOQ_NPMOBJ) $(NPMSTAGEDIR)
-	cp package.json.wacoq $(NPMSTAGEDIR)/package.json
-	cp docs/npm-landing.html $(NPMSTAGEDIR)/index.html
-	npm pack ./$(NPMSTAGEDIR)
-
-# The need to maintain and update `package.json.wacoq` alongside `package.json`
-# is absolutely bothersome. I could not conjure a more sustainable way to emit
-# two separate NPM packages from the same source tree, though.
-
 ########################################################################
-# Externals
+# Retrieving and Patching Coq source code
 ########################################################################
 
 .PHONY: coq coq-get coq-get-latest coq-build
@@ -257,7 +242,7 @@ coq_configure=./tools/configure/configure.exe
 coq-get: $(COQSRC)
 	$(OPAMENV) && \
 	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
-	# Temporarily re-enable Dune for libs (disabled in 8.20)
+	# Temporarily re-enable Dune for libs (disabled in Coq 8.20)
 	cd $(COQSRC) && cp theories/dune.disabled theories/dune
 	cd $(COQSRC) && cp user-contrib/Ltac2/dune.disabled user-contrib/Ltac2/dune
 

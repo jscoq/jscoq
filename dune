@@ -111,7 +111,7 @@
   esbuild-cli.mjs
   node_modules)
  (action
-  (run npm run esbuild-cli)))
+  (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild-cli})))
 
 ; Webpack build (legacy)
 (rule
