@@ -31,9 +31,9 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo aptitude -o Acquire::Retries=30 update -q
           sudo aptitude -o Acquire::Retries=30 install gcc-multilib g++-multilib libgmp-dev:i386 -y
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '22'
           cache: 'npm'
       - name: OPAM Set up
         run: |

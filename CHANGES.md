@@ -13,6 +13,7 @@
  - Adapt `dist` targets and Docker build to new setup, note this
    removes the wasm build from Docker as we are now unified.
    (@ejgallego, #334)
+ - Bump node from 16 to 22 LTS (@ejgallego, #369)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
