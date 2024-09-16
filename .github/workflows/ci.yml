@@ -3,10 +3,10 @@ name: JsCoq's CI Action
 on:
   push:
     branches:
-    - v8.20+lsp
+    - 'v8.20+lsp'
   pull_request:
     branches:
-    - v8.20+lsp
+    - 'v8.20+lsp'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
