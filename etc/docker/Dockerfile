@@ -51,7 +51,7 @@ RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="oca
 
 # Other deps: Git, Node.js, GMP
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
-RUN wget -O- https://deb.nodesource.com/setup_16.x | bash -
+RUN wget -O- https://deb.nodesource.com/setup_22.x | bash -
 # ^ https://github.com/nodesource/distributions/blob/master/README.md
 RUN apt install --no-install-recommends -y $APT_PACKAGES
 
