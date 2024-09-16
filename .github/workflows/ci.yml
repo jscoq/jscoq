@@ -88,7 +88,7 @@ jobs:
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build (no push atm)
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           file: etc/docker/Dockerfile
           context: etc/docker
