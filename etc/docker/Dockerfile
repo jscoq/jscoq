@@ -43,8 +43,8 @@ FROM opam as jscoq-preinstall
 
 ARG SWITCH
 ARG WORDSIZE
-RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.12.0 ; fi
-RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit" ; fi
+RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.14.2 ; fi
+RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.14.2+options,ocaml-option-32bit" ; fi
 
 # Other deps: Git, Node.js, GMP
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
@@ -194,7 +194,7 @@ ENV OCAMLFIND_CONF /opt/jscoq/findlib.conf
 # -----------------
 FROM opam as wacoq-preinstall
 
-RUN opam switch create wacoq --packages="ocaml-base-compiler.4.12.0"
+RUN opam switch create wacoq --packages="ocaml-base-compiler.4.14.2"
 
 ENV APT_PACKAGES="git rsync bzip2 nodejs curl libgmp-dev"
 RUN wget -O- https://deb.nodesource.com/setup_16.x | bash -

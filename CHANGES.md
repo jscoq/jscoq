@@ -8,6 +8,7 @@
  - Update to Coq 8.20.0 (@ejgallego, @corwin-of-amber, @herbelin)
  - Add `js_of_ocaml` dependency to the rule generating `coq-pkgs`
    (@ejgallego)
+ - Bump minimal OCaml version to 4.14.2 (@ejgallego)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
