@@ -2,6 +2,8 @@ name: JsCoq's CI Action
 
 on:
   push:
+    branches:
+      - 'v8.20+lsp'
   pull_request:
   workflow_dispatch:
 
