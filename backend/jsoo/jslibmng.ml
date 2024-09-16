@@ -151,11 +151,8 @@ let load_pkg ~verb out_fn base_path pkg_file =
 (* XXX: Wait until we have enough UI support for logging *)
 let coq_vo_req url =
   (* if not @@ is_bad_url url then *)
-  try
-    let c_entry = Hashtbl.find file_cache url in
-    Some c_entry.file_content
-  with
-  | Not_found -> None
+  Hashtbl.find_opt file_cache url |> Option.map (
+    fun c_entry -> c_entry.file_content)
 
 (* coq_vo_reg is also invoked throught the Sys.file_exists call
  * in mltop:file_of_name function, a good example on how to be
@@ -179,9 +176,9 @@ let coq_cma_link ~file_path =
   let cmo_file = file_path ^ ".cma" in
   if verb then eprintf "bytecode file %s requested\n%!" cmo_file;
   let cmo_file =
-    try Hashtbl.find cma_cache cmo_file ^ "/" ^ cmo_file
-    with
-    | Not_found ->
+    match Hashtbl.find_opt cma_cache cmo_file with
+    | Some path -> path ^ "/" ^ cmo_file
+    | None ->
       eprintf "!! cache inconsistency for file %s\n%!" cmo_file;
       cmo_file
   in
