@@ -6,7 +6,7 @@ ARG BRANCH=v8.20
 ARG WORDSIZE=32
 ARG SWITCH=jscoq+${WORDSIZE}bit
 
-FROM debian:11-slim AS coq-base
+FROM debian:12-slim AS coq-base
 
 # -------------------------------------------- #
 # Setup WASI, OPAM, and Coq's System build env #
@@ -25,7 +25,7 @@ RUN apt-get update -qq && apt-get upgrade -y -qq apt && \
     opam libgmp-dev pkg-config
 
 RUN if [ ${WORDSIZE} = 32 ] ; then \
-    apt install --no-install-recommends -y -qq gcc-multilib libgmp-dev:i386; fi
+    apt install --no-install-recommends -y -qq gcc-multilib g++-multilib libgmp-dev:i386; fi
 
 # Updated node, cannot be before due to lack of wget
 RUN wget -O- https://deb.nodesource.com/setup_22.x | bash -
