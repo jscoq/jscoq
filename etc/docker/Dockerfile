@@ -13,14 +13,14 @@ ARG WORDSIZE
 
 RUN if [ ${WORDSIZE} = 32 ] ; then dpkg --add-architecture i386 ; fi
 
-RUN apt-get update && apt-get upgrade -y apt && \
-    apt-get install --no-install-recommends -y \
+RUN apt-get update -qq && apt-get upgrade -y -qq apt && \
+    apt-get install --no-install-recommends -y -qq \
     wget ca-certificates \
     m4 bubblewrap gcc libc6-dev binutils make patch unzip \
     opam libgmp-dev pkg-config
 
 RUN if [ ${WORDSIZE} = 32 ] ; then \
-    apt install --no-install-recommends -y gcc-multilib libgmp-dev:i386; fi
+    apt install --no-install-recommends -y -qq gcc-multilib libgmp-dev:i386; fi
 
 # Basic OPAM setup
 ARG NJOBS=2
