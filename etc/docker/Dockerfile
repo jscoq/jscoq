@@ -6,7 +6,7 @@ ARG BRANCH=v8.20
 ARG WORDSIZE=32
 ARG SWITCH=jscoq+${WORDSIZE}bit
 
-FROM debian:11-slim as opam
+FROM debian:11-slim AS opam
 
 # ------------
 #   Get OPAM
@@ -42,7 +42,7 @@ RUN opam init -a --bare --disable-sandboxing
 # -----------------
 # jsCoq pre-install
 # -----------------
-FROM opam as jscoq-preinstall
+FROM opam AS jscoq-preinstall
 
 ARG SWITCH
 ARG WORDSIZE
@@ -63,14 +63,12 @@ RUN ( cd /opt && tar xf /tmp/wasi-sdk.tar.gz && ln -s wasi-sdk-* wasi-sdk )
 # ---------------------
 # jsCoq toolchain setup
 # ---------------------
-FROM jscoq-preinstall as jscoq-prereq
+FROM jscoq-preinstall AS jscoq-prereq
 
 ARG BRANCH
 ARG WORDSIZE
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
-
-RUN echo "hello from the branch" ${JSCOQ_BRANCH}
 
 WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
@@ -83,7 +81,7 @@ RUN opam list
 # -----------
 # jsCoq build
 # -----------
-FROM jscoq-prereq as jscoq
+FROM jscoq-prereq AS jscoq
 
 ARG SUB_BRANCH
 ARG NJOBS=4
@@ -102,7 +100,7 @@ RUN eval $(opam env) && make dist && make dist-npm \
 # --------------
 # Addon packages
 # --------------
-FROM jscoq as jscoq-addons
+FROM jscoq AS jscoq-addons
 
 # - install to OPAM for use by package builds
 RUN eval $(opam env) && make install &&   \
@@ -158,7 +156,7 @@ RUN eval $(opam env) && make dist-tarball && make dist-npm \
 # jsCoq SDK
 # ---------
 
-FROM jscoq as jscoq-sdk-prepare
+FROM jscoq AS jscoq-sdk-prepare
 
 RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
     rm dist-sdk/bin/*.byte dist-sdk/bin/*.opt
@@ -167,7 +165,7 @@ RUN cp -rL _build/install/jscoq+*bit/ ./dist-sdk && \
 # rm dist-sdk/lib/coq/*/*.cmxs \
 # `find dist-sdk -regex '.*\.\(cm\(a\|t\|ti\)\|mli?\)'`
 
-FROM debian:11-slim as jscoq-sdk
+FROM debian:11-slim AS jscoq-sdk
 
 ARG WORDSIZE
 
