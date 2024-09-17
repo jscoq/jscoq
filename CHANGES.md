@@ -20,6 +20,8 @@
  - `make serve` now properly sets headers so
    `window.crossOriginIsolated` holds, this is required on modern
    browsers for `SharedArrayBuffer` support (@ejgallego, #371)
+ - Bump to jsoo 5.8.3, many many thanks to Hugo Heuzard (@ejgallego,
+   @hhugo, #372)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

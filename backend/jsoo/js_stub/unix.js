@@ -479,6 +479,9 @@ function unix_spawn()                 { unix_ll("unix_spawn", arguments); }
 // Provides: unix_fsync
 // Requires: unix_ll
 function unix_fsync()                 { unix_ll("unix_fsync", arguments); }
+// Provides: unix_realpath
+// Requires: unix_ll
+function unix_realpath()                 { unix_ll("unix_realpath", arguments); }
 // Provides: unix_inchannel_of_filedescr
 // Requires: unix_ll
 function unix_inchannel_of_filedescr()  { unix_ll("unix_inchannel_of_filedescr", arguments); }

@@ -14,9 +14,9 @@ depends: [
   "ocaml"               { >= "4.14.2"           }
   "dune"                { >= "3.16"             }
 # See https://github.com/ocsigen/js_of_ocaml/issues/1668
-  "js_of_ocaml"         { >= "4.0.0" & < "4.1"  }
-  "js_of_ocaml-ppx"     { >= "4.0.0" & < "4.1"  }
-  "js_of_ocaml-lwt"     { >= "4.0.0" & < "4.1"  }
+  "js_of_ocaml"         { >= "5.8.3" & < "6.0"  }
+  "js_of_ocaml-ppx"     { >= "5.8.3" & < "6.0"  }
+  "js_of_ocaml-lwt"     { >= "5.8.3" & < "6.0"  }
   "yojson"              { >= "2.0.2"            }
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.11.0"           }
