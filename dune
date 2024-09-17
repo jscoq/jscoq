@@ -60,7 +60,6 @@
   (source_tree examples)
   (source_tree docs)  ; for `quick-help.html`
   dist
-  jscoq.js
 ; Disabled in the lsp / esbuild branch
 ; dist-webpack
   index.html

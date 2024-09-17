@@ -3,7 +3,8 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <title>Using jsCoq with NPM (a template)</title>
-
+    <link rel="stylesheet" type="text/css" href="./node_modules/jscoq/dist/frontend/index.css">
+ 
     <!-- important: this will not work from *within* the jsCoq package dir; -->
     <!-- this template is meant to be copied to your project dir and edited -->
 
@@ -26,8 +27,7 @@
 
   <!-- jsCoq configuration part -->
   <script type="module">
-    import { JsCoq } from './node_modules/jscoq/jscoq.js';
-
+    import { JsCoq } from './node_modules/jscoq/dist/frontend/index.js'
     var jscoq_ids  = ['coq-code'];
     var jscoq_opts = {
         prelude:       true,
