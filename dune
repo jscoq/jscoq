@@ -7,6 +7,7 @@
  (mode (promote (until-clean)))
  (deps
    %{bin:js_of_ocaml}
+   %{dep:dist-pkg/mk-pkg.cjs}
   (package coq-core)
   (package coq-stdlib)
   Makefile)

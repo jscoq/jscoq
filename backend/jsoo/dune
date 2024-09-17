@@ -22,9 +22,9 @@
 
 ; Set debug flags if JSCOQ_DEBUG environment variable is set.
 ; (ugly, but there are no conditional expressions in Dune)
-(rule  
+(rule
  (targets .extraflags)
  (deps (env_var JSCOQ_DEBUG))
- (action (with-stdout-to %{targets} 
+ (action (with-stdout-to %{targets}
     (bash "echo '(' ${JSCOQ_DEBUG+ --pretty --noinline --disable shortvar --debug-info} ')'")))
 )
