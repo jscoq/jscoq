@@ -160,7 +160,7 @@ watch: DUNE_FLAGS+=--watch
 watch: jscoq
 
 serve:
-	npx http-server $(BUILDDIR) -p 8013 -c 0
+	npx serve -c ../../etc/serve.json -C -l 8013 $(BUILDDIR)
 
 dev:
 	$(MAKE) serve &

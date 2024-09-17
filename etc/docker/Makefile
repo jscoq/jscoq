@@ -112,7 +112,7 @@ serve:
 		sh -c "cd _build/dist && npm i && npx -y static-server -p 8080"
 
 dist-serve:
-	npx http-server -p 8080 dist
+	npx serve -C -l 8080 dist
 
 ci:
 	make clean && make js-build && make dist
