@@ -190,8 +190,8 @@ let jsoo_cb =
     ; read_file = Sys_js.read_file
     ; write_file = write_file
     ; register_cma = Jslibmng.register_cma
-    ; load_pkg = (fun ~base_path ~pkg ~cb ->
-      Lwt.async (fun () -> Jslibmng.load_pkg ~verb:false cb base_path pkg))
+    ; load_pkg = (fun ~url ~out_fn ->
+      Lwt.async (fun () -> Jslibmng.load_zip_package ~verb:false ~out_fn url))
     ; info_pkg = (fun ~base_path ~pkgs ~cb ->
       Lwt.async (fun () -> Jslibmng.info_pkg cb base_path pkgs))
     }

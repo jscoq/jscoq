@@ -41,7 +41,7 @@ class IcoqPod extends EventEmitter {
         await this.findlibStartup(); /* @todo */
 
         this._preloadStub();
-    
+
         await this.core.run('/lib/icoq.bc', [], ['wacoq_post']);
     }
 
@@ -56,7 +56,7 @@ class IcoqPod extends EventEmitter {
 
     async loadPackages(uris: string | string[], refresh: boolean = true) {
         if (typeof uris == 'string') uris = [uris];
-        
+
         await Promise.all(uris.map(async uri => {
             try {
                 await this.unzip(uri, '/lib');

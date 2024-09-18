@@ -207,7 +207,9 @@ type jscoq_cmd =
   | Request of { uri : Lang.LUri.File.t; method_ : Method.t Request.t [@key "method"]}
 
   | InfoPkg of string * string list
-  | LoadPkg of string * string
+
+  (* Loads a .coq-pkg zip file *)
+  | LoadPkg of { url : string }
 
   (*            filename content *)
   | Register of string
