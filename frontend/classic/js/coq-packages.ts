@@ -33,7 +33,6 @@ export class PackageManager {
      * @param {CoqWorker} coq reference to the `CoqWorker` instance to send
      *   load requests to
      */
-    backend : backend;
     panel : HTMLElement;
     bundles : Map<string, BundleInfo>;
     loaded_pkgs: string[];
@@ -42,9 +41,8 @@ export class PackageManager {
     packages_by_name: { [name: string]: CoqPkg };
     index ?: PackageIndex;
 
-    constructor(panel_dom, packages, pkg_path_aliases, coq, backend=coq.config.backend) {
+    constructor(panel_dom, packages, pkg_path_aliases, coq) {
 
-        this.backend = backend;
         this.panel         = panel_dom;
         this.bundles       = new Map();
         this.loaded_pkgs   = [];
@@ -91,7 +89,7 @@ export class PackageManager {
     }
 
     populate() : Promise<void[]> {
-        this.index = new PackageIndex(this.backend);
+        this.index = new PackageIndex();
 
         return Promise.all(this.packages.map(async pkg => {
             var manifest = await pkg.fetchInfo();
@@ -355,8 +353,8 @@ export class PackageManager {
         }
     }
 
-    coqLibLoaded(pkg_l) {
-        var pkg_name = this._packageByURL(pkg_l) || pkg_l;
+    coqLibLoaded(pkg_url : string) {
+        var pkg_name = this._packageByURL(pkg_url) || pkg_url;
         this.loaded_pkgs.push(pkg_name);
 
         try {
@@ -413,16 +411,10 @@ export class PackageManager {
     }
 
     loadArchive(pkg) {
-        switch (this.backend) {
-        case 'js':
-            return pkg.archive.unpack(this.coq)
-                              .then(() => this.coqLibLoaded(pkg.name));
-        case 'wa':
-            return new Promise((resolve, reject) => {
-                pkg._resolve = resolve; pkg._reject = reject;
-                this.coq.loadPkg(pkg.getDownloadURL());
-            });
-        }
+        return new Promise((resolve, reject) => {
+            pkg._resolve = resolve; pkg._reject = reject;
+            this.coq.loadPkg(pkg.getDownloadURL());
+        });
     }
 
     /**
@@ -479,17 +471,14 @@ export class PackageManager {
     removeEventListener(type, cb)  { this.panel.removeEventListener(type, cb); }
 }
 
-
 /**
  * Holds list of modules in packages and resolves dependencies.
  */
 class PackageIndex {
-    backend : backend;
     moduleIndex : Map<string, CoqPkgTOC>;
     intrinsicPrefix : string;
 
-    constructor(backend: backend) {
-        this.backend = backend;
+    constructor() {
         this.moduleIndex = new Map();
         this.intrinsicPrefix = "Coq";
     }
@@ -714,7 +703,7 @@ class CoqPkgArchive {
             if (!entry.dir)
                 asyncs.push((async () => {
                     var content = await entry.async('arraybuffer');
-                    await worker.put(`/lib/${rel_path}`, content, 
+                    await worker.put(`/lib/${rel_path}`, content,
                             /*transferOwnership=*/true);
                 })());
         });

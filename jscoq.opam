@@ -28,6 +28,7 @@ depends: [
   "ppx_compare"         { >= "v0.15.0" & < "v0.18" }
   "uri"                 { >= "4.2.0" }
   "dune-build-info"     { >= "3.16.0" }
+  "zipc"                { >= "0.2" }
 
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
