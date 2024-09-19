@@ -72,7 +72,7 @@ let preload_file ?(refresh=false) base_path base_url (file, _hash) : unit Lwt.t 
   end
   else Lwt.return_unit
 
-let preload_pkg ~verb out_fn base_path bundle pkg : unit Lwt.t =
+let preload_pkg ~verb ~out_fn base_path bundle pkg : unit Lwt.t =
   let pkg_dir = Coq_pkg.dir pkg                                      in
   let ncma    = List.length pkg.cma_files                            in
   let nfiles  = Coq_pkg.num_files pkg                                in
@@ -83,7 +83,9 @@ let preload_pkg ~verb out_fn base_path bundle pkg : unit Lwt.t =
     preload_file base_path pkg_dir f >>= fun () ->
     if verb then
       Format.eprintf "pre-loading package %s, [%02d/%02d] files\n%!" pkg_dir (i+nc+1) nfiles;
-    out_fn (LibProgress { bundle; pkg = pkg_dir; loaded = i+nc+1; total = nfiles });
+    (* XXX *)
+    let _ = ignore (out_fn, bundle) in
+    (* out_fn (LibProgress { bundle; pkg = pkg_dir; loaded = i+nc+1; total = nfiles }); *)
     Lwt.return_unit
   in
   Lwt_list.iteri_s (preload_and_log 0   ) pkg.cma_files <&>
@@ -118,13 +120,13 @@ let only_once lref s =
   end
 
 (* Load a bundle *)
-let rec preload_from_file ~verb out_fn base_path bundle_name =
+let rec preload_from_file ~verb ~out_fn base_path bundle_name =
   if only_once load_under_way bundle_name then
     try%lwt
       parse_bundle base_path bundle_name >>= fun bundle ->
       (* Load sub-packages in parallel *)
-      Lwt_list.iter_p (preload_pkg ~verb out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
-      return @@ out_fn (LibLoaded (bundle_name, bundle))
+      Lwt_list.iter_p (preload_pkg ~verb ~out_fn base_path bundle_name) bundle.pkgs  >>= fun () ->
+      return @@ out_fn (LibLoaded (bundle_name, Some bundle))
     with
     | Failure _ ->
     Lwt.return_unit
@@ -142,9 +144,89 @@ let info_pkg out_fn base_path pkgs =
   Lwt_list.iter_p (info_from_file out_fn base_path) pkgs
 
 (* Hack *)
-let load_pkg ~verb out_fn base_path pkg_file =
-  preload_from_file ~verb out_fn base_path pkg_file (*>>= fun () ->
+let load_pkg ~verb ~out_fn base_path pkg_file =
+  preload_from_file ~verb ~out_fn base_path pkg_file (*>>= fun () ->
   parse_bundle base_path pkg_file *)
+
+module StringMap = Map.Make(String)
+
+let register_cma ~file_path =
+  let filename = Filename.basename file_path in
+  let dir = Filename.dirname file_path in
+  Hashtbl.add cma_cache filename dir
+
+let unpack_zipc ~out_fn ~total pkg_url base zip_pkg =
+  let slice = total / Zipc.member_count zip_pkg in
+  let count = total in
+  let total = total * 2 in
+  let _ =
+    Zipc.fold (fun (m : Zipc.Member.t) count ->
+      let path = Filename.concat base (Zipc.Member.path m) in
+      let downloaded = count + slice in
+      match Zipc.Member.kind m with
+      | Dir ->
+        downloaded
+      | File file ->
+        match Zipc.File.to_binary_string_no_crc_check file with
+        | Ok (content, _crc32) ->
+          let () =
+            try
+              (* XXX We may be paying some heavy price here. *)
+              Sys_js.create_file ~name:path ~content;
+              let download = { Jslib.DownloadProgress.downloaded; total } in
+              out_fn @@ LibProgress { uri = pkg_url; download }
+            with exn ->
+              let msg = Printexc.to_string exn in
+              Format.eprintf "jsoo file creation error for %s: %s\n%!" path msg
+          in
+          if Jslib.is_bytecode path then register_cma ~file_path:path;
+          downloaded
+        | Error msg ->
+          Format.eprintf "Zipc decompression error for %s: %s\n%!" path msg;
+          count
+    ) zip_pkg count in
+  Lwt.return_unit
+
+(*
+
+Progress:
+
+type DownloadProgress = { total: number, downloaded: number };
+LibProgresss { uri, download : DownloadProgres }
+   *)
+
+let unpack_zip_package ~out_fn base pkg_url : unit Lwt.t =
+  let open JL.XmlHttpRequest in
+  let progress downloaded total =
+    let uri = pkg_url in
+    (* We reserve the other part for unzip *)
+    let total = total * 2 in
+    let download = { Jslib.DownloadProgress.total; downloaded } in
+    out_fn (LibProgress { uri; download }) in
+  perform_raw ~progress ~response_type:ArrayBuffer pkg_url >>= fun frame ->
+  (* frame.code contains the request status *)
+  (* Is this redudant with the Opt check? I guess so *)
+  if frame.code = 200 || frame.code = 0 then
+    Js.Opt.case
+      frame.content
+      (fun ()        -> Lwt.return ())
+      (fun raw_array ->
+         let total = raw_array##.byteLength in
+         let file_content = Typed_array.String.of_arrayBuffer raw_array in
+         match Zipc.of_binary_string file_content with
+         | Result.Ok zip_pkg ->
+           unpack_zipc ~out_fn ~total pkg_url base zip_pkg
+         | Result.Error msg ->
+           Format.eprintf "Zipc error for %s: %s\n%!" pkg_url msg;
+           Lwt.fail (Failure msg))
+  else
+    let s = Format.sprintf "%s: not found (%d)" pkg_url frame.code in
+    Lwt.fail (Failure s)
+
+let load_zip_package ~verb:_ ~out_fn url =
+  let open Lwt.Syntax in
+  let+ () = unpack_zip_package ~out_fn "/lib" url in
+  out_fn (LibLoaded (url, None))
 
 (* let _is_bad_url _ = false *)
 
@@ -200,8 +282,3 @@ let coq_cma_link ~file_path =
   | Sys_error _ ->
     eprintf "!! bytecode file %s{,.js} not found in path. DYNLINK FAILED\n%!" cmo_file;
     raise @@ DynLinkFailed cmo_file
-
-let register_cma ~file_path =
-  let filename = Filename.basename file_path in
-  let dir = Filename.dirname file_path in
-  Hashtbl.add cma_cache filename dir

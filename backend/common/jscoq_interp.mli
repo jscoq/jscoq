@@ -25,7 +25,7 @@ module Callbacks : sig
     ; read_file : name:string -> string
     ; write_file : name:string -> content:string-> unit
     ; register_cma : file_path:string -> unit
-    ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
+    ; load_pkg : url:string -> out_fn:(lib_event -> unit) -> unit
     ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }
 

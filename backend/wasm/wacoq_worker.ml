@@ -59,7 +59,7 @@ let wasm_cb =
     ; read_file = (fun ~name:_ -> "")
     ; write_file = (fun ~name:_ ~content:_ -> ())
     ; register_cma = (fun ~file_path:_ -> ())
-    ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> failwith "handled in JS")
+    ; load_pkg = (fun ~url:_ ~out_fn:_ -> failwith "handled in JS")
     ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> failwith "handled in JS")
     }
 

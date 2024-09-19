@@ -238,7 +238,8 @@ export class CoqManager {
                 var entry = item.webkitGetAsEntry && item.webkitGetAsEntry(),
                     file = item.getAsFile && item.getAsFile();
                 if (file && file.name.match(/[.]coq-pkg$/))
-                    this.packages.dropPackage(file);
+                    console.log('drap and drop of coq-pkgs files not implemented yet')
+                    // this.packages.dropPackage(file);
                 else
                     src.push({entry, file});
             }
@@ -330,8 +331,7 @@ export class CoqManager {
                 this.layout.packages,
                 this.options.all_pkgs,
                 pkg_path_aliases,
-                this.coq,
-                this.options.backend
+                this.coq
             );
 
             this.packages.expand();
@@ -523,7 +523,6 @@ export class CoqManager {
     }
 
     interruptRequest() {
-        // Emilio: this needs tweaking in the LSP backend
         this.coq.interrupt();
     }
 

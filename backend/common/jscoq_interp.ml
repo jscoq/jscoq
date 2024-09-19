@@ -28,7 +28,7 @@ module Callbacks = struct
     ; read_file : name:string -> string
     ; write_file : name:string -> content:string-> unit
     ; register_cma : file_path:string -> unit
-    ; load_pkg : base_path:string -> pkg:string -> cb:(lib_event -> unit) -> unit
+    ; load_pkg : url:string -> out_fn:(lib_event -> unit) -> unit
     ; info_pkg : base_path:string -> pkgs:string list -> cb:(lib_event -> unit) -> unit
     }
 
@@ -43,7 +43,7 @@ module Callbacks = struct
     ; read_file = (fun ~name:_ -> "")
     ; write_file = (fun ~name:_ ~content:_ -> ())
     ; register_cma = (fun ~file_path:_ -> ())
-    ; load_pkg = (fun ~base_path:_ ~pkg:_ ~cb:_ -> ())
+    ; load_pkg = (fun ~url:_ ~out_fn:_ -> ())
     ; info_pkg = (fun ~base_path:_ ~pkgs:_ ~cb:_ -> ())
     }
 
@@ -85,7 +85,7 @@ let coq_info_string () =
 (** When a new package is loaded, the library load path has to be updated *)
 let update_loadpath (msg : LibManager.lib_event) : unit =
   match msg with
-  | LibLoaded (_,bundle) ->
+  | LibLoaded (_, Some bundle) ->
     List.iter Loadpath.add_vo_path
       (Jslib.Coq_bundle.coqpath ~implicit:!opts.implicit_libs bundle)
   | _ -> ()
@@ -143,7 +143,21 @@ let exec_init (set_opts : init_options) =
   in
   root_state := st
 
-(* opts  : workspace initialization options *)
+(* layout for our jscoq filesystem, very important documentation! *)
+(*
+  - /lib : ocamlpath
+  - /lib/findlib.conf
+
+  - /lib/plugins
+  - /lib/theories
+  - /lib/user-contrib
+
+  - /src/
+  - /src/_CoqProject => will load config
+
+   *)
+
+(* opts : workspace initialization options *)
 let init_workspace ~token ~dir opts =
   let vo_load_path = mk_vo_path opts.lib_path in
   let cmdline = Coq.Workspace.CmdLine.
@@ -219,9 +233,10 @@ let jscoq_execute =
     if Jslib.is_bytecode filename
     then !Callbacks.cb.register_cma ~file_path:filename
 
-  | LoadPkg(base, pkg)  ->
-    !Callbacks.cb.load_pkg ~base_path:base ~pkg ~cb:process_lib_event
+  | LoadPkg { url }  ->
+    !Callbacks.cb.load_pkg ~url ~out_fn:process_lib_event
 
+  (* Unused for now *)
   | InfoPkg(base, pkgs) ->
     !Callbacks.cb.info_pkg ~base_path:base ~pkgs ~cb:process_lib_event
 

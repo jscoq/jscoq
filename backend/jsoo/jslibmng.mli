@@ -18,10 +18,11 @@ type out_fn = lib_event -> unit
     directory [lib_path], emits events using [out_fn].  *)
 val info_pkg : out_fn -> string -> string list -> unit Lwt.t
 
-(** [load_pkg base_path pkg_file] loads package [pkg_file] *)
-val load_pkg : verb:bool -> out_fn -> string -> string -> unit Lwt.t
-(** [info_pkg lib_path available_pkg ] gather package list
-    [available_pkg] from directory [lib_path] *)
+(** [load_pkg ~verb ~out_fn base_path pkg_file] loads package [pkg_file], emits events using [out_fn] *)
+val load_pkg : verb:bool -> out_fn:out_fn -> string -> string -> unit Lwt.t
+
+(** [load_zip_package ~verb ~out_fn url] loads `.coq-pkg` zip package from [url] *)
+val load_zip_package : verb:bool -> out_fn:out_fn -> string -> unit Lwt.t
 
 (** [coq_resource_req url] query the manager's cache for object [url] *)
 val coq_vo_req  : string -> string option

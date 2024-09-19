@@ -13,7 +13,7 @@
   (flags :standard (:include .extraflags) --dynlink +dynlink.js +toplevel.js --setenv PATH=/bin))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
- (libraries zarith_stubs_js jscoq_core js_of_ocaml-lwt))
+ (libraries zarith_stubs_js jscoq_core js_of_ocaml-lwt zipc))
 
 (rule
  (targets marshal-arch.js)

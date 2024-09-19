@@ -170,14 +170,6 @@ export class CoqWorker {
     }
 
     /**
-     * Adjusts a given URI so that it can be requested by the worker.
-     * (the worker may have a different base path than the page.)
-     */
-    resolveUri(uri: string | URL) {
-        return new URL(uri, window.location.href).href;
-    }
-
-    /**
      * Creates the worker object
      *
      * @param {string} script_path
@@ -237,6 +229,9 @@ export class CoqWorker {
      * @param {any[]} msg
      */
     sendDirective(msg) {   // directives are intercepted by the JS part of the worker
+        if(this.config.debug) {
+            console.log("Posting: ", msg);
+        }
         this.worker.postMessage(msg);    // for this reason, they are not stringified
     }
 
@@ -276,16 +271,9 @@ export class CoqWorker {
         this.interrupt();
     }
 
-    loadPkg(url) {
-        switch (this.config.backend) {
-        case 'js':
-            if (typeof url !== 'object') throw new Error('invalid URL for js mode (object expected)');
-            this.sendCommand(["LoadPkg", this.resolveUri(url.base_path), url.pkg]);
-            break;
-        case 'wa':
-            if (url instanceof URL) url = url.href;
-            this.sendDirective(["LoadPkg", url]); break;
-        }
+    loadPkg(url : string | URL) {
+      if (url instanceof URL) url = url.href;
+      this.sendDirective(["LoadPkg", { url }]);
     }
 
     /**
@@ -293,7 +281,7 @@ export class CoqWorker {
      * @param {any} pkgs
      */
     infoPkg(base_path, pkgs) {
-        this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
+        // this.sendCommand(["InfoPkg", this.resolveUri(base_path), pkgs]);
     }
 
     /**
