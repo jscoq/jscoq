@@ -6,18 +6,46 @@ Run the Coq Proof Assistant in your browser!
 jsCoq is an Online Integrated Development Environment for the
 [Coq](https://coq.inria.fr) proof assistant and runs in your browser!
 We aim to enable new UI/interaction possibilities and to improve the
-accessibility of the Coq platform itself. Current stable version is
-jsCoq 0.16.1 supporting Coq 8.16.0, try it:
+accessibility of the Coq platform itself.
+
+The current stable version is jsCoq 0.17.1 supporting Coq 8.17.1, try it:
 
 <https://coq.vercel.app>
+
+The easiest way to use jsCoq 0.17.1 for your classes is to use our
+[coqdoc template](https://github.com/jscoq/coqdoc-template).
+
+Don't hesitate to get in touch with us at the [jsCoq's Zulip
+Room](https://coq.zulipchat.com/#narrow/stream/256336-jsCoq) for any
+question or help request you may have.
 
 jsCoq is written to conform to ES2017; any recent standard-compliant
 browser should be able to run it. No servers or external programs are needed.
 See the [Troubleshooting](#Troubleshooting) section if you have problems.
 
-jsCoq is community-developed by a [team of contributors](#Credits).
+jsCoq is community-developed by a [team of contributors](#Credits). We
+are in need of help, in particular with documentation, funding, and fine tuning
+the project, see the
+[contributing](#Contributing-and-Developer-Information) section for
+more information.
 
-## Are you a jsCoq user?
+## Development version
+
+The current _development version_ is jsCoq 1.99.1, targeting Coq 8.17
+to Coq 8.21. The current development version is based on the new
+[Flèche](https:://github.com/ejgallego/coq-lsp) document manager and
+has significant changes. If you are interested in helping with this
+effort, please get in touch with us.
+
+## Contributing and Developer Information
+
+See our [contributing guide](CONTRIBUTING.md) for more information.
+
+The jsCoq is in need of funding, as of today, it is fully run by
+unpaid volunteers. If you think you could help with funding, don't
+hesitate to get in touch with us.
+
+## Are you a jsCoq user? Let us know!
 
 Have you developed or taught a course **using jsCoq**? Do you have some feedback for us?
 
@@ -27,8 +55,8 @@ to guarantee future funding of the project.
 
 ## Basic Usage
 
-The main page showcases jsCoq by walking through a proof for the infinitude of primes using
-[`math-comp`](https://github.com/math-comp/math-comp), due to Georges Gonthier.
+The main page showcases jsCoq with a variety of proofs, available from
+the `Examples` drop-down menu.
 
 Once jsCoq finishes loading, you can step through the proof using the
 arrow buttons on the toolbar (top right), or using these keyboard
@@ -82,15 +110,6 @@ page to your needs.
 
 *For a more detailed tutorial and information, refer to* [docs/embedding.md](docs/embedding.md).
 
-##  Contributing and Developer Information
-
-See the [dedicated page](docs/developing.md) for developer information
-as well as links to past versions and tools.
-
-This is a beta-status project, but any contribution or comment is
-really welcome! See [the contributing guide](CONTRIBUTING.md) for more
-information.
-
 ## Publications
 
 See the [dedicated file](docs/papers.md)
@@ -142,27 +161,28 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 ## jsCoq Users:
 
-Incomplete list of places where jsCoq has been used:
+Incomplete list of places where jsCoq has been used, more or less in reverse chronological order:
 
-* Coq Winter School 2016: “Advanced Software Verification And Computer Proof”. _Sophia Antipolis_
-  https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
+* Coq Platform Docs https://coq.inria.fr/platform-docs/
+* [EPIT 2020 - Spring School on Homotopy Type Theory](https://github.com/HoTT/EPIT-2020)
+* [Lectures on Separation Logic](https://madiot.fr/sepcourse/) by Jean-Marie Madiot in MPRI's course "Proofs of programs", using Arthur Charguéraud's material. [See it in action!](https://madiot.fr/sepcourse/coq/)
+* CASS 2020, Coq Andes Summer School https://cass.pleiad.cl/
+* Coq Winter School 2018-2019 (SSReflect & MathComp)  https://team.inria.fr/marelle/en/coq-winter-school-2018-2019-ssreflect-mathcomp/
+* [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
+* Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
+  https://specfun.inria.fr/amahboub/Jncf18/cours2.html
+* Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
+* Elpi Tutorial / Demo at CoqPL 2017 _Los Angeles_ https://lpcic.github.io/coq-elpi-www/tutorial-demo_CoqPL2018.html
+* Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
+* School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
+* Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
+* Mathematical Components, an Introduction, _Satellite workshop of the ITP 2016 conference_, August 27th, Nancy, France
+  https://github.com/math-comp/wiki/wiki/tutorial-itp2016
 * Coq Winter School 2016-2017 (SSReflect & MathComp) “Advanced
   Software Verification And Computer Proof”. _Sophia Antipolis_
   https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016-2017/
-* Mathematical Components, an Introduction, _Satellite workshop of the ITP 2016 conference_, August 27th, Nancy, France
-  https://github.com/math-comp/wiki/wiki/tutorial-itp2016
-* Several examples of the "Mathematical Components Book" https://math-comp.github.io/mcb/
-* School on "Preuves et Programmes" at l'École de Mines https://www-sop.inria.fr/marelle/mines/
-* Mini Corso di Coq a Pavoda: http://www-sop.inria.fr/members/Enrico.Tassi/padova2017/
-* Elpi Tutorial / Demo at CoqPL 2017 _Los Angeles_ https://lpcic.github.io/coq-elpi-www/tutorial-demo_CoqPL2018.html
-* Coq Winter School 2017-2018 (SSReflect & MathComp) _Sophia Antipolis_ https://team.inria.fr/marelle/en/coq-winter-school-2017-2018-ssreflect-mathcomp/
-* Lectures at the "Journées Nationales du Calcul Formel" by Assia Mahboubi:
-  https://specfun.inria.fr/amahboub/Jncf18/cours2.html
-* [Types Summer School](https://sites.google.com/view/2018eutypesschool/home): http://www-sop.inria.fr/teams/marelle/types18/
-* Coq Winter School 2018-2019 (SSReflect & MathComp)  https://team.inria.fr/marelle/en/coq-winter-school-2018-2019-ssreflect-mathcomp/
-* CASS 2020, Coq Andes Summer School https://cass.pleiad.cl/
-* [Lectures on Separation Logic](https://madiot.fr/sepcourse/) by Jean-Marie Madiot in MPRI's course "Proofs of programs", using Arthur Charguéraud's material. [See it in action!](https://madiot.fr/sepcourse/coq/)
-* [EPIT 2020 - Spring School on Homotopy Type Theory](https://github.com/HoTT/EPIT-2020)
+* Coq Winter School 2016: “Advanced Software Verification And Computer Proof”. _Sophia Antipolis_
+  https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/
 
 ### jsCoq in the press
 
@@ -201,9 +221,9 @@ browser/OS/user-agent and any command-line options.
 
 ### What is broken ###
 
-* Loading ML modules is slow.
-* Loading `.vo` files is slow.
-* There surely are threading and performance problems.
+* Loading ML modules is slow (not anymore actually).
+* Loading `.vo` files is slow (not anymore actually).
+* There are surely are threading and performance problems.
 * `vm_compute` and `native_compute` fall back to regular `compute`.
 
 ## Documents
