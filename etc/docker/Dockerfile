@@ -123,7 +123,7 @@ RUN eval $(opam env) && git pull && git submodule update && make CONTEXT=${SWITC
 # Private repos: re-enable SSH
 COPY Dockerfile _ssh* /root/_ssh/
 #    ^ this is a hack in case `_ssh` does not exist (https://stackoverflow.com/a/46801962/37639)
-ENV GIT_SSH_COMMAND 'ssh -i /root/_ssh/id_rsa -o StrictHostKeyChecking=no'
+ENV GIT_SSH_COMMAND='ssh -i /root/_ssh/id_rsa -o StrictHostKeyChecking=no'
 
 RUN if [ -e /root/_ssh/id_rsa ] ; then rm ~/.gitconfig && apt-get install -y openssh-client ; fi
 RUN if [ -e /root/_ssh/id_rsa ] ; then eval $(opam env) && make privates WITH_PRIVATE=software-foundations ; fi
@@ -181,5 +181,5 @@ COPY gosu-entrypoint.sh /root/gosu-entrypoint.sh
 COPY sdk-findlib.conf /opt/jscoq/findlib.conf
 ENTRYPOINT ["/root/gosu-entrypoint.sh"]
 
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
-ENV OCAMLFIND_CONF /opt/jscoq/findlib.conf
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jscoq/bin
+ENV OCAMLFIND_CONF=/opt/jscoq/findlib.conf
