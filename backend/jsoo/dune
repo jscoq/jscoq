@@ -10,7 +10,7 @@
     js_stub/coq_vm.js
     js_stub/interrupt.js
     marshal-arch.js)
-  (flags :standard (:include .extraflags) --dynlink +dynlink.js +toplevel.js --setenv PATH=/bin))
+  (flags :standard (:include .extraflags) --linkall +dynlink.js +toplevel.js --setenv PATH=/bin))
  (link_flags -linkall -no-check-prims)
  ; The old makefile set: -noautolink -no-check-prims
  (libraries zarith_stubs_js jscoq_core js_of_ocaml-lwt))
