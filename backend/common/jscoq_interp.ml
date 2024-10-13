@@ -135,10 +135,13 @@ let exec_init (set_opts : init_options) =
   Global.set_VM false;
   Global.set_native_compiler false;
 
+  let vm, warnings = (false, Some "-vm-compute-disabled") in
   let st = Coq.Init.coq_init (
     { debug        = opts.debug
     ; load_plugin = !Callbacks.cb.load_plugin
     ; load_module = !Callbacks.cb.load_module
+    ; vm
+    ; warnings
     })
   in
   root_state := st
@@ -149,7 +152,8 @@ let init_workspace ~token ~dir opts =
   let cmdline = Coq.Workspace.CmdLine.
       { coqlib = "/lib"
       ; coqcorelib = "/lib"
-      ; ocamlpath = Some "/lib"
+      ; ocamlpath = ["/lib"]
+      ; findlib_config = None
       ; args = ["-boot"]
       ; require_libraries = []
       ; vo_load_path

@@ -102,24 +102,27 @@ module LUri = struct
   end
 end
 
+module Qf = struct
+  type 'a t =  [%import: 'a Lang.Qf.t]
+      [@@deriving yojson]
+end
+
 module Diagnostic = struct
+
+  module FailedRequire = struct
+    type t = [%import: Lang.Diagnostic.FailedRequire.t]
+      [@@deriving yojson]
+  end
 
   module Data = struct
     type t =
-      [%import: Lang.Diagnostic.Data.t [@with Lang.Range.t := Range.t]]
+      [%import: Lang.Diagnostic.Data.t [@with Lang.Range.t := Range.t; Lang.Diagnostic.FailedRequire.t := FailedRequire.t; Lang.Qf.t := Qf.t] ]
       [@@deriving yojson]
   end
 
   module Severity = struct
-    type t = Lang.Diagnostic.Severity.t
-    type _t = int
+    type t = [%import: Lang.Diagnostic.Severity.t]
       [@@deriving yojson]
-
-    let to_int = Lang.Diagnostic.Severity.to_int
-    (* XXX *)
-    let of_yojson j = Obj.magic (_t_of_yojson j)
-    let to_yojson s = _t_to_yojson (Obj.magic s)
-
   end
 
   type t =

@@ -19,9 +19,8 @@ let pr_extref gr =
   | Globnames.TrueGlobal gr -> Printer.pr_global gr
   | Globnames.Abbrev kn -> Names.KerName.print kn
 
-let mk_message (range, level, text) =
-  let level = Lang.Diagnostic.Severity.to_int level in
-  Lsp.JFleche.Message.{ range; level; text }
+let mk_message (level, { Coq.Message.Payload.range; msg; quickFix = _ }) =
+  Lsp.JFleche.Message.{ range; level; text = msg }
 
 let mk_messages node =
   Option.map Fleche.Doc.Node.messages node
