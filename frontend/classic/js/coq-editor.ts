@@ -5,7 +5,7 @@
  * Copyright (C) 2019-2023 Emilio J. Gallego Arias, Inria, Paris
  */
 import { Diagnostic } from "../../../backend";
-import { CoqManager, ManagerOptions } from "./coq-manager";
+import { CoqDocument, CoqManager, ManagerOptions } from "./coq-manager";
 
 /**
  * Interface for Coq Editor's
@@ -15,6 +15,7 @@ export interface ICoqEditor {
     clearDiagnostics() : void
     markDiagnostic(diag : Diagnostic) : void
     getCursorOffset() : number
+    destroy() : void
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
@@ -22,11 +23,8 @@ export interface ICoqEditor {
 
 // Would be great to use, but not enough typing so far...
 export interface ICoqEditorConstructor {
-    new(elems : (string | HTMLElement)[],
-        options: ManagerOptions,
-        onChange: (newContent : string) => void,
-        onCursorUpdated: (offset : number) => void,
-        manager: CoqManager) : ICoqEditor;
+    new(doc: CoqDocument,
+        options: ManagerOptions) : ICoqEditor;
     }
 /**
  * Takes a textArea and will create an empty div to attach an editor to.

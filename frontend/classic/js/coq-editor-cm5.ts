@@ -4,7 +4,7 @@
 // CodeMirror implementation
 import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
-import { CoqManager, ManagerOptions } from './coq-manager';
+import { CoqDocument, ManagerOptions } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
 
 interface CM5Options {
@@ -17,16 +17,16 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager) {
+    constructor(doc: CoqDocument, options : ManagerOptions) {
 
-        super(eIds, options, manager);
+        super([doc.area], options);
 
         this.onChangeAny = () => {
             let txt = this.getValue();
-            onChange(txt);
+            doc.change(txt);
         };
         this.onCursorUpdate = (cm) => {
-            onCursorUpdate(this.getCursorOffset());
+            doc.updateCursor(this.getCursorOffset());
         }
         // if (this.options.mode && this.options.mode['company-coq']) {
         //     this.company_coq = new CompanyCoq(this.manager);

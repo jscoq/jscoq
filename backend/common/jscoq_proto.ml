@@ -180,7 +180,7 @@ let opaque_of_yojson _x = Result.Error "opaque value"
 module Request = struct
 
   type 'a t =
-    { id : int
+    { uri : Lang.LUri.File.t
     ; loc : int
     (* In fact, we should use Lsp.Base.point instead of int for
        location, however ProseMirror and CM6 use offsets *)
@@ -188,7 +188,7 @@ module Request = struct
     }
   [@@deriving yojson]
 
-  let make ~id ~loc v = { id; loc; v }
+  let make ~uri ~loc v = { uri; loc; v }
 
   type 'a answer =
     { id : int
@@ -196,8 +196,8 @@ module Request = struct
     }
   [@@deriving yojson]
 
-  let process { id; loc; v } ~f =
-    { id; res = f loc v }
+  let process { uri; loc; v } ~f =
+    f uri loc v
 
 end
 
@@ -207,7 +207,7 @@ type jscoq_cmd =
   | NewDoc  of { uri : Lang.LUri.File.t; version : int; raw : string }
   | Update  of { uri : Lang.LUri.File.t; version : int; raw : string }
 
-  | Request of { uri : Lang.LUri.File.t; method_ : Method.t Request.t [@key "method"]}
+  | Request of { id: int; method_ : Method.t Request.t [@key "method"] }
 
   | InfoPkg of string * string list
   | LoadPkg of string * string
@@ -221,7 +221,8 @@ type jscoq_cmd =
 type jscoq_answer =
   | CoqInfo   of string
   | Ready     of unit
-  | Notification of Lang.Diagnostic.t list * int
+  | Notification of { uri: Lang.LUri.File.t; version: int; diagnostic: Lang.Diagnostic.t list }
+  (** LSP-compatible payload for diagnostics *)
   | Response  of Answer.t Request.answer
   | Log       of Feedback.level * Pp.t
   | JsonExn   of string

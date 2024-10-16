@@ -1,3 +1,4 @@
+import CodeMirror from "codemirror";
 import { Future } from "../../../backend/future";
 import { CmCoqProvider } from './cm-provider';
 import { CoqManager, ManagerOptions } from "./coq-manager";
@@ -23,12 +24,11 @@ export class ProviderContainer {
     onAction : (evt : any ) => void;
     wait_for : Future<void>;
     currentFocus : CmCoqProvider;
-    manager : any;
 
     /**
      * Creates an instance of ProviderContainer.
      */
-    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
+    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions) {
 
         this.options = options;
 
@@ -81,7 +81,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx);
 
                 this.snippets.push(cm);
 
@@ -89,7 +89,6 @@ export class ProviderContainer {
                 cm.editor.on('focus', ev => { this.currentFocus = cm; });
 
                 // Track invalidate
-                cm.onChange     = (cm, evt) => { this.onChangeAny(cm, evt); };
                 cm.onInvalidate = (stm)     => { this.onInvalidate(stm); };
                 cm.onMouseEnter = (stm, ev) => { this.onMouseEnter(stm, ev); };
                 cm.onMouseLeave = (stm, ev) => { this.onMouseLeave(stm, ev); };
@@ -98,7 +97,7 @@ export class ProviderContainer {
                 cm.onTipOut   = (cm)            => { this.onTipOut(cm); }
 
                 cm.onAction = (action) => { this.onAction({...action, snippet: cm}); };
-                cm.onChange = (cm, evt) => { this.onChangeAny(cm,evt); };
+                cm.onChange = (cm, evt) => { this.onChangeAny(cm, evt); };
                 cm.onCursorUpdate = (cm) => { this.onCursorUpdate(cm); };
                 // Running line numbers
                 if (this.options.line_numbers === 'continue') {
@@ -157,6 +156,15 @@ export class ProviderContainer {
     configure(options) {
         for (let snippet of this.snippets)
             snippet.configure(options);
+    }
+
+    destroy() {
+        for (let snippet of this.snippets) {
+            snippet.editor.setOption("mode", "text/x-csrc");
+            snippet.editor.getWrapperElement().parentNode.
+                removeChild(snippet.editor.getWrapperElement());
+            snippet.editor = null;
+        }
     }
 
     retract() {
