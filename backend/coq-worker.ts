@@ -1,8 +1,8 @@
 /* jsCoq
  *
  * Copyright (C) 2016-2019 Emilio J. Gallego Arias, Mines ParisTech, Paris.
- * Copyright (C) 2018-2022 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
- * Copyright (C) 2019-2022 Emilio J. Gallego Arias, Inria, Paris
+ * Copyright (C) 2018-2024 Shachar Itzhaky, Technion - Israel Institute of Technology, Haifa
+ * Copyright (C) 2019-2024 Emilio J. Gallego Arias, Inria, Paris
  */
 
 export type backend = 'js' | 'wa';
@@ -81,8 +81,6 @@ export interface Goals {
     given_up: Goal[]
 }
 
-import { Future, PromiseFeedbackRoute } from './future';
-
 /**
  * Main Coq Worker Class
  *
@@ -138,7 +136,8 @@ export class CoqWorker {
     load_progress: (ratio: number | undefined, ev: ProgressEvent) => void;
 
     // Misc
-    private _boot : Future<void>;
+    private _boot : Promise<void>;
+    private _boot_resolve : () => void;
     protected _handler: (msg : any) => void;
 
     when_created: Promise<void>;
@@ -148,7 +147,7 @@ export class CoqWorker {
     /* protected */ observers: CoqEventObserver[];
 
     // Private stuff to handle our implementation of requests
-    private request_pending: Future<object>[] = [];
+    private request_pending: ((response : any) => void)[] = [];
     private request_nextid = 0;
 
     constructor(base_path : (string | URL), scriptPath : URL | null, worker, backend : backend) {
@@ -194,8 +193,10 @@ export class CoqWorker {
             window.addEventListener('unload', () => this.end());
 
         if (this.config.backend == 'wa') {
-            this._boot = new Future();
-            return this._boot.promise;
+            this._boot = new Promise((resolve) => {
+                this._boot_resolve = resolve;
+            });
+            return this._boot;
         }
     }
 
@@ -229,6 +230,10 @@ export class CoqWorker {
         if(this.config.debug) {
             console.log("Posting: ", msg);
         }
+
+        /** @todo we should be able to interrupt here if we want, for example for goals */
+        // this.interrupt();
+
         if (this.config.backend === 'wa') msg = JSON.stringify(msg);
         this.worker.postMessage(msg);
     }
@@ -241,21 +246,21 @@ export class CoqWorker {
     }
 
     sendRequest(uri: string, loc: number, req: object) {
+
         let id = this.request_nextid++,
-            fut = this.request_pending[id] = new Future;
+            fut = new Promise((resolve : any) => {
+                this.request_pending[id] = resolve;
+            });
+
         this.sendCommand(["Request", { uri, method: {id, loc, v: req} }]);
-        /** @todo would be desirable to interrupt a previously started document re-check. */
-        /**   unfortunately this interrupts the new request as well! so yeah, */
-        /**   this woudl involve some backend work  */
-        //this.interrupt();
-        return fut.promise;
+        return fut;
     }
 
     coqResponse(resp: {id: number, res: object}) {
         console.warn(resp);
-        let fut = this.request_pending[resp.id];
+        let resolver = this.request_pending[resp.id];
         delete this.request_pending[resp.id];
-        fut?.resolve(resp.res);
+        resolver(resp.res);
     }
 
     /*--- jsCoq Protocol Commands ---*/
@@ -263,6 +268,7 @@ export class CoqWorker {
      * Send Init Command to Coq
      *
      */
+    // TODO: update to request
     init(opts : CoqInitOptions) {
         this.sendCommand(["Init", opts]);
     }
@@ -422,7 +428,7 @@ export class CoqWorker {
 
     coqBoot() {
         if (this._boot)
-            this._boot.resolve(null);
+            this._boot_resolve();
     }
 }
 

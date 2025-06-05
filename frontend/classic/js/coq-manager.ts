@@ -1,7 +1,7 @@
 // The jsCoq Manager class.
 // Copyright (C) 2015-2019 Mines ParisTech/ARMINES
-// Copyright (C) 2019-2023 Inria
-// Copyright (C) 2017-2023 Technion Institute of Tecnology
+// Copyright (C) 2019-2024 Inria
+// Copyright (C) 2017-2024 Technion Institute of Tecnology
 //
 // CoqManager coordinates an editor window, a Coq worker for checking,
 // and the goal / information panel.
@@ -9,7 +9,7 @@
 import _ from 'lodash';
 
 // Backend imports
-import { Future, CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
+import { CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
          Diagnostic, backend } from '../../../backend';
 
 // UI imports
@@ -80,7 +80,8 @@ export class CoqManager {
     preprocess : (text : string) => string;
     contextual_info : any;
     pprint : FormatPrettyPrint;
-    when_ready : Future<void>;
+    when_ready : Promise<void>;
+    when_ready_resolver : () => void;
     project : any;
     version_info : string;
     collab : any;
@@ -199,7 +200,9 @@ export class CoqManager {
         $(document).on('keydown keyup', evt => this.modifierKeyHandler(evt));
 
         this.navEnabled = false;
-        this.when_ready = new Future();
+        this.when_ready = new Promise((resolve) => {
+            this.when_ready_resolver = resolve;
+        });
 
         // Launch time
         if (this.options.prelaunch)
@@ -375,7 +378,7 @@ export class CoqManager {
     coqReady() {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
-        this.when_ready.resolve(null);
+        this.when_ready_resolver();
 
         // Send the document creation request.
         let raw = this.preprocess(this.editor.getValue());

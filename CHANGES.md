@@ -20,6 +20,8 @@
  - `make serve` now properly sets headers so
    `window.crossOriginIsolated` holds, this is required on modern
    browsers for `SharedArrayBuffer` support (@ejgallego, #371)
+ - replace `Future` by `Promise` in `coq-worker`, this brings the
+   backend closer to JSON-RPC libs (@ejgallego, #376)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
