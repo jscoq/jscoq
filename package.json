@@ -20,7 +20,7 @@
   "dependencies": {
     "@codemirror/state": "^6.1.1",
     "@codemirror/view": "^6.2.4",
-    "@octokit/core": "^4.2.1",
+    "@octokit/core": "^7.0.2",
     "@vscode/webview-ui-toolkit": "^1.2.1",
     "array-equal": "^1.0.0",
     "browser-or-node": "^2.0.0",
