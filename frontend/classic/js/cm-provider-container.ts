@@ -1,4 +1,3 @@
-import { Future } from "../../../backend/future";
 import { CmCoqProvider } from './cm-provider';
 import { CoqManager, ManagerOptions } from "./coq-manager";
 import { Deprettify } from "./deprettify";
@@ -21,7 +20,6 @@ export class ProviderContainer {
     onTipOut : (evt : any ) => void;
     onResize : (evt : any ) => void;
     onAction : (evt : any ) => void;
-    wait_for : Future<void>;
     currentFocus : CmCoqProvider;
     manager : any;
 
@@ -47,7 +45,6 @@ export class ProviderContainer {
         this.onTipHover = (entries, zoom) => {};
         this.onTipOut = () => {};
         this.onAction = (action) => {};
-        this.wait_for = null;
 
         class WhileScrolling {
             handler : () => void;
@@ -105,8 +102,6 @@ export class ProviderContainer {
                     if (idx > 0) this.renumber(idx - 1);
                     cm.onResize = () => { this.renumber(idx); }
                 }
-
-                if (scroll.active || (++i) % 5 == 0) await this.yield();
             }
 
             scroll.destroy();
@@ -147,11 +142,6 @@ export class ProviderContainer {
             snippet.editor.setOption('firstLineNumber', line);
             line += snippet.lineCount;
         }
-    }
-
-    yield() {
-        if (this.wait_for && !this.wait_for.isDone()) return this.wait_for.promise;
-        return new Promise(resolve => setTimeout(resolve, 0));
     }
 
     configure(options) {
