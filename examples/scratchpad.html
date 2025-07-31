@@ -53,9 +53,9 @@
     var coq, 
         set_filename  = fn => wrapper_elem.setAttribute(attr_filename, fn);
 
-    if (sp.has('fn')) set_filename(sp.get('fn'));
-    else if (sp.has('code')) set_filename('');
-    else if (last_filename)  set_filename(last_filename);
+    if (sp.has('code'))     set_filename('');
+    else if (sp.has('fn'))  set_filename(sp.get('fn'));
+    else if (last_filename) set_filename(last_filename);
 
     JsCoq.start(jscoq_opts).then(res => {
       coq = res;
