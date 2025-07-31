@@ -12,7 +12,6 @@ import 'codemirror/addon/hint/show-hint.js';
 import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/keymap/emacs.js';
 import 'codemirror/addon/selection/mark-selection.js';
-import 'codemirror/addon/edit/matchbrackets.js';
 import 'codemirror/addon/dialog/dialog.js';
 import 'codemirror/addon/search/search.js';
 import 'codemirror/addon/search/searchcursor.js';

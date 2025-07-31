@@ -368,13 +368,15 @@ export class CoqWorker {
                 this.sendDirective(["InterruptSetup", this.intvec]);
             }
             catch (e) {  /* this fails in Firefox 72 even with SharedArrayBuffer enabled */
-                log('SharedArrayBuffer is available but not serializable -- interrupts disabled');
-                console.warn('SharedArrayBuffer is available but not serializable -- interrupts disabled');
+                var msg_not_serializable = 'SharedArrayBuffer is available but not serializable -- interrupts disabled';
+                log(msg_not_serializable);
+                console.warn(msg_not_serializable);
             }
         }
         else {
-            log('SharedArrayBuffer is available but not serializable -- interrupts disabled');
-            console.warn('SharedArrayBuffer is not available -- interrupts disabled');
+            var msg_not_available = 'SharedArrayBuffer is not available -- interrupts disabled';
+            log(msg_not_available);
+            console.warn(msg_not_available);
         }
     }
 

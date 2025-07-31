@@ -50,6 +50,9 @@ create_switch() {
   if [ "$JSCOQ_CI" = "no" ] ;
   then
       opam switch -j $NJOBS create $switch_name --packages=$packages -y
+  fi
+  if [ "$JSCOQ_LOCAL" = "no" ] ;
+  then
       opam switch $switch_name || exit
   fi
 }
