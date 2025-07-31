@@ -116,6 +116,21 @@ jobs:
           path: _build/artifact
           compression-level: 9
 
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔭 Checkout code
+        uses: actions/checkout@v4
+      - name: 🚀 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Typecheck TypeScript Code
+        run: |
+          npm i
+          npm run typecheck
+
   docker:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}

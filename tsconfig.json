@@ -4,7 +4,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
-    "lib": ["esnext", "dom", "dom.iterable", "webworker"],
+    // "lib": ["esnext", "dom", "dom.iterable", "webworker"],
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
@@ -12,9 +12,10 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
-    "checkJs": true
-    // "noEmit": true
+    "skipLibCheck": true,
+    // "checkJs": true
+    "noEmit": true
   },
   "include": [ "frontend/**/*.ts", "backend/**/*.ts", "lib/**/*.ts"],
-  "exclude": [".git", "_build", "_vendor+v8.16+32bit", "dist", "dist-cli", "dist-pkg", "node_modules", "backend/wasm/shims", "vendor"]
+  "exclude": [".git", "_build", "dist", "dist-cli", "dist-pkg", "node_modules/**/*", "backend/wasm/shims", "vendor", "frontend/classic/js/addon/**/*.js", "frontend/classic/js/addon/company-coq.js", "frontend/classic/js/mode/*.js"]
 }
