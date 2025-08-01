@@ -34,6 +34,9 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 
+type frontend = "pm" | "cm5" | "cm6"
+type content = "plain" | "markdown"
+
 /**
  * Coq Document Manager, client-side.
  *
@@ -45,8 +48,8 @@ import { CompanyCoq }  from './addon/company-coq.js';
  */
 export interface ManagerOptions {
     backend: backend,
-    content_type: 'plain' | 'markdown',
-    frontend: 'cm5' | 'cm6' | 'pm',
+    content_type: content,
+    frontend: frontend,
     prelaunch: boolean,
     prelude: boolean,
     debug: boolean,
@@ -106,7 +109,7 @@ export class CoqManager {
             replace:    false,
             wrapper_id: 'ide-wrapper',
             theme:      'light',
-            base_path:   "./",
+            base_path:  "./",
             node_modules_path: "./node_modules/",
             backend: "js",
             pkg_path,
@@ -128,25 +131,19 @@ export class CoqManager {
         this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
         this.version = 0;
 
-        // Setup preprocess method for markdown, if needed
-        var preprocessFunc = { 'plain': x => x, 'markdown': this.markdownPreprocess };
         var contentType = this.options.content_type ??  /* oddly specific */
                           (this.options.frontend === 'pm' ? 'markdown' : 'plain');
 
         // For now we disable it and use instead the server logic.
-        this.preprocess = preprocessFunc['plain'];
+        // this.preprocess = this.getPreProcessFunc(this.options.content_type);
+        this.preprocess = this.getPreProcessFunc('plain');
 
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
-        // Setup the Coq editor.
-        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
-        const CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
-
-        if (!CoqEditor)
-            throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
+        const CoqEditor : ICoqEditorConstructor = this.getEditorConstructor(this.options.frontend);
 
         /* Document processing */
         let onChange = debouncePend((raw: string) => {
@@ -210,6 +207,27 @@ export class CoqManager {
 
         if (this.options.show)
             requestAnimationFrame(() => this.layout.show());
+    }
+
+    // Setup the Coq editor.
+    private getEditorConstructor(frontend : frontend) : ICoqEditorConstructor {
+        switch (frontend) {
+        case 'pm':  return CoqProseMirror;
+        case 'cm5': return CoqCodeMirror5;
+        case 'cm6': return CoqCodeMirror6;
+        default:
+            throw new Error(`invalid frontend specification: '${frontend}'`);
+        }
+    }
+
+    // Setup preprocess method for markdown, if needed
+    private getPreProcessFunc(content : content) : (text : string) => string {
+        switch (content) {
+        case 'plain':    return (x => x);
+        case 'markdown': return this.markdownPreprocess;
+        default:
+            throw new Error(`invalid content specification: '${content}'`);
+        }
     }
 
     /**
@@ -746,7 +764,7 @@ export class CoqManager {
         switch (action.type) {
         case 'share-hastebin':   this.actionShareHastebin(); break;
         case 'share-p2p':        this.actionShareP2P();      break;
-        case 'share-gist':       this.actionShareGist();      break;
+        case 'share-gist':       this.actionShareGist();     break;
         }
     }
 

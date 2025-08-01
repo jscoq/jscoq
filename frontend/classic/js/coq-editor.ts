@@ -27,7 +27,8 @@ export interface ICoqEditorConstructor {
         onChange: (newContent : string) => void,
         onCursorUpdated: (offset : number) => void,
         manager: CoqManager) : ICoqEditor;
-    }
+}
+
 /**
  * Takes a textArea and will create an empty div to attach an editor to.
  */

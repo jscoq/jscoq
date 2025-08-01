@@ -671,12 +671,13 @@ class CoqPkgArchive {
     readManifest() : Promise<Package.Manifest> {
         var manifest = this.zip.file('coq-pkg.json');
         return manifest ?
-                manifest.async('text').then(data => JSON.parse(data))
-                .catch(err => {
-                    console.warn(`malformed 'coq-pkg.json' in bundle ${this.url || ''} (${err})`);
-                    return {}; 
-                })
-              : Promise.resolve({});
+                manifest.async('text')
+                    .then(data => JSON.parse(data))
+                    .catch(err => {
+                        console.warn(`malformed 'coq-pkg.json' in bundle ${this.url || ''} (${err})`);
+                        return {}; 
+                    })
+              : Promise.resolve({name: "", deps: [], modules: {}});
     }
 
     getPackageInfo() : Promise<CoqPkgInfo> {
