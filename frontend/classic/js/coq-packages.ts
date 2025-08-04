@@ -677,7 +677,7 @@ class CoqPkgArchive {
                         console.warn(`malformed 'coq-pkg.json' in bundle ${this.url || ''} (${err})`);
                         return {}; 
                     })
-              : Promise.resolve({name: "", deps: [], modules: {}});
+              : Promise.reject("manifest is not available");
     }
 
     getPackageInfo() : Promise<CoqPkgInfo> {
