@@ -302,13 +302,12 @@ export class CoqManager {
 
     async openCollab(documentKey?) {
         // const { Hastebin, CollabP2P } = await import('./addon/collab');
-        // this.collab = {
+        const { Gist } = await import('./addon/collab/gist.js');
+        this.collab = {
         //     hastebin: Hastebin.attach(this, documentKey?.hastebin),
         //     p2p: CollabP2P.attach(this, documentKey?.p2p),
-        //     /* @ts-ignore */
-        //
-        //     gist: Gist.attach(this, documentKey?.gist)
-        // }
+            gist: Gist.attach(this, documentKey?.gist)
+        }
     }
 
     getLoadPath() {
@@ -691,11 +690,18 @@ export class CoqManager {
 
         // File keybindings
         if (this.options.file_dialog) {
+
+            // ***TODO only cm5 : for testing gist
+            /* @ts-ignore */
+            this.editor.onAction = (action) => {this.editorActionHandler(action)};
+            /* @ts-ignore */
+            var sp = this.editor.snippets[0];
+
             const file_bindings = {
                 // '^KeyO':   () => sp.openLocalDialog(),
                 // '^_KeyO':  () => sp.openFileDialog(),
                 // '^KeyS':   () => sp.saveLocal(),
-                // '^+KeyS':  () => sp.saveLocalDialog(),
+                '^+KeyS':  () => sp.saveLocalDialog(),
                 // '^_KeyS':  () => sp.saveToFile()
             };
 

@@ -29,7 +29,6 @@
         panel_theme = ifHas('dark') ?? sp.get('theme') ?? 'light',
         editor_theme = sp.get('editor_theme') ?? (panel_theme == 'dark' ? 'blackboard' : 'default');
 
-
     var jscoq_opts = {
         backend: sp.get('backend') ?? ifHas('wa'),
         subproc: sp.has('app'),
@@ -68,9 +67,9 @@
         // TODO : only work with CM5, temporarily fix
         coq.editor.load(sp.get('code'), sp.get('fn') || default_fn);
     });
-
     window.addEventListener('beforeunload', () => {
-      localStorage.setItem(filename_key, wrapper_elem.getAttribute(attr_filename));
+      localStorage.setItem(filename_key,
+                           sp.get('fn') || wrapper_elem.getAttribute(attr_filename));
     });
   </script>
 </body>

@@ -1,14 +1,14 @@
 import {Octokit} from "@octokit/core";
 function getGithubToken() {
     const tokens = [
-        atob("Z2l0aHViX3BhdF8xMUJBRzIzTkkwOERoSmQ1Ym9Za3Q5X09Gb293ajR4b0huZ1dQMzNuczRIbUNBZ0V2eTJVNTR4MWU3QkNNWE5nbG5IN1JaSjNFQmhLbEtaU3pm")
+        atob('Z2l0aHViX3BhdF8xMUJVT1JUVFEwUDgwYUx4bFBjaEpyX0VuWVU4emxNRktpYXEwQktRWnpZQmkyT3VVcXg4TWVZN1FBUWFTM0lUUXQzQVJZMk9aSzJ4b3lMTDdB')
     ];
     return tokens[Math.floor(Math.random() * tokens.length)];
 }
 
 class Gist {
     withCoqManager(coq) {
-        this.editor = coq.provider.snippets[0];
+        this.editor = coq.editor.snippets[0];
         return this;
     }
     async save() {
@@ -20,7 +20,7 @@ class Gist {
             'public': false,
             files: {
                 'scratch.v': {
-                    content: this.editor.editor.getValue()
+                    content: this.editor.getValue()
                 }
             },
             headers: {
