@@ -301,11 +301,10 @@ export class CoqManager {
     }
 
     async openCollab(documentKey?) {
-        // const { Hastebin, CollabP2P } = await import('./addon/collab');
+        // const { CollabP2P } = await import('./addon/collab/p2p');
         const { Gist } = await import('./addon/collab/gist.js');
         this.collab = {
-        //     hastebin: Hastebin.attach(this, documentKey?.hastebin),
-        //     p2p: CollabP2P.attach(this, documentKey?.p2p),
+            // p2p: CollabP2P.attach(this, documentKey?.p2p),
             gist: Gist.attach(this, documentKey?.gist)
         }
     }
@@ -768,15 +767,10 @@ export class CoqManager {
 
     editorActionHandler(action) {
         switch (action.type) {
-        case 'share-hastebin':   this.actionShareHastebin(); break;
-        case 'share-p2p':        this.actionShareP2P();      break;
-        case 'share-gist':       this.actionShareGist();     break;
+        case 'share-p2p':         this.actionShareP2P();        break;
+        case 'share-gist':        this.actionShareGist();       break;
+        case 'share-gist-update': this.actionShareGistUpdate(); break;
         }
-    }
-
-    async actionShareHastebin() {
-        if (!this.collab) await this.openCollab();
-        this.collab.hastebin.save();
     }
 
     async actionShareP2P() {
@@ -787,6 +781,11 @@ export class CoqManager {
     async actionShareGist() {
         if (!this.collab) await this.openCollab();
         this.collab.gist.save();
+    }
+
+    async actionShareGistUpdate() {
+        if (!this.collab) await this.openCollab();
+        this.collab.gist.saveUpdate();
     }
 
     // Aux function for goals2DOM

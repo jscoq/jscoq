@@ -17,6 +17,7 @@
   </head>
 
 <body class="jscoq-main">
+  <!-- TODO : data-filename is used as a global variable and is accessed by gist and CmCoqProvider -->
   <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
     <!-- Editor and panel are created here by CoqManager -->
   </div>
@@ -60,14 +61,14 @@
       coq = res;
       window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));
-      if (sp.has('share'))       coq.openCollab({hastebin: sp.get('share')});
       if (sp.has('p2p'))         coq.openCollab({p2p: sp.get('p2p')});
       if (sp.has('gist'))        coq.openCollab({gist: sp.get('gist')});
       if (sp.has('code'))
-        // TODO : only work with CM5, temporarily fix
+        // TODO : only works with CM5, temporarily fix
         coq.editor.load(sp.get('code'), sp.get('fn') || default_fn);
     });
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', (event) => {
+      event.preventDefault(); // somehow give an alert
       localStorage.setItem(filename_key,
                            sp.get('fn') || wrapper_elem.getAttribute(attr_filename));
     });
