@@ -6,10 +6,11 @@ import { getJSON } from "jquery";
  * https://docs.github.com/en/rest/gists/gists?apiVersion=2022-11-28
  */
 
-const defaultFn     = 'scratch.v',
+const default_fn    = 'scratch.v',
       wrapper_id    = 'ide-wrapper',
       attr_filename = 'data-filename',
-      wrapper_elem  = document.getElementById(wrapper_id);
+      wrapper_elem  = document.getElementById(wrapper_id),
+      ask_token_msg = "GitHub token with \"Gists\" user permissions (write) is required to continue.";
 
 /**
  * set filename to html
@@ -30,25 +31,27 @@ function getFilename() {
 function getGithubToken() {
     const tokens = [
         // temporarily token (fine-grained personal access token)
-        atob('Z2l0aHViX3BhdF8xMUJVT1JUVFEwUDgwYUx4bFBjaEpyX0VuWVU4emxNRktpYXEwQktRWnpZQmkyT3VVcXg4TWVZN1FBUWFTM0lUUXQzQVJZMk9aSzJ4b3lMTDdB')
+        atob('Z2l0aHViX3BhdF8xMUJVT1JUVFEwZU5RWmVGWnBaZEphX25HcTh3TERxbVRlNHRSaXNNSENVVHlzdVk0am9MVWk3OEhsZlVyR2hlYWVESUpZSTNIQlRsVGJ3WkJk')
     ];
-    return tokens[Math.floor(Math.random() * tokens.length)]; // ?
+    return tokens[Math.floor(Math.random() * tokens.length)];
 }
 
 /**
  * send a request using github token
- * @param {string} route request method and URL
- * @param {*} options 
+ * @param {string} route   request method and URL
+ * @param {*}      options request options
+ * @param {string} token   octokit authentication token
  * @returns new octokit response promise
  */
-function sendRequest(route, options = {}) {
-    const octokit = new Octokit({ auth: getGithubToken() });
+function sendRequest(route, options = {}, token = getGithubToken()) {
+    const octokit = new Octokit({ auth: token });
     return octokit.request(route, options);
 }
 
 export class Gist {
-    filename = defaultFn;
+    filename = default_fn;
     id;
+    token;
 
     withCoqManager(coq) {
         this.editor = coq.editor.snippets[0]; // ***TODO
@@ -57,20 +60,20 @@ export class Gist {
 
     static attach(coq, gist_id) {
         const collab = new Gist().withCoqManager(coq);
-        if (gist_id) collab.load(gist_id);
+        if (gist_id) collab.loadNoAuth(gist_id);
         return collab;
     }
 
     /**
-     * process response after getting a gist
+     * process response after loading a gist
      * @param {*} data result data
      * @returns content of the file having default filename, 
      *          or content of the first file
      */
-    processResponseGet(data) {
+    processResponseLoad(data) {
         const files = data.files;
         this.id = data.id;
-        if (!files[defaultFn])
+        if (!files[default_fn])
             this.filename = Object.keys(files)[0];
         setFilename(this.filename);
         const file = files[this.filename];
@@ -81,8 +84,8 @@ export class Gist {
 
     /**
      * process response after saving a gist
-     * @param {*} data result data
-     * @param {string} msg message to display
+     * @param {*}      data result data
+     * @param {string} msg  message to display
      */
     processResponseSave(data, msg = "") {
         const gist_url = data.html_url;
@@ -112,7 +115,7 @@ export class Gist {
         getJSON("https://api.github.com/gists/" + id, { 
             format: 'json' 
         }).done((json) => {
-            return this.processResponseGet(json);
+            return this.processResponseLoad(json);
         }).fail((err) => {
             console.error(err);
         });
@@ -128,7 +131,7 @@ export class Gist {
             gist_id: id,
             headers: { 'X-GitHub-Api-Version': '2022-11-28' }
         }).then((result) => {
-            return this.processResponseGet(result.data);
+            return this.processResponseLoad(result.data);
         }).catch((err) => {
             console.error(err);
         });
@@ -138,6 +141,12 @@ export class Gist {
      * create a new gist
      */
     save() {
+        let token;
+        if (!this.token) {
+            token = window.prompt(ask_token_msg);
+            if (token === null) return;
+            token = token.trim();
+        }
         const current_fn = getFilename();
         sendRequest('POST /gists', {
             description: 'jsCoq exported file',
@@ -148,7 +157,9 @@ export class Gist {
                 }
             },
             headers: { 'X-GitHub-Api-Version': '2022-11-28' }
-        }).then((result) => {
+        }, token)
+        .then((result) => {
+            if (!this.token) this.token = token;
             this.filename = current_fn; // update filename
             this.processResponseSave(result.data, "Created");
         }).catch((err) => {
@@ -164,6 +175,12 @@ export class Gist {
             alert("No gist id is given");
             return;
         }
+        let token;
+        if (!this.token) {
+            token = window.prompt(ask_token_msg);
+            if (token === null) return;
+            token = token.trim();
+        }
         sendRequest('PATCH /gists/' + this.id, {
             gist_id: this.id,
             files: {
@@ -172,7 +189,8 @@ export class Gist {
                 }
             },
             headers: { 'X-GitHub-Api-Version': '2022-11-28' }
-        }).then((result) => {
+        }, token).then((result) => {
+            if (!this.token) this.token = token;
             this.processResponseSave(result.data, "Updated");
         }).catch((err) => {
             console.error(err);

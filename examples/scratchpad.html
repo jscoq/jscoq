@@ -37,8 +37,9 @@
         node_modules_path: '../node_modules/',
         file_dialog: true,
         implicit_libs: true,
+        init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
         all_pkgs:  ['coq'],
-        editor: { mode: { 'company-coq': true }, theme: editor_theme },
+        editor: { mode: { 'company-coq': false }, theme: editor_theme },
         theme: panel_theme
     };
 
@@ -68,7 +69,7 @@
         coq.editor.load(sp.get('code'), sp.get('fn') || default_fn);
     });
     window.addEventListener('beforeunload', (event) => {
-      event.preventDefault(); // somehow give an alert
+      event.preventDefault();
       localStorage.setItem(filename_key,
                            sp.get('fn') || wrapper_elem.getAttribute(attr_filename));
     });
