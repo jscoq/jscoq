@@ -1,4 +1,5 @@
 import { Octokit } from "@octokit/core";
+import { RequestError } from "@octokit/request-error";
 import { getJSON } from "jquery";
 
 /**
@@ -10,7 +11,19 @@ const default_fn    = 'scratch.v',
       wrapper_id    = 'ide-wrapper',
       attr_filename = 'data-filename',
       wrapper_elem  = document.getElementById(wrapper_id),
-      ask_token_msg = "GitHub token with \"Gists\" user permissions (write) is required to continue.";
+      ask_token_msg = "GitHub token with \"Gists\" user permissions (write) is required to continue.",
+      notif_id      = "gist-notif";
+let   notif_elem    = document.getElementById(notif_id);
+
+if (!notif_elem) {
+    notif_elem = document.createElement("div");
+    notif_elem.setAttribute('id', notif_id);
+    document.body.insertBefore(notif_elem, wrapper_elem);
+}
+
+function notification(elem) {
+    notif_elem.replaceChildren(elem);
+}
 
 /**
  * set filename to html
@@ -28,12 +41,28 @@ function getFilename() {
     return wrapper_elem.getAttribute(attr_filename);
 }
 
-function getGithubToken() {
+function getGithubToken() { // ***TODO
     const tokens = [
         // temporarily token (fine-grained personal access token)
-        atob('Z2l0aHViX3BhdF8xMUJVT1JUVFEwZU5RWmVGWnBaZEphX25HcTh3TERxbVRlNHRSaXNNSENVVHlzdVk0am9MVWk3OEhsZlVyR2hlYWVESUpZSTNIQlRsVGJ3WkJk')
+        ""
     ];
     return tokens[Math.floor(Math.random() * tokens.length)];
+}
+
+function makeErrorMessage(err) {
+    let status = err.status;
+    let message;
+    if (err.responseJSON) {
+        message = err.responseJSON.message;
+    } else if (err.response && err.response.data) {
+        message = err.response.data.message
+    } else {
+        message = "";
+    }
+    message = "Error " + status + " " + message;
+    let p = document.createElement('p');
+    p.textContent = message;
+    return p;
 }
 
 /**
@@ -75,6 +104,8 @@ export class Gist {
         this.id = data.id;
         if (!files[default_fn])
             this.filename = Object.keys(files)[0];
+        // if not any files
+        if (!this.filename) return "";
         setFilename(this.filename);
         const file = files[this.filename];
         const text = file.content;
@@ -92,18 +123,20 @@ export class Gist {
         this.id = data.id; // update current id
         const url = new URL(location);
         url.searchParams.set("gist", this.id);
-        history.pushState({}, "", url); // ?
+        history.pushState({}, "", url);
 
-        // to redirect through dialog // ***TODO see if necessary
-        // alert("Gist id: " + this.id + "\n" + gist_url);
+        // to redirect through notification (div msg) on top
         if (msg !== "")
             msg += "\n";
-        const message = msg + "Gist id: " + this.id + "\nGo to gist ?";
+        const message = msg + "Gist id: ";
+        const p = document.createElement("p");
         const link = document.createElement('a');
         link.href = gist_url;
         link.target = '_blank';
-        if (window.confirm(message))
-            link.click();
+        link.innerText = this.id;
+        p.textContent = message;
+        p.appendChild(link);
+        notification(p);
     }
 
     /**
@@ -118,6 +151,7 @@ export class Gist {
             return this.processResponseLoad(json);
         }).fail((err) => {
             console.error(err);
+            notification(makeErrorMessage(err));
         });
     }
 
@@ -134,6 +168,7 @@ export class Gist {
             return this.processResponseLoad(result.data);
         }).catch((err) => {
             console.error(err);
+            notification(makeErrorMessage(err));
         });
     }
 
@@ -164,6 +199,7 @@ export class Gist {
             this.processResponseSave(result.data, "Created");
         }).catch((err) => {
             console.error(err);
+            notification(makeErrorMessage(err));
         });
     }
 
@@ -172,7 +208,7 @@ export class Gist {
      */
     saveUpdate() { 
         if (!this.id) {
-            alert("No gist id is given");
+            notification("No gist id is given");
             return;
         }
         let token;
@@ -194,6 +230,7 @@ export class Gist {
             this.processResponseSave(result.data, "Updated");
         }).catch((err) => {
             console.error(err);
+            notification(makeErrorMessage(err));
         });
     }
 }

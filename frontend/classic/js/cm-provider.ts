@@ -826,7 +826,7 @@ export class CmCoqProvider {
      */
     _makeFileDialog(text) { 
         var list_id = 'cm-provider-local-files',
-            input = $('<input>').attr('id', list_id + '-input') // ***TODO
+            input = $('<input>').attr('id', list_id + '-input')
                                 .attr('list', list_id),
             list = $('<datalist>').attr('id', list_id);
 
