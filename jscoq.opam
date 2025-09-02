@@ -16,6 +16,7 @@ depends: [
   "js_of_ocaml"         {  = "5.9.1"            }
   "js_of_ocaml-ppx"     {  = "5.9.1"            }
   "js_of_ocaml-lwt"     {  = "5.9.1"            }
+  "lwt"                 {  = "5.9.1"            }
   "yojson"              { >= "3.0.0"            }
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.11.0"           }
