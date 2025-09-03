@@ -1,22 +1,23 @@
 import { Octokit } from "@octokit/core";
-import { RequestError } from "@octokit/request-error";
-import { getJSON } from "jquery";
 
 /**
  * documentation :
  * https://docs.github.com/en/rest/gists/gists?apiVersion=2022-11-28
  */
 
+const octokitRead = new Octokit();
+let octokitWrite = null;
+
 const default_fn    = 'scratch.v',
       wrapper_id    = 'ide-wrapper',
-      attr_filename = 'data-filename',
       wrapper_elem  = document.getElementById(wrapper_id),
+      attr_filename = 'data-filename',
       ask_token_msg = "GitHub token with \"Gists\" user permissions (write) is required to continue.",
-      notif_id      = "gist-notif";
+      notif_id      = 'gist-notif';
 let   notif_elem    = document.getElementById(notif_id);
 
 if (!notif_elem) {
-    notif_elem = document.createElement("div");
+    notif_elem = document.createElement('div');
     notif_elem.setAttribute('id', notif_id);
     document.body.insertBefore(notif_elem, wrapper_elem);
 }
@@ -52,9 +53,7 @@ function getGithubToken() { // ***TODO
 function makeErrorMessage(err) {
     let status = err.status;
     let message;
-    if (err.responseJSON) {
-        message = err.responseJSON.message;
-    } else if (err.response && err.response.data) {
+    if (err.response && err.response.data) {
         message = err.response.data.message
     } else {
         message = "";
@@ -63,18 +62,6 @@ function makeErrorMessage(err) {
     let p = document.createElement('p');
     p.textContent = message;
     return p;
-}
-
-/**
- * send a request using github token
- * @param {string} route   request method and URL
- * @param {*}      options request options
- * @param {string} token   octokit authentication token
- * @returns new octokit response promise
- */
-function sendRequest(route, options = {}, token = getGithubToken()) {
-    const octokit = new Octokit({ auth: token });
-    return octokit.request(route, options);
 }
 
 export class Gist {
@@ -89,8 +76,28 @@ export class Gist {
 
     static attach(coq, gist_id) {
         const collab = new Gist().withCoqManager(coq);
-        if (gist_id) collab.loadNoAuth(gist_id);
+        if (gist_id) collab.load(gist_id);
         return collab;
+    }
+
+    /**
+     * send a request using github token
+     * @param {*}      octokit octokit object
+     * @param {string} route   request method and URL
+     * @param {*}      options request options
+     * @param {string} token   octokit authentication token
+     * @returns new octokit response promise
+     */
+    sendRequest(octokit, route, options = {}, token = "") {
+        if (!octokit) {
+            if (this.token) {
+                octokitWrite = new Octokit({ auth: this.token });
+                octokit = octokitWrite;
+            }
+            else
+                octokit = new Octokit({ auth: token });
+        }
+        return octokit.request(route, options);
     }
 
     /**
@@ -122,14 +129,14 @@ export class Gist {
         const gist_url = data.html_url;
         this.id = data.id; // update current id
         const url = new URL(location);
-        url.searchParams.set("gist", this.id);
+        url.searchParams.set('gist', this.id);
         history.pushState({}, "", url);
 
         // to redirect through notification (div msg) on top
         if (msg !== "")
             msg += "\n";
         const message = msg + "Gist id: ";
-        const p = document.createElement("p");
+        const p = document.createElement('p');
         const link = document.createElement('a');
         link.href = gist_url;
         link.target = '_blank';
@@ -140,28 +147,12 @@ export class Gist {
     }
 
     /**
-     * get a gist by `id` without authentication
-     * @param {string} id a gist id
-     * @returns content of the gist obtained by id
-     */
-    loadNoAuth(id) {
-        getJSON("https://api.github.com/gists/" + id, { 
-            format: 'json' 
-        }).done((json) => {
-            return this.processResponseLoad(json);
-        }).fail((err) => {
-            console.error(err);
-            notification(makeErrorMessage(err));
-        });
-    }
-
-    /**
      * get a gist by `id`
      * @param {string} id a gist id
      * @returns content of the gist obtained by id
      */
     load(id) {
-        sendRequest('GET /gists/' + id, {
+        this.sendRequest(octokitRead, 'GET /gists/' + id, {
             gist_id: id,
             headers: { 'X-GitHub-Api-Version': '2022-11-28' }
         }).then((result) => {
@@ -183,7 +174,7 @@ export class Gist {
             token = token.trim();
         }
         const current_fn = getFilename();
-        sendRequest('POST /gists', {
+        this.sendRequest(octokitWrite, 'POST /gists', {
             description: 'jsCoq exported file',
             'public': false,
             files: {
@@ -217,7 +208,7 @@ export class Gist {
             if (token === null) return;
             token = token.trim();
         }
-        sendRequest('PATCH /gists/' + this.id, {
+        this.sendRequest(octokitWrite, 'PATCH /gists/' + this.id, {
             gist_id: this.id,
             files: {
                 [this.filename]: { 
