@@ -1,0 +1,63 @@
+.App {
+  font-family: monospace;
+}
+
+button {
+  font-family: monospace;
+  height: 30px;
+  min-width: max-content;
+}
+
+input {
+  font-family: monospace;
+  height: 30px;
+}
+
+div#notif {
+  margin: 5px;
+  padding: 5px;
+  background-color: lightgray;
+  border: 1px solid green;
+}
+
+#close-notif {
+  width: 24px;
+  height: 24px;
+}
+
+.input-container div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.input-container div label {
+  min-width: 110px;
+  padding-left: 5px;
+}
+
+#input-id {
+  min-width: 300px;
+}
+
+#input-token {
+  width: 100%;
+}
+
+.file-container {
+  background-color: rgb(230, 230, 230);
+}
+
+.file {
+  border: 1px solid rgb(155, 155, 155);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.filename {
+  background-color: rgb(250, 230, 200);
+}
+
+.file-content {
+  background-color: rgb(255, 255, 200);
+}

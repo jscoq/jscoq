@@ -302,7 +302,7 @@ export class CoqManager {
 
     async openCollab(documentKey?) {
         // const { CollabP2P } = await import('./addon/collab/p2p');
-        const { Gist } = await import('./addon/collab/gist.js');
+        const { Gist } = await import('./addon/collab/gist');
         this.collab = {
             // p2p: CollabP2P.attach(this, documentKey?.p2p),
             gist: Gist.attach(this, documentKey?.gist)
@@ -690,17 +690,17 @@ export class CoqManager {
         // File keybindings
         if (this.options.file_dialog) {
 
-            // ***TODO only cm5 : for testing gist
+            // ***TODO cleanup
             /* @ts-ignore */
-            this.editor.onAction = (action) => {this.editorActionHandler(action)};
+            // this.editor.onAction = (action) => {this.editorActionHandler(action)};
             /* @ts-ignore */
-            var sp = this.editor.snippets[0];
+            // var sp = this.editor.snippets[0];
 
             const file_bindings = {
                 // '^KeyO':   () => sp.openLocalDialog(),
                 // '^_KeyO':  () => sp.openFileDialog(),
                 // '^KeyS':   () => sp.saveLocal(),
-                '^+KeyS':  () => sp.saveLocalDialog(),
+                // '^+KeyS':  () => sp.saveLocalDialog(),
                 // '^_KeyS':  () => sp.saveToFile()
             };
 
@@ -768,8 +768,9 @@ export class CoqManager {
     editorActionHandler(action) {
         switch (action.type) {
         case 'share-p2p':         this.actionShareP2P();        break;
-        case 'share-gist':        this.actionShareGist();       break;
-        case 'share-gist-update': this.actionShareGistUpdate(); break;
+        // ***TODO cleanup
+        // case 'share-gist':        this.actionShareGist();       break;
+        // case 'share-gist-update': this.actionShareGistUpdate(); break;
         }
     }
 
@@ -778,7 +779,8 @@ export class CoqManager {
         this.collab.p2p.save();
     }
 
-    async actionShareGist() {
+    // ***TODO cleanup
+    /* async actionShareGist() {
         if (!this.collab) await this.openCollab();
         this.collab.gist.save();
     }
@@ -786,7 +788,7 @@ export class CoqManager {
     async actionShareGistUpdate() {
         if (!this.collab) await this.openCollab();
         this.collab.gist.saveUpdate();
-    }
+    } */
 
     // Aux function for goals2DOM
     flatLength(l) {

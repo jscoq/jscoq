@@ -13,6 +13,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "jsx": "react-jsx",
     // "checkJs": true
     "noEmit": true
   },
