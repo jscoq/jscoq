@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import GistComponent from "./gistComponent";
+import GistComponent from "./GistComponent";
 import "./gist.css";
 
 export class Gist {

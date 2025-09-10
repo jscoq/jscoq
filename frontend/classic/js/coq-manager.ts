@@ -302,7 +302,7 @@ export class CoqManager {
 
     async openCollab(documentKey?) {
         // const { CollabP2P } = await import('./addon/collab/p2p');
-        const { Gist } = await import('./addon/collab/gist');
+        const { Gist } = await import('./addon/collab/Gist');
         this.collab = {
             // p2p: CollabP2P.attach(this, documentKey?.p2p),
             gist: Gist.attach(this, documentKey?.gist)

@@ -1,4 +1,4 @@
-.App {
+.GistComponent {
   font-family: monospace;
 }
 
@@ -6,11 +6,13 @@ button {
   font-family: monospace;
   height: 30px;
   min-width: max-content;
+  margin: 2px;
 }
 
 input {
   font-family: monospace;
   height: 30px;
+  margin: 2px;
 }
 
 div#notif {
@@ -36,12 +38,12 @@ div#notif {
   padding-left: 5px;
 }
 
-#input-id {
+#input-id, #input-token {
   min-width: 300px;
 }
 
-#input-token {
-  width: 100%;
+#input-fn {
+  width: 100px;
 }
 
 .file-container {
@@ -60,4 +62,13 @@ div#notif {
 
 .file-content {
   background-color: rgb(255, 255, 200);
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row;
+}
+
+.current-tab {
+  background-color: cornsilk;
 }
