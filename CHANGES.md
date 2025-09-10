@@ -50,6 +50,8 @@
    introduced in #387 (@helguo, #396)
  - Have Docker CI use the PR repository when doing CI for a PR CI
    (@helguo, @ejgallego, cc: #321, #397)
+ - [gist] Have Gist functional (read, create, update) using React.
+   Handle multiple files of a gist. (@helguo, #401)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
