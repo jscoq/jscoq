@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -x
+# Debug mode
+# set -x
 
 NJOBS=4
 VERB= # -vv

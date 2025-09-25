@@ -1,4 +1,8 @@
--include ./config.inc
+ifeq ("$(wildcard ./config.inc)","")
+$(error ./config.inc is required but missing! Please call ./etc/setup-toolchain.sh)
+endif
+
+include ./config.inc
 
 # Coq Version
 COQ_VERSION := v8.20
