@@ -163,6 +163,7 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
 
 Incomplete list of places where jsCoq has been used, more or less in reverse chronological order:
 
+* [Rocq game](https://rocq-game.kpi.fei.tuke.sk/) used in the [Type Theory course](https://kurzy.kpi.fei.tuke.sk/tt/) at the Technical University of Košice, Slovakia
 * Coq Platform Docs https://coq.inria.fr/platform-docs/
 * [EPIT 2020 - Spring School on Homotopy Type Theory](https://github.com/HoTT/EPIT-2020)
 * [Lectures on Separation Logic](https://madiot.fr/sepcourse/) by Jean-Marie Madiot in MPRI's course "Proofs of programs", using Arthur Charguéraud's material. [See it in action!](https://madiot.fr/sepcourse/coq/)
